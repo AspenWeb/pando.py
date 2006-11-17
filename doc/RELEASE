@@ -1,0 +1,61 @@
+"""Steps to do a release.
+
+While releasing, track updates to this doc in a tmp file, and then change the
+doc on trunk/ again after the release is done.
+
+"""
+
+# Tag
+# ===
+
+- update doc/HISTORY on trunk/
+- tag in svn
+- switch to tag
+- update version and date in Makefile and do `make stamp`
+- checkin tag
+
+
+# Distribute
+# ==========
+# This happens on erilich. We can't make it in place because latex2html barfs on
+# dots in the path. So we make it in ~ and then move it into place.
+
+$ svn export $TAG ~/aspen
+$ cd $VERSION && make dist
+$ mv ~/aspen /usr/local/www/www.zetadev.com/software/aspen/$VERSION
+
+
+# Smoke It
+# ========
+
+run through install on a clean box
+    download archive
+    unpack
+    python setup.py install
+    python -c"import aspen"
+
+
+# Prepare index.html
+# ==================
+
+- cp http://www.zetadev.com/software/aspen/index.html
+- update:
+    bump current to old version
+    add new version
+        updated links
+        text of doc/HISTORY
+
+
+# Announce
+# ========
+# The first announcement is to register with PyPI. Under Python 2.5 we also have
+# the option to upload to PyPI.
+
+- move new index.html into place
+$ python setup.py register
+- test that `easy_install aspen` works
+- announce on ...
+    nntp://comp.lang.python.announce
+    http://tech.whit537.org/
+    Web-SIG
+    wsgi.org servers/applications pages

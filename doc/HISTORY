@@ -1,0 +1,8 @@
+========================================
+    ~~VERSION~~ -- ~~DATE~~
+========================================
+
+This is the first release of Aspen. This is alpha-quality software, and this
+release is aimed at Python web enthusiasts. Aspen represents the culmination of
+about two years of design and development effort. This is my best attempt at a
+system for building and deploying many highly heterogenous websites.

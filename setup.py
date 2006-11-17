@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 from distutils.core import setup
 
-from aspen import __version__
 
 classifiers = [
     'Development Status :: 3 - Alpha'
@@ -14,14 +13,17 @@ classifiers = [
   , 'Operating System :: POSIX'
   , 'Programming Language :: Python'
   , 'Topic :: Internet :: WWW/HTTP :: HTTP Servers'
-                ]
+  , 'Topic :: Internet :: WWW/HTTP :: WSGI'
+  , 'Topic :: Internet :: WWW/HTTP :: WSGI :: Application'
+  , 'Topic :: Internet :: WWW/HTTP :: WSGI :: Server'
+   ]
 
 setup( name = 'aspen'
-     , version = __version__
+     , version = ~~VERSION~~
      , package_dir = {'':'site-packages'}
      , packages = ['aspen']
      , scripts = ['bin/aspen']
-     , description = 'aspen is a robust and sane Python webserver.'
+     , description = 'aspen is a highly extensible Python webserver.'
      , author = 'Chad Whitacre'
      , author_email = 'chad@zetaweb.com'
      , url = 'http://www.zetadev.com/software/aspen/'
