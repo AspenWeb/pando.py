@@ -31,7 +31,7 @@ def pyscript(environ, start_response):
         exec fp in context
     except SystemExit:
         pass
-    return environ['response']
+    return context['response']
 
 
 # A moderately complex one.

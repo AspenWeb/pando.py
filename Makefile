@@ -24,6 +24,7 @@ stamp:
 	$(UPDATE_VERSION) README
 	$(UPDATE_VERSION) doc/tex/Makefile
 	$(UPDATE_VERSION) doc/tex/aspen.tex
+	$(UPDATE_VERSION) doc/tex/installation.tex
 	$(UPDATE_VERSION) doc/HISTORY
 	$(UPDATE_VERSION) setup.py
 	$(UPDATE_VERSION) src/aspen/__init__.py

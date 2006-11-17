@@ -18,7 +18,7 @@ should get output like this:
 
 \begin{verbatim}
 $ aspen
-aspen started on port 8080
+aspen starting on ('', 8080)
 \end{verbatim}
 
 Now open a web browser and hit \code{http://localhost:8080/}. You should see
@@ -27,12 +27,13 @@ Now open a web browser and hit \code{http://localhost:8080/}. You should see
 
 \section{A Python Script \label{tutorial-pyscript}}
 
-Aspen supports pseudo-CGI-style programming with regular python scripts. In your
-\file{aspentut} directory, create a file named \file{foo.py} with the following
-contents:
+Aspen supports pseudo-CGI-style programming with more or less regular python
+scripts. In your \file{aspentut} directory, create a file named \file{foo.py}
+with the following contents:
 
 \begin{verbatim}
 response.body = "Greetings, program!"
+response.headers['Content-Type'] = 'text/plain'
 \end{verbatim}
 
 Assuming that Aspen is still running, hit \code{http://localhost:8080/foo.py} in
@@ -45,9 +46,9 @@ Aspen uses \dfn{handlers} to process your \file{index.html} and \file{foo.py}
 files. Now we are going to write our own handler.
 
 First, create a directory under \file{aspentut} named \file{__} (that's two
-underscores). This is aspentut's \dfn{magic directory}, and it is where you
-configure and extend your website. Now create two directories under the magic
-directory: \file{etc} and \file{lib}. Under \file{lib}, create a
+underscores). This is \file{aspentut}'s \dfn{magic directory}, and it is where
+you configure and extend your website. Now create two directories under the
+magic directory: \file{etc} and \file{lib}. Under \file{lib}, create a
 \file{python2.x} directory, where \file{x} corresponds to the minor version of
 Python you are using. Your directory structure should now look like this:
 
@@ -81,12 +82,12 @@ for any request for a file with the extension \file{.asp}. So now let's create
 such a file at \file{aspentut/handled.asp} and give it the following contents:
 
 \begin{verbatim}
-"Greetings, program?"
+Greetings, program?
 \end{verbatim}
 
-Now hit \code{http://localhost:8080/handled.asp}. You should see the filesystem
-pathname of the file being served. That's because \code{environ['aspen.fp']}
-points to an open \class{file} object of that file.
+Restart Aspen, then hit \code{http://localhost:8080/handled.asp}. You should see
+the filesystem pathname of the file being served. That's because
+\code{environ['aspen.fp']} points to an open \class{file} object of that file.
 
 If you are familiar with the WSGI specification, you will recognize that
 \function{handy.handle} is very nearly a WSGI callable. Aspen plugins all speak
@@ -106,7 +107,7 @@ In this brief tutorial we've introduced these key facts about Aspen:
 \item{Aspen extensions are slightly extended WSGI callables.}
 \end{itemize}
 
-Besides handlers, Aspen can be extended by wiring up arbitrary WSGI apps at
+Besides handlers, Aspen can be extended by wiring up arbitrary WSGI apps to
 certain paths, and maintaining a global WSGI middleware stack. If this all fits
 your style of development, then check out the reference documentation that
 follows for the full story.

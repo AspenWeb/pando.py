@@ -281,6 +281,9 @@ class Paths:
         # Currently we just support throttling from the command line based on
         # subsystem and level.
 
+
+        #logging.basicConfig(format=FORMAT)
+
         handler = logging.StreamHandler()
         handler.addFilter(logging.Filter(self.opts.log_filter))
         form = logging.Formatter(logging.BASIC_FORMAT)

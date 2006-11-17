@@ -48,10 +48,12 @@ def main(argv):
 
     server = Server(config.address, website)
     try:
-        log.warn("starting server on %s" % str(config.address))
+        print "aspen starting on %s" % str(config.address)
+        #log.info("aspen starting on %s" % str(config.address))
         server.start()
     except KeyboardInterrupt:
-        log.warn("stopping server")
+        print "stopping server"
+        #log.info("stopping server")
         server.stop()
 
 

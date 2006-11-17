@@ -28,4 +28,7 @@ pdf:
 
 clean:
 	rm -rf *~ *.aux *.idx *.ilg *.ind *.log *.toc *.bkm *.syn \
-			*.pla *.eps *.pdf *.ps *.lof *.l2h *.tex2 *.dvi html ../*.pdf
+			*.pla *.eps *.pdf *.ps *.lof *.l2h *.tex2 *.dvi \
+			../html ../*.pdf
+
+all: html pdf clean
