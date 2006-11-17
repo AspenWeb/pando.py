@@ -1,0 +1,125 @@
+\chapter{User Interface \label{interface}}
+
+Users interface with Aspen through three mechanisms: the command line, a
+configuration file, and the environment. Where a program parameter is set in
+more than one of these contexts, they take precedence in the order given here.
+For example, a \var{mode} option on the command line will override any
+\var{mode} setting in the config file or in the environment.
+
+
+\section{Command Line \label{command-line}}
+
+Usage:
+
+\begin{verbatim}
+aspen [options] [command]
+\end{verbatim}
+
+Aspen takes one optional positional argument, \var{command}, which must be one
+of: \code{start}, \code{stop}, \code{restart}, or \code{runfg}. The default is
+\code{runfg}, which causes Aspen to run in the foreground, sending any access
+log messages to stdout, and any error log messages to stderr.
+
+\code{start}, \code{stop}, and \code{restart} control Aspen as a daemon, via a
+pid file at \file{__/var/aspen.pid}. When run as a daemon, access log messages
+are sent to a file at \file{__/var/log/access-x.log}, and error messages to
+\file{__/var/log/error-x.log}, where \code{x} is a timestamp of the file's
+creation time. These log files are rotated when they reach 1MB in size.
+
+
+Aspen's command-line options are a subset of the options available in the config
+file:
+
+\begin{tableiii}{l|l|l}{var}{Option}{Description}{Default}
+
+\lineiii{\programopt{-a}/\longprogramopt{-address}=\var{address}}
+    {The address to which Aspen should bind. If \var{address} begins
+    with a dot or a forward slash, then it is interpreted as an AF_UNIX socket.
+    Otherwise, it is interpreted as an AF_INET socket. If \var{address} begins
+    with a colon, then the loopback address is assumed.} {\code{:8080}}
+
+\lineiii{\programopt{-l}/\longprogramopt{-log_filter}=\var{log_filter}}
+    {A subsystem filter to apply to the error log, per the logging module.}
+    {\code{}}
+
+\lineiii{\programopt{-m}/\longprogramopt{-mode}=\var{mode}}
+    {One of \code{development}, \code{debugging}, \code{staging}, or
+    \code{deployment}. See mode.py.} {\code{development}}
+
+\lineiii{\programopt{-r}/\longprogramopt{-root}=\var{root}}
+    {The directory containing the website for Aspen to serve.}
+    {\code{.}}
+
+\lineiii{\programopt{-v}/\longprogramopt{-log_level}=\var{log_level}}
+    {The error log level. Valid options per the logging module
+    are (case-insensitive): \code{notset}, \code{debug}, \code{info},
+    \code{warning}, \code{error}, \code{critical}.}{\code{warning}}
+
+\end{tableiii}
+
+
+\section{Configuration File \label{config-file}}
+
+This section describes the general Aspen configuration file at
+\file{__/etc/aspen.conf}. Additional configuration files are described in the
+Extending Aspen chapter. \file{aspen.conf} is in \file{.ini}-style format per
+the ConfigParser module. There are five sections recognized: \code{DEFAULT},
+\code{debugging}, \code{development}, \code{staging}, and \code{production}. Any
+of the below settings can be given in any section, except for \var{mode}, which
+can only occur in \code{DEFAULT}. However, only two sections will be used at any
+given time: \code{DEFAULT}, and the section corresponding to the current
+deployment mode (see The Environment for more on mode).
+
+\begin{tableiii}{l|l|l}{var}{Option}{Description}{Default}
+
+\lineiii{address}{The address to which Aspen should bind. If \var{address}
+begins with a dot or a forward slash, then it is interpreted as an AF_UNIX
+socket. Otherwise, it is interpreted as an AF_INET socket. If \var{address}
+begins with a colon, then the loopback address is assumed.}{\code{:8080}}
+
+\lineiii{defaults}{A comma-separated list of names to look for when a directory
+is requested.}{\code{index.html, index.htm, index.py}}
+
+\lineiii{group}{A groupname or gid to which, if given, Aspen will attempt to
+switch after binding to the socket.}{}
+
+\lineiii{log_access}{Whether or not to maintain an access log. Valid options
+are (case-insensitive): \code{yes}, \code{no}, \code{none}, \code{true},
+\code{false}, \code{0}, \code{1}. The access log will be in Apache's Combined
+Log Format.}{\code{no}}
+
+\lineiii{log_format}{The format of error log messages, per the logging
+module.}{\code{\%(levelname)s:\%(name)s:\%(message)s}}
+
+\lineiii{log_level}{The error log level. Valid options per the logging module
+are (case-insensitive): \code{notset}, \code{debug}, \code{info},
+\code{warning}, \code{error}, \code{critical}.}{\code{warning}}
+
+\lineiii{log_filter}{A subsystem filter to apply to the error log, per the
+logging module.}{}
+
+\lineiii{mode}{One of \code{debugging}, \code{development}, \code{staging}, or
+\code{production}. (Naturally, this option only obtains in the DEFAULT
+section.)}{\code{development}}
+
+\lineiii{threads}{The number of threads to maintain in the request-servicing
+thread pool.}{\code{10}}
+
+\lineiii{user}{A username or uid to which, if given, Aspen will attempt to
+switch after binding to the socket.}{}
+
+\end{tableiii}
+
+
+
+see also: Extending Aspen, ConfigParser, mode, logging
+
+\section{The Environment \label{environment}}
+
+Aspen incorporates the \module{mode} module, which uses the \envvar{PYTHONMODE}
+environment variable to model the application life-cycle through four deployment
+modes: \code{debugging}, \code{development}, \code{staging}, and
+\code{production}. This module is available to your applications at
+\module{aspen.mode}. For more information, see the \module{mode} documentation.
+
+see also: mode.py

@@ -1,0 +1,27 @@
+#!/usr/bin/env python
+"""Print useful information about a website from aspen's perspective.
+"""
+import os
+import sys
+
+from httpy.couplers.standalone import StandAlone
+from aspen.config import Configuration, ConfigError
+from aspen.website import Website
+
+
+def main(argv):
+
+    try:
+        config = Configuration(argv[1:])
+    except ConfigError, err:
+        print >> sys.stderr, err.msg
+        print >> sys.stderr, "usage: hinfo --help"
+        raise SystemExit(2)
+    else:
+        os.environ['HTTPY_MODE'] = config.mode
+        website = Website(config.paths)
+        import code; code.interact(local=locals())
+
+
+if __name__ == '__main__':
+    main(sys.argv)

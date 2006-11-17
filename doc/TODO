@@ -1,0 +1,84 @@
+0.3
+===
+load rules/handlers/apps/middleware from setuptools entry points
+    first, change the existing object nomenclature to that of setuptools (mod:obj)
+    in a future version, add optional entry_point support when setuptools is installed
+        that is, where object names are called for, entry point names can
+          also be used
+            if the name has a : in it, it is taken to be a specify a module directly
+            if the name doesn't have a :, it is taken to be an entry point name
+
+daemonization
+module reloading
+user switching
+access logging
+ssl
+
+configuration
+    all
+        address
+        threads
+        mode
+        user
+        group
+
+        root
+        default resource names
+
+        access log (yes/no)
+        error log format
+        error log level
+        error log subsystem filter
+
+        start/stop/restart/runfg
+
+    command line
+        address
+        mode
+
+        pubroot
+
+        access log (yes/no)
+        error log level
+        error log subsystem filter
+
+        start/stop/restart/runfg
+
+    environment
+        mode
+
+    config file
+        address
+        threads
+        mode
+        user
+        group
+
+        default resource names
+
+        access log (yes/no)
+        error log format
+        error log level
+        error log subsystem filter
+
+
+    postponed
+        config file includes?
+        different config files for each mode?
+            aspen.staging.conf
+        or maybe one section per mode?
+
+    rejected
+        hostname -- take care of this elsewhere
+        server identification -- we hardwire it
+        access log format/filename/rotation -- pick a convention
+        error log filename/rotation -- pick a convention
+
+
+cross-platform GUI
+curses interface
+SSL
+
+
+DONE -- 0.3
+===========
