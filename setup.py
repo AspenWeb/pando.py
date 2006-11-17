@@ -18,7 +18,7 @@ classifiers = [
    ]
 
 setup( name = 'aspen'
-     , version = ~~VERSION~~
+     , version = '~~VERSION~~'
      , package_dir = {'':'src'}
      , packages = ['aspen']
      , scripts = ['bin/aspen']
