@@ -2,10 +2,10 @@
 # VERSION environment variable.
 
 VERSION=0.3-trunk
-DATE="November, 2006"
+DATE=November, 2006
 
-UPDATE_VERSION="sed -e 's/~~VERSION~~/$(VERSION)/g' -i ''"
-UPDATE_DATE="sed -e 's/~~DATE~~/$(DATE)/g' -i ''"
+UPDATE_VERSION=sed -e 's/~~VERSION~~/$(VERSION)/g' -i ''
+UPDATE_DATE=sed -e 's/~~DATE~~/$(DATE)/g' -i ''
 
 
 clean:
