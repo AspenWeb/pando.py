@@ -218,11 +218,16 @@ class Paths:
         else:
             lib = join(self.__, 'lib', 'python'+sys.version[:3])
             self.lib = isdir(lib) and lib or None
-            sys.path.insert(0, lib)
 
             plat = join(lib, 'plat-'+sys.platform)
             self.plat = isdir(plat) and plat or None
-            sys.path.insert(0, plat)
+
+            pkg = join(lib, 'site-packages')
+            self.pkg = isdir(pkg) and pkg or None
+
+            for path in (lib, plat, pkg):
+                if isdir(path):
+                    sys.path.insert(0, path)
 
 
 class Configuration(load.Mixin):

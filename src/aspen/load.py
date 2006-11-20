@@ -45,7 +45,6 @@ __/etc/apps.conf. To wit:
 
 """
 
-
 class Handler(object):
     """Represent a function that knows how to obey the rules.
 
@@ -261,8 +260,7 @@ __/etc/apps.conf. To wit:
                 # =================================
 
                 obj = colon.colonize(name, fp.name, lineno)
-                if inspect.isclass(obj):
-                    obj = obj(self)
+                obj = self._instantiate(obj)
                 if not callable(obj):
                     msg = "'%s' is not callable" % name
                     raise AppsConfError(msg, lineno)
@@ -334,8 +332,7 @@ __/etc/apps.conf. To wit:
                     raise HandlersConfError(msg, lineno)
                 rulename, name = line.split(None, 1)
                 obj = colon.colonize(name, fpname, lineno)
-                if inspect.isclass(obj):
-                    obj = obj(self)
+                obj = self._instantiate(obj)
                 if not callable(obj):
                     msg = "'%s' is not callable" % name
                     raise HandlersConfError(msg, lineno)
@@ -383,8 +380,7 @@ __/etc/apps.conf. To wit:
                 continue
             else:                                   # specification
                 obj = colon.colonize(name, fp.name, lineno)
-                if inspect.isclass(obj):
-                    obj = obj(self)
+                obj = self._instantiate(obj)
                 if not callable(obj):
                     msg = "'%s' is not callable" % name
                     raise MiddlewareConfError(msg, lineno)
@@ -393,3 +389,19 @@ __/etc/apps.conf. To wit:
         stack.append(httpy.Responder)
         stack.reverse()
         return stack
+
+
+    # Helper
+    # ======
+
+    def _instantiate(self, Obj):
+        """Given an object, return an instance of the object.
+        """
+        if inspect.isclass(Obj):
+            try:
+                obj = Obj(self)
+            except TypeError:
+                obj = Obj()
+        else:
+            obj = Obj
+        return obj

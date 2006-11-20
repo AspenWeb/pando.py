@@ -4,6 +4,7 @@ import mimetypes
 import rfc822
 import os
 import stat
+import traceback
 from email import message_from_file, message_from_string
 
 from aspen import mode
@@ -17,21 +18,30 @@ from aspen.utils import is_valid_identifier
 def HTTP404(environ, start_response):
     raise Response(404)
 
+
 def pyscript(environ, start_response):
     """Execute the script pseudo-CGI-style.
     """
-
-    context = dict(request=environ)
-    context['response'] = Response()
+    context = dict()
+    context['environ'] = environ
+    context['start_response'] = start_response
+    context['response'] = response = []
     context['__file__'] = environ['aspen.fp'].name
 
     fp = environ['aspen.fp']
     del environ['aspen.fp']
+
     try:
         exec fp in context
     except SystemExit:
         pass
-    return context['response']
+    except:
+        response = Response(500, "Internal Server Error")
+        response.headers['Content-type'] = 'text/plain'
+        if mode.debdev:
+            response.body += '\r\n\r\n' + traceback.format_exc()
+
+    return response
 
 
 # A moderately complex one.
