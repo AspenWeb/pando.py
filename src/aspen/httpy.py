@@ -14,13 +14,18 @@ Apps below this shim may speak plain WSGI, but they may also return a
 string, which will be sent back as text/html. They may also return or raise
 a Response object.
 
+Changes:
+
+    - added __eq__ (to ease testing)
+
+
 """
 import BaseHTTPServer
 from email.Message import Message
 
 
 __author__ = "Chad Whitacre <chad@zetaweb.com>"
-__version__ = "1.0a1"
+__version__ = "1.0a1+"
 __all__ = ('Responder', 'Response')
 
 
@@ -66,6 +71,17 @@ class Response(StandardError):
 
     def __str__(self):
         return "%d %s" % (self.code, self._status()[0])
+
+    def __eq__(self, other):
+        try:
+            assert self.code == other.code
+            assert self.body == other.body
+            for k in self.headers.keys():
+                assert k in other.headers
+                assert self.headers[k] == other.headers[k]
+            return True
+        except AssertionError:
+            return False
 
     def _status(self):
         return _responses.get(self.code, ('???','Unknown HTTP status'))

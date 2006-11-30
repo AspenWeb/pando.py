@@ -32,9 +32,10 @@ callable):
 example.package.foo:bar.baz
 \end{verbatim}
 
-Wherever in these files a name in colon notation points to a class, that class
-is instantiated with the current \class{Website} instance as its sole positional
-argument, and the instance is used as the named object.
+Wherever in these files a name in colon notation points to a class, Aspen
+attempts to instantiate the class with the current \class{Website} instance as
+its sole positional argument. Failing this, Aspen instantiates the class without
+any arguments. The instance is then used as the named object.
 
 The comment character for these files is \#, and comments can be included
 in-line. Blank lines are ignored, as is initial and trailing whitespace

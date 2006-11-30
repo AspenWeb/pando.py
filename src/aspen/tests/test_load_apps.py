@@ -34,6 +34,10 @@ class App:
     self.website = website
   def __call__(self, env, start):
     return "Greetings, program!"
+
+class AppNoArgs:
+  def __call__(self, env, start):
+    return "Greetings, program!"
 """
 
 
@@ -72,6 +76,14 @@ def test_classes_instantiated():
     actual = Loader().load_apps()[0][1].__class__
     assert actual == expected, actual
 
+def test_classes_instantiated_no_arguments():
+    mk( '__/etc', lib_python
+      , ('__/etc/apps.conf', '/ TESTING_apps:AppNoArgs')
+      , (lib_python+'/TESTING_apps.py', MODULE)
+       )
+    from TESTING_apps import AppNoArgs as expected
+    actual = Loader().load_apps()[0][1].__class__
+    assert actual == expected, actual
 
 
 # No apps configured

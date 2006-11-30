@@ -57,14 +57,10 @@ def executable(fp, predicate):
     return is_executable is what_we_want(predicate)
 
 
-def executable(fp, predicate):
-    """Predicate is either true/yes/1 or false/no/0 (case-insensitive).
-
-    This only works on Unix.
-
+def fnmatch(fp, predicate):
+    """Match using the fnmatch module; always case-sensitive.
     """
-    is_executable = (os.stat(fp.name).st_mode & 0111) != 0
-    return is_executable is what_we_want(predicate)
+    return _fnmatch.fnmatchcase(fp.name, predicate)
 
 
 def hashbang(fp, predicate):

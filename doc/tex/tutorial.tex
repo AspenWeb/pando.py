@@ -32,8 +32,7 @@ scripts. In your \file{aspentut} directory, create a file named \file{foo.py}
 with the following contents:
 
 \begin{verbatim}
-response.body = "Greetings, program!"
-response.headers['Content-Type'] = 'text/plain'
+response = ["Greetings, program!\n"]
 \end{verbatim}
 
 Assuming that Aspen is still running, hit \code{http://localhost:8080/foo.py} in

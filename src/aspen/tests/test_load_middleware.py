@@ -35,6 +35,10 @@ class App:
     self.website = website
   def __call__(self, env, start):
     return "Greetings, program!"
+
+class AppNoArgs:
+  def __call__(self, env, start):
+    return "Greetings, program!"
 """
 
 
@@ -88,6 +92,15 @@ def test_classes_instantiated():
       , (lib_python+'/TESTING_middleware.py', MODULE)
        )
     from TESTING_middleware import App as expected
+    actual = Loader().load_middleware()[1].__class__
+    assert actual == expected, actual
+
+def test_classes_instantiated_no_arguments():
+    mk( '__/etc', lib_python
+      , ('__/etc/middleware.conf', 'TESTING_middleware:AppNoArgs')
+      , (lib_python+'/TESTING_middleware.py', MODULE)
+       )
+    from TESTING_middleware import AppNoArgs as expected
     actual = Loader().load_middleware()[1].__class__
     assert actual == expected, actual
 
