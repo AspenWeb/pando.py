@@ -2,6 +2,14 @@
     ~~VERSION~~ -- ~~DATE~~
 ========================================
 
+This release addresses some minor issues raised in producing the "Five
+Development Models" screencast.
+
+
+========================================
+    0.3 -- November 17, 2006
+========================================
+
 This is the first release of Aspen. This is alpha-quality software, and this
 release is aimed at Python web enthusiasts. Aspen represents the culmination of
 about two years of design and development effort. This is my best attempt at a
