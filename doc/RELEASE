@@ -21,7 +21,7 @@ doc on trunk/ again after the release is done.
 # dots in the path. So we make it in ~ and then move it into place.
 
 $ svn export $TAG ~/aspen
-$ cd $VERSION && make dist
+$ cd aspen && make dist
 $ mv ~/aspen /usr/local/www/www.zetadev.com/software/aspen/$VERSION
 
 
