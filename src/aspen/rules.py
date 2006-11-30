@@ -6,6 +6,7 @@ Rules take a file object and predicate, and return a boolean.
 import commands
 import fnmatch as _fnmatch
 import mimetypes
+import re
 import os
 
 from aspen.exceptions import RuleError
@@ -56,10 +57,14 @@ def executable(fp, predicate):
     return is_executable is what_we_want(predicate)
 
 
-def fnmatch(fp, predicate):
-    """Match using the fnmatch module; always case-sensitive.
+def executable(fp, predicate):
+    """Predicate is either true/yes/1 or false/no/0 (case-insensitive).
+
+    This only works on Unix.
+
     """
-    return _fnmatch.fnmatchcase(fp.name, predicate)
+    is_executable = (os.stat(fp.name).st_mode & 0111) != 0
+    return is_executable is what_we_want(predicate)
 
 
 def hashbang(fp, predicate):
@@ -73,6 +78,12 @@ def mimetype(fp, predicate):
     """Match against the resource's MIME type.
     """
     return predicate == mimetypes.guess_type(fp.name)[0]
+
+
+def rematch(fp, predicate):
+    """Match based on a regular expression.
+    """
+    return re.match(predicate, fp.name) is not None
 
 
 def svn_prop(fp, predicate):

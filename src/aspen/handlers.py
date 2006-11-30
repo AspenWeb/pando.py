@@ -25,7 +25,7 @@ def pyscript(environ, start_response):
     context = dict()
     context['environ'] = environ
     context['start_response'] = start_response
-    context['response'] = response = []
+    context['response'] = []
     context['__file__'] = environ['aspen.fp'].name
 
     fp = environ['aspen.fp']
@@ -33,6 +33,7 @@ def pyscript(environ, start_response):
 
     try:
         exec fp in context
+        response = context['response']
     except SystemExit:
         pass
     except:
