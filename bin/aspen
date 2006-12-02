@@ -16,7 +16,6 @@ import sys
 from optparse import OptionError
 from os.path import join
 
-from aspen import httpy, load
 from aspen.server import CherryPyWSGIServer as Server
 from aspen.config import ConfigError, Configuration, usage
 from aspen.website import Website

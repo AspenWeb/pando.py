@@ -3,7 +3,6 @@ import sys
 
 from aspen.config import Configuration
 from aspen.exceptions import *
-from aspen.httpy import Response
 from aspen.tests import assert_raises
 from aspen.tests.fsfix import mk, attach_rm
 from aspen.website import Website as _Website
@@ -29,15 +28,18 @@ def Website():
 def test_greetings_program():
     mk(('index.html', 'Greetings, program!'))
 
-    expected = Response(200, 'Greetings, program!')
-    expected.headers['Content-Type'] = 'text/html'
-    expected.headers['Content-Length'] = 19
-
-    actual = Website()({'PATH_INFO':'/'}, lambda a:a)
-    assert 'Last-Modified' in actual.headers
-    del actual.headers['Last-Modified']
-
+    expected = 'Greetings, program!'
+    actual = Website()({'PATH_INFO':'/'}, lambda a,b,c=0:a).read()
     assert actual == expected, actual
+
+#    expected = Response(200, 'Greetings, program!')
+#    expected.headers['Content-Type'] = 'text/html'
+#    expected.headers['Content-Length'] = 19
+#
+#    assert 'Last-Modified' in actual.headers
+#    del actual.headers['Last-Modified']
+#
+#    assert actual == expected, actual
 
 
 def test_python_script():

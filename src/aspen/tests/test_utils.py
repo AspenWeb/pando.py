@@ -1,5 +1,4 @@
 from aspen import utils as u
-from aspen.httpy import Response
 from aspen.tests import assert_raises
 from aspen.tests.fsfix import mk, attach_rm
 
@@ -54,36 +53,40 @@ def test_cmp_routines_mixed2():
 
 # find_default
 # ============
+# I'm thinking we'll expand handlers to handle directories, in which case this
+# logic will go in such a rule rather than in the main website call, and these
+# tests should go with it.
 
-def test_find_default():
-    mk(('index.html', ''))
-    expected = 'fsfix/index.html'
-    actual = u.find_default(['index.html'], 'fsfix')
-    assert actual == expected, actual
-
-def test_find_default_non_dir():
-    mk(('foo', ''))
-    expected = 'fsfix/foo'
-    actual = u.find_default(['index.html'], 'fsfix/foo')
-    assert actual == expected, actual
-
-def test_find_default_non_existant():
-    expected = 'fsfix/foo'
-    actual = u.find_default(['index.html'], 'fsfix/foo')
-    assert actual == expected, actual
+# def test_find_default():
+#     mk(('index.html', ''))
+#     expected = 'fsfix/index.html'
+#     actual = u.find_default(['index.html'], 'fsfix')
+#     assert actual == expected, actual
+#
+# def test_find_default_non_dir():
+#     mk(('foo', ''))
+#     expected = 'fsfix/foo'
+#     actual = u.find_default(['index.html'], 'fsfix/foo')
+#     assert actual == expected, actual
+#
+# def test_find_default_non_existant():
+#     expected = 'fsfix/foo'
+#     actual = u.find_default(['index.html'], 'fsfix/foo')
+#     assert actual == expected, actual
 
 
 # find_default errors
 # ===================
 
-def test_find_default_dir_no_default():
-    mk('fsfix')
-    err = assert_raises(Response, u.find_default, ['index.htm'], 'fsfix')
-    assert err.code == 403, err.code
+# def test_find_default_dir_no_default():
+#     mk('fsfix')
+#
+#     err = assert_raises(Response, u.find_default, ['index.htm'], 'fsfix')
+#     assert err.code == 403, err.code
 
 
 # Remove the filesystem fixture after some tests.
 # ===============================================
 
-attach_rm(globals(), 'test_find_default')
+#attach_rm(globals(), 'test_find_default')
 attach_rm(globals(), 'test_check_trailing_slash')

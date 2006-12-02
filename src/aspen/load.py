@@ -6,7 +6,7 @@ import logging
 import os
 from os.path import isdir, isfile, join, realpath
 
-from aspen import colon, httpy, utils
+from aspen import colon, utils
 from aspen.exceptions import *
 
 
@@ -26,10 +26,6 @@ default_handlers_conf = """\
     [aspen.handlers:pyscript]
         fnmatch     *.py        # exec python scripts ...
     OR  hashbang                # ... and anything starting with #!
-
-
-    [aspen.handlers:Simplate]
-    mime-type text/html         # run html files through the Simplates engine
 
 
     [aspen.handlers:static]
@@ -353,7 +349,7 @@ __/etc/apps.conf. To wit:
         # Find a config file to parse.
         # ============================
 
-        default_stack = [httpy.Responder]
+        default_stack = []
 
         try:
             if self.paths.__ is None:
@@ -386,7 +382,6 @@ __/etc/apps.conf. To wit:
                     raise MiddlewareConfError(msg, lineno)
                 stack.append(obj)
 
-        stack.append(httpy.Responder)
         stack.reverse()
         return stack
 

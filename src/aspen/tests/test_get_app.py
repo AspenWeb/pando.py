@@ -1,4 +1,3 @@
-from aspen.httpy import Response
 from aspen.load import Mixin as Config
 from aspen.tests import assert_raises
 from aspen.tests.fsfix import mk, attach_rm
@@ -21,6 +20,11 @@ def Website():
     config.apps = config.load_apps()
     return _Website(config)
 
+def start_response(status, headers, exc=None):
+    def write():
+        return status, headers
+    return write
+
 
 # Working
 # =======
@@ -28,12 +32,12 @@ def Website():
 def test_get_app():
     mk('__', '__/etc', ('__/etc/apps.conf', '/ random:choice'))
     expected = random.choice
-    actual = Website().get_app({'PATH_INFO':'/'})
+    actual = Website().get_app({'PATH_INFO':'/'}, start_response)
     assert actual == expected, actual
 
 def test_get_app_no_app():
     expected = None
-    actual = Website().get_app({'PATH_INFO':'/'})
+    actual = Website().get_app({'PATH_INFO':'/'}, start_response)
     assert actual == expected, actual
 
 
@@ -48,19 +52,19 @@ EXAMPLE = """
 def test_get_app_doc_example():
     mk('__', '__/etc', ('__/etc/apps.conf', EXAMPLE))
     expected = None
-    actual = Website().get_app({'PATH_INFO':'/'})
+    actual = Website().get_app({'PATH_INFO':'/'}, start_response)
     assert actual == expected, actual
 
 def test_get_app_doc_example_foo_no_slash():
     mk('__', '__/etc', ('__/etc/apps.conf', EXAMPLE))
     expected = random.choice
-    actual = Website().get_app({'PATH_INFO':'/foo'})
+    actual = Website().get_app({'PATH_INFO':'/foo'}, start_response)
     assert actual == expected, actual
 
 def test_get_app_doc_example_foo_with_slash():
     mk('__', '__/etc', ('__/etc/apps.conf', EXAMPLE))
     expected = random.choice
-    actual = Website().get_app({'PATH_INFO':'/foo/'})
+    actual = Website().get_app({'PATH_INFO':'/foo/'}, start_response)
     assert actual == expected, actual
 
 def test_get_app_doc_example_bar_no_slash():
@@ -69,38 +73,33 @@ def test_get_app_doc_example_bar_no_slash():
     environ['wsgi.url_scheme'] = 'http'
     environ['HTTP_HOST'] = 'foo'
     environ['PATH_INFO'] = '/bar'
-    err = assert_raises(Response, Website().get_app, environ)
-    assert err.code == 301, err.code
+    expected = ['Resource moved to: http://foo/bar/']
+    actual = Website().get_app(environ, start_response)
+    assert actual == expected, actual
 
 def test_get_app_doc_example_bar_with_slash():
     mk('__', '__/etc', ('__/etc/apps.conf', EXAMPLE))
     expected = random.sample
-    actual = Website().get_app({'PATH_INFO':'/bar/'})
+    actual = Website().get_app({'PATH_INFO':'/bar/'}, start_response)
     assert actual == expected, actual
 
 def test_get_app_doc_example_bar_baz_no_slash():
     mk('__', '__/etc', ('__/etc/apps.conf', EXAMPLE))
     expected = random.shuffle
-    actual = Website().get_app({'PATH_INFO':'/bar/baz'})
+    actual = Website().get_app({'PATH_INFO':'/bar/baz'}, start_response)
     assert actual == expected, actual
 
 def test_get_app_doc_example_bar_baz_with_slash():
     mk('__', '__/etc', ('__/etc/apps.conf', EXAMPLE))
     expected = random.shuffle
-    actual = Website().get_app({'PATH_INFO':'/bar/baz/'})
+    actual = Website().get_app({'PATH_INFO':'/bar/baz/'}, start_response)
     assert actual == expected, actual
 
 def test_get_app_doc_example_bar_baz_with_slash_and_more():
     mk('__', '__/etc', ('__/etc/apps.conf', EXAMPLE))
     expected = random.shuffle
-    actual = Website().get_app({'PATH_INFO':'/bar/baz/buz/biz.html'})
+    actual = Website().get_app({'PATH_INFO':'/bar/baz/buz/biz.html'}, start_response)
     assert actual == expected, actual
-
-
-# Errors
-# ======
-
-
 
 
 # Remove the filesystem fixture after each test.

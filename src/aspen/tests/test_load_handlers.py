@@ -43,13 +43,10 @@ pyscript = load.Handler(rulefuncs, handlers.pyscript)
 pyscript.add("fnmatch *.py", 0)
 pyscript.add("OR hashbang", 0)
 
-simplate = load.Handler(rulefuncs, handlers.Simplate(Loader()))
-simplate.add("mime-type text/html", 0)
-
 static = load.Handler(rulefuncs, handlers.static)
 static.add("fnmatch *", 0)
 
-DEFAULTS = [http404, pyscript, simplate, static]
+DEFAULTS = [http404, pyscript, static]
 
 MODULE = """\
 class Rule:

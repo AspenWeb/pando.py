@@ -2,7 +2,6 @@ import os
 import sys
 
 from aspen import load
-from aspen.httpy import Responder
 from aspen.tests import assert_raises
 from aspen.tests.fsfix import mk, attach_rm
 from aspen.exceptions import *
@@ -48,13 +47,13 @@ class AppNoArgs:
 def test_no_magic_directory():
     loader = Loader()
     loader.paths.__ = None
-    expected = [Responder]
+    expected = []
     actual = loader.load_middleware()
     assert actual == expected, actual
 
 def test_no_file():
     mk('__/etc')
-    expected = [Responder]
+    expected = []
     actual = Loader().load_middleware()
     assert actual == expected, actual
 
@@ -71,7 +70,7 @@ def test_empty_file():
 def test_something():
     mk('__/etc', ('__/etc/middleware.conf', 'random:choice'))
     loader = Loader()
-    expected = [Responder, random.choice]
+    expected = [random.choice]
     actual = Loader().load_middleware()
     assert actual == expected, actual
 
@@ -82,7 +81,7 @@ def test_must_be_callable():
 
 def test_order():
     mk('__/etc', ('__/etc/middleware.conf', 'random:choice\nrandom:seed'))
-    expected = [Responder, random.seed, random.choice]
+    expected = [random.seed, random.choice]
     actual = Loader().load_middleware()
     assert actual == expected, actual
 
@@ -92,7 +91,7 @@ def test_classes_instantiated():
       , (lib_python+'/TESTING_middleware.py', MODULE)
        )
     from TESTING_middleware import App as expected
-    actual = Loader().load_middleware()[1].__class__
+    actual = Loader().load_middleware()[0].__class__
     assert actual == expected, actual
 
 def test_classes_instantiated_no_arguments():
@@ -101,7 +100,7 @@ def test_classes_instantiated_no_arguments():
       , (lib_python+'/TESTING_middleware.py', MODULE)
        )
     from TESTING_middleware import AppNoArgs as expected
-    actual = Loader().load_middleware()[1].__class__
+    actual = Loader().load_middleware()[0].__class__
     assert actual == expected, actual
 
 
@@ -110,7 +109,7 @@ def test_classes_instantiated_no_arguments():
 
 def test_blank_lines_skipped():
     mk('__/etc', ('__/etc/middleware.conf', '\n\nrandom:choice\n\n'))
-    expected = [Responder, random.choice]
+    expected = [random.choice]
     actual = Loader().load_middleware()
     assert actual == expected, actual
 
@@ -122,7 +121,7 @@ def test_comments_ignored():
         random:sample # comments
 
         """))
-    expected = [Responder, random.sample, random.choice]
+    expected = [random.sample, random.choice]
     actual = Loader().load_middleware()
     assert actual == expected, actual
 

@@ -4,8 +4,6 @@ import string
 import urllib
 from os.path import isdir, isfile, join, realpath
 
-from aspen.httpy import Response
-
 
 INITIAL = '_' + string.letters
 INNER = INITIAL + string.digits
@@ -63,8 +61,8 @@ def cmp_routines(f1, f2):
 # Paths
 # =====
 
-def check_trailing_slash(environ):
-    """Given a WSGI environ, return None or raise 301.
+def check_trailing_slash(environ, start_response):
+    """Given WSGI stuff, return None or raise 301.
 
     environ must have PATH_TRANSLATED set in addition to PATH_INFO, which
     latter is required by the spec.
@@ -74,28 +72,11 @@ def check_trailing_slash(environ):
     url = environ['PATH_INFO']
     if isdir(fs) and not url.endswith('/'):
         environ['PATH_INFO'] += '/'
-        response = Response(301)
-        response.headers['Location'] = full_url(environ)
-        raise response
-
-
-def find_default(defaults, path):
-    """Given a list of defaults and a path, return a filepath or raise 403.
-
-    If the path isn't a directory, simply return it.
-
-    """
-    default = None
-    if isdir(path):
-        for name in defaults:
-            _path = join(path, name)
-            if isfile(_path):
-                default = _path
-                break
-        if default is None:
-            raise Response(403)
-        path = default
-    return path
+        new_url = full_url(environ)
+        start_response( '301 Moved Permanently'
+                      , [('Location', new_url)]
+                       )
+        return ['Resource moved to: ' + new_url]
 
 
 def full_url(environ):
