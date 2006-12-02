@@ -3,6 +3,7 @@
 ========================================
 
 Aspen now speaks pure WSGI, rather than the slight superset it spoke before.
+This release also includes a few minor bug-fixes and other improvements.
 
 
 ========================================
