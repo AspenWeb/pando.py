@@ -1,6 +1,6 @@
 # Makefile to create documentation using the Python LaTeX system.
 
-VERSION=~~VERSION~~
+VERSION=0.4
 MKHOWTO    = $(PYTHONSRC)/Doc/tools/mkhowto \
 				--iconserver icons \
 				--split 4 \

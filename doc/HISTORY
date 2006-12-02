@@ -1,5 +1,5 @@
 ========================================
-    ~~VERSION~~ -- ~~DATE~~
+    0.4 -- December 2, 2006
 ========================================
 
 Aspen now speaks pure WSGI, rather than the slight superset it spoke before. If
