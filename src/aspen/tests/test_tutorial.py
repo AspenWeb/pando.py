@@ -53,7 +53,8 @@ def test_your_first_handler():
     mk( lib_python, '__/etc'
       , (lib_python+'/handy.py', """
 def handle(environ, start_response):
-    return environ['aspen.fp'].name
+    start_response('200 OK', [('Content-Type', 'text/plain')])
+    return [environ['aspen.fp'].name]
 """)
       , ('__/etc/handlers.conf', """
 fnmatch aspen.rules:fnmatch
@@ -64,8 +65,8 @@ fnmatch *.asp
       , ('handled.asp', "Greetings, program?")
         )
 
-    expected = os.path.realpath(os.path.join('fsfix', 'handled.asp'))
-    actual = Website()({'PATH_INFO':'handled.asp'}, lambda a:a)
+    expected = [os.path.realpath(os.path.join('fsfix', 'handled.asp'))]
+    actual = Website()({'PATH_INFO':'handled.asp'}, lambda a,b:a)
     assert actual == expected, actual
 
 

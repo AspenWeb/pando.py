@@ -60,7 +60,8 @@ Object names are in colon notation, and they name WSGI callables.
 
 Aspen will (over)write a file called \file{README.aspen} in each directory
 mentioned in \file{apps.conf}, containing the relevant line from
-\file{apps.conf}. If the directory does not exist, it is created.
+\file{apps.conf}. If the directory does not exist, it is created. Aspen will
+also remove any obsolete \file{README.aspen} files within your site tree.
 
 
 \subsection{Example apps.conf}
@@ -133,10 +134,6 @@ fnmatch *.py[cod]           # hide any compiled Python scripts
 OR  hashbang                # ... and anything starting with #!
 
 
-[aspen.handlers:Simplate]
-mime-type text/html         # run html files through the Simplates engine
-
-
 [aspen.handlers:static]
 fnmatch *                   # anything else, serve it statically
 \end{verbatim}
@@ -148,8 +145,6 @@ Aspen allows for a full WSGI middleware stack, configured via the
 \file{__/etc/middleware.conf} file. This is simply a newline-separated list of
 middleware specifiers in colon notation. The first-mentioned middleware will be
 the outer-most in the stack (i.e., closest to the browser).
-
-Aspen adds an \class{httpy.Responder} instance to the bottom of the stack.
 
 \subsection{Example middleware.conf}
 
