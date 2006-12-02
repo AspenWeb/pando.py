@@ -1,7 +1,7 @@
 """Steps to do a release.
 
-While releasing, track updates to this doc in a tmp file, and then change the
-doc on trunk/ again after the release is done.
+While releasing, feel free to make changes to this doc. Just make sure not to
+commit the changes until you switch back to trunk.
 
 """
 
