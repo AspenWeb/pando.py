@@ -2,6 +2,13 @@
     ~~VERSION~~ -- ~~DATE~~
 ========================================
 
+Aspen now speaks pure WSGI, rather than the slight superset it spoke before.
+
+
+========================================
+    0.3.1 -- November 30, 2006
+========================================
+
 This release addresses some minor issues raised in producing the "Five
 Development Models" screencast.
 
