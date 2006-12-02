@@ -184,6 +184,17 @@ __/etc/apps.conf. To wit:
     actual = open('fsfix/foo/README.aspen').read()
     assert actual == expected, actual
 
+def test_old_readme_removed():
+    mk( '__/etc', ('__/etc/apps.conf', '/bar random:choice')
+      , 'foo', ('foo/README.aspen', 'blah blah blah')
+      , 'bar',
+       )
+    assert os.path.isfile('fsfix/foo/README.aspen')
+    assert not os.path.isfile('fsfix/bar/README.aspen')
+    Loader().load_apps()
+    assert not os.path.isfile('fsfix/foo/README.aspen')
+    assert os.path.isfile('fsfix/bar/README.aspen')
+
 
 # Basics
 # ======

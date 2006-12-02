@@ -206,6 +206,11 @@ __/etc/apps.conf. To wit:
         lineno = 0
         urlpaths = []
 
+        for dirpath, dirnames, filenames in os.walk(self.paths.root):
+            if 'README.aspen' not in filenames:
+                continue
+            os.remove(join(dirpath, 'README.aspen'))
+
         for line in fp:
             lineno += 1
             original = line # for README.aspen
