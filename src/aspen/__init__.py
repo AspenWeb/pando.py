@@ -13,6 +13,7 @@ import os
 import sys
 
 from aspen import mode, restarter
+from aspen.restarter import FLAG
 
 try:
     import subprocess
@@ -22,9 +23,6 @@ except ImportError:
 
 
 __version__ = '~~VERSION~~'
-
-
-RESTART_FLAG = '_ASPEN_RESTART_FLAG'
 
 
 def _main(argv):
@@ -74,11 +72,10 @@ def _main(argv):
     # requests finish sanely -- including any requests blocked for Pdb --
     # before exiting. Nice!
 
-    if RESTART_FLAG in os.environ:
-        monitor = restarter.Monitor()
+    if FLAG in os.environ:
         def tick():
             Server.tick(server)
-            if not monitor.isAlive():
+            if restarter.restart():
                 server.stop()
                 raise SystemExit(3)
         server.tick = tick
@@ -101,11 +98,11 @@ def main(argv=None):
         argv = sys.argv[1:]
 
     try:
-        if have_subprocess and mode.devdeb and RESTART_FLAG not in os.environ:
+        if have_subprocess and mode.devdeb and FLAG not in os.environ:
             print "starting with restarter ..."
             args = [sys.executable] + sys.argv
             new_env = os.environ.copy()
-            new_env[RESTART_FLAG] = 'Yes please.'
+            new_env[FLAG] = 'Yes please.'
             while 1:
                 retcode = subprocess.call(args, env=new_env)
                 if retcode != 3:

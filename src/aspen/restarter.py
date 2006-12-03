@@ -4,6 +4,9 @@ import threading
 import time
 
 
+FLAG = '_ASPEN_RESTART_FLAG'
+
+
 def look_for_changes():
     """See if any of our available modules have changed on the filesystem.
     """
@@ -45,10 +48,13 @@ def look_for_changes():
         time.sleep(0.1)
 
 
-def Monitor():
-    """Start a watchdog thread, and return it.
-    """
-    monitor = threading.Thread(target=look_for_changes)
-    monitor.setDaemon(True)
-    monitor.start()
-    return monitor
+if FLAG in os.environ:
+    _thread = threading.Thread(target=look_for_changes)
+    _thread.setDaemon(True)
+    _thread.start()
+
+    def restart():
+        return not _thread.isAlive()
+else:
+    def restart():
+        return False
