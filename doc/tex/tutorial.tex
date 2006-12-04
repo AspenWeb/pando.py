@@ -65,7 +65,7 @@ following contents:
 \begin{verbatim}
 def handle(environ, start_response):
     start_response('200 OK', [('Content-Type', 'text/plain')])
-    return [environ['aspen.fp'].name]
+    return [environ['PATH_TRANSLATED']]
 \end{verbatim}
 
 And in \file{__/etc}, create a file named \file{handlers.conf} with these
@@ -87,8 +87,7 @@ Greetings, program?
 \end{verbatim}
 
 Restart Aspen, then hit \code{http://localhost:8080/handled.asp}. You should see
-the filesystem pathname of the file being served. That's because
-\code{environ['aspen.fp']} points to an open \class{file} object of that file.
+the filesystem pathname of the file being served.
 
 If you are familiar with the WSGI specification, you will recognize that
 \function{handy.handle} is a WSGI callable. Aspen plugins all speak WSGI. Also
