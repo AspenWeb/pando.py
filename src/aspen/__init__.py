@@ -13,13 +13,6 @@ import os
 import sys
 
 from aspen import mode, restarter
-from aspen.restarter import FLAG
-
-try:
-    import subprocess
-    have_subprocess = True
-except ImportError:
-    have_subprocess = False
 
 
 __version__ = '~~VERSION~~'
@@ -63,7 +56,7 @@ def _main(argv):
 
     # Set up restarting support.
     # ==========================
-    # We monkey-patch Server to check our monitor thread.
+    # We monkey-patch server to check our monitor thread.
     #
     # BLAM!!! This is actually a really good way to do it. In the old httpy
     # (< 1.0), we had a serious problem when a restart happened during a Pdb
@@ -72,12 +65,13 @@ def _main(argv):
     # requests finish sanely -- including any requests blocked for Pdb --
     # before exiting. Nice!
 
-    if FLAG in os.environ:
+    if restarter.CHILD:
         def tick():
             Server.tick(server)
-            if restarter.restart():
+            if restarter.should_restart():
+                print >> sys.stderr, "restarting ..."
                 server.stop()
-                raise SystemExit(3)
+                raise SystemExit(75)
         server.tick = tick
 
 
@@ -98,16 +92,9 @@ def main(argv=None):
         argv = sys.argv[1:]
 
     try:
-        if have_subprocess and mode.devdeb and FLAG not in os.environ:
-            print "starting with restarter ..."
-            args = [sys.executable] + sys.argv
-            new_env = os.environ.copy()
-            new_env[FLAG] = 'Yes please.'
-            while 1:
-                retcode = subprocess.call(args, env=new_env)
-                if retcode != 3:
-                    raise SystemExit(retcode)
-        else:                                               # main layer
+        if mode.DEBDEV and restarter.PARENT:
+            restarter.launch_child()
+        else:
             _main(argv)
     except KeyboardInterrupt:
         pass
