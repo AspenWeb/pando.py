@@ -14,22 +14,28 @@ log = logging.getLogger('aspen.load')
 clean = lambda x: x.split('#',1)[0].strip() # clears comments & whitespace
 default_handlers_conf = """\
 
+    catch_all   aspen.rules:catch_all
+    isdir       aspen.rules:isdir
+    isfile      aspen.rules:isfile
     fnmatch     aspen.rules:fnmatch
     hashbang    aspen.rules:hashbang
     mime-type   aspen.rules:mimetype
 
 
     [aspen.handlers:HTTP404]
-    fnmatch *.py[cod]           # hide any compiled Python scripts
-
+          isfile
+      AND fnmatch *.py[cod]         # hide any compiled Python scripts
 
     [aspen.handlers:pyscript]
-        fnmatch     *.py        # exec python scripts ...
-    OR  hashbang                # ... and anything starting with #!
+          isfile
+      AND fnmatch     *.py          # exec python scripts ...
+      OR  hashbang                  # ... and anything starting with #!
 
+    [aspen.handlers:default_or_autoindex]
+      isdir                         # do smart things for directories
 
     [aspen.handlers:static]
-    fnmatch *                   # anything else, serve it statically
+      catch_all                     # anything else, serve it statically
 
 """
 
@@ -150,8 +156,8 @@ __/etc/apps.conf. To wit:
             self._rules.append(_rule)
 
 
-    def match(self, fp):
-        """Given a file pointer (positioned at 0), return a boolean.
+    def match(self, pathname):
+        """Given a full pathname, return a boolean.
 
         I thought of allowing rules to return arbitrary values that would then
         be passed along to the handlers. Basically this was to support routes-
@@ -163,11 +169,10 @@ __/etc/apps.conf. To wit:
             raise HandlerError, "no rules to match"
 
         rulename, predicate = self._rules[0]                    # first
-        expressions = [str(self._funcs[rulename](fp, predicate))]
+        expressions = [str(self._funcs[rulename](pathname, predicate))]
 
         for boolean, rulename, predicate in self._rules[1:]:    # subsequent
-            fp.seek(0)
-            result = bool(self._funcs[rulename](fp, predicate))
+            result = bool(self._funcs[rulename](pathname, predicate))
             expressions.append('%s %s' % (boolean, result))
 
         expression = ' '.join(expressions)

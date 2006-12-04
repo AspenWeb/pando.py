@@ -24,8 +24,8 @@ def what_we_want(predicate):
 
     So the basic usage pattern is:
 
-        >>> def rule(fp, predicate):
-        >>>     some_condition = my_test(fp)
+        >>> def rule(path, predicate):
+        >>>     some_condition = my_test(path)
         >>>     return some_condition is what_we_want(predicate)
         ...
 
@@ -47,42 +47,58 @@ def what_we_want(predicate):
 # Rules
 # =====
 
-def executable(fp, predicate):
+def catch_all(path, predicate):
+    return True
+
+
+def executable(path, predicate):
     """Predicate is either true/yes/1 or false/no/0 (case-insensitive).
 
     This only works on Unix.
 
     """
-    is_executable = (os.stat(fp.name).st_mode & 0111) != 0
+    is_executable = (os.stat(path).st_mode & 0111) != 0
     return is_executable is what_we_want(predicate)
 
 
-def fnmatch(fp, predicate):
+def fnmatch(path, predicate):
     """Match using the fnmatch module; always case-sensitive.
     """
-    return _fnmatch.fnmatchcase(fp.name, predicate)
+    return _fnmatch.fnmatchcase(path, predicate)
 
 
-def hashbang(fp, predicate):
+def hashbang(path, predicate):
     """Match if the file starts with '#!'.
     """
-    has_hashbang = (fp.read(2) == '#!')
+    if not os.path.isfile(path):
+        return False
+    has_hashbang = (open(path).read(2) == '#!')
     return has_hashbang is what_we_want(predicate)
 
 
-def mimetype(fp, predicate):
+def isdir(path, predicate):
+    return os.path.isdir(path) is what_we_want(predicate)
+
+
+def isfile(path, predicate):
+    return os.path.isfile(path) is what_we_want(predicate)
+
+
+def mimetype(path, predicate):
     """Match against the resource's MIME type.
     """
-    return predicate == mimetypes.guess_type(fp.name)[0]
+    if not os.path.isfile(path):
+        return False
+    return predicate == mimetypes.guess_type(path)[0]
 
 
-def rematch(fp, predicate):
+def rematch(path, predicate):
     """Match based on a regular expression.
     """
-    return re.match(predicate, fp.name) is not None
+    return re.match(predicate, path) is not None
 
 
-def svn_prop(fp, predicate):
+def svn_prop(path, predicate):
     """Match based on an arbitrary subversion property.
 
     Syntax is:
@@ -99,7 +115,7 @@ def svn_prop(fp, predicate):
     except ValueError:
         raise RuleError('bad predicate for svn_prop: %s' % predicate)
 
-    command = "svn propget '%s' %s" % (propname, fp.name)
+    command = "svn propget '%s' %s" % (propname, path)
     status, output = commands.getstatusoutput(command)
     if status > 0:
         raise RuleError(output)

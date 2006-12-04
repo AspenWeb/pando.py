@@ -32,27 +32,35 @@ handler = load.Handler({'fnmatch':rules.fnmatch}, random.choice)
 handler.add("fnmatch *", 0)
 
 rulefuncs = dict()
+rulefuncs['catch_all'] = rules.catch_all
+rulefuncs['isdir'] = rules.isdir
+rulefuncs['isfile'] = rules.isfile
 rulefuncs['fnmatch'] = rules.fnmatch
 rulefuncs['hashbang'] = rules.hashbang
 rulefuncs['mime-type'] = rules.mimetype
 
 http404 = load.Handler(rulefuncs, handlers.HTTP404)
-http404.add("fnmatch *.py[cod]", 0)
+http404.add("isfile", 0)
+http404.add("AND fnmatch *.py[cod]", 0)
 
 pyscript = load.Handler(rulefuncs, handlers.pyscript)
-pyscript.add("fnmatch *.py", 0)
+pyscript.add("isfile", 0)
+pyscript.add("AND fnmatch *.py", 0)
 pyscript.add("OR hashbang", 0)
 
-static = load.Handler(rulefuncs, handlers.static)
-static.add("fnmatch *", 0)
+dirsmarts = load.Handler(rulefuncs, handlers.default_or_autoindex)
+dirsmarts.add("isdir", 0)
 
-DEFAULTS = [http404, pyscript, static]
+static = load.Handler(rulefuncs, handlers.static)
+static.add("catch_all", 0)
+
+DEFAULTS = [http404, pyscript, dirsmarts, static]
 
 MODULE = """\
 class Rule:
   def __init__(self, website):
     self.website = website
-  def __call__(self, fp, predicate):
+  def __call__(self, path, predicate):
     return True
 
 class App:

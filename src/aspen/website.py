@@ -26,6 +26,9 @@ log = logging.getLogger('aspen.website')
         """Main WSGI callable.
         """
 
+        environ['aspen.website'] = self
+
+
         # Translate the request to the filesystem.
         # ========================================
 
@@ -37,8 +40,8 @@ log = logging.getLogger('aspen.website')
         environ['PATH_TRANSLATED'] = fspath
 
 
-        # Dispatch to a WSGI app or an aspen handler.
-        # ===========================================
+        # Dispatch to a WSGI app.
+        # =======================
 
         app = self.get_app(environ, start_response) # 301
         if type(app) is type([]):                           # redirection
@@ -50,36 +53,9 @@ log = logging.getLogger('aspen.website')
                 start_response('404 Not Found', [])
                 return ['Resource not found.']
             response = check_trailing_slash(environ, start_response)
-            if response is not None:
-                return response
-
-
-            # Possibly find a default resource.
-            # =================================
-
-            if isdir(fspath):
-                default = None
-                for name in self.config.defaults:
-                    _path = join(fspath, name)
-                    if isfile(_path):
-                        default = _path
-                        break
-                if default is None:
-                    start_response('403 Forbidden', [])
-                    return ['No default resource for this directory.']
-                fspath = default
-
-
-            # Dispatch to a handler.
-            # ======================
-
-            environ['PATH_TRANSLATED'] = fspath
-            environ['aspen.website'] = self
-            fp = environ['aspen.fp'] = open(fspath)
-
-            handler = self.get_handler(fp)
-            fp.seek(0)
-            response = handler.handle(environ, start_response) # WSGI
+            if response is None:
+                handler = self.get_handler(fspath)
+                response = handler.handle(environ, start_response) # WSGI
 
         return response
 
@@ -115,13 +91,12 @@ log = logging.getLogger('aspen.website')
         return app
 
 
-    def get_handler(self, fp):
-        """Given a filesystem path, return the first matching handler.
+    def get_handler(self, pathname):
+        """Given a full pathname, return the first matching handler.
         """
         for handler in self.config.handlers:
-            fp.seek(0)
-            if handler.match(fp):
+            if handler.match(pathname):
                 return handler
 
-        log.warn("No handler found for filesystem path '%s'" % fp.name)
+        log.warn("No handler found for filesystem path '%s'" % pathname)
         raise HandlerError("No handler found.")

@@ -54,7 +54,7 @@ def test_your_first_handler():
       , (lib_python+'/handy.py', """
 def handle(environ, start_response):
     start_response('200 OK', [('Content-Type', 'text/plain')])
-    return [environ['aspen.fp'].name]
+    return [environ['PATH_TRANSLATED']]
 """)
       , ('__/etc/handlers.conf', """
 fnmatch aspen.rules:fnmatch
