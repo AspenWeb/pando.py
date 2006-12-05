@@ -32,12 +32,15 @@ callable):
 example.package.foo:bar.baz
 \end{verbatim}
 
-Wherever in these files a name in colon notation points to a class, Aspen
-attempts to instantiate the class with the current \class{Website} instance as
-its sole positional argument. Failing this, Aspen instantiates the class without
-any arguments. The instance is then used as the named object. At run-time,
-applications and handlers can also access the \class{Website} instance at
-\code{environ['aspen.website']}.
+For applications and handlers, when names in colon notation point to a class,
+Aspen attempts to instantiate the class with the current \class{Website}
+instance as its sole positional argument. Failing this, Aspen instantiates the
+class without any arguments. The instance is then used as the named object. At
+run-time, applications and handlers can also access the \class{Website} instance
+at \code{environ['aspen.website']}.
+
+Middleware constructors are always called with one positional argument, which is
+the next middleware on the stack.
 
 The comment character for these files is \#, and comments can be included
 in-line. Blank lines are ignored, as is initial and trailing whitespace

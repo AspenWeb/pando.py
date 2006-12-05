@@ -385,7 +385,6 @@ __/etc/apps.conf. To wit:
                 continue
             else:                                   # specification
                 obj = colon.colonize(name, fp.name, lineno)
-                obj = self._instantiate(obj)
                 if not callable(obj):
                     msg = "'%s' is not callable" % name
                     raise MiddlewareConfError(msg, lineno)

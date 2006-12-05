@@ -85,22 +85,13 @@ def test_order():
     actual = Loader().load_middleware()
     assert actual == expected, actual
 
-def test_classes_instantiated():
+def test_classes_not_instantiated():
     mk( '__/etc', lib_python
       , ('__/etc/middleware.conf', 'TESTING_middleware:App')
       , (lib_python+'/TESTING_middleware.py', MODULE)
        )
     from TESTING_middleware import App as expected
-    actual = Loader().load_middleware()[0].__class__
-    assert actual == expected, actual
-
-def test_classes_instantiated_no_arguments():
-    mk( '__/etc', lib_python
-      , ('__/etc/middleware.conf', 'TESTING_middleware:AppNoArgs')
-      , (lib_python+'/TESTING_middleware.py', MODULE)
-       )
-    from TESTING_middleware import AppNoArgs as expected
-    actual = Loader().load_middleware()[0].__class__
+    actual = Loader().load_middleware()[0]
     assert actual == expected, actual
 
 

@@ -37,7 +37,6 @@ rulefuncs['isdir'] = rules.isdir
 rulefuncs['isfile'] = rules.isfile
 rulefuncs['fnmatch'] = rules.fnmatch
 rulefuncs['hashbang'] = rules.hashbang
-rulefuncs['mime-type'] = rules.mimetype
 
 http404 = load.Handler(rulefuncs, handlers.HTTP404)
 http404.add("isfile", 0)
