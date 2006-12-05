@@ -2,6 +2,19 @@
     ~~VERSION~~ -- ~~DATE~~
 ========================================
 
+This release implements automatic restarting when source files change in
+debugging and development modes (issue 10; see also: lib537).
+
+The other major change here is to the protocol for handler rules: they now take
+a path instead of a file object. This means that handlers can be used for
+directories as well as files (issue 9). As such, I've reimplemented default
+resource serving as a handler, and have also added a directory browsing handler.
+
+
+========================================
+    0.4 -- December 2, 2006
+========================================
+
 Aspen now speaks pure WSGI, rather than the slight superset it spoke before. If
 you want the superset, include httpy in your middleware stack:
 
