@@ -15,7 +15,7 @@ import sys
 from aspen import mode, restarter
 
 
-__version__ = '~~VERSION~~'
+__version__ = '0.5'
 
 
 def _main(argv):

@@ -1,5 +1,5 @@
 ========================================
-    ~~VERSION~~ -- ~~DATE~~
+    0.5 -- December 4, 2006
 ========================================
 
 This release implements automatic restarting when source files change in
