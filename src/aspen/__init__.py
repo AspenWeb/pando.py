@@ -87,14 +87,6 @@ def _main(argv):
         server.stop()
 
 
-def wrap(func, *arg, **kw):
-    try:
-        func(*arg, **kw)
-    except:
-        import traceback
-        traceback.print_exc()
-
-
 def main(argv=None):
     if argv is None:
         argv = sys.argv[1:]

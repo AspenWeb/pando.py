@@ -113,7 +113,8 @@ body {font-family: "Trebuchet MS", sans-serif;}
 table {font-family: monospace;}
 .dir {font-weight: bold;}
 .file {}
-.size {text-align: right; padding-right: 1em;}
+td {padding: 0 1em 0 0;}
+td.size {text-align: right;}
 th {text-align: left;}
 tr.even {background: #eee;}
 tr:hover {background: #eef;}
@@ -123,19 +124,33 @@ tr:hover {background: #eef;}
 KB = 1024
 MB = KB * 1024
 GB = MB * 1024
+TB = GB * 1024
+PB = TB * 1024
+EB = PB * 1024
+
 def _get_size(stats):
+    """Given a stat struct, return a size string.
+    """
     size = float(stats[stat.ST_SIZE])
     if size < KB:
         return '%d &nbsp;B' % (size)
     elif size < MB:
-        return '%d KB' % (size / KB)
+        return '%d kB' % (size / KB)
     elif size < GB:
         return '%d MB' % (size / MB)
-    else:
+    elif size < TB:
         return '%d GB' % (size / GB)
+    elif size < PB:
+        return '%d TB' % (size / TB) # :^)
+    elif size < EB:
+        return '%d PB' % (size / PB) # :^D
+    else:
+        return '%d EB' % (size / EB) # 8^D
 
 
 def _get_time(stats):
+    """Given a stat struct, return a date stamp string.
+    """
     return str(datetime.fromtimestamp(stats[stat.ST_MTIME]))
 
 
@@ -148,6 +163,7 @@ def autoindex(environ, start_response):
     root = environ['aspen.website'].config.paths.root
     urlpath = fspath[len(root):]
     urlpath = '/'.join(urlpath.split(os.sep))
+    title = urlpath and urlpath or '/'
 
 
     # Gather dirs, files, and others under this directory.
@@ -175,17 +191,17 @@ def autoindex(environ, start_response):
     # Generate the HTML.
     # ==================
 
-    out = ['<html><head><title>%s</title>' % urlpath]
+    out = ['<html><head><title>%s</title>' % title]
     def a(s):
         out.append(s + '\r\n')
     a('<style>%s</style></head><body>' % STYLE)
-    a('<h1>%s</h1>' % urlpath)
+    a('<h1>%s</h1>' % title)
     a('<table>')
-    a('<tr><th>Name</th><th>Size</th><th>Modified</th></tr>')
+    a('<tr><th class="name">Name</th><th>Size</th><th>Last Modified</th></tr>')
 
     i = 0
     if environ['PATH_TRANSLATED'] != root:
-        a('<tr><td class="odd"><a href="../">../</a></li>')
+        a('<tr><td class="odd"><a href="../">../</a></td><td>&nbsp;</td><td>&nbsp;</td></tr>')
         i += 1
 
     for el in (dirs, files, others):
@@ -193,15 +209,15 @@ def autoindex(environ, start_response):
             stats = os.stat(_fspath)
             a('<tr class="%s">' % ((i%2) and 'even' or 'odd'))
             if isdir(_fspath):
-                a('<td class="dir"><a href="%s">%s/</a></td>' % (_urlpath, name))
-                a('<td>&nbsp;</td>')
+                a('  <td class="dir"><a href="%s">%s/</a></td>' % (_urlpath, name))
+                a('  <td>&nbsp;</td>')
             elif isfile(_fspath):
-                a('<td class="file"><a href="%s">%s</a></td>' % (_urlpath, name))
-                a('<td class="size">%s</td>' % _get_size(stats))
+                a('  <td class="file"><a href="%s">%s</a></td>' % (_urlpath, name))
+                a('  <td class="size">%s</td>' % _get_size(stats))
             else:
-                a('<td class="other">%s</li>' % name)
-                a('<td>&nbsp;</td>')
-            a('<td class="modtime">%s</td>' % _get_time(stats))
+                a('  <td class="other">%s</li>' % name)
+                a('  <td>&nbsp;</td>')
+            a('  <td class="modtime">%s</td>' % _get_time(stats))
             a('</tr>')
             i += 1
 
