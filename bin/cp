@@ -1,0 +1,18 @@
+#!/usr/bin/env python
+"""This script runs a straight CP server, for comparison purposes.
+"""
+
+from aspen.server import CherryPyWSGIServer
+
+def app(environ, start_response):
+    start_response('200 OK', [('Content-Type', 'text/html')])
+    return ['Greetings, program!']
+
+server = CherryPyWSGIServer(('', 8080), app)
+try:
+    try:
+        server.start()
+    except KeyboardInterrupt:
+        pass
+finally:
+    server.stop()
