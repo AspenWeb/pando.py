@@ -1,13 +1,4 @@
 """Define the main program loop.
-
-Roadmap:
-
-    0.3 -- WSGI
-    0.x -- alpha quality, no 0.x.x, just 0.x, as many as we need
-
-    1.0c1 -- release candidate
-    1.0.0 -- final
-
 """
 import os
 import sys

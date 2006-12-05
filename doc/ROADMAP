@@ -1,0 +1,17 @@
+0.x -- alpha quality, no 0.x.x, just 0.x, as many as we need
+
+0.6 -- Logging, daemonization & configuration
+0.x -- Easy plugins
+0.x -- SSL
+0.x --
+
+1.0c1 -- release candidate
+1.0.0 -- final
+
+1.x -- freeze.py distribution (requires 'monolith')
+1.x -- C-based event loop (libevent?)
+1.x -- C-based static file handling
+
+2.0
+
+2.x -- GUI
