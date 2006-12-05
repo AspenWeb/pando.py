@@ -19,7 +19,6 @@ default_handlers_conf = """\
     isfile      aspen.rules:isfile
     fnmatch     aspen.rules:fnmatch
     hashbang    aspen.rules:hashbang
-    mime-type   aspen.rules:mimetype
 
 
     [aspen.handlers:HTTP404]
@@ -28,7 +27,7 @@ default_handlers_conf = """\
 
     [aspen.handlers:pyscript]
           isfile
-      AND fnmatch     *.py          # exec python scripts ...
+      AND fnmatch *.py              # exec python scripts ...
       OR  hashbang                  # ... and anything starting with #!
 
     [aspen.handlers:default_or_autoindex]

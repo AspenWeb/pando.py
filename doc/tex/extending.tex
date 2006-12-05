@@ -120,7 +120,6 @@ isdir       aspen.rules:isdir
 isfile      aspen.rules:isfile
 fnmatch     aspen.rules:fnmatch
 hashbang    aspen.rules:hashbang
-mime-type   aspen.rules:mimetype
 
 
 [aspen.handlers:HTTP404]
@@ -129,7 +128,7 @@ mime-type   aspen.rules:mimetype
 
 [aspen.handlers:pyscript]
       isfile
-  AND fnmatch     *.py          # exec python scripts ...
+  AND fnmatch *.py              # exec python scripts ...
   OR  hashbang                  # ... and anything starting with #!
 
 [aspen.handlers:default_or_autoindex]
