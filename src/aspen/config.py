@@ -276,6 +276,7 @@ class Paths:
         self.command = self.args and self.args[0] or 'runfg'
         if self.command not in ('start', 'stop', 'restart', 'runfg'):
             raise ConfigError("Bad command: %s" % self.command)
+        self.daemon = self.command != 'runfg'
 
 
         # Logging
@@ -306,10 +307,10 @@ class Paths:
 
     def load_plugins(self):
         """Load plugin objects and set on self.
-        
-        This adds import/initialization overhead that the parent process doesn't 
+
+        This adds import/initialization overhead that the parent process doesn't
         need when we are in a restarting situation.
-        
+
         """
         self.apps = self.load_apps()
         self.handlers = self.load_handlers()
