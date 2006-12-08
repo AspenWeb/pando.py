@@ -1,6 +1,7 @@
 0.x -- alpha quality, no 0.x.x, just 0.x, as many as we need
 
-0.6 -- Logging, daemonization & configuration
+0.6 -- Daemonization
+0.7 -- static speedup, config
 0.x -- Easy plugins
 0.x -- SSL
 0.x --
