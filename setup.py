@@ -1,11 +1,14 @@
-from distutils.core import setup
+try:
+    from setuptools import setup
+except:
+    from distutils.core import setup
 
 
 classifiers = [
     'Development Status :: 3 - Alpha'
   , 'Environment :: Console'
   , 'Intended Audience :: Developers'
-  , 'License :: OSI Approved :: BSD License'
+  , 'License :: OSI Approved :: MIT License'
   , 'Natural Language :: English'
   , 'Operating System :: MacOS :: MacOS X'
   , 'Operating System :: Microsoft :: Windows'
