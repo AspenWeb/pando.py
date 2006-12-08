@@ -1,7 +1,6 @@
 """Define the main program loop.
 """
 import base64
-import logging
 import os
 import signal
 import sys
@@ -19,7 +18,6 @@ from aspen.config import ConfigError, Configuration, usage
 __version__ = '~~VERSION~~'
 
 
-log = logging.getLogger('aspen')
 KILL_TIMEOUT = 5 # seconds between shutdown attempts
 PIDCHECK_TIMEOUT = 60 # seconds between pidfile writes
 
@@ -91,7 +89,7 @@ pidfiler = PIDFiler() # must actually set pidfiler.path before starting
         def tick():
             Server.tick(server)
             if restarter.should_restart():
-                print >> sys.stderr, "restarting ..."
+                print "restarting ..."
                 server.stop()
                 raise SystemExit(75)
         server.tick = tick
@@ -102,7 +100,6 @@ pidfiler = PIDFiler() # must actually set pidfiler.path before starting
 
     try:
         print "aspen starting on %s" % str(config.address)
-        #log.info("aspen starting on %s" % str(config.address))
         server.start()
     finally:
         print "stopping server"
@@ -231,8 +228,8 @@ pidfiler = PIDFiler() # must actually set pidfiler.path before starting
     try:
         config = Configuration(argv)
     except ConfigError, err:
-        print >> sys.stderr, usage
-        print >> sys.stderr, err.msg
+        print usage
+        print err.msg
         raise SystemExit(2)
 
     try:
