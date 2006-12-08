@@ -126,7 +126,7 @@ def main(argv=None):
 
             if config.command == 'start':
                 if isfile(pidpath):
-                    print "pidfile exists; already running or unclean shutdown?"
+                    print "pidfile exists; already running? unclean shutdown?"
                     raise SystemExit(1)
                 start()
                 
