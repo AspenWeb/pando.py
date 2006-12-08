@@ -4,8 +4,9 @@
 
 This release adds daemonization functionality to Aspen, using Walter Dörwald's
 ll.daemon module. This marks a shift in focus from Aspen as a development
-environment to Aspen as a production server. From here to 1.0 we are focusing on
-configuration for deployment, testing, security, and optimization.
+environment to Aspen as a production server. From here to 1.0 the API should be
+more or less stable as we focus on configuration for deployment, testing,
+documentation, security, and optimization.
 
 
 ========================================
