@@ -68,7 +68,7 @@ def _main(config):
 
 
 def main(argv=None):
-    """Initial phase of config parsing and setup.
+    """Initial phase of config parsing and setup: daemonization/restarting.
     """
     if argv is None:
         argv = sys.argv[1:]
