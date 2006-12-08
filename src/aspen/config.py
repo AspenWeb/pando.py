@@ -152,12 +152,12 @@ optparser.add_option( "-a", "--address"
                     , help="the IP or Unix address to bind to [:8080]"
                     , type='string'
                      )
-optparser.add_option( "-l", "--log_filter"
-                    , default=''
-                    , dest="log_filter"
-                    , help="a subsystem filter for logging []"
-                    , type='string'
-                     )
+#optparser.add_option( "-l", "--log_filter"
+#                    , default=''
+#                    , dest="log_filter"
+#                    , help="a subsystem filter for logging []"
+#                    , type='string'
+#                     )
 optparser.add_option( "-m", "--mode"
                     , choices=[ 'debugging', 'deb', 'development', 'dev'
                               , 'staging', 'st', 'production', 'prod'
@@ -177,19 +177,19 @@ optparser.add_option( "-r", "--root"
                     , help="the root publishing directory [.]"
                     , type='string'
                      )
-optparser.add_option( "-v", "--log_level"
-                    , action="callback"
-                    , callback=cb_log_level
-                    , choices=[ 'notset', 'debug', 'info', 'warning', 'error'
-                              , 'critical'
-                               ]
-                    , default='info'
-                    , dest="log_level"
-                    , help=( "the level below which messages will be stiffled "
-                           + "[warning]"
-                            )
-                    , type='choice'
-                     )
+#optparser.add_option( "-v", "--log_level"
+#                    , action="callback"
+#                    , callback=cb_log_level
+#                    , choices=[ 'notset', 'debug', 'info', 'warning', 'error'
+#                              , 'critical'
+#                               ]
+#                    , default='info'
+#                    , dest="log_level"
+#                    , help=( "the level below which messages will be stiffled "
+#                           + "[warning]"
+#                            )
+#                    , type='choice'
+#                     )
 
 
 # Paths
@@ -287,15 +287,15 @@ class Paths:
         # subsystem and level.
 
 
-        #logging.basicConfig(format=FORMAT)
-
-        handler = logging.StreamHandler()
-        handler.addFilter(logging.Filter(self.opts.log_filter))
-        form = logging.Formatter(logging.BASIC_FORMAT)
-        handler.setFormatter(form)
-        logging.root.addHandler(handler)
-        logging.root.setLevel(self.opts.log_level)
-        log.debug("logging configured")
+#        #logging.basicConfig(format=FORMAT)
+#
+#        handler = logging.StreamHandler()
+#        handler.addFilter(logging.Filter(self.opts.log_filter))
+#        form = logging.Formatter(logging.BASIC_FORMAT)
+#        handler.setFormatter(form)
+#        logging.root.addHandler(handler)
+#        logging.root.setLevel(self.opts.log_level)
+#        log.debug("logging configured")
 
 
         # Address
