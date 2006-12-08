@@ -304,9 +304,13 @@ class Paths:
         self.address = self.opts.address
 
 
-        # Plugins
-        # =======
-
+    def load_plugins(self):
+        """Load plugin objects and set on self.
+        
+        This adds import/initialization overhead that the parent process doesn't 
+        need when we are in a restarting situation.
+        
+        """
         self.apps = self.load_apps()
         self.handlers = self.load_handlers()
         self.middleware = self.load_middleware()
