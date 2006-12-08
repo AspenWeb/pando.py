@@ -1,6 +1,6 @@
 # Makefile to create documentation using the Python LaTeX system.
 
-VERSION=0.6
+VERSION=~~VERSION~~
 MKHOWTO    = $(PYTHONSRC)/Doc/tools/mkhowto \
 				--iconserver icons \
 				--split 4 \
@@ -10,7 +10,7 @@ MKHOWTO    = $(PYTHONSRC)/Doc/tools/mkhowto \
 				--logging \
 				--up-link "http://www.zetadev.com/software/aspen/" \
 				--up-title "aspen homepage" \
-				--address "<a href=\"http://www.zetadev.com/software/aspen/\">aspen is Zeta software</a>. It is copyright &copy; 2006 by Chad Whitacre, and is offered free of charge, warranty, and restrictions." \
+				--address "<a href=\"http://www.zetadev.com/software/aspen/\">Aspen</a> is copyright &copy; 2006 by Chad Whitacre and contributors, and is offered under the MIT license." \
 #				--style style.css
 
 

@@ -15,7 +15,7 @@ from aspen.server import CherryPyWSGIServer as Server
 from aspen.config import ConfigError, Configuration, usage
 
 
-__version__ = '0.6'
+__version__ = '~~VERSION~~'
 
 
 KILL_TIMEOUT = 5 # seconds between shutdown attempts
