@@ -1,5 +1,6 @@
 """Define the main program loop.
 """
+import base64
 import logging
 import os
 import sys
@@ -82,11 +83,17 @@ def main(argv=None):
             # Manipulate a daemon.
             # ====================
         
-            var = join(config.paths.root, '__', 'var')
-            if not isdir(var):
-                os.makedirs(var)
-            pidpath = join(var, 'aspen.pid')
-            logpath = join(var, 'aspen.log')
+            __ = join(config.paths.root, '__')
+            if isdir(__):
+                var = join(__, 'var')
+                if not isdir(var):
+                    os.mkdir(var)
+                pidpath = join(var, 'aspen.pid')
+                logpath = join(var, 'aspen.log')
+            else:
+                key = base64.urlsafe_b64encode(config.paths.root)
+                pidpath = os.sep + join('tmp', 'aspen-%s.pid' % key)
+                logpath = '/dev/null'
             
             d = daemon.Daemon(stdout=logpath, stderr=logpath, pidfile=pidpath)
 
