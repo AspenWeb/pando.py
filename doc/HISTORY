@@ -2,6 +2,16 @@
     ~~VERSION~~ -- ~~DATE~~
 ========================================
 
+This release adds daemonization functionality to Aspen, using Walter Dörwald's
+ll.daemon module. This marks a shift in focus from Aspen as a development
+environment to Aspen as a production server. From here to 1.0 we are focusing on
+configuration for deployment, testing, security, and optimization.
+
+
+========================================
+    0.5 -- December 4, 2006
+========================================
+
 This release implements automatic restarting when source files change in
 debugging and development modes (issue 10; see also: lib537).
 

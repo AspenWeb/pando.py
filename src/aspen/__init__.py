@@ -100,9 +100,11 @@ pidfiler = PIDFiler() # must actually set pidfiler.path before starting
 
     try:
         print "aspen starting on %s" % str(config.address)
+        sys.stdout.flush()
         server.start()
     finally:
         print "stopping server"
+        sys.stdout.flush()
         server.stop()
         if pidfiler.isAlive(): # we're a daemon
             pidfiler.stop.set()
@@ -121,7 +123,8 @@ pidfiler = PIDFiler() # must actually set pidfiler.path before starting
         pidfile = join(var, 'aspen.pid')
         logpath = join(var, 'aspen.log')
     else:
-        key = base64.urlsafe_b64encode(config.paths.root)
+        key = ' '.join([str(config.address), config.paths.root])
+        key = base64.urlsafe_b64encode(key)
         pidfile = os.sep + join('tmp', 'aspen-%s.pid' % key)
         logpath = '/dev/null'
 
