@@ -29,6 +29,7 @@ stamp:
 	$(UPDATE_VERSION) setup.py
 	$(UPDATE_VERSION) src/aspen/__init__.py
 
+	$(UPDATE_DATE) README
 	$(UPDATE_DATE) doc/HISTORY
 	$(UPDATE_DATE) doc/tex/aspen.tex
 
@@ -50,6 +51,10 @@ dist: clean
 	mkdir dist/aspen-${VERSION}/bin
 	cp -r bin/aspen \
 	      dist/aspen-${VERSION}/bin
+
+	mkdir dist/aspen-${VERSION}/etc
+	cp -r etc/aspen_bash_completion \
+	      dist/aspen-${VERSION}/etc
 
 	tar --directory dist -zcf dist/aspen-${VERSION}.tgz aspen-${VERSION}
 	tar --directory dist -jcf dist/aspen-${VERSION}.tbz aspen-${VERSION}

@@ -1,5 +1,5 @@
 ========================================
-    INTRO
+    ASPEN ~~VERSION~~ [~~DATE~~]
 ========================================
 
 This is Aspen, a highly extensible web server for Python-based publication,
@@ -7,13 +7,6 @@ application, and hybrid websites. You will find documentation in the doc/
 directory of this distribution, inline in the source files, and online at:
 
   http://www.zetadev.com/software/aspen/
-
-
-========================================
-    VERSION
-========================================
-
-~~VERSION~~
 
 
 ========================================
