@@ -47,7 +47,7 @@ _aspen_completion()
     cur="${COMP_WORDS[COMP_CWORD]}"
 
     opts="--address --help --mode --root"
-    actions="start stop restart"          
+    actions="start status stop restart"          
 
     if [[ ( ${COMP_CWORD} -eq 1 && ( ${COMP_WORDS[0]} == aspen ) ) ]] ; then
         case ${cur} in

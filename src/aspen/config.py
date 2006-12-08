@@ -16,7 +16,7 @@ from aspen import load, mode
 
 
 log = logging.getLogger('aspen.config')
-
+COMMANDS = ('start', 'status', 'stop', 'restart', 'runfg')
 
 class ConfigError(StandardError):
     """This is an error in any part of our configuration.
@@ -141,7 +141,7 @@ def cb_root(option, opt, value, parser):
     parser.values.root = value
 
 
-usage = "aspen [options] [start,stop,restart]; --help for more"
+usage = "aspen [options] [start,stop,&c.]; --help for more"
 optparser = optparse.OptionParser(usage=usage)
 
 optparser.add_option( "-a", "--address"
@@ -274,9 +274,11 @@ class Paths:
         # =======
 
         self.command = self.args and self.args[0] or 'runfg'
-        if self.command not in ('start', 'stop', 'restart', 'runfg'):
+        if self.command not in COMMANDS:
             raise ConfigError("Bad command: %s" % self.command)
         self.daemon = self.command != 'runfg'
+        if self.daemon and sys.platform == 'win32':
+            raise ConfigError("Can only daemonize on UNIX.")
 
 
         # Logging

@@ -20,13 +20,15 @@ __version__ = '~~VERSION~~'
 
 
 log = logging.getLogger('aspen')
-KILL_TIMEOUT = 5 # number of seconds between shutdown attempts
-
+KILL_TIMEOUT = 5 # seconds between shutdown attempts
+PIDCHECK_TIMEOUT = 60 # seconds between pidfile writes
 
 class PIDFiler(threading.Thread):
     """Thread to continuously monitor a pidfile, keeping our pid in the file.
 
-    This is run when we are a daemon, in the child process.
+    This is run when we are a daemon, in the child process. It checks every
+    second to see if the file exists, recreating it if not. It also rewrites the
+    file every 60 seconds, in case the contents have changed.
 
     """
 
@@ -37,14 +39,22 @@ KILL_TIMEOUT = 5 # number of seconds between shutdown attempts
         threading.Thread.__init__(self)
         self.setDaemon(True)
 
+    def write(self):
+        open(self.path, 'w+').write(str(os.getpid()))
+
     def run(self):
         """Pidfile is initially created and finally destroyed by our Daemon.
         """
+        last_pidcheck = 0
         while not self.stop.isSet():
             if not isfile(self.path):
                 print "no pidfile; recreating"
-                open(self.path, 'w+').write(str(os.getpid()))
-            time.sleep(0.1)
+                sys.stdout.flush()
+                self.write()
+            elif (last_pidcheck + PIDCHECK_TIMEOUT) < time.time():
+                self.write()
+                last_pidcheck = time.time()
+            time.sleep(1)
         if isfile(self.path): # sometimes we beat handlesigterm
             os.remove(self.path)
 
@@ -52,7 +62,7 @@ pidfiler = PIDFiler() # must actually set pidfiler.path before starting
 
 
 def start_server(config):
-    """The heavy work of instantiating and starting a website.
+    """This is the heavy work of instantiating and starting a website.
     """
 
     # Delayed import.
@@ -103,7 +113,7 @@ pidfiler = PIDFiler() # must actually set pidfiler.path before starting
 
 
 def drive_daemon(config):
-    """Manipulate a daemon.
+    """Manipulate a daemon or become one ourselves.
     """
 
     __ = join(config.paths.root, '__')
@@ -125,14 +135,13 @@ pidfiler = PIDFiler() # must actually set pidfiler.path before starting
     # ===================
 
     def start():
-        print "starting daemon"
         daemon.start()
         pidfiler.path = pidfile
         pidfiler.start()
         start_server(config)
 
 
-    def stop():
+    def stop(stop_output=True):
 
         # Get the pid.
         # ============
@@ -144,7 +153,7 @@ pidfiler = PIDFiler() # must actually set pidfiler.path before starting
         try:
             pid = int(data)
         except ValueError:
-            print "mangled pidfile %s: %r" % (pidfile, data)
+            print "mangled pidfile: '%r'" % data
             raise SystemExit(1)
 
 
@@ -165,11 +174,11 @@ pidfiler = PIDFiler() # must actually set pidfiler.path before starting
                 kill(signal.SIGTERM)
 
             elif nattempts == 1:
-                print "still going; resending SIGTERM"
+                print "%d still going; resending SIGTERM" % pid
                 kill(signal.SIGTERM)
 
             elif nattempts == 2:
-                print "STILL going; sending SIGKILL to %d and quiting" % pid
+                print "%d STILL going; sending SIGKILL and quiting" % pid
                 kill(signal.SIGKILL)
                 raise SystemExit(1)
 
@@ -178,13 +187,10 @@ pidfiler = PIDFiler() # must actually set pidfiler.path before starting
             last_attempt = time.time()
             while 1:
                 if not isfile(pidfile):
-                    print 'stopped'
                     return
                 elif (last_attempt + KILL_TIMEOUT) < time.time():
                     break
                 else:
-                    sys.stdout.write('.')
-                    sys.stdout.flush()
                     time.sleep(0.2)
 
 
@@ -196,6 +202,16 @@ pidfiler = PIDFiler() # must actually set pidfiler.path before starting
             print "pidfile already exists with pid %s" % open(pidfile).read()
             raise SystemExit(1)
         start()
+
+    elif config.command == 'status':
+        if isfile(pidfile):
+            pid = int(open(pidfile).read())
+            command = "ps auxww|grep ' %d .*aspen'|grep -v grep" % pid
+            os.system(command)
+            raise SystemExit(0)
+        else:
+            print "daemon not running"
+            raise SystemExit(0)
 
     elif config.command == 'stop':
         stop()
