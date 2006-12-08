@@ -1,5 +1,5 @@
 ========================================
-    ~~VERSION~~ -- ~~DATE~~
+    0.6 -- December 8, 2006
 ========================================
 
 This release adds daemonization functionality to Aspen, using Walter Dörwald's
