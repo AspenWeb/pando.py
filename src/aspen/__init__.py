@@ -10,9 +10,11 @@ from optparse import OptionError
 from os.path import isdir, isfile, join
 
 from aspen import mode, restarter
-from aspen.daemon import Daemon
 from aspen.server import CherryPyWSGIServer as Server
 from aspen.config import ConfigError, Configuration, usage
+
+if sys.platform != 'win32': # daemon imports pwd, which doesn't exist on win32
+    from aspen.daemon import Daemon
 
 
 __version__ = '~~VERSION~~'
