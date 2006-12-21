@@ -16,19 +16,7 @@ default_handlers_conf = """\
 
     catch_all   aspen.rules:catch_all
     isdir       aspen.rules:isdir
-    isfile      aspen.rules:isfile
-    fnmatch     aspen.rules:fnmatch
-    hashbang    aspen.rules:hashbang
 
-
-    [aspen.handlers:HTTP404]
-          isfile
-      AND fnmatch *.py[cod]         # hide any compiled Python scripts
-
-    [aspen.handlers:pyscript]
-          isfile
-      AND fnmatch *.py              # exec python scripts ...
-      OR  hashbang                  # ... and anything starting with #!
 
     [aspen.handlers:default_or_autoindex]
       isdir                         # do smart things for directories
@@ -215,6 +203,8 @@ __/etc/apps.conf. To wit:
                 continue
             os.remove(join(dirpath, 'README.aspen'))
 
+        import pdb; pdb.set_trace()
+        
         for line in fp:
             lineno += 1
             original = line # for README.aspen

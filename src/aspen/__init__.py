@@ -61,7 +61,8 @@ PIDCHECK_TIMEOUT = 60 # seconds between pidfile writes
 pidfiler = PIDFiler() # must actually set pidfiler.path before starting
 
 
-def start_server(config):
+_globals = globals()
+def start_server(config):
     """This is the heavy work of instantiating and starting a website.
     """
 
@@ -75,11 +76,20 @@ pidfiler = PIDFiler() # must actually set pidfiler.path before starting
     # Build the website and server.
     # =============================
 
+    _globals['config'] = config
     config.load_plugins()
     website = Website(config)
     for app in config.middleware:
         website = app(website)
     server = Server(config.address, website)
+
+
+    # Install some things in our global namespace.
+    # ============================================
+    # This enables us to do 'from aspen import website' from anywhere
+
+    _globals['website'] = website
+    _globals['server'] = server
 
 
     # Monkey-patch server to support restarting.
