@@ -81,7 +81,7 @@ pidfiler = PIDFiler() # must actually set pidfiler.path before starting
     website = Website(config)
     for app in config.middleware:
         website = app(website)
-    server = Server(config.address, website, 10, 'Aspen/%s' % __version__)
+    server = Server(config.address, website)
 
 
     # Monkey-patch server to support restarting.

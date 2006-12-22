@@ -8,7 +8,7 @@ def app(environ, start_response):
     start_response('200 OK', [('Content-Type', 'text/html')])
     return ['Greetings, program!']
 
-server = CherryPyWSGIServer(('', 8888), app)
+server = CherryPyWSGIServer(('0.0.0.0', 8080), app)
 try:
     try:
         server.start()
