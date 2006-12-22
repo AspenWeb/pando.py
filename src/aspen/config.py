@@ -46,6 +46,10 @@ def validate_address(address):
         # We could test to see if the path exists or is creatable, etc.
         address = realpath(address)
 
+    elif address.count(':') > 1:
+        sockfam = socket.AF_INET6
+        # @@: validate this, eh?
+        
     else:
         sockfam = socket.AF_INET
         # Here we need a tuple: (str, int). The string must be a valid
@@ -74,7 +78,11 @@ def validate_address(address):
 
         if not isinstance(ip, basestring):
             raise err
-        elif ip != '': # Blank ip is ok, just don't try to validate it.
+        elif ip == '': 
+            ip = '0.0.0.0' # IP defaults to INADDR_ANY for AF_INET; specified 
+                           # explicitly to avoid accidentally binding to 
+                           # INADDR_ANY for AF_INET6.
+        else:
             try:
                 socket.inet_aton(ip)
             except socket.error:
@@ -147,7 +155,7 @@ optparser = optparse.OptionParser(usage=usage)
 optparser.add_option( "-a", "--address"
                     , action="callback"
                     , callback=cb_address
-                    , default=('', 8080)
+                    , default=('0.0.0.0', 8080)
                     , dest="address"
                     , help="the IP or Unix address to bind to [:8080]"
                     , type='string'
@@ -329,25 +337,6 @@ class Paths:
     # Validators
     # ==========
 
-    #def validate_mode(self, context, candidate):
-    #    """We expand abbreviations to the full term.
-    #    """
-    #
-    #    msg = ("Found bad mode `%s' in context `%s'. Mode must be " +
-    #           "either `debugging,' `development,' `staging' or " +
-    #           "`production.'")
-    #    msg = msg % (str(candidate), context)
-    #
-    #    if not isinstance(candidate, basestring):
-    #        raise ConfigError(msg)
-    #
-    #    candidate = candidate.lower()
-    #    if candidate not in mode.__options:
-    #        raise ConfigError(msg)
-    #    mode.set(candidate)
-    #    return candidate
-    #
-    #
     #def validate_threads(self, context, candidate):
     #    """Must be an integer greater than or equal to 1.
     #    """
