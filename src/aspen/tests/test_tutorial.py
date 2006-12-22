@@ -19,6 +19,7 @@ class Foo:
 
 def Website():
     config = Configuration(['-rfsfix'])
+    config.load_plugins()
     return _Website(config)
 
 
@@ -42,11 +43,11 @@ def test_greetings_program():
 #    assert actual == expected, actual
 
 
-def test_python_script():
-    mk(('foo.py', 'response = ["Greetings, program!\\n"]'))
-    expected = ['Greetings, program!\n']
-    actual = Website()({'PATH_INFO':'/foo.py'}, lambda a:a)
-    assert actual == expected, actual
+#def test_python_script():
+#    mk(('foo.py', 'response = ["Greetings, program!\\n"]'))
+#    expected = "Greetings, program!"
+#    actual = Website()({'PATH_INFO':'/foo.py'}, lambda a,b:a).read()
+#    assert actual == expected, actual
 
 
 def test_your_first_handler():

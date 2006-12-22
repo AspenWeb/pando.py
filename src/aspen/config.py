@@ -307,6 +307,12 @@ class Paths:
         self.address = self.opts.address
 
 
+        # Mode
+        # ====
+
+        mode.set(self.opts.mode)
+
+
     def load_plugins(self):
         """Load plugin objects and set on self.
 

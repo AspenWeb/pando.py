@@ -203,8 +203,6 @@ __/etc/apps.conf. To wit:
                 continue
             os.remove(join(dirpath, 'README.aspen'))
 
-        import pdb; pdb.set_trace()
-        
         for line in fp:
             lineno += 1
             original = line # for README.aspen

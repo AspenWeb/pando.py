@@ -31,7 +31,7 @@ Functions
 
     set     Given a mode, set the PYTHONMODE environment variable and refresh
               the module's boolean members. If given a bad mode, ValueError is
-              raised.
+              raised. The abbreviations given below are ok.
 
     setAPI  Refresh the module's boolean members. Call this if you ever change
               PYTHONPATH directly in the os.environ mapping.
@@ -90,6 +90,16 @@ import os
 
 options = ('debugging', 'development', 'staging', 'production')
 abbrevs = ('deb', 'dev', 'st', 'prod')
+opt2abb = { 'debugging':'deb'
+          , 'development':'dev'
+          , 'staging':'st'
+          , 'production':'prod'
+           }
+abb2opt = { 'deb':'debugging'
+          , 'dev':'development'
+          , 'st':'staging'
+          , 'prod':'production'
+           }
 default = 'development'
 
 
@@ -165,6 +175,8 @@ def set(mode):
 
     """
     _mode = mode.lower()
+    if _mode in abbrevs:
+        _mode = abb2opt[_mode]
     if _mode not in options:
         raise ValueError("Bad PYTHONMODE '%s'" % mode)
     os.environ['PYTHONMODE'] = _mode
@@ -283,8 +295,6 @@ if __name__ == '__main__':
     assert PROD
 
 
-
-
     # Combinations
     # ============
 
@@ -335,6 +345,22 @@ if __name__ == '__main__':
     assert STPROD
     assert staging_or_production
     assert STAGING_OR_PRODUCTION
+
+
+    # Setting abbreviations
+    # =====================
+
+    set('deb')
+    assert debugging
+
+    set('dev')
+    assert development
+
+    set('st')
+    assert staging
+
+    set('prod')
+    assert production
 
 
     # Other tests

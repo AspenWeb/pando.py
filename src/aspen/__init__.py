@@ -10,12 +10,16 @@ from optparse import OptionError
 from os.path import isdir, isfile, join
 
 from aspen import mode, restarter
-from aspen.daemon import Daemon
 from aspen.wsgiserver import CherryPyWSGIServer as Server
 from aspen.config import ConfigError, Configuration, usage
 
+try:
+    from aspen.daemon import Daemon
+except ImportError:
+    Daemon = None # windows; aspen.daemon requires pwd
 
-__version__ = '0.6'
+
+__version__ = '~~VERSION~~'
 
 
 KILL_TIMEOUT = 5 # seconds between shutdown attempts
@@ -77,7 +81,7 @@ pidfiler = PIDFiler() # must actually set pidfiler.path before starting
     website = Website(config)
     for app in config.middleware:
         website = app(website)
-    server = Server(config.address, website)
+    server = Server(config.address, website, 10, 'Aspen/%s' % __version__)
 
 
     # Monkey-patch server to support restarting.
@@ -115,6 +119,9 @@ pidfiler = PIDFiler() # must actually set pidfiler.path before starting
     """Manipulate a daemon or become one ourselves.
     """
 
+    # Locate some paths.
+    # ==================
+
     __ = join(config.paths.root, '__')
     if isdir(__):
         var = join(__, 'var')
@@ -127,6 +134,10 @@ pidfiler = PIDFiler() # must actually set pidfiler.path before starting
         key = base64.urlsafe_b64encode(key)
         pidfile = os.sep + join('tmp', 'aspen-%s.pid' % key)
         logpath = '/dev/null'
+
+
+    # Instantiate the daemon.
+    # =======================
 
     daemon = Daemon(stdout=logpath, stderr=logpath, pidfile=pidfile)
 
@@ -159,6 +170,8 @@ pidfiler = PIDFiler() # must actually set pidfiler.path before starting
 
         # Try pretty hard to kill the process nicely.
         # ===========================================
+        # We send two SIGTERMs and a SIGKILL before quitting. The daemon gets
+        # 5 seconds after each to shut down.
 
         def kill(sig):
             try:
@@ -172,24 +185,21 @@ pidfiler = PIDFiler() # must actually set pidfiler.path before starting
 
             if nattempts == 0:
                 kill(signal.SIGTERM)
-
             elif nattempts == 1:
                 print "%d still going; resending SIGTERM" % pid
                 kill(signal.SIGTERM)
-
             elif nattempts == 2:
                 print "%d STILL going; sending SIGKILL and quiting" % pid
                 kill(signal.SIGKILL)
                 raise SystemExit(1)
-
-
             nattempts += 1
+
             last_attempt = time.time()
             while 1:
                 if not isfile(pidfile):
-                    return
+                    return # daemon has stopped
                 elif (last_attempt + KILL_TIMEOUT) < time.time():
-                    break
+                    break # daemon hasn't stopped; time to escalate
                 else:
                     time.sleep(0.2)
 
@@ -207,6 +217,7 @@ pidfiler = PIDFiler() # must actually set pidfiler.path before starting
         if isfile(pidfile):
             pid = int(open(pidfile).read())
             command = "ps auxww|grep ' %d .*aspen'|grep -v grep" % pid
+            # @@: I doubt this command is portable.
             os.system(command)
             raise SystemExit(0)
         else:
@@ -239,8 +250,10 @@ pidfiler = PIDFiler() # must actually set pidfiler.path before starting
         if config.daemon:
             drive_daemon(config)
         elif mode.DEBDEV and restarter.PARENT:
+            print 'starting child server'
             restarter.launch_child()
         else:
+            print 'starting server'
             start_server(config)
     except KeyboardInterrupt:
         pass
