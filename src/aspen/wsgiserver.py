@@ -1,37 +1,43 @@
 """A high-speed, production ready, thread pooled, generic WSGI server.
 
-This is CherryPy's _cpwsgiserver.py module at r1413, and is used under the
-following license:
+Simplest example on how to use this module directly
+(without using CherryPy's application machinery):
 
-Copyright (c) 2004-2006, CherryPy Team (team@cherrypy.org)
-All rights reserved.
+    from cherrypy import wsgiserver
 
-Redistribution and use in source and binary forms, with or without modification,
-are permitted provided that the following conditions are met:
+    def my_crazy_app(environ, start_response):
+        status = '200 OK'
+        response_headers = [('Content-type','text/plain')]
+        start_response(status, response_headers)
+        return ['Hello world!\n']
 
-    * Redistributions of source code must retain the above copyright notice,
-      this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice,
-      this list of conditions and the following disclaimer in the documentation
-      and/or other materials provided with the distribution.
-    * Neither the name of the CherryPy Team nor the names of its contributors
-      may be used to endorse or promote products derived from this software
-      without specific prior written permission.
+    # Here we set our application to the script_name '/'
+    wsgi_apps = [('/', my_crazy_app)]
 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE
-FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    server = wsgiserver.CherryPyWSGIServer(('localhost', 8070), wsgi_apps,
+                                           server_name='localhost')
+
+    # Want SSL support? Just set these attributes
+    # server.ssl_certificate = <filename>
+    # server.ssl_private_key = <filename>
+
+    if __name__ == '__main__':
+        server.start()
+
+This won't call the CherryPy engine (application side) at all, only the
+WSGI server, which is independant from the rest of CherryPy. Don't
+let the name "CherryPyWSGIServer" throw you; the name merely reflects
+its origin, not it's coupling.
+
+The CherryPy WSGI server can serve as many WSGI application
+as you want in one instance:
+
+    wsgi_apps = [('/', my_crazy_app), (/blog', my_blog_app)]
 
 """
 
-import mimetools # todo: use email
+
+import base64
 import Queue
 import os
 import re
@@ -51,6 +57,7 @@ from urlparse import urlparse
 
 try:
     from OpenSSL import SSL
+    from OpenSSL import crypto
 except ImportError:
     SSL = None
 
@@ -67,21 +74,36 @@ for _ in ("EPIPE", "ETIMEDOUT", "ECONNREFUSED", "ECONNRESET",
 socket_errors_to_ignore = dict.fromkeys(socket_errors_to_ignore).keys()
 socket_errors_to_ignore.append("timed out")
 
-# These are lowercase because mimetools.Message uses lowercase keys.
-comma_separated_headers = [
-    'accept', 'accept-charset', 'accept-encoding', 'accept-language',
-    'accept-ranges', 'allow', 'cache-control', 'connection', 'content-encoding',
-    'content-language', 'expect', 'if-match', 'if-none-match', 'pragma',
-    'proxy-authenticate', 'te', 'trailer', 'transfer-encoding', 'upgrade',
-    'vary', 'via', 'warning', 'www-authenticate',
-    ]
-
+comma_separated_headers = ['ACCEPT', 'ACCEPT-CHARSET', 'ACCEPT-ENCODING',
+    'ACCEPT-LANGUAGE', 'ACCEPT-RANGES', 'ALLOW', 'CACHE-CONTROL',
+    'CONNECTION', 'CONTENT-ENCODING', 'CONTENT-LANGUAGE', 'EXPECT',
+    'IF-MATCH', 'IF-NONE-MATCH', 'PRAGMA', 'PROXY-AUTHENTICATE', 'TE',
+    'TRAILER', 'TRANSFER-ENCODING', 'UPGRADE', 'VARY', 'VIA', 'WARNING',
+    'WWW-AUTHENTICATE']
 
 class HTTPRequest(object):
+    """An HTTP Request (and response).
+
+    A single HTTP connection may consist of multiple request/response pairs.
+
+    connection: the HTTP Connection object which spawned this request.
+    rfile: the 'read' fileobject from the connection's socket
+    ready: when True, the request has been parsed and is ready to begin
+        generating the response. When False, signals the calling Connection
+        that the response should not be generated and the connection should
+        close.
+    close_connection: signals the calling Connection that the request
+        should close. This does not imply an error! The client and/or
+        server may each request that the connection be closed.
+    chunked_write: if True, output will be encoded with the "chunked"
+        transfer-coding. This value is set automatically inside
+        send_headers.
+    """
 
     def __init__(self, connection):
         self.connection = connection
         self.rfile = self.connection.rfile
+        self.sendall = self.connection.sendall
         self.environ = connection.environ.copy()
 
         self.ready = False
@@ -90,8 +112,10 @@ class HTTPRequest(object):
         self.outheaders = []
         self.sent_headers = False
         self.close_connection = False
+        self.chunked_write = False
 
     def parse_request(self):
+        """Parse the next HTTP request start-line and message-headers."""
         # HTTP/1.1 connections are persistent by default. If a client
         # requests a page, then idles (leaves the connection open),
         # then rfile.readline() will raise socket.error("timed out").
@@ -105,7 +129,18 @@ class HTTPRequest(object):
             self.ready = False
             return
 
+        if request_line == "\r\n":
+            # RFC 2616 sec 4.1: "...if the server is reading the protocol
+            # stream at the beginning of a message and receives a CRLF
+            # first, it should ignore the CRLF."
+            # But only ignore one leading line! else we enable a DoS.
+            request_line = self.rfile.readline()
+            if not request_line:
+                self.ready = False
+                return
+
         server = self.connection.server
+        self.environ["SERVER_SOFTWARE"] = "%s WSGI Server" % server.version
 
         method, path, req_protocol = request_line.strip().split(" ", 2)
         self.environ["REQUEST_METHOD"] = method
@@ -184,8 +219,14 @@ class HTTPRequest(object):
             self.environ["SERVER_NAME"] = location
 
         # then all the http headers
-        headers = mimetools.Message(self.rfile)
+        headers = rfc822.Message(self.rfile, seekable=0)
         self.environ.update(self.parse_headers(headers))
+
+        creds = headers.getheader("Authorization", "").split(" ", 1)
+        self.environ["AUTH_TYPE"] = creds[0]
+        if creds[0].lower() == 'basic':
+            user, pw = base64.decodestring(creds[1]).split(":", 1)
+            self.environ["REMOTE_USER"] = user
 
         # Persistent connection support
         if self.response_protocol == "HTTP/1.1":
@@ -193,6 +234,7 @@ class HTTPRequest(object):
                 self.close_connection = True
                 self.outheaders.append(("Connection", "close"))
         else:
+            # HTTP/1.0
             if headers.getheader("Connection", "") == "Keep-Alive":
                 if self.close_connection == False:
                     self.outheaders.append(("Connection", "Keep-Alive"))
@@ -217,8 +259,7 @@ class HTTPRequest(object):
             if method in ("POST", "PUT") and cl is None:
                 # No Content-Length header supplied. This will hang
                 # cgi.FieldStorage, since it cannot determine when to
-                # stop reading from the socket. Until we handle chunked
-                # encoding, always respond with 411 Length Required.
+                # stop reading from the socket.
                 # See http://www.cherrypy.org/ticket/493.
                 self.simple_response("411 Length Required")
                 return
@@ -246,28 +287,29 @@ class HTTPRequest(object):
         self.ready = True
 
     def parse_headers(self, headers):
+        """Parse the given HTTP request message-headers."""
         environ = {}
-        ct = headers.getheader("Content-type", "")
+        ct = headers.dict.get("content-type")
         if ct:
             environ["CONTENT_TYPE"] = ct
-        cl = headers.getheader("Content-length") or ""
+        cl = headers.dict.get("content-length")
         if cl:
             environ["CONTENT_LENGTH"] = cl
 
-        # Must use keys() here for Python 2.3 (rfc822.Message had no __iter__).
-        for k in headers.keys():
-            if k in ('transfer-encoding', 'content-type', 'content-length'):
-                continue
+        for line in headers.headers:
+            if line[:1].isspace():
+                v = line.strip()
+            else:
+                k, v = line.split(":", 1)
+                k, v = k.strip().upper(), v.strip()
+                envname = "HTTP_" + k.replace("-", "_")
 
-            envname = "HTTP_" + k.upper().replace("-", "_")
             if k in comma_separated_headers:
                 existing = environ.get(envname)
                 if existing:
-                    environ[envname] = ", ".join([existing] + headers.getheaders(k))
-                else:
-                    environ[envname] = ", ".join(headers.getheaders(k))
-            else:
-                environ[envname] = headers[k]
+                    v = ", ".join((existing, v))
+            environ[envname] = v
+
         return environ
 
     def decode_chunked(self):
@@ -275,7 +317,7 @@ class HTTPRequest(object):
         cl = 0
         data = StringIO.StringIO()
         while True:
-            line = self.rfile.readline().strip().split(" ", 1)
+            line = self.rfile.readline().strip().split(";", 1)
             chunk_size = int(line.pop(0), 16)
             if chunk_size <= 0:
                 break
@@ -289,18 +331,21 @@ class HTTPRequest(object):
                                      "(expected '\\r\\n', got %r)" % crlf)
                 return
 
-        headers = mimetools.Message(self.rfile)
+        # Grab any trailer headers
+        headers = rfc822.Message(self.rfile, seekable=0)
         self.environ.update(self.parse_headers(headers))
+
         data.seek(0)
         self.environ["wsgi.input"] = data
         self.environ["CONTENT_LENGTH"] = str(cl) or ""
         return True
 
     def respond(self):
+        """Call the appropriate WSGI app and write its iterable output."""
         response = self.wsgi_app(self.environ, self.start_response)
         try:
-            for line in response:
-                self.write(line)
+            for chunk in response:
+                self.write(chunk)
         finally:
             if hasattr(response, "close"):
                 response.close()
@@ -308,25 +353,27 @@ class HTTPRequest(object):
                 and not self.connection.server.interrupt):
             self.sent_headers = True
             self.send_headers()
+        if self.chunked_write:
+            self.sendall("0\r\n\r\n")
 
     def simple_response(self, status, msg=""):
         """Write a simple response back to the client."""
         status = str(status)
-        wfile = self.connection.wfile
-        wfile.write("%s %s\r\n" % (self.connection.server.protocol, status))
-        wfile.write("Content-Length: %s\r\n" % len(msg))
+        buf = ["%s %s\r\n" % (self.connection.server.protocol, status),
+               "Content-Length: %s\r\n" % len(msg)]
 
         if status[:3] == "413" and self.response_protocol == 'HTTP/1.1':
             # Request Entity Too Large
             self.close_connection = True
-            wfile.write("Connection: close\r\n")
+            buf.append("Connection: close\r\n")
 
-        wfile.write("\r\n")
+        buf.append("\r\n")
         if msg:
-            wfile.write(msg)
-        wfile.flush()
+            buf.append(msg)
+        self.sendall("".join(buf))
 
     def start_response(self, status, headers, exc_info = None):
+        """WSGI callable to begin the HTTP response."""
         if self.started_response:
             if not exc_info:
                 assert False, "Already started response"
@@ -340,44 +387,57 @@ class HTTPRequest(object):
         self.outheaders.extend(headers)
         return self.write
 
-    def write(self, d):
+    def write(self, chunk):
+        """WSGI callable to write unbuffered data to the client.
+
+        This method is also used internally by start_response (to write
+        data from the iterable returned by the WSGI application).
+        """
         if not self.sent_headers:
             self.sent_headers = True
             self.send_headers()
-        self.connection.wfile.write(d)
-        self.connection.wfile.flush()
+        if self.chunked_write:
+            buf = [hex(len(chunk))[2:],
+                   "\r\n", chunk, "\r\n"]
+            self.sendall("".join(buf))
+        else:
+            self.sendall(chunk)
 
     def send_headers(self):
-        hkeys = [key.lower() for (key,value) in self.outheaders]
-
+        """Assert, process, and send the HTTP response message-headers."""
+        hkeys = [key.lower() for (key, value) in self.outheaders]
         status = int(self.status[:3])
-        if (self.response_protocol == 'HTTP/1.1'
-            and (# Request Entity Too Large. Close conn to avoid garbage.
-                status == 413
-                # No Content-Length. Close conn to determine transfer-length.
-                or ("content-length" not in hkeys and
-                    # "All 1xx (informational), 204 (no content),
-                    # and 304 (not modified) responses MUST NOT
-                    # include a message-body."
-                    status >= 200 and status not in (204, 304)))):
-            if "connection" not in hkeys:
-                self.outheaders.append(("Connection", "close"))
-            self.close_connection = True
+
+        if self.response_protocol == 'HTTP/1.1':
+            if status == 413:
+                # Request Entity Too Large. Close conn to avoid garbage.
+                self.close_connection = True
+            elif "content-length" not in hkeys:
+                # "All 1xx (informational), 204 (no content),
+                # and 304 (not modified) responses MUST NOT
+                # include a message-body." So no point chunking.
+                if status < 200 or status in (204, 205, 304):
+                    pass
+                else:
+                    # Use the chunked transfer-coding
+                    self.chunked_write = True
+                    self.outheaders.append(("Transfer-Encoding", "chunked"))
+
+        if self.close_connection and "connection" not in hkeys:
+            self.outheaders.append(("Connection", "close"))
 
         if "date" not in hkeys:
             self.outheaders.append(("Date", rfc822.formatdate()))
 
         server = self.connection.server
-        wfile = self.connection.wfile
 
         if "server" not in hkeys:
             self.outheaders.append(("Server", server.version))
 
-        wfile.write(server.protocol + " " + self.status + "\r\n")
-
+        buf = [server.protocol, " ", self.status, "\r\n"]
         try:
             for k, v in self.outheaders:
-                wfile.write(k + ": " + v + "\r\n")
+                buf.append(k + ": " + v + "\r\n")
         except TypeError:
             if not isinstance(k, str):
                 raise TypeError("WSGI response header key %r is not a string.")
@@ -385,36 +445,44 @@ class HTTPRequest(object):
                 raise TypeError("WSGI response header value %r is not a string.")
             else:
                 raise
-        wfile.write("\r\n")
-        wfile.flush()
+        buf.append("\r\n")
+        self.sendall("".join(buf))
 
 
-def _ssl_wrap_method(method):
+def _ssl_wrap_method(method, is_reader=False):
+    """Wrap the given method with SSL error-trapping.
+
+    is_reader: if False (the default), EOF errors will be raised.
+        If True, EOF errors will return "" (to emulate normal sockets).
+    """
     def ssl_method_wrapper(self, *args, **kwargs):
 ##        print (id(self), method, args, kwargs)
+        start = time.time()
         while True:
             try:
                 return method(self, *args, **kwargs)
             except (SSL.WantReadError, SSL.WantWriteError):
-                # Sleep and try again
+                # Sleep and try again. This is dangerous, because it means
+                # the rest of the stack has no way of differentiating
+                # between a "new handshake" error and "client dropped".
+                # Note this isn't an endless loop: there's a timeout below.
                 time.sleep(self.ssl_retry)
             except SSL.SysCallError, e:
-                if e.args == (-1, 'Unexpected EOF'):
+                if is_reader and e.args == (-1, 'Unexpected EOF'):
                     return ""
 
                 errno = e.args[0]
-                if errno not in socket_errors_to_ignore:
-                    raise socket.error(errno)
-
-                return ""
+                if is_reader and errno in socket_errors_to_ignore:
+                    return ""
+                raise socket.error(errno)
             except SSL.Error, e:
-                if e.args == (-1, 'Unexpected EOF'):
+                if is_reader and e.args == (-1, 'Unexpected EOF'):
                     return ""
-                elif e.args[0][0][2] == 'ssl handshake failure':
+                if is_reader and e.args[0][0][2] == 'ssl handshake failure':
                     return ""
-                else:
-                    raise
-##        raise socket.timeout()
+                raise
+            if time.time() - start > self.ssl_timeout:
+                raise socket.timeout("timed out")
     return ssl_method_wrapper
 
 class SSL_fileobject(socket._fileobject):
@@ -427,15 +495,28 @@ class SSL_fileobject(socket._fileobject):
     flush = _ssl_wrap_method(socket._fileobject.flush)
     write = _ssl_wrap_method(socket._fileobject.write)
     writelines = _ssl_wrap_method(socket._fileobject.writelines)
-    read = _ssl_wrap_method(socket._fileobject.read)
-    readline = _ssl_wrap_method(socket._fileobject.readline)
-    readlines = _ssl_wrap_method(socket._fileobject.readlines)
+    read = _ssl_wrap_method(socket._fileobject.read, is_reader=True)
+    readline = _ssl_wrap_method(socket._fileobject.readline, is_reader=True)
+    readlines = _ssl_wrap_method(socket._fileobject.readlines, is_reader=True)
 
 
 class HTTPConnection(object):
+    """An HTTP connection (active socket).
+
+    socket: the raw socket object (usually TCP) for this connection.
+    addr: the "bind address" for the remote end of the socket.
+        For IP sockets, this is a tuple of (REMOTE_ADDR, REMOTE_PORT).
+        For UNIX domain sockets, this will be a string.
+    server: the HTTP Server for this Connection. Usually, the server
+        object possesses a passive (server) socket which spawns multiple,
+        active (client) sockets, one for each connection.
+
+    environ: a WSGI environ template. This will be copied for each request.
+    rfile: a fileobject for reading from the socket.
+    sendall: a function for writing (+ flush) to the socket.
+    """
 
     rbufsize = -1
-    wbufsize = -1
     RequestHandlerClass = HTTPRequest
     environ = {"wsgi.version": (1, 0),
                "wsgi.url_scheme": "http",
@@ -453,14 +534,19 @@ class HTTPConnection(object):
         # Copy the class environ into self.
         self.environ = self.environ.copy()
 
-        if type(sock) is socket.socket:
-            self.rfile = self.socket.makefile("r", self.rbufsize)
-            self.wfile = self.socket.makefile("w", self.wbufsize)
-        else:
-            # Assume it's an HTTPS socket wrapper
-            self.environ["wsgi.url_scheme"] = "https"
+        if SSL and isinstance(sock, SSL.ConnectionType):
+            timeout = sock.gettimeout()
             self.rfile = SSL_fileobject(sock, "r", self.rbufsize)
-            self.wfile = SSL_fileobject(sock, "w", self.wbufsize)
+            self.rfile.ssl_timeout = timeout
+            self.sendall = _ssl_wrap_method(sock.sendall)
+            self.environ["wsgi.url_scheme"] = "https"
+            self.environ["HTTPS"] = "on"
+            sslenv = getattr(server, "ssl_environ", None)
+            if sslenv:
+                self.environ.update(sslenv)
+        else:
+            self.rfile = sock.makefile("r", self.rbufsize)
+            self.sendall = sock.sendall
 
         self.environ.update({"wsgi.input": self.rfile,
                              "SERVER_NAME": self.server.server_name,
@@ -473,7 +559,7 @@ class HTTPConnection(object):
         else:
             self.environ["SERVER_PORT"] = str(self.server.bind_addr[1])
             # optional values
-            self.environ["REMOTE_HOST"] = self.addr[0]
+            # Until we do DNS lookups, omit REMOTE_HOST
             self.environ["REMOTE_ADDR"] = self.addr[0]
             self.environ["REMOTE_PORT"] = str(self.addr[1])
 
@@ -507,8 +593,8 @@ class HTTPConnection(object):
                 req.simple_response("500 Internal Server Error", format_exc())
 
     def close(self):
+        """Close the socket underlying this connection."""
         self.rfile.close()
-        self.wfile.close()
         self.socket.close()
 
 
@@ -524,6 +610,18 @@ def format_exc(limit=None):
 _SHUTDOWNREQUEST = None
 
 class WorkerThread(threading.Thread):
+    """Thread which continuously polls a Queue for Connection objects.
+
+    server: the HTTP Server which spawned this thread, and which owns the
+        Queue and is placing active connections into it.
+    ready: a simple flag for the calling server to know when this thread
+        has begun polling the Queue.
+
+    Due to the timing issues of polling a Queue, a WorkerThread does not
+    check its own 'ready' flag after it has started. To stop the thread,
+    it is necessary to stick a _SHUTDOWNREQUEST object onto the Queue
+    (one for each running WorkerThread).
+    """
 
     def __init__(self, server):
         self.ready = False
@@ -547,6 +645,11 @@ class WorkerThread(threading.Thread):
 
 
 class SSLConnection:
+    """A thread-safe wrapper for an SSL.Connection.
+
+    *args: the arguments to create the wrapped SSL.Connection(*args).
+    """
+
     def __init__(self, *args):
         self._ssl_conn = SSL.Connection(*args)
         self._lock = threading.RLock()
@@ -582,10 +685,27 @@ class CherryPyWSGIServer(object):
     request_queue_size: the 'backlog' argument to socket.listen();
         specifies the maximum number of queued connections (default 5).
     timeout: the timeout in seconds for accepted connections (default 10).
+
+    protocol: the version string to write in the Status-Line of all
+        HTTP responses. For example, "HTTP/1.1" (the default). This
+        also limits the supported features used in the response.
+
+
+    SSL/HTTPS
+    ---------
+    The OpenSSL module must be importable for SSL functionality.
+    You can obtain it from http://pyopenssl.sourceforge.net/
+
+    ssl_certificate: the filename of the server SSL certificate.
+    ssl_privatekey: the filename of the server's private key file.
+
+    If either of these is None (both are None by default), this server
+    will not use SSL. If both are given and are valid, they will be read
+    on server start and used in the SSL context for the listening socket.
     """
 
     protocol = "HTTP/1.1"
-    version = "CherryPy/3.0.0beta2"
+    version = "CherryPy/3.0.0"
     ready = False
     _interrupt = None
     ConnectionClass = HTTPConnection
@@ -635,11 +755,13 @@ class CherryPyWSGIServer(object):
             if self.ssl_certificate and self.ssl_private_key:
                 if SSL is None:
                     raise ImportError("You must install pyOpenSSL to use HTTPS.")
+
                 # See http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/442473
                 ctx = SSL.Context(SSL.SSLv23_METHOD)
                 ctx.use_privatekey_file(self.ssl_private_key)
                 ctx.use_certificate_file(self.ssl_certificate)
                 self.socket = SSLConnection(ctx, self.socket)
+                self.populate_ssl_environ()
             self.socket.bind(self.bind_addr)
 
         # Select the appropriate socket
@@ -659,9 +781,21 @@ class CherryPyWSGIServer(object):
             # AF_INET or AF_INET6 socket
             # Get the correct address family for our host (allows IPv6 addresses)
             host, port = self.bind_addr
+            flags = 0
+            if host == '':
+                # Despite the socket module docs, using '' does not
+                # allow AI_PASSIVE to work. Passing None instead
+                # returns '0.0.0.0' like we want. In other words:
+                #     host    AI_PASSIVE     result
+                #      ''         Y         192.168.x.y
+                #      ''         N         192.168.x.y
+                #     None        Y         0.0.0.0
+                #     None        N         127.0.0.1
+                host = None
+                flags = socket.AI_PASSIVE
             try:
                 info = socket.getaddrinfo(host, port, socket.AF_UNSPEC,
-                                          socket.SOCK_STREAM)
+                                          socket.SOCK_STREAM, 0, flags)
             except socket.gaierror:
                 # Probably a DNS issue. Assume IPv4.
                 info = [(socket.AF_INET, socket.SOCK_STREAM, 0, "", self.bind_addr)]
@@ -700,11 +834,12 @@ class CherryPyWSGIServer(object):
             self.tick()
             if self.interrupt:
                 while self.interrupt is True:
-                    # Wait for self.stop() to complete
+                    # Wait for self.stop() to complete. See _set_interrupt.
                     time.sleep(0.1)
                 raise self.interrupt
 
     def tick(self):
+        """Accept a new connection and put it on the Queue."""
         try:
             s, addr = self.socket.accept()
             if not self.ready:
@@ -734,7 +869,9 @@ class CherryPyWSGIServer(object):
         self._interrupt = True
         self.stop()
         self._interrupt = interrupt
-    interrupt = property(_get_interrupt, _set_interrupt)
+    interrupt = property(_get_interrupt, _set_interrupt,
+                         doc="Set this to an Exception instance to "
+                             "interrupt the server.")
 
     def stop(self):
         """Gracefully shutdown a server that is serving forever."""
@@ -750,6 +887,10 @@ class CherryPyWSGIServer(object):
                     if x.args[1] != "Bad file descriptor":
                         raise
                 else:
+                    # Note that we're explicitly NOT using AI_PASSIVE,
+                    # here, because we want an actual IP to touch.
+                    # localhost won't work if we've bound to a public IP,
+                    # but it would if we bound to INADDR_ANY via host = ''.
                     for res in socket.getaddrinfo(host, port, socket.AF_UNSPEC,
                                                   socket.SOCK_STREAM):
                         af, socktype, proto, canonname, sa = res
@@ -783,3 +924,74 @@ class CherryPyWSGIServer(object):
                 except AssertionError:
                     pass
 
+    def populate_ssl_environ(self):
+        """Create WSGI environ entries to be merged into each request."""
+        cert = open(self.ssl_certificate).read()
+        cert = crypto.load_certificate(crypto.FILETYPE_PEM, cert)
+        self.ssl_environ = {
+            # pyOpenSSL doesn't provide access to any of these AFAICT
+##            'SSL_PROTOCOL': 'SSLv2',
+##            SSL_CIPHER 	string 	The cipher specification name
+##            SSL_VERSION_INTERFACE 	string 	The mod_ssl program version
+##            SSL_VERSION_LIBRARY 	string 	The OpenSSL program version
+            }
+
+        # Server certificate attributes
+        self.ssl_environ.update({
+            'SSL_SERVER_M_VERSION': cert.get_version(),
+            'SSL_SERVER_M_SERIAL': cert.get_serial_number(),
+##            'SSL_SERVER_V_START': Validity of server's certificate (start time),
+##            'SSL_SERVER_V_END': Validity of server's certificate (end time),
+            })
+
+        for prefix, dn in [("I", cert.get_issuer()),
+                           ("S", cert.get_subject())]:
+            # X509Name objects don't seem to have a way to get the
+            # complete DN string. Use str() and slice it instead,
+            # because str(dn) == "<X509Name object '/C=US/ST=...'>"
+            dnstr = str(dn)[18:-2]
+
+            wsgikey = 'SSL_SERVER_%s_DN' % prefix
+            self.ssl_environ[wsgikey] = dnstr
+
+            # The DN should be of the form: /k1=v1/k2=v2, but we must allow
+            # for any value to contain slashes itself (in a URL).
+            while dnstr:
+                pos = dnstr.rfind("=")
+                dnstr, value = dnstr[:pos], dnstr[pos + 1:]
+                pos = dnstr.rfind("/")
+                dnstr, key = dnstr[:pos], dnstr[pos + 1:]
+                if key and value:
+                    wsgikey = 'SSL_SERVER_%s_DN_%s' % (prefix, key)
+                    self.ssl_environ[wsgikey] = value
+
+
+"""Lifted from CherryPy 3.0.0 and used under the following license:
+
+Copyright (c) 2004-2006, CherryPy Team (team@cherrypy.org)
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification,
+are permitted provided that the following conditions are met:
+
+    * Redistributions of source code must retain the above copyright notice,
+      this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright notice,
+      this list of conditions and the following disclaimer in the documentation
+      and/or other materials provided with the distribution.
+    * Neither the name of the CherryPy Team nor the names of its contributors
+      may be used to endorse or promote products derived from this software
+      without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+"""

@@ -10,14 +10,12 @@ from optparse import OptionError
 from os.path import isdir, isfile, join
 
 from aspen import mode, restarter
-from aspen.server import CherryPyWSGIServer as Server
+from aspen.daemon import Daemon
+from aspen.wsgiserver import CherryPyWSGIServer as Server
 from aspen.config import ConfigError, Configuration, usage
 
-if sys.platform != 'win32': # daemon imports pwd, which doesn't exist on win32
-    from aspen.daemon import Daemon
 
-
-__version__ = '~~VERSION~~'
+__version__ = '0.6'
 
 
 KILL_TIMEOUT = 5 # seconds between shutdown attempts
@@ -61,8 +59,7 @@ PIDCHECK_TIMEOUT = 60 # seconds between pidfile writes
 pidfiler = PIDFiler() # must actually set pidfiler.path before starting
 
 
-_globals = globals()
-def start_server(config):
+def start_server(config):
     """This is the heavy work of instantiating and starting a website.
     """
 
@@ -76,20 +73,11 @@ def start_server(config):
     # Build the website and server.
     # =============================
 
-    _globals['config'] = config
     config.load_plugins()
     website = Website(config)
     for app in config.middleware:
         website = app(website)
     server = Server(config.address, website)
-
-
-    # Install some things in our global namespace.
-    # ============================================
-    # This enables us to do 'from aspen import website' from anywhere
-
-    _globals['website'] = website
-    _globals['server'] = server
 
 
     # Monkey-patch server to support restarting.
