@@ -7,6 +7,9 @@
     namespace
   - classes no longer instantiated; use aspen.config instead
   - SCRIPT_NAME and PATH_INFO now set for apps
+  - upgraded to wsgiserver.py from CherryPy 3.0.0
+  - sanitized default config: no more executable python scripts
+  - default file browser
 
 
 ========================================

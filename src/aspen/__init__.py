@@ -3,6 +3,7 @@
 import base64
 import os
 import signal
+import socket
 import sys
 import threading
 import time
@@ -13,10 +14,10 @@ from aspen import mode, restarter
 from aspen.wsgiserver import CherryPyWSGIServer as Server
 from aspen.config import ConfigError, Configuration, usage
 
-try:
-    from aspen.daemon import Daemon
-except ImportError:
-    Daemon = None # windows; aspen.daemon requires pwd
+if 'win' not in sys.platform:
+    from aspen.daemon import Daemon # this actually fails on Windows; needs pwd
+else:
+    Daemon = None # daemonization not available on Windows; @@: service?
 
 
 __version__ = '~~VERSION~~'
@@ -86,8 +87,8 @@ pidfiler = PIDFiler() # must actually set pidfiler.path before starting
 
     # Monkey-patch server to support restarting.
     # ==========================================
-    # Giving server a chance to shutdown cleanly avoids the terminal screw-up
-    # bug that plagued httpy < 1.0.
+    # Giving server a chance to shutdown cleanly largely avoids the terminal
+    # screw-up bug that plagued httpy < 1.0.
 
     if restarter.CHILD:
         def tick():
@@ -110,7 +111,12 @@ pidfiler = PIDFiler() # must actually set pidfiler.path before starting
         print "stopping server"
         sys.stdout.flush()
         server.stop()
-        if pidfiler.isAlive(): # we're a daemon
+        if config.sockfam == socket.AF_UNIX:       # clean up socket
+            try:
+                os.remove(config.address)
+            except EnvironmentError, exc:
+                print "error removing socket:", exc.strerror
+        if pidfiler.isAlive():                      # we're a daemon
             pidfiler.stop.set()
             pidfiler.join()
 

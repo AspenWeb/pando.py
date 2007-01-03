@@ -49,7 +49,7 @@ def validate_address(address):
     elif address.count(':') > 1:
         sockfam = socket.AF_INET6
         # @@: validate this, eh?
-        
+
     else:
         sockfam = socket.AF_INET
         # Here we need a tuple: (str, int). The string must be a valid
@@ -78,9 +78,9 @@ def validate_address(address):
 
         if not isinstance(ip, basestring):
             raise err
-        elif ip == '': 
-            ip = '0.0.0.0' # IP defaults to INADDR_ANY for AF_INET; specified 
-                           # explicitly to avoid accidentally binding to 
+        elif ip == '':
+            ip = '0.0.0.0' # IP defaults to INADDR_ANY for AF_INET; specified
+                           # explicitly to avoid accidentally binding to
                            # INADDR_ANY for AF_INET6.
         else:
             try:
@@ -313,6 +313,7 @@ class Paths:
         # =======
 
         self.address = self.opts.address
+        self.sockfam = self.opts.sockfam
 
 
         # Mode
