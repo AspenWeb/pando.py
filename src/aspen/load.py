@@ -34,6 +34,11 @@ __/etc/apps.conf. To wit:
 
 """
 
+
+SPACE = ' '
+TAB = '\t'
+
+
 class Handler(object):
     """Represent a function that knows how to obey the rules.
 
@@ -41,6 +46,7 @@ __/etc/apps.conf. To wit:
 
       - cache the results of match()
       - evaluate the expression after each rule is added, exit early if False
+      - um, write it in C? :)
 
     """
 
@@ -214,8 +220,8 @@ __/etc/apps.conf. To wit:
                 # Perform basic validation.
                 # =========================
 
-                if ' ' not in line:
-                    msg = "malformed line (no space): '%s'" % line
+                if (SPACE not in line) and (TAB not in line):
+                    msg = "malformed line (no whitespace): '%s'" % line
                     raise AppsConfError(msg, lineno)
                 urlpath, name = line.split(None, 1)
                 if not urlpath.startswith('/'):
@@ -320,8 +326,8 @@ __/etc/apps.conf. To wit:
                 handlers.append(handler)
                 continue
             elif handler is None:                   # anonymous section
-                if ' ' not in line:
-                    msg = "malformed line (no space): '%s'" % line
+                if (SPACE not in line) and (TAB not in line):
+                    msg = "malformed line (no whitespace): '%s'" % line
                     raise HandlersConfError(msg, lineno)
                 rulename, name = line.split(None, 1)
                 obj = colon.colonize(name, fpname, lineno)

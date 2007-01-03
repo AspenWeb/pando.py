@@ -94,6 +94,14 @@ def test_classes_instantiated():
     actual = handlers[0]._funcs['foo'].__class__
     assert actual == expected, actual
 
+def test_anon_tab_ok():
+    mk('__/etc', ( '__/etc/handlers.conf'
+                 , 'foo\taspen.rules:fnmatch\n[random:choice]'
+                  ))
+    expected = [load.Handler({'foo':rules.fnmatch}, random.choice)]
+    actual = Loader().load_handlers()
+    assert actual == expected, actual
+
 
 # No handlers configured
 # ======================
@@ -124,10 +132,10 @@ def test_empty_file():
 # Errors
 # ======
 
-def test_anon_bad_line():
+def test_anon_no_whitespace():
     mk('__/etc', ('__/etc/handlers.conf', 'foo\n[foo]'))
     err = assert_raises(HandlersConfError, Loader().load_handlers)
-    assert err.msg == "malformed line (no space): 'foo'", err.msg
+    assert err.msg == "malformed line (no whitespace): 'foo'", err.msg
 
 def test_anon_not_callable():
     mk('__/etc', ('__/etc/handlers.conf', 'foo string:digits'))
@@ -157,7 +165,6 @@ def test_section_not_callable():
 
     err = assert_raises(HandlersConfError, Loader().load_handlers)
     assert err.msg == "'string:digits' is not callable", err.msg
-
 
 
 # Basics

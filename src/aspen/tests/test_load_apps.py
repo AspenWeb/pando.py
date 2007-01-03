@@ -85,6 +85,12 @@ def test_classes_instantiated_no_arguments():
     actual = Loader().load_apps()[0][1].__class__
     assert actual == expected, actual
 
+def test_tab_ok():
+    mk('__/etc', ('__/etc/apps.conf', '/\trandom:choice'))
+    expected = [('/', random.choice)]
+    actual = Loader().load_apps()
+    assert actual == expected, actual
+
 
 # No apps configured
 # ==================
@@ -112,10 +118,10 @@ def test_empty_file():
 # Errors
 # ======
 
-def test_bad_line():
+def test_no_whitespace():
     mk('__/etc', ('__/etc/apps.conf', 'godisnowhere'))
     err = assert_raises(AppsConfError, Loader().load_apps)
-    assert err.msg == "malformed line (no space): 'godisnowhere'", err.msg
+    assert err.msg == "malformed line (no whitespace): 'godisnowhere'", err.msg
 
 def test_bad_urlpath():
     mk('__/etc', ('__/etc/apps.conf', 'foo string:digits'))
