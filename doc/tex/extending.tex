@@ -33,15 +33,9 @@ callable):
 example.package.foo:bar.baz
 \end{verbatim}
 
-For applications and handlers, when names in colon notation point to a class,
-Aspen attempts to instantiate the class with the current \class{Website}
-instance as its sole positional argument. Failing this, Aspen instantiates the
-class without any arguments. The instance is then used as the named object. At
-run-time, applications and handlers can also access the \class{Website} instance
-at \code{environ['aspen.website']}.
-
-Middleware constructors are always called with one positional argument, which is
-the next middleware on the stack.
+% At run-time, applications and handlers can access the current \class{Website}
+% and \class{Configuration} instances by importing \code{aspen.website} and
+% \code{aspen.configuration} respectively.
 
 The comment character for these files is \#, and comments can be included
 in-line. Blank lines are ignored, as is initial and trailing whitespace
@@ -135,12 +129,15 @@ isdir       aspen.rules:isdir
 
 Aspen allows for a full WSGI middleware stack, configured via the
 \file{__/etc/middleware.conf} file. This is simply a newline-separated list of
-middleware specifiers in colon notation. The first-mentioned middleware will be
-the outer-most in the stack (i.e., closest to the browser).
+middleware factories in colon notation. Each factory (which may be a class
+constructor or other callable) is called with exactly one positional argument,
+the next middleware on the stack. The first-mentioned middleware will therefore
+be the outer-most in the stack (i.e., closest to the browser).
+
 
 \subsection{Example middleware.conf}
 
 \begin{verbatim}
-example.foo:bar # called as is
-example.baz:Buz # will be instantiated
+example.foo:bar # closest to browser
+example.baz:buz # closest to your apps/handlers
 \end{verbatim}

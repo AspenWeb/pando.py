@@ -67,30 +67,6 @@ def test_apps_layer():
     actual = Loader().load_apps()
     assert actual == expected, actual
 
-def test_classes_instantiated():
-    mk( '__/etc', lib_python
-      , ('__/etc/apps.conf', '/ TESTING_apps:App')
-      , (lib_python+'/TESTING_apps.py', MODULE)
-       )
-    from TESTING_apps import App as expected
-    actual = Loader().load_apps()[0][1].__class__
-    assert actual == expected, actual
-
-def test_classes_instantiated_no_arguments():
-    mk( '__/etc', lib_python
-      , ('__/etc/apps.conf', '/ TESTING_apps:AppNoArgs')
-      , (lib_python+'/TESTING_apps.py', MODULE)
-       )
-    from TESTING_apps import AppNoArgs as expected
-    actual = Loader().load_apps()[0][1].__class__
-    assert actual == expected, actual
-
-def test_tab_ok():
-    mk('__/etc', ('__/etc/apps.conf', '/\trandom:choice'))
-    expected = [('/', random.choice)]
-    actual = Loader().load_apps()
-    assert actual == expected, actual
-
 
 # No apps configured
 # ==================
@@ -217,6 +193,12 @@ def test_comments_ignored():
 /foo random:choice#comment
 /bar random:sample # comments"""))
     expected = [('/foo', random.choice), ('/bar', random.sample)]
+    actual = Loader().load_apps()
+    assert actual == expected, actual
+
+def test_tab_ok():
+    mk('__/etc', ('__/etc/apps.conf', '/\trandom:choice'))
+    expected = [('/', random.choice)]
     actual = Loader().load_apps()
     assert actual == expected, actual
 

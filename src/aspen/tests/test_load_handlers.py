@@ -74,34 +74,6 @@ def test_basic():
     actual = Loader().load_handlers()
     assert actual == expected, actual
 
-def test_classes_instantiated():
-    mk( '__/etc', lib_python
-      , ('__/etc/handlers.conf', """
-            foo TESTING_handlers:Rule
-            [TESTING_handlers:App]
-            foo *
-            """)
-      , (lib_python+'/TESTING_handlers.py', MODULE)
-       )
-    from TESTING_handlers import App, Rule
-    handlers = Loader().load_handlers()
-
-    expected = App
-    actual = handlers[0].handle.__class__
-    assert actual == expected, actual
-
-    expected = Rule
-    actual = handlers[0]._funcs['foo'].__class__
-    assert actual == expected, actual
-
-def test_anon_tab_ok():
-    mk('__/etc', ( '__/etc/handlers.conf'
-                 , 'foo\taspen.rules:fnmatch\n[random:choice]'
-                  ))
-    expected = [load.Handler({'foo':rules.fnmatch}, random.choice)]
-    actual = Loader().load_handlers()
-    assert actual == expected, actual
-
 
 # No handlers configured
 # ======================
@@ -170,6 +142,14 @@ def test_section_not_callable():
 # Basics
 # ======
 # Blank lines and comments are tested in the default file.
+
+def test_anon_tab_ok():
+    mk('__/etc', ( '__/etc/handlers.conf'
+                 , 'foo\taspen.rules:fnmatch\n[random:choice]'
+                  ))
+    expected = [load.Handler({'foo':rules.fnmatch}, random.choice)]
+    actual = Loader().load_handlers()
+    assert actual == expected, actual
 
 
 # Remove the filesystem fixture after each test.

@@ -259,7 +259,6 @@ TAB = '\t'
                 # =================================
 
                 obj = colon.colonize(name, fp.name, lineno)
-                obj = self._instantiate(obj)
                 if not callable(obj):
                     msg = "'%s' is not callable" % name
                     raise AppsConfError(msg, lineno)
@@ -331,7 +330,6 @@ TAB = '\t'
                     raise HandlersConfError(msg, lineno)
                 rulename, name = line.split(None, 1)
                 obj = colon.colonize(name, fpname, lineno)
-                obj = self._instantiate(obj)
                 if not callable(obj):
                     msg = "'%s' is not callable" % name
                     raise HandlersConfError(msg, lineno)
@@ -386,19 +384,3 @@ TAB = '\t'
 
         stack.reverse()
         return stack
-
-
-    # Helper
-    # ======
-
-    def _instantiate(self, Obj):
-        """Given an object, return an instance of the object.
-        """
-        if inspect.isclass(Obj):
-            try:
-                obj = Obj(self)
-            except TypeError:
-                obj = Obj()
-        else:
-            obj = Obj
-        return obj
