@@ -69,7 +69,7 @@ log = logging.getLogger('aspen.website')
         """Given a WSGI environ, return the first matching app.
         """
         app = None
-        test_path = environ['PATH_INFO']
+        path = test_path = environ['PATH_INFO']
         if not test_path.endswith('/'):
             test_path += '/'
         for app_urlpath, _app in self.config.apps:
@@ -84,6 +84,8 @@ log = logging.getLogger('aspen.website')
                     response = check_trailing_slash(environ, start_response)
                     if response is not None:
                         return response
+                environ["SCRIPT_NAME"] = app_urlpath
+                environ["PATH_INFO"] = path[len(app_urlpath):]
                 app = _app
                 break
         if app is None:

@@ -56,7 +56,10 @@ is given, the application will also get requests without the slash. When
 choosing an application to service a request, the most specific pathname matches
 first.
 
-Object names are in colon notation, and they name WSGI callables.
+Object names are in colon notation, and they name WSGI callables. Aspen updates
+the \code{PATH_INFO} and \code{SCRIPT_NAME} settings in \code{environ} before
+handing off to the relevant callable. Any trailing slash will be included in
+\code{PATH_INFO}, not in \code{SCRIPT_NAME}.
 
 Aspen will (over)write a file called \file{README.aspen} in each directory
 mentioned in \file{apps.conf}, containing the relevant line from

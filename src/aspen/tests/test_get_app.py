@@ -1,3 +1,5 @@
+from os.path import join, realpath
+
 from aspen.load import Mixin as Config
 from aspen.tests import assert_raises
 from aspen.tests.fsfix import mk, attach_rm
@@ -40,6 +42,62 @@ def test_get_app_no_app():
     actual = Website().get_app({'PATH_INFO':'/'}, start_response)
     assert actual == expected, actual
 
+
+# environ changes
+# ===============
+# SCRIPT_NAME, PATH_INFO
+
+def test_get_app_environ_basic():
+    mk('__', '__/etc', ('__/etc/apps.conf', '/foo random:choice'))
+    env = {'PATH_INFO':'/foo/bar'}
+    Website().get_app(env, start_response)
+    expected = [ ('PATH_INFO', '/bar')
+               , ('PATH_TRANSLATED', realpath(join('fsfix', 'foo')))
+               , ('SCRIPT_NAME', '/foo')
+                ]
+    actual = list(env.items())
+    actual.sort()
+    assert actual == expected, actual
+
+def test_get_app_environ_with_slash():
+    mk('__', '__/etc', ('__/etc/apps.conf', '/foo random:choice'))
+    env = {'PATH_INFO':'/foo/'}
+    Website().get_app(env, start_response)
+    expected = [ ('PATH_INFO', '/')
+               , ('PATH_TRANSLATED', realpath(join('fsfix', 'foo')))
+               , ('SCRIPT_NAME', '/foo')
+                ]
+    actual = list(env.items())
+    actual.sort()
+    assert actual == expected, actual
+
+def test_get_app_environ_without_slash():
+    mk('__', '__/etc', ('__/etc/apps.conf', '/foo random:choice'))
+    env = {'PATH_INFO':'/foo'}
+    Website().get_app(env, start_response)
+    expected = [ ('PATH_INFO', '')
+               , ('PATH_TRANSLATED', realpath(join('fsfix', 'foo')))
+               , ('SCRIPT_NAME', '/foo')
+                ]
+    actual = list(env.items())
+    actual.sort()
+    assert actual == expected, actual
+
+def test_get_app_environ_root_app():
+    mk('__', '__/etc', ('__/etc/apps.conf', '/ random:choice'))
+    env = {'PATH_INFO':'/'}
+    Website().get_app(env, start_response)
+    expected = [ ('PATH_INFO', '')
+               , ('PATH_TRANSLATED', realpath('fsfix'))
+               , ('SCRIPT_NAME', '/')
+                ]
+    actual = list(env.items())
+    actual.sort()
+    assert actual == expected, actual
+
+
+# Example in docs
+# ===============
 
 EXAMPLE = """
 

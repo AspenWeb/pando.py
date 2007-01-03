@@ -2,6 +2,17 @@
     ~~VERSION~~ -- ~~DATE~~
 ========================================
 
+  - can now use tabs in config files
+  - exposed the server, website, and configuration objects in the aspen module
+    namespace
+  - classes no longer instantiated; use aspen.config instead
+  - SCRIPT_NAME and PATH_INFO now set for apps
+
+
+========================================
+    0.6 -- December 8, 2006
+========================================
+
 This release adds daemonization functionality to Aspen, using Walter Dörwald's
 ll.daemon module. This marks a shift in emphasis from Aspen as a development
 environment to Aspen as a production server. From here to 1.0 the API should be
