@@ -313,7 +313,7 @@ class Paths:
         # =======
 
         self.address = self.opts.address
-        self.sockfam = self.opts.sockfam
+        self.sockfam = getattr(self.opts, 'sockfam', socket.AF_INET)
 
 
         # Mode
