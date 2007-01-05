@@ -3,7 +3,7 @@ import sys
 import threading
 import urllib
 
-from aspen import server_factory
+from aspen import server_factory, mode
 from aspen.configuration import ConfFile, Configuration as Config
 from aspen.tests import assert_raises
 from aspen.tests.fsfix import mk, attach_rm
@@ -47,30 +47,54 @@ def test_no_aspen_conf():
     actual = Config(['-rfsfix']).address
     expected = ('0.0.0.0', 8080)
     assert actual == expected, actual
-    
+
 def test_no_main_section():
     mk('__/etc', ('__/etc/aspen.conf', '[custom]\nfoo = bar'))
     actual = Config(['-rfsfix']).conf.custom['foo']
     expected = 'bar'
     assert actual == expected, actual
-    
+
 def test_from_aspen_import_config():
     """This actually tests Aspen at a pretty high level.
     """
     mk( '__/etc', lib_python
-      , ('__/etc/aspen.conf', '[main]\n\naddress = :53700\n[custom]\nfoo=bar')
-      , ('__/etc/apps.conf', '/ foo:app')
+      , ('__/etc/aspen.conf', '[main]\n\naddress = :53700\n[my_app]\nfoo=bar')
+      , ('__/etc/apps.conf', '/ foo:wsgi_app')
       , (lib_python+'/foo.py', """\
 from aspen import config
-def app(env, start):
-    start('200 OK', [])
-    return [config.conf.custom['foo']]""")
+
+def wsgi_app(environ, start_response):
+    start_response('200 OK', [])
+    return [config.conf.my_app['foo']]
+""")
        )
     server = server_factory(Config(['-rfsfix']))
     thread_ = threading.Thread(target=server.start).start()
     expected = "bar"
     actual = urllib.urlopen('http://localhost:53700/').read()
     server.stop()
+    assert actual == expected, actual
+
+
+# mode
+# ====
+
+def test_mode_default():
+    mk()
+    if 'PYTHONMODE' in os.environ:
+        del os.environ['PYTHONMODE']
+    Config(['-rfsfix'])
+    actual = mode.get()
+    expected = 'development'
+    assert actual == expected, actual
+
+def test_mode_set_in_conf_file():
+    mk('__/etc', ('__/etc/aspen.conf', '[main]\nmode=production'))
+    if 'PYTHONMODE' in os.environ:
+        del os.environ['PYTHONMODE']
+    Config(['-rfsfix'])
+    actual = mode.get()
+    expected = 'production'
     assert actual == expected, actual
 
 

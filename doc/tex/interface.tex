@@ -6,9 +6,6 @@ more than one of these contexts, they take precedence in the order given here.
 For example, a \var{mode} option on the command line will override any
 \var{mode} setting in the config file or in the environment.
 
-Currently, the command line is the only interface that is documented.
-
-
 \section{Command Line \label{command-line}}
 
 Usage:
@@ -40,10 +37,11 @@ Aspen's command-line options are as follows:
 \begin{tableiii}{l|l|l}{var}{Option}{Description}{Default}
 
 \lineiii{\programopt{-a}/\longprogramopt{-address}=\var{address}}
-    {The address to which Aspen should bind. If \var{address} begins
-    with a dot or a forward slash, then it is interpreted as an AF_UNIX socket.
-    Otherwise, it is interpreted as an AF_INET socket. If \var{address} begins
-    with a colon, then the loopback address is assumed.} {\code{:8080}}
+    {The address to which Aspen should bind. If \var{address} begins with a dot
+    or a forward slash, then it is interpreted as an AF_UNIX socket. If it
+    contains more than one colon, it is seen as an AF_INET6 address. Otherwise,
+    it is interpreted as AF_INET. If \var{address} begins with a colon, then the
+    AF_INET loopback address is assumed.} {\code{0.0.0.0:8080}}
 
 % \lineiii{\programopt{-l}/\longprogramopt{-log_filter}=\var{log_filter}}
 %     {A subsystem filter to apply to the error log, per the logging module.}
@@ -75,27 +73,32 @@ It is available to your applications at \module{aspen.mode}}
 \end{seealso}
 
 
-% \section{Configuration File \label{config-file}}
-%
-% This section describes the general Aspen configuration file at
-% \file{__/etc/aspen.conf}. Additional configuration files are described in the
-% Extending Aspen chapter. \file{aspen.conf} is in \file{.ini}-style format per
-% the ConfigParser module. There are five sections recognized: \code{DEFAULT},
+\section{Configuration File \label{config-file}}
+
+This section describes the general Aspen configuration file at
+\file{__/etc/aspen.conf}. Additional configuration files are described in the
+"Extending Aspen" chapter. \file{aspen.conf} is in \file{.ini}-style format per
+the \module{ConfigParser} module. Aspen responds to the following settings in
+the \code{main} section. You may define additional settings and sections that
+are meaningful to your application.
+
+% There are five sections recognized: \code{DEFAULT},
 % \code{debugging}, \code{development}, \code{staging}, and \code{production}. Any
 % of the below settings can be given in any section, except for \var{mode}, which
 % can only occur in \code{DEFAULT}. However, only two sections will be used at any
 % given time: \code{DEFAULT}, and the section corresponding to the current
 % deployment mode (see The Environment for more on mode).
-%
-% \begin{tableiii}{l|l|l}{var}{Option}{Description}{Default}
-%
-% \lineiii{address}{The address to which Aspen should bind. If \var{address}
-% begins with a dot or a forward slash, then it is interpreted as an AF_UNIX
-% socket. Otherwise, it is interpreted as an AF_INET socket. If \var{address}
-% begins with a colon, then the loopback address is assumed.}{\code{:8080}}
-%
-% \lineiii{defaults}{A comma-separated list of names to look for when a directory
-% is requested.}{\code{index.html, index.htm, index.py}}
+
+\begin{tableiii}{l|l|l}{var}{Option}{Description}{Default}
+
+\lineiii{address}{The address to which Aspen should bind. If \var{address}
+begins with a dot or a forward slash, then it is interpreted as an AF_UNIX
+socket. If it contains more than one colon, it is seen as an AF_INET6 address.
+Otherwise, it is interpreted as AF_INET. If \var{address} begins with a colon,
+then the AF_INET loopback address is assumed.}{\code{0.0.0.0:8080}}
+
+\lineiii{defaults}{A comma-separated list of names to look for when a directory
+is requested.}{\code{index.html, index.htm}}
 %
 % \lineiii{group}{A groupname or gid to which, if given, Aspen will attempt to
 % switch after binding to the socket.}{}
@@ -114,30 +117,150 @@ It is available to your applications at \module{aspen.mode}}
 %
 % \lineiii{log_filter}{A subsystem filter to apply to the error log, per the
 % logging module.}{}
-%
-% \lineiii{mode}{One of \code{debugging}, \code{development}, \code{staging}, or
-% \code{production}. (Naturally, this option only obtains in the DEFAULT
-% section.)}{\code{development}}
-%
-% \lineiii{threads}{The number of threads to maintain in the request-servicing
-% thread pool.}{\code{10}}
+
+\lineiii{mode}{One of \code{debugging}, \code{development}, \code{staging}, or
+\code{production}. In debugging and development modes, Aspen will restart itself
+any time module source files change on the filesystem.}{\code{development}}
+% (Naturally, this option only obtains in the DEFAULT section.)
+
+\lineiii{threads}{The number of threads to maintain in the request-servicing
+thread pool.}{\code{10}}
 %
 % \lineiii{user}{A username or uid to which, if given, Aspen will attempt to
 % switch after binding to the socket.}{}
 %
-% \end{tableiii}
-%
-%
-%
-% see also: Extending Aspen, ConfigParser, mode, logging
-%
-%
-%\section{The Environment \label{environment}}
-%
-% Aspen incorporates the \module{mode} module, which uses the \envvar{PYTHONMODE}
-% environment variable to model the application life-cycle through four deployment
-% modes: \code{debugging}, \code{development}, \code{staging}, and
-% \code{production}. This module is available to your applications at
-% \module{aspen.mode}. For more information, see the \module{mode} documentation.
-%
-% see also: mode.py
+\end{tableiii}
+
+\begin{seealso}
+
+\seelink{extending.html}
+{Extending Aspen}{Aspen three additional configuration files are described
+here.}
+
+\seelink{http://zetadev.com/software/lib537/1.0a1/doc/html/module-mode.html}
+{\code{mode}}{Aspen relies on this module to model the application life-cycle.
+It is available to your applications at \module{aspen.mode}}
+
+\end{seealso}
+
+
+\section{The Environment \label{environment}}
+
+Aspen incorporates the \module{mode} module, which uses the \envvar{PYTHONMODE}
+environment variable to model the application life-cycle through four deployment
+modes: \code{debugging}, \code{development}, \code{staging}, and
+\code{production}. This module is available to your applications at
+\module{aspen.mode}. For more information, see the \module{mode} documentation.
+
+\begin{seealso}
+
+\seelink{http://zetadev.com/software/lib537/1.0a1/doc/html/module-mode.html}
+{\code{mode}}{Aspen relies on this module to model the application life-cycle.
+It is available to your applications at \module{aspen.mode}}
+
+\end{seealso}
+
+
+\section{The \class{config} object}
+\label{config}
+
+Aspen parses and harmonizes all command-line, configuration file, and
+environment settings before it loads your plugins. Aspen provides an API for
+this configuration via an \class{aspen.configuration.Configuration} instance,
+which your plugin modules may access with:
+
+\begin{verbatim}
+from aspen import config
+\end{verbatim}
+
+\subsection{Parsers}
+
+This object exposes the various underlying configuration parsers as these
+members:
+
+\begin{memberdesc}[list]{args}
+An argument list as returned by \code{optparse.OptionParser.parse_args}.
+\end{memberdesc}
+
+\begin{memberdesc}[ConfFile]{conf}
+An instance of \code{aspen.configuration.ConfFile}, which wraps the standard
+library's \code{ConfigParser.RawConfigParser} class. The object supports both
+attribute and key access to return dictionaries corresponding to each section of
+the \file{aspen.conf} file. If a section doesn't exist, an empty dictionary is
+returned.
+
+Your application is free to use the \file{aspen.conf} file for it's own
+configuration, via this object. As a minimal example, this \file{aspen.conf}:
+
+\begin{verbatim}
+[my_app]
+foo = bar
+\end{verbatim}
+
+Could support code like this:
+
+\begin{verbatim}
+from aspen import config
+
+def wsgi_app(environ, start_response):
+    start_response('200 OK', [])
+    return [config.conf.my_app['foo']]
+\end{verbatim}
+\end{memberdesc}
+
+\begin{memberdesc}[OptionParser]{optparser}
+An \code{optparse.OptionParser} instance.
+\end{memberdesc}
+
+\begin{memberdesc}[Values]{opts}
+An \code{optparse.Values} instance per \code{optparse.OptionParser.parse_args}.
+\end{memberdesc}
+
+\begin{memberdesc}[Paths]{paths}
+An instance of \code{aspen.configuration.Paths}, which is a container for
+various paths, all normalized and absolute: \code{root} (the website's
+filesystem root), \code{__} (its magic directory); \code{lib} (the site's local
+Python library); \code{plat} (the local platform-specific Python library).
+\end{memberdesc}
+
+
+\subsection{Settings}
+
+Furthermore, \code{aspen.config} exposes specific configuration settings as
+these members:
+
+\begin{memberdesc}[]{address}
+A tuple (for \code{AF_INET} and \code{AF_INET6} address) or string (for
+\code{AF_UNIX}) given the address to which Aspen is bound.
+\end{memberdesc}
+
+\begin{memberdesc}[string]{command}
+A string giving the command line argument (\var{start}, \var{stop}, etc.).
+\end{memberdesc}
+
+\begin{memberdesc}[boolean]{daemon}
+A boolean indicating whether Aspen is acting as a daemon.
+\end{memberdesc}
+
+\begin{memberdesc}[tuple]{defaults}
+A tuple listing the default resource names to look for in a directory.
+\end{memberdesc}
+
+\begin{memberdesc}[int]{sockfam}
+One of \code{socket.AF_INET}, \code{socket.AF_INET6}, and \code{socket.AF_UNIX}.
+\end{memberdesc}
+
+
+All members are intended to be read-only.
+
+
+\begin{seealso}
+
+\seelink{http://docs.python.org/lib/RawConfigParser-objects.html}
+{\code{RawConfigParser}}{In addition to the API above, \code{aspen.config.conf}
+also exposes the \code{RawConfigParser} API.}
+
+\seelink{http://docs.python.org/lib/module-optparse.html} {\code{optparse}}{The
+documentation for optparse is rather, um, convoluted. Good luck!}
+
+\end{seealso}
