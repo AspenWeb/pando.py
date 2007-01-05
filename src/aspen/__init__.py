@@ -7,12 +7,13 @@ import socket
 import sys
 import threading
 import time
-from optparse import OptionError
 from os.path import isdir, isfile, join
 
 from aspen import mode, restarter
+from aspen.configuration import ConfigurationError, Configuration, usage
+from aspen.website import Website
 from aspen.wsgiserver import CherryPyWSGIServer as Server
-from aspen.config import ConfigError, Configuration, usage
+
 
 if 'win' not in sys.platform:
     from aspen.daemon import Daemon # this actually fails on Windows; needs pwd
@@ -64,25 +65,25 @@ PIDCHECK_TIMEOUT = 60 # seconds between pidfile writes
 pidfiler = PIDFiler() # must actually set pidfiler.path before starting
 
 
-def start_server(config):
-    """This is the heavy work of instantiating and starting a website.
+globals_ = globals()
+def server_factory(config):
+    """This is the heavy work of instantiating the server.
     """
 
-    # Delayed import.
-    # ===============
-    # @@: does this really help w/ boot up time in restart mode?
+    # Construct the server.
+    # =====================
+    # This is done in such a way that user modules may get the Configuration 
+    # object already initialized by doing:
+    #
+    #   from aspen import config
 
-    from aspen.website import Website
-
-
-    # Build the website and server.
-    # =============================
-
-    config.load_plugins()
+    global globals_
+    globals_['config'] = config
+    config.load_plugins() # user modules loaded here; may import config
     website = Website(config)
     for app in config.middleware:
         website = app(website)
-    server = Server(config.address, website)
+    server = Server(config.address, website, config.threads)
 
 
     # Monkey-patch server to support restarting.
@@ -98,10 +99,16 @@ pidfiler = PIDFiler() # must actually set pidfiler.path before starting
                 server.stop()
                 raise SystemExit(75)
         server.tick = tick
+        
+        
+    return server
 
 
-    # Loop.
-    # =====
+def start_server(config):
+    """Get a server object and start it up.
+    """
+
+    server = server_factory(config) # factored out to ease testing
 
     try:
         print "aspen starting on %s" % str(config.address)
@@ -223,7 +230,7 @@ pidfiler = PIDFiler() # must actually set pidfiler.path before starting
         if isfile(pidfile):
             pid = int(open(pidfile).read())
             command = "ps auxww|grep ' %d .*aspen'|grep -v grep" % pid
-            # @@: I doubt this command is portable.
+            # @@: I, um, doubt this command is portable. :^)
             os.system(command)
             raise SystemExit(0)
         else:
@@ -242,12 +249,13 @@ pidfiler = PIDFiler() # must actually set pidfiler.path before starting
 def main(argv=None):
     """Initial phase of config parsing, and daemon/restarter/server branch.
     """
+
     if argv is None:
         argv = sys.argv[1:]
 
     try:
         config = Configuration(argv)
-    except ConfigError, err:
+    except ConfigurationError, err:
         print usage
         print err.msg
         raise SystemExit(2)

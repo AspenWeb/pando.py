@@ -174,6 +174,19 @@ TAB = '\t'
 
 class Mixin:
 
+    apps = None # a list of apps, reverse-sorted by SCRIPT_NAME
+    handlers = None # a list of Handlers, unsorted
+    middleware = None # a list of middleware, in reverse order
+    
+
+    def load_plugins(self):
+        """Load plugin objects and set on self.
+        """
+        self.apps = self.load_apps()
+        self.handlers = self.load_handlers()
+        self.middleware = self.load_middleware()
+
+
     # Apps
     # ====
 
@@ -344,7 +357,7 @@ TAB = '\t'
     # ==========
 
     def load_middleware(self):
-        """Return a list of (URI path, WSGI middleware) tuples.
+        """Return a list of middleware callables in reverse order.
         """
 
         # Find a config file to parse.

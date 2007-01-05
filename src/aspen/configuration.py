@@ -1,3 +1,12 @@
+"""Define configuration objects.
+
+    1. validator_address -- called in a couple places
+    2. optparse -- command line interface
+    3. paths -- path storage
+    4. ConfFile -- represents a configuration file
+    5. Configuration -- puts it all together
+
+"""
 import logging
 import os
 import socket
@@ -6,19 +15,17 @@ import optparse
 import ConfigParser
 from os.path import join, isdir, realpath
 
-try:
-    import pwd
-    WINDOWS = False
-except:
-    WINDOWS = True
-
 from aspen import load, mode
 
 
-log = logging.getLogger('aspen.config')
+log = logging.getLogger('aspen.configuration')
 COMMANDS = ('start', 'status', 'stop', 'restart', 'runfg')
+WINDOWS = 'win' in sys.platform
+if not WINDOWS:
+    import pwd
 
-class ConfigError(StandardError):
+
+class ConfigurationError(StandardError):
     """This is an error in any part of our configuration.
     """
 
@@ -30,17 +37,16 @@ class ConfigError(StandardError):
         return self.msg
 
 
-# Validators
-# ==========
-# Given a value, return a valid value or raise ConfigError
-
-def validate_address(address):
-    """Given a socket address string, return a tuple (sockfam, address)
+def validate_address(address):
+    """Given a socket address string, return a tuple (sockfam, address).
+    
+    This is called from a couple places, and is a bit complex.
+    
     """
 
     if address[0] in ('/','.'):
         if WINDOWS:
-            raise ConfigError("Can't use an AF_UNIX socket on Windows.")
+            raise ConfigurationError("Can't use an AF_UNIX socket on Windows.")
             # but what about named pipes?
         sockfam = socket.AF_UNIX
         # We could test to see if the path exists or is creatable, etc.
@@ -114,21 +120,22 @@ def validate_address(address):
         address = (ip, port)
 
 
-    return sockfam, address
+    return address, sockfam
+    
 
+# optparse
+# ========
+# Does this look ugly to anyone else? It works I guess.
 
-# Command-Line Option Parser
-# ==========================
-
-def cb_address(option, opt, value, parser):
+def callback_address(option, opt, value, parser_):
     """Must be a valid AF_INET or AF_UNIX address.
     """
     sockfam, address = validate_address(value)
-    parser.values.sockfam = sockfam
-    parser.values.address = address
+    parser_.values.sockfam = sockfam
+    parser_.values.address = address
 
 
-def cb_log_level(option, opt, value, parser):
+def callback_log_level(option, opt, value, parser_):
     """
     """
     try:
@@ -136,17 +143,17 @@ def cb_log_level(option, opt, value, parser):
     except AttributeError:
         msg = "Bad log level: %s" % value
         raise optparse.OptionValueError(msg)
-    parser.values.log_level = level
+    parser_.values.log_level = level
 
 
-def cb_root(option, opt, value, parser):
+def callback_root(option, opt, value, parser_):
     """Expand the root directory path and make sure the directory exists.
     """
     value = realpath(value)
     if not isdir(value):
         msg = "%s does not point to a directory" % value
         raise optparse.OptionValueError(msg)
-    parser.values.root = value
+    parser_.values.root = value
 
 
 usage = "aspen [options] [start,stop,&c.]; --help for more"
@@ -154,7 +161,7 @@ optparser = optparse.OptionParser(usage=usage)
 
 optparser.add_option( "-a", "--address"
                     , action="callback"
-                    , callback=cb_address
+                    , callback=callback_address
                     , default=('0.0.0.0', 8080)
                     , dest="address"
                     , help="the IP or Unix address to bind to [:8080]"
@@ -179,7 +186,7 @@ optparser.add_option( "-m", "--mode"
                      )
 optparser.add_option( "-r", "--root"
                     , action="callback"
-                    , callback=cb_root
+                    , callback=callback_root
                     , default=os.getcwd()
                     , dest="root"
                     , help="the root publishing directory [.]"
@@ -187,7 +194,7 @@ optparser.add_option( "-r", "--root"
                      )
 #optparser.add_option( "-v", "--log_level"
 #                    , action="callback"
-#                    , callback=cb_log_level
+#                    , callback=callback_log_level
 #                    , choices=[ 'notset', 'debug', 'info', 'warning', 'error'
 #                              , 'critical'
 #                               ]
@@ -200,10 +207,9 @@ optparser.add_option( "-r", "--root"
 #                     )
 
 
-# Paths
-# =====
-
-class Paths:
+class Paths:
+    """Junkdrawer for a few paths we like to keep around.
+    """
 
     def __init__(self, root):
         """Takes the website's filesystem root.
@@ -238,55 +244,158 @@ class Paths:
                     sys.path.insert(0, path)
 
 
+class ConfFile(ConfigParser.RawConfigParser):
+    """Represent a configuration file.
+    
+    This class wraps the standard library's RawConfigParser class. The 
+    constructor takes the path of a configuration file. If the file does not 
+    exist, you'll get an empty object. Use either attribute or key access on 
+    instances of this class to return section dictionaries. If a section doesn't 
+    exist, you'll get an empty dictionary.
+    
+    """
+    
+    def __init__(self, filepath):
+        ConfigParser.RawConfigParser.__init__(self)
+        self.read([filepath])
+
+    def __getitem__(self, name):
+        return self.has_section(name) and dict(self.items(name)) or {}
+    __getattr__ = __getitem__
+
+
+    # Iteration API
+    # =============
+    # mostly for testing
+
+    def iterkeys(self):
+        return iter(self.sections())
+    __iter__ = iterkeys
+    
+    def iteritems(self):
+        for k in self:
+            yield (k, self[k])
+    
+    def itervalues(self):
+        for k in self:
+            yield self[k]
+    
+
 class Configuration(load.Mixin):
     """Aggregate configuration from several sources.
-
-      opts      an optparse.Values instance
-      args      a list of command line arguments (no options included)
-      paths     a Paths instance (subattrs: root, __, lib, plat)
-      fileconf  a RawConfigParser, or None if there is no config file
-
-      command   one of start, stop, restart, runfg (from the command line)
-
-
     """
 
-    defaults = ('index.html', 'index.htm', 'index.py')
+    args = None # argument list as returned by OptionParser.parse_args
+    conf = None # a ConfFile instance
+    optparser = None # an optparse.OptionParser instance
+    opts = None # an optparse.Values instance per OptionParser.parse_args
+    paths = None # a Paths instance
+
+    address = None # the AF_INET, AF_INET6, or AF_UNIX address to bind to 
+    command = None # one of restart, runfg, start, status, stop [runfg]
+    daemon = None # boolean; whether to daemonize
+    defaults = None # tuple of default resource names for a directory
+    sockfam = None # one of socket.AF_{INET,INET6,UNIX}
+    
 
     def __init__(self, argv):
+        """Takes an argv list, gives it straight to optparser.parse_args.
         """
-        """
 
-        # Basics
-        # ======
+        # Initialize parsers.
+        # ===================
+        # The 'root' knob can only be specified on the command line.
 
-        self.optparser = optparser
-        self.opts, self.args = self.optparser.parse_args(argv)
-        self.paths = Paths(self.opts.root)
+        opts, args = optparser.parse_args(argv)
+        paths = Paths(opts.root)                # default handled by optparse
+        conf = ConfFile(join(paths.root, '__', 'etc', 'aspen.conf'))
 
-        conf = None
-        if self.paths.__ is not None:
-            conf = ConfigParser.RawConfigParser()
-            conf.read(join(self.paths.__, 'etc', 'aspen.conf'))
+        self.args = args
         self.conf = conf
-        # XXX: validate config file values
-
-        self.environ = dict()
-        for k,v in os.environ.items():
-            if k.startswith('ASPEN_'):
-                self.environ[k[len('ASPEN_'):]] = v
-        # XXX: validate envvar values
+        self.optparser = optparser
+        self.opts = opts
+        self.paths = paths
 
 
-        # Command
-        # =======
+        # command/daemon
+        # ==============
+        # Like root, 'command' can only be set on the command line.
 
-        self.command = self.args and self.args[0] or 'runfg'
-        if self.command not in COMMANDS:
-            raise ConfigError("Bad command: %s" % self.command)
-        self.daemon = self.command != 'runfg'
-        if self.daemon and sys.platform == 'win32':
-            raise ConfigError("Can only daemonize on UNIX.")
+        command = args and args[0] or 'runfg'
+        if command not in COMMANDS:
+            raise ConfigurationError("Bad command: %s" % command)
+        daemon = command != 'runfg'
+        if daemon and WINDOWS:
+            raise ConfigurationError("Can only daemonize on UNIX.")
+
+        self.command = command
+        self.daemon = daemon
+
+
+        # address/sockfam & mode
+        # ======================
+        # These can be set either on the command line or in the conf file.
+        
+        if 'address' in conf.main:
+            address, sockfam = validate_address(conf.main['address'])
+        else:
+            address = opts.address              # default handled by optparse
+            sockfam = getattr(opts, 'sockfam', socket.AF_INET)
+
+        if 'mode' in conf.main:
+            mode_ = conf.main['mode']
+        else:
+            mode_ = opts.mode                   # default handled by optparse
+
+        self.address = address
+        self.sockfam = sockfam
+        mode.set(mode_)
+
+
+        # aspen.conf
+        # ==========
+        # These remaining options are only settable in aspen.conf. Just a 
+        # couple for now.
+
+        # defaults
+        # --------
+        
+        defaults = conf.main.get('defaults', ('index.html', 'index.htm'))
+        if isinstance(defaults, basestring):
+            if ',' in defaults:
+                defaults = [d.strip() for d in defaults.split(',')]
+            else:
+                defaults = defaults.split()
+        self.defaults = tuple(defaults)
+
+
+        # threads
+        # -------
+
+        threads = conf.main.get('threads', 10)
+        if isinstance(threads, basestring):
+            if not threads.isdigit():
+                raise TypeError( "thread count not a positive integer: "
+                               + "'%s'" % threads
+                                )
+            threads = int(threads)
+            if not threads >= 1:
+                raise ValueError("thread count less than 1: '%d'" % threads)
+        self.threads = threads
+
+
+
+#        # user
+#        # ----
+#        # Must be a valid user account on this system.
+#
+#        if WINDOWS:
+#            raise ConfigurationError("can't switch users on Windows")
+#        try:
+#            user = pwd.getpwnam(candidate)[2]
+#        except KeyError:
+#            raise ConfigurationError("bad user: '%s'" % candidate)
+#        return user
 
 
         # Logging
@@ -307,70 +416,3 @@ class Paths:
 #        logging.root.addHandler(handler)
 #        logging.root.setLevel(self.opts.log_level)
 #        log.debug("logging configured")
-
-
-        # Address
-        # =======
-
-        self.address = self.opts.address
-        self.sockfam = getattr(self.opts, 'sockfam', socket.AF_INET)
-
-
-        # Mode
-        # ====
-
-        mode.set(self.opts.mode)
-
-
-    def load_plugins(self):
-        """Load plugin objects and set on self.
-
-        This adds import/initialization overhead that the parent process doesn't
-        need when we are in a restarting situation.
-
-        """
-        self.apps = self.load_apps()
-        self.handlers = self.load_handlers()
-        self.middleware = self.load_middleware()
-
-
-
-    # Validators
-    # ==========
-
-    #def validate_threads(self, context, candidate):
-    #    """Must be an integer greater than or equal to 1.
-    #    """
-    #
-    #    msg = ("Found bad thread count `%s' in context `%s'. " +
-    #           "Threads must be an integer greater than or equal to one.")
-    #    msg = msg % (str(candidate), context)
-    #
-    #    if not isinstance(candidate, (int, long)):
-    #        isstring = isinstance(candidate, basestring)
-    #        if not isstring or not candidate.isdigit():
-    #            raise ConfigError(msg)
-    #    candidate = int(candidate)
-    #    if not candidate >= 1:
-    #        raise ConfigError(msg)
-    #
-    #    return candidate
-    #
-    #
-    #def validate_user(self, context, candidate):
-    #    """Must be a valid user account on this system.
-    #    """
-    #
-    #    if WINDOWS:
-    #        raise ConfigError("This option is not available on Windows.")
-    #
-    #    msg = ("Found bad user `%s' in context `%s'. " +
-    #           "User must be a valid user account on this system.")
-    #    msg = msg % (str(candidate), context)
-    #
-    #    try:
-    #        candidate = pwd.getpwnam(candidate)[2]
-    #    except KeyError:
-    #        raise ConfigError(msg)
-    #
-    #    return candidate

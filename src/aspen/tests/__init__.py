@@ -1,4 +1,6 @@
 def assert_raises(Exc, call, *arg, **kw):
+    """Given an Exception, a callable, and its params, return an exception.
+    """
     exc = None
     try:
         call(*arg, **kw)

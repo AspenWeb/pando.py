@@ -44,14 +44,14 @@ log = logging.getLogger('aspen.website')
         # =======================
 
         app = self.get_app(environ, start_response) # 301
-        if type(app) is type([]):                           # redirection
+        if isinstance(app, list):                           # redirection
             response = app
         elif app is not None:                               # app
             response = app(environ, start_response) # WSGI
+        elif not exists(fspath):                            # 404 NOT FOUND
+            start_response('404 Not Found', [])
+            response = ['Resource not found.']
         else:                                               # handler
-            if not exists(fspath):
-                start_response('404 Not Found', [])
-                return ['Resource not found.']
             response = check_trailing_slash(environ, start_response)
             if response is None:
                 handler = self.get_handler(fspath)
