@@ -6,6 +6,7 @@ more than one of these contexts, they take precedence in the order given here.
 For example, a \var{mode} option on the command line will override any
 \var{mode} setting in the config file or in the environment.
 
+
 \section{Command Line \label{command-line}}
 
 Usage:
@@ -73,14 +74,15 @@ It is available to your applications at \module{aspen.mode}}
 \end{seealso}
 
 
-\section{Configuration File \label{config-file}}
+\section{Configuration File \label{config-file}}
 
 This section describes the general Aspen configuration file at
 \file{__/etc/aspen.conf}. Additional configuration files are described in the
 "Extending Aspen" chapter. \file{aspen.conf} is in \file{.ini}-style format per
 the \module{ConfigParser} module. Aspen responds to the following settings in
 the \code{main} section. You may define additional settings and sections that
-are meaningful to your application.
+are meaningful to your application, which you may access using the
+\class{aspen.conf} object described below in the "API" chapter.
 
 % There are five sections recognized: \code{DEFAULT},
 % \code{debugging}, \code{development}, \code{staging}, and \code{production}. Any
@@ -144,13 +146,15 @@ It is available to your applications at \module{aspen.mode}}
 \end{seealso}
 
 
-\section{The Environment \label{environment}}
+\section{The Environment \label{environment}}
 
 Aspen incorporates the \module{mode} module, which uses the \envvar{PYTHONMODE}
 environment variable to model the application life-cycle through four deployment
 modes: \code{debugging}, \code{development}, \code{staging}, and
 \code{production}. This module is available to your applications at
-\module{aspen.mode}. For more information, see the \module{mode} documentation.
+\module{aspen.mode}, and its documentation is included below in the "API"
+chapter.
+
 
 \begin{seealso}
 

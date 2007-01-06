@@ -25,25 +25,10 @@ Now open a web browser and hit \code{http://localhost:8080/}. You should see
 "Greetings, program!" in your browser. Congratulations!
 
 
-\section{A Python Script \label{tutorial-pyscript}}
-
-Aspen supports pseudo-CGI-style programming with more or less regular python
-scripts. In your \file{aspentut} directory, create a file named \file{foo.py}
-with the following contents:
-
-\begin{verbatim}
-start_response('200 OK', [('Content-Type', 'text/plain')])
-response = ["Greetings, program!"]
-\end{verbatim}
-
-Assuming that Aspen is still running, hit \code{http://localhost:8080/foo.py} in
-your browser. You should again see "Greetings, program!"
-
-
 \section{Your First Handler \label{tutorial-handler}}
 
-Aspen uses \dfn{handlers} to process your \file{index.html} and \file{foo.py}
-files. Now we are going to write our own handler.
+Aspen uses \dfn{handlers} to process files such as your \file{index.html}. Now
+we are going to write our own handler.
 
 First, create a directory under \file{aspentut} named \file{__} (that's two
 underscores). This is \file{aspentut}'s \dfn{magic directory}, and it is where

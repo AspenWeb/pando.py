@@ -1,9 +1,53 @@
 \chapter{Application Programming Interface (API) \label{api}}
 
 Aspen parses and harmonizes all command-line, configuration file, and
-environment settings before it loads your plugins. All of this information is
-then available to your modules via several objects which are dynamically placed
-in the global \module{aspen} namespace before your plugins are loaded.
+environment settings before it loads your plugins. This information is then
+available to your modules via several objects which are dynamically placed in
+the global \module{aspen} namespace before your plugins are
+loaded---\class{conf}, \class{configuration}, and \class{paths}---and via the
+\module{mode} module.
+
+
+\section{The \class{aspen.conf} object}
+\label{api-conf}
+
+The \class{aspen.conf} object is an instance of
+\class{aspen._configuration.ConfFile}, which subclasses the standard library's
+\class{ConfigParser.RawConfigParser} class to represent the
+\file{__/etc/aspen.conf} file. In addition to the \class{RawConfigParser} API,
+the object supports both attribute and key read-only access; either returns a
+dictionary corresponding to a section of the \file{aspen.conf} file. If the
+named section does not exist, an empty dictionary is returned.
+
+Your application is free and encouraged to use the \file{aspen.conf} file for
+it's own configuration, and to access that information via this object.
+
+To illustrate, here is a minimal \file{aspen.conf} file:
+
+\begin{verbatim}
+[my_settings]
+foo = bar
+\end{verbatim}
+
+Such a file could support code like this:
+
+\begin{verbatim}
+import aspen
+
+def wsgi_app(environ, start_response):
+    my_setting = aspen.conf.my_settings.get('foo', 'default')
+    start_response('200 OK', [])
+    return ["My setting is %s" % my_setting]
+\end{verbatim}
+
+
+\begin{seealso}
+
+\seelink{http://docs.python.org/lib/RawConfigParser-objects.html}
+{\code{RawConfigParser}}{In addition to the API above, \code{aspen.conf} also
+exposes the \code{RawConfigParser} API.}
+
+\end{seealso}
 
 
 \section{The \class{aspen.configuration} object}
@@ -85,47 +129,104 @@ convoluted. Good luck!}
 \end{seealso}
 
 
-\section{The \class{aspen.conf} object}
-\label{api-conf}
+\section{The \module{aspen.mode} module}
 
-The \class{aspen.conf} object is an instance of
-\class{aspen._configuration.ConfFile}, which subclasses the standard library's
-\class{ConfigParser.RawConfigParser} class to represent the
-\file{__/etc/aspen.conf} file. In addition to the \class{RawConfigParser} API,
-the object supports both attribute and key read-only access; either returns a
-dictionary corresponding to a section of the \file{aspen.conf} file. If the
-named section does not exist, an empty dictionary is returned.
+\declaremodule{aspen}{mode}
+\modulesynopsis{Manage the application life-cycle, from debugging to
+production.}
 
-Your application is free and encouraged to use the \file{aspen.conf} file for
-it's own configuration, and to access that information via this object.
+It is often valuable to maintain a distinction between various phases of an
+application's lifecycle. The \module{mode} module calls these phases
+\dfn{modes}, and identifies four of them, given here in conceptual life-cycle
+order:
 
-To illustrate, here is a minimal \file{aspen.conf} file:
+\begin{tableii}{l|l}{code}{Mode}{Description}
+\lineii{debugging}{The application is being actively debugged; exceptions may
+    trigger an interactive debugger.}
+\lineii{development}{The application is being actively developed; however,
+    exceptions should not trigger interactive debugging.}
+\lineii{staging}{The application is deployed in a mock-production
+    environment.}
+\lineii{production}{The application is in live use by its end users.}
+\end{tableii}
+
+
+The expectation is that various aspects of the application---logging, exception
+handling, data sourcing---will adapt to the current mode. The mode is set in the
+\envvar{PYTHONMODE} environment variable. This module provides API for
+interacting with this variable. If \envvar{PYTHONMODE} is unset, it will be set
+to \code{development} when this module is imported.
+
+\subsection{Members}
+
+The module defines the following functions:
+
+\begin{funcdesc}{get}{}
+Return the current \envvar{PYTHONMODE} setting as a lowercase string; will raise
+\exception  {EnvironmentError} if the (case-insensitive) setting is not one of
+\code{debugging}, \code{development}, \code{staging}, or \code{production}.
+\end{funcdesc}
+
+\begin{funcdesc}{set}{mode}
+Given a mode, set the PYTHONMODE environment variable and refresh the module's
+boolean members. If given a bad mode, \exception{ValueError} is raised.
+\end{funcdesc}
+
+\begin{funcdesc}{setAPI}{}
+Refresh the module's boolean members. Call this if you ever change
+\envvar{PYTHONPATH} directly in the \code{os.environ} mapping.
+\end{funcdesc}
+
+The module also defines a number of boolean attributes reflecting the current
+mode setting, including abbreviations and combinations. Uppercase versions of
+each of the following are also defined (e.g., \code{DEBUGGING}).
+
+\begin{datadesc}{debugging, deb}
+\class{True} if \envvar{PYTHONMODE} is set to \code{debugging}.
+\end{datadesc}
+\begin{datadesc}{development, dev}
+\class{True} if \envvar{PYTHONMODE} is set to \code{development}.
+\end{datadesc}
+\begin{datadesc}{staging, st}
+\class{True} if \envvar{PYTHONMODE} is set to \code{staging}.
+\end{datadesc}
+\begin{datadesc}{production, prod}
+\class{True} if \envvar{PYTHONMODE} is set to \code{production}.
+\end{datadesc}
+\begin{datadesc}{debugging_or_development, debdev, devdeb}
+\class{True} if \envvar{PYTHONMODE} is set to \code{debugging} or \code{development}.
+\end{datadesc}
+\begin{datadesc}{staging_or_production, stprod}
+\class{True} if \envvar{PYTHONMODE} is set to \code{staging} or \code{production}.
+\end{datadesc}
+
+
+\subsection{Example}
+
+Example usage:
 
 \begin{verbatim}
-[my_settings]
-foo = bar
+>>> import mode
+>>> mode.set('development')     # can set the mode at runtime
+>>> mode.get()                  # and access the current mode
+'development'
+>>> mode.development            # module defines boolean constants
+True
+>>> mode.PRODUCTION             # uppercase versions are also defined
+False
+>>> mode.dev                    # as are abbreviations
+True
+>>> mode.DEBDEV, mode.stprod    # and combinations
+(True, False)
 \end{verbatim}
-
-Such a file could support code like this:
-
-\begin{verbatim}
-import aspen
-
-def wsgi_app(environ, start_response):
-    my_setting = aspen.conf.my_settings.get('foo', 'default')
-    start_response('200 OK', [])
-    return ["My setting is %s" % my_setting]
-\end{verbatim}
-
 
 \begin{seealso}
 
-\seelink{http://docs.python.org/lib/RawConfigParser-objects.html}
-{\code{RawConfigParser}}{In addition to the API above, \code{aspen.conf} also
-exposes the \code{RawConfigParser} API.}
+\seelink{http://www.zetadev.com/software/lib537/1.0a1/doc/html/module-mode.html}
+{\module{mode}}{The \module{mode} module is maintained as part of the
+\module{lib537} library.}
 
 \end{seealso}
-
 
 
 \section{The \class{aspen.paths} object}
@@ -150,3 +251,7 @@ the site's local Python library
 \begin{memberdesc}[string]{plat}
 the local platform-specific Python library
 \end{memberdesc}
+
+If there is no magic directory, then \code{__}, \code{lib}, and \code{plat} are
+all \class{None}. If there is, then \code{lib} and \code{plat} are added to
+\code{sys.path}.
