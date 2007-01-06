@@ -4,7 +4,9 @@ import subprocess
 import sys
 import time
 import urllib
+from os.path import join
 
+import aspen
 from aspen._configuration import Configuration
 from aspen.exceptions import *
 from aspen.tests import assert_raises
@@ -31,12 +33,21 @@ def Website():
 # =====
 
 def test_greetings_program():
-    """This is also a general smoke test, as it runs the entire Aspen process.
+    """This is also a general smoke test, as it runs the entire Aspen stack.
+
+     @@: couple problems with this on Windows:
+       - where is the aspen executable?
+       - os.kill isn't available, is it?
+
     """
-    mk(('index.html', 'Greetings, program!'))
-    proc = subprocess.Popen([ 'aspen'
+
+    mk( 'root', ('root/index.html', "Greetings, program!")
+      , ('smoke-it.py', "import aspen; aspen.main()")
+       )
+    proc = subprocess.Popen([ 'python' # assumed to be on PATH
+                            , join('fsfix', 'smoke-it.py')
                             , '--address', ':53700'
-                            , '--root', 'fsfix'
+                            , '--root', join('fsfix', 'root')
                             , '--mode', 'production'
                              ])
     time.sleep(1) # give time to startup
