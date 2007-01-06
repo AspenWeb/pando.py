@@ -28,6 +28,7 @@ from aspen.wsgiserver import CherryPyWSGIServer as Server
 if 'win' not in sys.platform:
     from aspen.daemon import Daemon # this actually fails on Windows; needs pwd
 else:
+    WINDOWS = True
     Daemon = None # daemonization not available on Windows; @@: service?
 
 
@@ -141,11 +142,12 @@ def server_factory(configuration):
         print "stopping server"
         sys.stdout.flush()
         server.stop()
-        if configuration.sockfam == socket.AF_UNIX:         # clean up socket
-            try:
-                os.remove(configuration.address)
-            except EnvironmentError, exc:
-                print "error removing socket:", exc.strerror
+        if not WINDOWS:
+            if configuration.sockfam == socket.AF_UNIX:     # clean up socket
+                try:
+                    os.remove(configuration.address)
+                except EnvironmentError, exc:
+                    print "error removing socket:", exc.strerror
         if pidfiler.isAlive():                              # we're a daemon
             pidfiler.stop.set()
             pidfiler.join()
