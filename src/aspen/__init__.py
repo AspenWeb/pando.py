@@ -25,11 +25,12 @@ from aspen.website import Website
 from aspen.wsgiserver import CherryPyWSGIServer as Server
 
 
-if 'win' not in sys.platform:
-    from aspen.daemon import Daemon # this actually fails on Windows; needs pwd
-else:
+if 'win' in sys.platform:
     WINDOWS = True
     Daemon = None # daemonization not available on Windows; @@: service?
+else:
+    WINDOWS = False
+    from aspen.daemon import Daemon # this actually fails on Windows; needs pwd
 
 
 __version__ = '~~VERSION~~'
@@ -128,17 +129,17 @@ def server_factory(configuration):
     return server
 
 
-def start_server(configuration):
+def start_server(configuration):
     """Get a server object and start it up.
     """
 
     server = server_factory(configuration) # factored out to ease testing
 
-    try:
-        print "aspen starting on %s" % str(configuration.address)
-        sys.stdout.flush()
-        server.start()
-    finally:
+
+    # Define a shutdown handler and attach to signals.
+    # ================================================
+
+    def shutdown(signum, frame):
         print "stopping server"
         sys.stdout.flush()
         server.stop()
@@ -151,6 +152,19 @@ def server_factory(configuration):
         if pidfiler.isAlive():                              # we're a daemon
             pidfiler.stop.set()
             pidfiler.join()
+
+    signal.signal(signal.SIGINT, shutdown)
+    signal.signal(signal.SIGTERM, shutdown)
+
+
+    # Start the server.
+    # =================
+    # We could do a try/finally here to shut down cleanly in case of bugs, but
+    # then we'd have less incentive to fix the bugs, wouldn't we? :^)
+
+    print "aspen starting on %s" % str(configuration.address)
+    sys.stdout.flush()
+    server.start()
 
 
 def drive_daemon(configuration):

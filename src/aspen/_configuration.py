@@ -133,9 +133,9 @@ class ConfigurationError(StandardError):
 def callback_address(option, opt, value, parser_):
     """Must be a valid AF_INET or AF_UNIX address.
     """
-    sockfam, address = validate_address(value)
-    parser_.values.sockfam = sockfam
+    address, sockfam = validate_address(value)
     parser_.values.address = address
+    parser_.values.sockfam = sockfam
 
 
 def callback_log_level(option, opt, value, parser_):

@@ -1,5 +1,9 @@
 import os
+import signal
+import subprocess
 import sys
+import time
+import urllib
 
 from aspen._configuration import Configuration
 from aspen.exceptions import *
@@ -27,21 +31,20 @@ def Website():
 # =====
 
 def test_greetings_program():
+    """This is also a general smoke test, as it runs the entire Aspen process.
+    """
     mk(('index.html', 'Greetings, program!'))
-
+    proc = subprocess.Popen([ 'aspen'
+                            , '--address', ':53700'
+                            , '--root', 'fsfix'
+                            , '--mode', 'production'
+                             ])
+    time.sleep(1) # give time to startup
     expected = 'Greetings, program!'
-    actual = Website()({'PATH_INFO':'/'}, lambda a,b,c=0:a).read()
+    actual = urllib.urlopen('http://localhost:53700/').read()
+    os.kill(proc.pid, signal.SIGTERM)
+    proc.wait()
     assert actual == expected, actual
-
-#    expected = Response(200, 'Greetings, program!')
-#    expected.headers['Content-Type'] = 'text/html'
-#    expected.headers['Content-Length'] = 19
-#
-#    assert 'Last-Modified' in actual.headers
-#    del actual.headers['Last-Modified']
-#
-#    assert actual == expected, actual
-
 
 def test_your_first_handler():
     mk( lib_python, '__/etc'
