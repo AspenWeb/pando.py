@@ -6,6 +6,9 @@
     4. ConfFile -- represents a configuration file
     5. Configuration -- puts it all together
 
+This module is so-named because we place an instance of Configuration in the
+global aspen namespace.
+
 """
 import logging
 import os
@@ -39,9 +42,9 @@ class ConfigurationError(StandardError):
 
 def validate_address(address):
     """Given a socket address string, return a tuple (sockfam, address).
-    
+
     This is called from a couple places, and is a bit complex.
-    
+
     """
 
     if address[0] in ('/','.'):
@@ -121,7 +124,7 @@ class ConfigurationError(StandardError):
 
 
     return address, sockfam
-    
+
 
 # optparse
 # ========
@@ -246,22 +249,29 @@ optparser.add_option( "-r", "--root"
 
 class ConfFile(ConfigParser.RawConfigParser):
     """Represent a configuration file.
-    
-    This class wraps the standard library's RawConfigParser class. The 
-    constructor takes the path of a configuration file. If the file does not 
-    exist, you'll get an empty object. Use either attribute or key access on 
-    instances of this class to return section dictionaries. If a section doesn't 
+
+    This class wraps the standard library's RawConfigParser class. The
+    constructor takes the path of a configuration file. If the file does not
+    exist, you'll get an empty object. Use either attribute or key access on
+    instances of this class to return section dictionaries. If a section doesn't
     exist, you'll get an empty dictionary.
-    
+
     """
-    
+
     def __init__(self, filepath):
         ConfigParser.RawConfigParser.__init__(self)
         self.read([filepath])
 
     def __getitem__(self, name):
         return self.has_section(name) and dict(self.items(name)) or {}
-    __getattr__ = __getitem__
+
+    def __getattr__(self, name):
+        if name in self.__dict__:
+            return self.__dict__[name]
+        elif name in self.__class__.__dict__:
+            return self.__class__.__dict__[name]
+        else:
+            return self.__getitem__(name)
 
 
     # Iteration API
@@ -271,15 +281,15 @@ optparser.add_option( "-r", "--root"
     def iterkeys(self):
         return iter(self.sections())
     __iter__ = iterkeys
-    
+
     def iteritems(self):
         for k in self:
             yield (k, self[k])
-    
+
     def itervalues(self):
         for k in self:
             yield self[k]
-    
+
 
 class Configuration(load.Mixin):
     """Aggregate configuration from several sources.
@@ -291,12 +301,13 @@ optparser.add_option( "-r", "--root"
     opts = None # an optparse.Values instance per OptionParser.parse_args
     paths = None # a Paths instance
 
-    address = None # the AF_INET, AF_INET6, or AF_UNIX address to bind to 
+    address = None # the AF_INET, AF_INET6, or AF_UNIX address to bind to
     command = None # one of restart, runfg, start, status, stop [runfg]
     daemon = None # boolean; whether to daemonize
     defaults = None # tuple of default resource names for a directory
     sockfam = None # one of socket.AF_{INET,INET6,UNIX}
-    
+    threads = None # the number of threads in the pool
+
 
     def __init__(self, argv):
         """Takes an argv list, gives it straight to optparser.parse_args.
@@ -335,7 +346,7 @@ optparser.add_option( "-r", "--root"
         # address/sockfam & mode
         # ======================
         # These can be set either on the command line or in the conf file.
-        
+
         if 'address' in conf.main:
             address, sockfam = validate_address(conf.main['address'])
         else:
@@ -354,12 +365,12 @@ optparser.add_option( "-r", "--root"
 
         # aspen.conf
         # ==========
-        # These remaining options are only settable in aspen.conf. Just a 
+        # These remaining options are only settable in aspen.conf. Just a
         # couple for now.
 
         # defaults
         # --------
-        
+
         defaults = conf.main.get('defaults', ('index.html', 'index.htm'))
         if isinstance(defaults, basestring):
             if ',' in defaults:

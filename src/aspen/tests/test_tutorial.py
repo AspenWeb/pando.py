@@ -1,7 +1,7 @@
 import os
 import sys
 
-from aspen.configuration import Configuration
+from aspen._configuration import Configuration
 from aspen.exceptions import *
 from aspen.tests import assert_raises
 from aspen.tests.fsfix import mk, attach_rm

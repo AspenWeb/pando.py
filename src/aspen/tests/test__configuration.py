@@ -4,7 +4,7 @@ import threading
 import urllib
 
 from aspen import server_factory, mode
-from aspen.configuration import ConfFile, Configuration as Config
+from aspen._configuration import ConfFile, Configuration as Config
 from aspen.tests import assert_raises
 from aspen.tests.fsfix import mk, attach_rm
 
@@ -21,8 +21,8 @@ sys.path.insert(0, os.path.join('fsfix', lib_python))
 
 def test_ConfFile():
     mk(('foo.conf', '[blah]\nfoo = bar\nbaz=True\n[bar]\nbuz=blam\nlaaa=4'))
-    items = ConfFile(os.path.join('fsfix', 'foo.conf')).iteritems()
-    actual = [(k,[t for t in v.iteritems()]) for (k,v) in items]
+    conf = ConfFile(os.path.join('fsfix', 'foo.conf'))
+    actual = [(k,[t for t in v.iteritems()]) for (k,v) in conf.iteritems()]
     for foo in actual:
         foo[1].sort()
     actual.sort()
@@ -58,19 +58,20 @@ def test_from_aspen_import_config():
     """This actually tests Aspen at a pretty high level.
     """
     mk( '__/etc', lib_python
-      , ('__/etc/aspen.conf', '[main]\n\naddress = :53700\n[my_app]\nfoo=bar')
+      , ('__/etc/aspen.conf', '[main]\naddress=:53700\n[my_settings]\nfoo=bar')
       , ('__/etc/apps.conf', '/ foo:wsgi_app')
       , (lib_python+'/foo.py', """\
-from aspen import config
+import aspen
 
 def wsgi_app(environ, start_response):
+    my_setting = aspen.conf.my_settings.get('foo', 'default')
     start_response('200 OK', [])
-    return [config.conf.my_app['foo']]
+    return ["My setting is %s" % my_setting]
 """)
        )
     server = server_factory(Config(['-rfsfix']))
     thread_ = threading.Thread(target=server.start).start()
-    expected = "bar"
+    expected = "My setting is bar"
     actual = urllib.urlopen('http://localhost:53700/').read()
     server.stop()
     assert actual == expected, actual

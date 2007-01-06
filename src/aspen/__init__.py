@@ -1,4 +1,14 @@
 """Define the main program loop.
+
+This is actually pretty complicated, due to configuration, daemonization, and
+restarting options. Here are the objects defined below:
+
+  1. PIDFiler -- as a daemon, manages our pidfile
+  2. server_factory -- returns a wsgiserver.CherryPyWSGIServer instance
+  3. start_server -- starts the server, with error trapping
+  4. drive_daemon -- manipulates Aspen as a daemon
+  5. main -- main callable, natch
+
 """
 import base64
 import os
@@ -10,7 +20,7 @@ import time
 from os.path import isdir, isfile, join
 
 from aspen import mode, restarter
-from aspen.configuration import ConfigurationError, Configuration, usage
+from aspen._configuration import ConfigurationError, Configuration, usage
 from aspen.website import Website
 from aspen.wsgiserver import CherryPyWSGIServer as Server
 
@@ -22,10 +32,21 @@ else:
 
 
 __version__ = '~~VERSION~~'
+__all__ = ['configuration', 'conf', 'paths', '']
 
 
 KILL_TIMEOUT = 5 # seconds between shutdown attempts
 PIDCHECK_TIMEOUT = 60 # seconds between pidfile writes
+
+
+# Configuration API
+# =================
+# To be populated in server_factory, below.
+
+configuration = None # an aspen._configuration.Configuration instance
+conf = None # an aspen._configuration.ConfFile instance
+paths = None # an aspen._configuration.Paths instance
+
 
 class PIDFiler(threading.Thread):
     """Thread to continuously monitor a pidfile, keeping our pid in the file.
@@ -66,24 +87,26 @@ pidfiler = PIDFiler() # must actually set pidfiler.path before starting
 
 
 globals_ = globals()
-def server_factory(config):
+def server_factory(configuration):
     """This is the heavy work of instantiating the server.
     """
 
     # Construct the server.
     # =====================
-    # This is done in such a way that user modules may get the Configuration 
-    # object already initialized by doing:
+    # This is done in such a way that user modules may get the already-
+    # initialized Configuration, ConfFile, and Paths objects by doing:
     #
-    #   from aspen import config
+    #   from aspen import configuration, conf, paths
 
     global globals_
-    globals_['config'] = config
-    config.load_plugins() # user modules loaded here; may import config
-    website = Website(config)
-    for app in config.middleware:
+    globals_['configuration'] = configuration
+    globals_['conf'] = configuration.conf
+    globals_['paths'] = configuration.paths
+    configuration.load_plugins() # user modules loaded here
+    website = Website(configuration)
+    for app in configuration.middleware:
         website = app(website)
-    server = Server(config.address, website, config.threads)
+    server = Server(configuration.address, website, configuration.threads)
 
 
     # Monkey-patch server to support restarting.
@@ -99,43 +122,43 @@ def server_factory(config):
                 server.stop()
                 raise SystemExit(75)
         server.tick = tick
-        
-        
+
+
     return server
 
 
-def start_server(config):
+def start_server(configuration):
     """Get a server object and start it up.
     """
 
-    server = server_factory(config) # factored out to ease testing
+    server = server_factory(configuration) # factored out to ease testing
 
     try:
-        print "aspen starting on %s" % str(config.address)
+        print "aspen starting on %s" % str(configuration.address)
         sys.stdout.flush()
         server.start()
     finally:
         print "stopping server"
         sys.stdout.flush()
         server.stop()
-        if config.sockfam == socket.AF_UNIX:       # clean up socket
+        if configuration.sockfam == socket.AF_UNIX:         # clean up socket
             try:
-                os.remove(config.address)
+                os.remove(configuration.address)
             except EnvironmentError, exc:
                 print "error removing socket:", exc.strerror
-        if pidfiler.isAlive():                      # we're a daemon
+        if pidfiler.isAlive():                              # we're a daemon
             pidfiler.stop.set()
             pidfiler.join()
 
 
-def drive_daemon(config):
+def drive_daemon(configuration):
     """Manipulate a daemon or become one ourselves.
     """
 
     # Locate some paths.
     # ==================
 
-    __ = join(config.paths.root, '__')
+    __ = join(configuration.paths.root, '__')
     if isdir(__):
         var = join(__, 'var')
         if not isdir(var):
@@ -143,7 +166,7 @@ def start_server(config):
         pidfile = join(var, 'aspen.pid')
         logpath = join(var, 'aspen.log')
     else:
-        key = ' '.join([str(config.address), config.paths.root])
+        key = ' '.join([str(configuration.address), configuration.paths.root])
         key = base64.urlsafe_b64encode(key)
         pidfile = os.sep + join('tmp', 'aspen-%s.pid' % key)
         logpath = '/dev/null'
@@ -162,7 +185,7 @@ def start_server(config):
         daemon.start()
         pidfiler.path = pidfile
         pidfiler.start()
-        start_server(config)
+        start_server(configuration)
 
 
     def stop(stop_output=True):
@@ -220,13 +243,13 @@ def start_server(config):
     # Branch
     # ======
 
-    if config.command == 'start':
+    if configuration.command == 'start':
         if isfile(pidfile):
             print "pidfile already exists with pid %s" % open(pidfile).read()
             raise SystemExit(1)
         start()
 
-    elif config.command == 'status':
+    elif configuration.command == 'status':
         if isfile(pidfile):
             pid = int(open(pidfile).read())
             command = "ps auxww|grep ' %d .*aspen'|grep -v grep" % pid
@@ -237,37 +260,37 @@ def start_server(config):
             print "daemon not running"
             raise SystemExit(0)
 
-    elif config.command == 'stop':
+    elif configuration.command == 'stop':
         stop()
         raise SystemExit(0)
 
-    elif config.command == 'restart':
+    elif configuration.command == 'restart':
         stop()
         start()
 
 
 def main(argv=None):
-    """Initial phase of config parsing, and daemon/restarter/server branch.
+    """Initial phase of configuration, and daemon/restarter/server branch.
     """
 
     if argv is None:
         argv = sys.argv[1:]
 
     try:
-        config = Configuration(argv)
+        configuration = Configuration(argv)
     except ConfigurationError, err:
         print usage
         print err.msg
         raise SystemExit(2)
 
     try:
-        if config.daemon:
-            drive_daemon(config)
+        if configuration.daemon:
+            drive_daemon(configuration)
         elif mode.DEBDEV and restarter.PARENT:
             print 'starting child server'
             restarter.launch_child()
         else:
             print 'starting server'
-            start_server(config)
+            start_server(configuration)
     except KeyboardInterrupt:
         pass

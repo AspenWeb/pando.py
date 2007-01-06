@@ -1,19 +1,152 @@
-\chapter{API \label{api}}
+\chapter{Application Programming Interface (API) \label{api}}
 
-The aspen package provides the following classes:
+Aspen parses and harmonizes all command-line, configuration file, and
+environment settings before it loads your plugins. All of this information is
+then available to your modules via several objects which are dynamically placed
+in the global \module{aspen} namespace before your plugins are loaded.
 
-\begin{classdesc}{Configuration}{\var{config}}
-Constructs a new \class{Configuration} object.
-\end{classdesc}
 
-\begin{classdesc}{Website}{\var{config}}
-Constructs a new \class{Website} object.
-\end{classdesc}
+\section{The \class{aspen.configuration} object}
+\label{api-configuration}
 
-\begin{classdesc}{Response}{\var{config}}
-Constructs a new \class{Response} object.
-\end{classdesc}
+The \code{aspen.configuration} object provides raw access to the parser objects
+used to configure your server, and a number of basic settings.
 
-\section{Simplates \label{simplates}}
+\subsection{Parsers}
 
-This should actually probably be spun off.
+The various parsers and raw settings are exposed as these members:
+
+\begin{memberdesc}[list]{args}
+An argument list as returned by \code{optparse.OptionParser.parse_args}.
+\end{memberdesc}
+
+\begin{memberdesc}[ConfFile]{conf}
+An instance of \code{aspen._configuration.ConfFile}; see below.
+\end{memberdesc}
+
+\begin{memberdesc}[OptionParser]{optparser}
+An \code{optparse.OptionParser} instance.
+\end{memberdesc}
+
+\begin{memberdesc}[Values]{opts}
+An \code{optparse.Values} instance per \code{optparse.OptionParser.parse_args}.
+\end{memberdesc}
+
+\begin{memberdesc}[Paths]{paths}
+An instance of \code{aspen._configuration.Paths}; see below.
+\end{memberdesc}
+
+
+\subsection{Settings}
+
+Furthermore, \code{aspen.configuration} exposes specific configuration settings
+as these members:
+
+\begin{memberdesc}[]{address}
+A (\var{hostname}, \var{port}) tuple (for \code{AF_INET} and \code{AF_INET6}
+address) or string (for \code{AF_UNIX}) giving the address to which Aspen is
+bound.
+\end{memberdesc}
+
+\begin{memberdesc}[string]{command}
+A string giving the command line argument (\var{start}, \var{stop}, etc.).
+\end{memberdesc}
+
+\begin{memberdesc}[boolean]{daemon}
+A boolean indicating whether Aspen is acting as a daemon.
+\end{memberdesc}
+
+\begin{memberdesc}[tuple]{defaults}
+A tuple listing the default resource names to look for in a directory.
+\end{memberdesc}
+
+\begin{memberdesc}[int]{sockfam}
+One of \code{socket.AF_INET}, \code{socket.AF_INET6}, and \code{socket.AF_UNIX}.
+\end{memberdesc}
+
+\begin{memberdesc}[int]{threads}
+A non-zero positive integer; the number of threads in the server's
+request-handling thread pool.
+\end{memberdesc}
+
+
+All members are intended to be read-only.
+
+
+\begin{seealso}
+
+\seelink{http://docs.python.org/lib/module-ConfigParser.html}
+{\code{ConfigParser}}{The naming is not PEP 8, but the documentation is fine.}
+
+\seelink{http://docs.python.org/lib/module-optparse.html} {\code{optparse}}{On
+the other hand, the documentation for \module{optparse} is rather, um,
+convoluted. Good luck!}
+
+\end{seealso}
+
+
+\section{The \class{aspen.conf} object}
+\label{api-conf}
+
+The \class{aspen.conf} object is an instance of
+\class{aspen._configuration.ConfFile}, which subclasses the standard library's
+\class{ConfigParser.RawConfigParser} class to represent the
+\file{__/etc/aspen.conf} file. In addition to the \class{RawConfigParser} API,
+the object supports both attribute and key read-only access; either returns a
+dictionary corresponding to a section of the \file{aspen.conf} file. If the
+named section does not exist, an empty dictionary is returned.
+
+Your application is free and encouraged to use the \file{aspen.conf} file for
+it's own configuration, and to access that information via this object.
+
+To illustrate, here is a minimal \file{aspen.conf} file:
+
+\begin{verbatim}
+[my_settings]
+foo = bar
+\end{verbatim}
+
+Such a file could support code like this:
+
+\begin{verbatim}
+import aspen
+
+def wsgi_app(environ, start_response):
+    my_setting = aspen.conf.my_settings.get('foo', 'default')
+    start_response('200 OK', [])
+    return ["My setting is %s" % my_setting]
+\end{verbatim}
+
+
+\begin{seealso}
+
+\seelink{http://docs.python.org/lib/RawConfigParser-objects.html}
+{\code{RawConfigParser}}{In addition to the API above, \code{aspen.conf} also
+exposes the \code{RawConfigParser} API.}
+
+\end{seealso}
+
+
+
+\section{The \class{aspen.paths} object}
+\label{api-paths}
+
+The \class{aspen.paths} object is an instance of
+\class{aspen._configuration.Paths}; it is simply a container for various paths,
+all normalized and absolute:
+
+\begin{memberdesc}[string]{root}
+the website's filesystem root
+\end{memberdesc}
+
+\begin{memberdesc}[string]{__}
+the magic directory
+\end{memberdesc}
+
+\begin{memberdesc}[string]{lib}
+the site's local Python library
+\end{memberdesc}
+
+\begin{memberdesc}[string]{plat}
+the local platform-specific Python library
+\end{memberdesc}
