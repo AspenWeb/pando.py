@@ -28,21 +28,36 @@ def Website():
     config.load_plugins()
     return _Website(config)
 
+# Define a cross-platform kill().
+# ===============================
+# http://python.org/infogami-faq/windows/how-do-i-emulate-os-kill-in-windows/
+
+if 'win' in sys.platform:
+    try:
+        import win32api
+    except ImportError:
+        win32api = None
+
+    def kill(pid, foo):
+        if win32api is None:
+            raise ImportError( "On MS Windows, this test requires the win32api "
+                             + "module, which comes with pywin32: "
+                             + "http://sourceforge.net/projects/pywin32/"
+                              )
+        handle = win32api.OpenProcess(1, 0, pid)
+        return (0 != win32api.TerminateProcess(handle, 0))
+else:
+    kill = os.kill
+
 
 # Tests
 # =====
 
 def test_greetings_program():
     """This is also a general smoke test, as it runs the entire Aspen stack.
-
-     @@: couple problems with this on Windows:
-       - where is the aspen executable?
-       - os.kill isn't available, is it?
-
     """
-
     mk( 'root', ('root/index.html', "Greetings, program!")
-      , ('smoke-it.py', "import aspen; aspen.main()")
+      , ('smoke-it.py', "import aspen; aspen.main()") # simulate bin/aspen
        )
     proc = subprocess.Popen([ 'python' # assumed to be on PATH
                             , join('fsfix', 'smoke-it.py')
@@ -53,7 +68,7 @@ def test_greetings_program():
     time.sleep(1) # give time to startup
     expected = 'Greetings, program!'
     actual = urllib.urlopen('http://localhost:53700/').read()
-    os.kill(proc.pid, signal.SIGTERM)
+    kill(proc.pid, signal.SIGTERM)
     proc.wait()
     assert actual == expected, actual
 
