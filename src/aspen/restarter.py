@@ -1,8 +1,7 @@
-"""Implement a module reloading mechanism.
+"""Automatically restart your program when certain files change.
 
-This module solves the problem of refreshing Python modules in memory when the
-source files change, without manually restarting the program. There are two
-basic ways to solve this problem:
+This module primarily solves the problem of refreshing modules in memory when
+the source files change. There are two basic ways to solve this problem:
 
     1. Reload modules within a single process
     -----------------------------------------
@@ -21,7 +20,10 @@ basic ways to solve this problem:
     time of your program.
 
 
-This module implements the second solution. It provides the following members:
+This module implements the second solution, automatically tracking source files
+for all loaded modules, with the exception of those imported directly from a ZIP
+archive (via zipimport). This module can also track non-source files, such as
+configuration files. It provides the following members:
 
     CHILD, PARENT       These are booleans indicating whether the current
                         process is the parent or child.
@@ -33,12 +35,17 @@ This module implements the second solution. It provides the following members:
                         should be restarted. If called in the parent process,
                         it always returns False.
 
+    track(filepath)     Add <filepath> to the list of non-source files to track.
+                        If the file is removed or has its modtime changed, the
+                        program will restart.
+
 
 Our implementation uses a thread in the child process (started when the module
-is imported) to monitor all library source files. Your program is responsible
-for periodically calling mods_changed, exiting with code 75 whenever it returns
-True (presumably after cleanly shutting down). Exit code 75 seemed appropriate
-to use because of its meaning on Unix systems:
+is imported) to monitor all library source files as well as those added with
+track. Your program is responsible for periodically calling should_restart,
+exiting with code 75 whenever it returns True (presumably after cleanly shutting
+down). Exit code 75 seems appropriate because of its meaning on Unix systems.
+E.g., from FreeBSD 6.1-RELEASE, /usr/include/sysexits.h:
 
     EX_TEMPFAIL -- temporary failure, indicating something that
     *              is not really an error.  In sendmail, this means
@@ -50,11 +57,18 @@ to use because of its meaning on Unix systems:
     -- /usr/include/sysexits.h, FreeBSD 6.1-RELEASE
 
 
+A modified file dependency is "not really an error," and the parent process is
+"invited to retry" launching the child program.
+
 Here's an example of what this looks like:
 
     import restarter
+    import foo # your module; change to trigger reloading
 
     def main():
+        # startup code here
+        restarter.watch('foo.conf') # your conf file; change to trigger
+                                    # reloading
         while 1:
             # program logic here
             if restarter.should_restart():
@@ -74,7 +88,7 @@ since Python 2.4, it can also be found here:
 
 """
 __author__ = "Chad Whitacre <chad@zetaweb.com>"
-__version__ = "custom" # patch submitted as lib537 issue #1
+__version__ = "~~VERSION~~"
 
 
 import os
@@ -89,47 +103,65 @@ except ImportError:
     _HAVE_SUBPROCESS = False
 
 
-_FLAG = '_RESTARTER_CHILD_FLAG'
-CHILD = _FLAG in os.environ
-PARENT = not CHILD
-EX_TEMPFAIL = 75
+_FILES = []                         # non-module files to watch
+_FLAG = '_RESTARTER_CHILD_FLAG'     # flag for tracking child/parent process
+CHILD = _FLAG in os.environ         # True w/in child process
+PARENT = not CHILD                  # True w/in parent process
+EX_TEMPFAIL = 75                    # child's exit code to trigger restart
 
 
-def _look_for_changes():
+def _look_for_changes():
     """See if any of our available modules have changed on the filesystem.
+
+    This function is run as a daemon thread. When this function returns, the
+    thread dies, and that is the signal to restart the process.
+
     """
 
     mtimes = {}
+
+    def has_changed(filename):
+        """Given a filename, return True or False.
+        """
+
+        # The file may have been removed from the filesystem.
+        # ===================================================
+
+        if not os.path.isfile(filename):
+            if filename in mtimes:
+                return True # trigger restart
+
+
+        # Or not, in which case, check the mod time.
+        # ==========================================
+
+        mtime = os.stat(filename).st_mtime
+        if filename not in mtimes: # first time we've seen it
+            mtimes[filename] = mtime
+        if mtime > mtimes[filename]:
+            return True # trigger restart
+        else:
+            # We haven't seen the file before. It has been probably
+            # loaded from a zip (egg) archive.
+            pass
+
+        return False
+
+
     while 1:
-        for module in sys.modules.values():
-
-            # Get out early if we can.
-            # ========================
-
-            filename = getattr(module, '__file__', None)
-            if filename is None:
+        for module in sys.modules.values():                 # module files
+            filepath = getattr(module, '__file__', None)
+            if filepath is None:
                 continue
-            if filename.endswith(".pyc"):
-                filename = filename[:-1]
-
-
-            # The file may have been removed from the filesystem.
-            # ===================================================
-
-            if not os.path.isfile(filename):
-                if filename in mtimes:
-                    return # trigger restart
-
-
-            # Or not, in which case, check the mod time.
-            # ==========================================
-
-            mtime = os.stat(filename).st_mtime
-            if filename not in mtimes: # first time we've seen it
-                mtimes[filename] = mtime
+            if ('.zip' + os.sep) in filepath: # zipimport
                 continue
-            if mtime > mtimes[filename]:
-                return # trigger restart
+            filepath = filepath.endswith(".pyc") and filepath[:-1] or filepath
+            if has_changed(filepath):
+                return # triggers restart
+
+        for filepath in _FILES:                             # additional files
+            if has_changed(filepath):
+                return # triggers restart
 
         time.sleep(0.1)
 
@@ -140,7 +172,7 @@ if CHILD:
     _thread.start()
 
 
-# Public functions
+# Public functions
 # ================
 
 def launch_child():
@@ -171,44 +203,11 @@ def should_restart():
         return not _thread.isAlive()
 
 
-# Test
-# ====
-
-if __name__ == '__main__':
-    """Simple test.
-
-    Execute this module as a script, then change the value of bar in foo.py. You
-    should see 'restarting ...'  and then the new value of foo.bar.
-
-    """
-
-    if PARENT and os.path.isfile('foo.py'):
-        print 'test aborted: foo.py exists'
-        raise SystemExit
-
-    def main():
-        import foo
-        print foo.bar
-        while 1:
-            time.sleep(1)
-            if should_restart():
-                print "restarting ..."
-                raise SystemExit(75)
-
-    try:
-        if PARENT:
-            open('foo.py', 'w+').write("bar='Blah.'")
-            launch_child()
-        else:
-            main()
-
-    finally:
-        if PARENT:
-            os.remove('foo.py')
-            os.remove('foo.pyc')
+def track(filepath):
+    _FILES.append(filepath)
 
 
-# Legal
+# Legal
 # =====
 
 """
