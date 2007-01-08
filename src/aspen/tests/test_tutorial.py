@@ -39,6 +39,9 @@ if 'win' in sys.platform:
         win32api = None
 
     def kill(pid, foo):
+        # This doesn't trigger a clean shutdown, but we don't really need that
+        # here. When we do need that, we'll have implemented Aspen as a
+        # service, no?
         if win32api is None:
             raise ImportError( "On MS Windows, this test requires the win32api "
                              + "module, which comes with pywin32: "
