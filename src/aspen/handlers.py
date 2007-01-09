@@ -4,6 +4,7 @@ import mimetypes
 import rfc822
 import os
 import stat
+import time
 import traceback
 from datetime import datetime
 from email import message_from_file, message_from_string
@@ -77,7 +78,7 @@ def static(environ, start_response):
     content_type = mimetypes.guess_type(path)[0] or 'text/plain'
 
 
-    # Support 304s, but only in deployment mode.
+    # Support 304s, but only in production mode.
     # ==========================================
 
     status = '200 OK'
