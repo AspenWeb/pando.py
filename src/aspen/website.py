@@ -67,7 +67,7 @@ log = logging.getLogger('aspen.website')
                             default = _path
                             break
                     if default is not None:
-                        fspath = default
+                        environ['PATH_TRANSLATED'] = fspath = default
                 handler = self.get_handler(fspath)
                 response = handler.handle(environ, start_response) # WSGI
 
