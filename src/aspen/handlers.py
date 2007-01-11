@@ -17,10 +17,6 @@ from aspen.utils import is_valid_identifier
 # File or Directory
 # =================
 
-def HTTP403(environ, start_response):
-    start_response('403 Forbidden', [])
-    return ['This directory has no index.']
-
 def HTTP404(environ, start_response):
     start_response('404 Not Found', [])
     return ['Resource not found.']
@@ -33,7 +29,7 @@ def pyscript(environ, start_response):
     """Execute the script pseudo-CGI-style.
     """
     path = environ['PATH_TRANSLATED']
-    assert isfile(path)
+    assert isfile(path) # sanity check
 
     context = dict()
     context['environ'] = environ
@@ -67,7 +63,7 @@ def static(environ, start_response):
     XXX: look at Luke Arno's ACK GPL and some others ... Etags? Iteration?
 
     """
-    assert isfile(environ['PATH_TRANSLATED'])
+    assert isfile(environ['PATH_TRANSLATED']) # sanity check
 
     path = environ['PATH_TRANSLATED']
     ims = environ.get('HTTP_IF_MODIFIED_SINCE', '')
@@ -111,6 +107,11 @@ def static(environ, start_response):
 
 # Directory Handlers
 # ==================
+
+def HTTP403(environ, start_response):
+    start_response('403 Forbidden', [])
+    return ['This directory has no index.']
+
 
 STYLE = """\
 
@@ -164,7 +165,7 @@ def autoindex(environ, start_response):
     """Serve an automatic index for a directory.
     """
     fspath = environ['PATH_TRANSLATED']
-    assert isdir(fspath)
+    assert isdir(fspath) # sanity check
 
     root = environ['aspen.website'].config.paths.root
     urlpath = fspath[len(root):]
@@ -174,7 +175,7 @@ def autoindex(environ, start_response):
 
     # Gather dirs, files, and others under this directory.
     # ====================================================
-    # We have to loop twice in order to guarantee sorted output.
+    # We have to loop here and again below in order to guarantee sorted output.
 
     dirs = []
     files = []
@@ -239,39 +240,3 @@ def autoindex(environ, start_response):
 
     start_response('200 OK', [('Content-Type', 'text/html')])
     return out
-
-
-def default(environ, start_response):
-    """Try to serve a default resource.
-    """
-    path = environ['PATH_TRANSLATED']
-    assert isdir(path)
-    defaults = environ['aspen.website'].config.defaults
-    assert defaults is not None
-
-    default = None
-    for name in defaults:
-        _path = join(path, name)
-        if isfile(_path):
-            default = _path
-            break
-    if default is None:
-        if 'aspen.autoindex_next' in environ:
-            return None
-        start_response('403 Forbidden', [])
-        return ['This directory has no index.']
-    path = environ['PATH_TRANSLATED'] = default
-
-    new_handler = environ['aspen.website'].get_handler(path)
-    return new_handler.handle(environ, start_response)
-
-
-def default_or_autoindex(environ, start_response):
-    """Serve a default file; failing that, an autoindex.
-    """
-    assert isdir(environ['PATH_TRANSLATED'])
-    environ['aspen.autoindex_next'] = True
-    response = default(environ, start_response)
-    if response is None:
-        response = autoindex(environ, start_response)
-    return response
