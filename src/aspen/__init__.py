@@ -303,10 +303,27 @@ def start_server(configuration):
         if configuration.daemon:
             drive_daemon(configuration)
         elif mode.DEBDEV and restarter.PARENT:
-            print 'starting child server'
+            print 'launching child process'
             restarter.launch_child()
+        elif restarter.CHILD:
+
+            # Make sure we restart when conf files change.
+            # ============================================
+
+            __ = configuration.paths.__
+            if __:
+                for path in ( join(__, 'etc', 'aspen.conf')
+                            , join(__, 'etc', 'handlers.conf')
+                            , join(__, 'etc', 'middleware.conf')
+                             ):
+                    if isfile(path):
+                        restarter.track(path)
+
+            print 'starting child server'
+            start_server(configuration)
         else:
             print 'starting server'
             start_server(configuration)
+
     except KeyboardInterrupt:
         pass

@@ -10,12 +10,16 @@ from datetime import datetime
 from email import message_from_file, message_from_string
 from os.path import isdir, isfile, join
 
-from aspen import mode, __version__
+from aspen import mode, __version__, conf
 from aspen.utils import is_valid_identifier
 
 
 # File or Directory
 # =================
+
+def HTTP403(environ, start_response):
+    start_response('403 Forbidden', [])
+    return ['This directory has no index.']
 
 def HTTP404(environ, start_response):
     start_response('404 Not Found', [])
@@ -255,7 +259,7 @@ def default(environ, start_response):
         if 'aspen.autoindex_next' in environ:
             return None
         start_response('403 Forbidden', [])
-        return ['No default resource for this directory.']
+        return ['This directory has no index.']
     path = environ['PATH_TRANSLATED'] = default
 
     new_handler = environ['aspen.website'].get_handler(path)

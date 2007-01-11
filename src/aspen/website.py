@@ -15,8 +15,8 @@ log = logging.getLogger('aspen.website')
     """Represent a publication, application, or hybrid website.
     """
 
-    def __init__(self, config):
-        self.config = config
+    def __init__(self, configuration):
+        self.configuration = configuration
 
 
     # Main Dispatcher
@@ -32,16 +32,16 @@ log = logging.getLogger('aspen.website')
         # Translate the request to the filesystem.
         # ========================================
 
-        fspath = translate(self.config.paths.root, environ['PATH_INFO'])
-        if self.config.paths.__ is not None:
-            if fspath.startswith(self.config.paths.__): # protect magic dir
+        fspath = translate(self.configuration.paths.root, environ['PATH_INFO'])
+        if self.configuration.paths.__ is not None:
+            if fspath.startswith(self.configuration.paths.__): # protect magic dir
                 start_response('404 Not Found', [])
                 return ['Resource not found.']
         environ['PATH_TRANSLATED'] = fspath
 
 
-        # Dispatch to a WSGI app.
-        # =======================
+        # Dispatch to an app.
+        # ===================
 
         app = self.get_app(environ, start_response) # 301
         if isinstance(app, list):                           # redirection
@@ -51,9 +51,23 @@ log = logging.getLogger('aspen.website')
         elif not exists(fspath):                            # 404 NOT FOUND
             start_response('404 Not Found', [])
             response = ['Resource not found.']
+
+
+        # Dispatch to a handler.
+        # ======================
+
         else:                                               # handler
             response = check_trailing_slash(environ, start_response)
-            if response is None:
+            if response is None: # no redirection
+                if isdir(fspath): # locate any default resource
+                    default = None
+                    for name in self.configuration.defaults:
+                        _path = join(fspath, name)
+                        if isfile(_path):
+                            default = _path
+                            break
+                    if default is not None:
+                        fspath = default
                 handler = self.get_handler(fspath)
                 response = handler.handle(environ, start_response) # WSGI
 
@@ -72,9 +86,9 @@ log = logging.getLogger('aspen.website')
         path = test_path = environ['PATH_INFO']
         if not test_path.endswith('/'):
             test_path += '/'
-        for app_urlpath, _app in self.config.apps:
+        for app_urlpath, _app in self.configuration.apps:
             if test_path.startswith(app_urlpath):
-                environ['PATH_TRANSLATED'] = translate( self.config.paths.root
+                environ['PATH_TRANSLATED'] = translate( self.configuration.paths.root
                                                       , app_urlpath
                                                        )
                 if not isdir(environ['PATH_TRANSLATED']):
@@ -96,7 +110,7 @@ log = logging.getLogger('aspen.website')
     def get_handler(self, pathname):
         """Given a full pathname, return the first matching handler.
         """
-        for handler in self.config.handlers:
+        for handler in self.configuration.handlers:
             if handler.match(pathname):
                 return handler
 
