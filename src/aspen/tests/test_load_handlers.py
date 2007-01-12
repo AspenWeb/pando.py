@@ -35,7 +35,7 @@ rulefuncs = dict()
 rulefuncs['catch_all'] = rules.catch_all
 rulefuncs['isdir'] = rules.isdir
 
-dirsmarts = load.Handler(rulefuncs, handlers.default_or_autoindex)
+dirsmarts = load.Handler(rulefuncs, handlers.autoindex)
 dirsmarts.add("isdir", 0)
 
 static = load.Handler(rulefuncs, handlers.static)

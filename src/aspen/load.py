@@ -18,8 +18,8 @@ default_handlers_conf = """\
     isdir       aspen.rules:isdir
 
 
-    [aspen.handlers:default_or_autoindex]
-      isdir                         # do smart things for directories
+    [aspen.handlers:autoindex]
+      isdir                         # directories get an automatic index
 
     [aspen.handlers:static]
       catch_all                     # anything else, serve it statically
@@ -177,7 +177,7 @@ TAB = '\t'
     apps = None # a list of apps, reverse-sorted by SCRIPT_NAME
     handlers = None # a list of Handlers, unsorted
     middleware = None # a list of middleware, in reverse order
-    
+
 
     def load_plugins(self):
         """Load plugin objects and set on self.
