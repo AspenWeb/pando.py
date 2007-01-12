@@ -124,15 +124,16 @@ EX_TEMPFAIL = 75                    # child's exit code to trigger restart
         """Given a filename, return True or False.
         """
 
-        trigger_restart = False
-
-
         # The file may have been removed from the filesystem.
         # ===================================================
 
         if not os.path.isfile(filename):
             if filename in mtimes:
-                trigger_restart = True
+                return True # trigger restart
+            else:
+                # We haven't seen the file before. It has been probably
+                # loaded from a zip (egg) archive.
+                return False
 
 
         # Or not, in which case, check the mod time.
@@ -142,18 +143,16 @@ EX_TEMPFAIL = 75                    # child's exit code to trigger restart
         if filename not in mtimes: # first time we've seen it
             mtimes[filename] = mtime
         if mtime > mtimes[filename]:
-            trigger_restart = True
+            return True # trigger restart
 
 
-        return trigger_restart
+        return False
 
 
     while 1:
         for module in sys.modules.values():                 # module files
             filepath = getattr(module, '__file__', None)
             if filepath is None:
-                continue
-            if ('.zip' + os.sep) in filepath: # zipimport; skip
                 continue
             filepath = filepath.endswith(".pyc") and filepath[:-1] or filepath
             if has_changed(filepath):
