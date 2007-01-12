@@ -51,7 +51,7 @@ def catch_all(path, predicate):
     return True
 
 
-def executable(path, predicate):
+def isexecutable(path, predicate):
     """Predicate is either true/yes/1 or false/no/0 (case-insensitive).
 
     This only works on Unix.
