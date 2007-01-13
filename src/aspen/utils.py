@@ -97,7 +97,7 @@ def full_url(environ):
     # =============
     # http://example.com
 
-    if 'HTTP_HOST' in environ:              # try Host header
+    if environ.get('HTTP_HOST'):            # try Host header
         host = environ['HTTP_HOST']
         if ':' in host:
             assert host.count(':') == 1 # sanity check
@@ -135,7 +135,7 @@ def full_url(environ):
         url.append('/')
     else:
         url.extend([script_name, path_info])
-    if 'QUERY_STRING' in environ:
+    if environ.get('QUERY_STRING'):
         url.extend(['?', environ['QUERY_STRING']])
 
 
