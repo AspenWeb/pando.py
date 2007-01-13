@@ -14,6 +14,7 @@ import base64
 import os
 import signal
 import socket
+import stat
 import sys
 import threading
 import time
@@ -37,10 +38,6 @@ __version__ = '~~VERSION~~'
 __all__ = ['configuration', 'conf', 'paths', '']
 
 
-KILL_TIMEOUT = 5 # seconds between shutdown attempts
-PIDCHECK_TIMEOUT = 60 # seconds between pidfile writes
-
-
 # Configuration API
 # =================
 # To be populated in server_factory, below.
@@ -50,17 +47,24 @@ conf = None # an aspen._configuration.ConfFile instance
 paths = None # an aspen._configuration.Paths instance
 
 
+def get_perms(path):
+    return stat.S_IMODE(os.stat(path)[stat.ST_MODE])
+
+
 class PIDFiler(threading.Thread):
     """Thread to continuously monitor a pidfile, keeping our pid in the file.
 
     This is run when we are a daemon, in the child process. It checks every
     second to see if the file exists, recreating it if not. It also rewrites the
-    file every 60 seconds, in case the contents have changed.
+    file every 60 seconds, just in case the contents have changed, and resets
+    the mode to 0600 just in case it has changed.
 
     """
 
     stop = threading.Event()
     path = '' # path to the pidfile
+    pidcheck_timeout = 60 # seconds between pidfile writes
+    pidfile_mode = 0600 # the permission bits on the pidfile
 
     def __init__(self):
         threading.Thread.__init__(self)
@@ -68,17 +72,22 @@ paths = None # an aspen._configuration.Paths instance
 
     def write(self):
         open(self.path, 'w+').write(str(os.getpid()))
+        self.set_perms()
+
+    def set_perms(self):
+        os.chmod(self.path, self.pidfile_mode)
 
     def run(self):
         """Pidfile is initially created and finally destroyed by our Daemon.
         """
+        self.set_perms()
         last_pidcheck = 0
         while not self.stop.isSet():
             if not isfile(self.path):
                 print "no pidfile; recreating"
                 sys.stdout.flush()
                 self.write()
-            elif (last_pidcheck + PIDCHECK_TIMEOUT) < time.time():
+            elif (last_pidcheck + self.pidcheck_timeout) < time.time():
                 self.write()
                 last_pidcheck = time.time()
             time.sleep(1)
@@ -200,9 +209,12 @@ def start_server(configuration):
 
     # Start/stop wrappers
     # ===================
+    # Set the logpath perms here; pidfile perms taken care of by pidfiler.
 
     def start():
         daemon.start()
+        if not logpath == '/dev/null':
+            os.chmod(logpath, 0600)
         pidfiler.path = pidfile
         pidfiler.start()
         start_server(configuration)
@@ -229,6 +241,8 @@ def start_server(configuration):
         # We send two SIGTERMs and a SIGKILL before quitting. The daemon gets
         # 5 seconds after each to shut down.
 
+        kill_timeout = 5
+
         def kill(sig):
             try:
                 os.kill(pid, sig)
@@ -254,7 +268,7 @@ def start_server(configuration):
             while 1:
                 if not isfile(pidfile):
                     return # daemon has stopped
-                elif (last_attempt + KILL_TIMEOUT) < time.time():
+                elif (last_attempt + kill_timeout) < time.time():
                     break # daemon hasn't stopped; time to escalate
                 else:
                     time.sleep(0.2)

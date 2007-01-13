@@ -26,7 +26,8 @@ daemon, via a pidfile. If the website root has a directory named \file{__}
 \file{__/var/aspen.pid}. Otherwise, the pidfile is created in \file{/tmp}. When
 run as a daemon, stdout and stderr are redirected to \file{__/var/aspen.log} if
 \file{__} exists, and to \file{/dev/null} otherwise. The \file{__/var} directory
-will be created if it does not exist.
+will be created if it does not exist. The permission mode of the pidfile is set
+to \code{0600}; likewise with the logfile, unless it is \file{/dev/null}.
 
 The Aspen distribution includes a script in \file{etc/aspen_bash_completion}
 that can be used to configure the bash shell to autocomplete from among Aspen's
