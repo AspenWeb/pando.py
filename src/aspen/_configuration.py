@@ -136,17 +136,18 @@ def callback_address(option, opt, value, parser_):
     address, sockfam = validate_address(value)
     parser_.values.address = address
     parser_.values.sockfam = sockfam
+    parser_.values.have_address = True
 
 
-def callback_log_level(option, opt, value, parser_):
-    """
-    """
-    try:
-        level = getattr(logging, value.upper())
-    except AttributeError:
-        msg = "Bad log level: %s" % value
-        raise optparse.OptionValueError(msg)
-    parser_.values.log_level = level
+#def callback_log_level(option, opt, value, parser_):
+#    """
+#    """
+#    try:
+#        level = getattr(logging, value.upper())
+#    except AttributeError:
+#        msg = "Bad log level: %s" % value
+#        raise optparse.OptionValueError(msg)
+#    parser_.values.log_level = level
 
 
 def callback_root(option, opt, value, parser_):
@@ -157,6 +158,13 @@ def callback_root(option, opt, value, parser_):
         msg = "%s does not point to a directory" % value
         raise optparse.OptionValueError(msg)
     parser_.values.root = value
+
+
+def callback_mode(option, opt, value, parser_):
+    """Indicate that we have a mode from the command line.
+    """
+    parser_.values.mode = value
+    parser_.values.have_mode= True
 
 
 usage = "aspen [options] [start,stop,&c.]; --help for more"
@@ -177,6 +185,8 @@ optparser.add_option( "-a", "--address"
 #                    , type='string'
 #                     )
 optparser.add_option( "-m", "--mode"
+                    , action="callback"
+                    , callback=callback_mode
                     , choices=[ 'debugging', 'deb', 'development', 'dev'
                               , 'staging', 'st', 'production', 'prod'
                                ]
@@ -347,19 +357,25 @@ optparser.add_option( "-r", "--root"
         # ======================
         # These can be set either on the command line or in the conf file.
 
-        if 'address' in conf.main:
+        if getattr(opts, 'have_address', False):        # first check CLI
+            address = opts.address
+            sockfam = opts.sockfam
+        elif 'address' in conf.main:                    # then check conf
             address, sockfam = validate_address(conf.main['address'])
-        else:
-            address = opts.address              # default handled by optparse
-            sockfam = getattr(opts, 'sockfam', socket.AF_INET)
+        else:                                           # default from optparse
+            address = opts.address
+            sockfam = socket.AF_INET
 
-        if 'mode' in conf.main:
+        if getattr(opts, 'have_mode', False):           # first check CLI
+            mode_ = opts.mode
+        elif 'mode' in conf.main:                       # then check conf
             mode_ = conf.main['mode']
-        else:
-            mode_ = opts.mode                   # default handled by optparse
+        else:                                           # default from mode
+            mode_ = mode.get()
 
         self.address = address
         self.sockfam = sockfam
+        self._mode = mode_ # mostly for testing
         mode.set(mode_)
 
 

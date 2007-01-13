@@ -6,7 +6,7 @@ import urllib
 from aspen import server_factory, mode
 from aspen._configuration import ConfFile, Configuration as Config
 from aspen.tests import assert_raises
-from aspen.tests.fsfix import mk, attach_rm
+from aspen.tests.fsfix import mk, rm
 
 
 # Fixture
@@ -170,7 +170,37 @@ def test_threads_blah_blah():
     assert actual == expected, actual
 
 
-# Remove the filesystem fixture after each test.
-# ==============================================
+# Test layering: CLI, conf file, environment.
+# ===========================================
 
-attach_rm(globals(), 'test_')
+def test_layering_CLI_trumps_conffile():
+    mk('__/etc', ('__/etc/aspen.conf', '[main]\naddress=:9000'))
+    actual = Config(['--root', 'fsfix', '--address', ':8080']).address
+    expected = ('0.0.0.0', 8080)
+    assert actual == expected, actual
+
+def test_layering_CLI_trumps_environment():
+    mk()
+    actual = Config(['--root', 'fsfix', '--mode', 'production'])._mode
+    expected = 'production'
+    assert actual == expected, actual
+
+def test_layering_conffile_trumps_environment():
+    mk('__/etc', ('__/etc/aspen.conf', '[main]\nmode=production'))
+    actual = Config(['--root', 'fsfix'])._mode
+    expected = 'production'
+    assert actual == expected, actual
+
+
+# Remove the filesystem fixture after each test, and clear the environment.
+# =========================================================================
+
+def teardown():
+    rm()
+    if 'PYTHONMODE' in os.environ:
+        del os.environ['PYTHONMODE']
+
+context = globals()
+for name in context.keys():
+    if name.startswith('test_'):
+        context[name].teardown = teardown
