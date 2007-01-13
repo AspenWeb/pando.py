@@ -85,8 +85,51 @@ def test_cmp_routines_mixed2():
 #     assert err.code == 403, err.code
 
 
+
+# host_middleware
+# ===============
+
+def wsgi(environ, start_response):
+    start_response('200 OK', [])
+    return ["You hit %s." % environ.get('HTTP_HOST', '_______')]
+
+def start_response(status, headers, exc=None):
+    def write():
+        return status, headers
+    return write
+
+
+def test_host_middleware_basic():
+    mk()
+    environ = {'HTTP_HOST':'foo', 'PATH_INFO':'/'}
+    expected = ["You hit foo."]
+    actual = u.host_middleware('foo', wsgi)(environ, start_response)
+    assert actual == expected, actual
+
+def test_host_middleware_no_HTTP_HOST():
+    mk('__', '__/etc', ('__/etc/aspen.conf', '[main]\nhttp_host=foo'))
+    environ = { 'PATH_INFO':'/'
+              , 'wsgi.url_scheme':'http'
+               }
+    expected = ['You hit foo.']
+    actual = u.host_middleware('foo', wsgi)(environ, start_response)
+    assert actual == expected, actual
+
+def test_host_middleware_mismatch():
+    mk('__', '__/etc', ('__/etc/aspen.conf', '[main]\nhttp_host=foo'))
+    environ = { 'HTTP_HOST':'bar:9000'
+              , 'wsgi.url_scheme':'http'
+               }
+    expected = ['Please use http://foo/.']
+    actual = u.host_middleware('foo', wsgi)(environ, start_response)
+    assert actual == expected, actual
+
+
+
+
 # Remove the filesystem fixture after some tests.
 # ===============================================
 
 #attach_rm(globals(), 'test_find_default')
 attach_rm(globals(), 'test_check_trailing_slash')
+attach_rm(globals(), 'test_host_middleware_')

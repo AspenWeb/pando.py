@@ -27,7 +27,7 @@ def Handler(*rules, **rulefuncs):
         rulefuncs = {'foo':always_true}
     handler = _Handler(rulefuncs, handle)
     for rule in rules:
-        handler.add(*(rule,0))
+        handler.add(rule, 0)
     return handler
 
 fp = StringIO.StringIO("foo")

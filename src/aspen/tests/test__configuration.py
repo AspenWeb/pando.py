@@ -167,25 +167,31 @@ def test_threads_blah_blah():
     assert actual == expected, actual
 
 
-# server_name
+# http_host
 # ===========
 
-def test_server_name_default():
+def test_http_host_default():
     mk()
-    actual = Config(['-rfsfix']).server_name
+    actual = Config(['-rfsfix']).http_host
     expected = None
     assert actual is expected, actual
 
-def test_server_name_something():
-    mk('__/etc', ('__/etc/aspen.conf', '[main]\nserver_name=foo'))
-    actual = Config(['-rfsfix']).server_name
+def test_http_host_something():
+    mk('__/etc', ('__/etc/aspen.conf', '[main]\nhttp_host=foo'))
+    actual = Config(['-rfsfix']).http_host
     expected = 'foo'
     assert actual == expected, actual
 
-def test_server_name_empty():
-    mk('__/etc', ('__/etc/aspen.conf', '[main]\nserver_name='))
+def test_http_host_empty():
+    mk('__/etc', ('__/etc/aspen.conf', '[main]\nhttp_host='))
     actual = assert_raises(ValueError, Config, ['-rfsfix']).args[0]
-    expected = "empty server_name"
+    expected = "empty http_host"
+    assert actual == expected, actual
+
+def test_http_host_includes_protocol():
+    mk('__/etc', ('__/etc/aspen.conf', '[main]\nhttp_host=http://example.com/'))
+    actual = assert_raises(ValueError, Config, ['-rfsfix']).args[0]
+    expected = "http_host should not include protocol"
     assert actual == expected, actual
 
 

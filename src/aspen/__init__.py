@@ -24,6 +24,7 @@ from aspen import mode, restarter
 from aspen._configuration import ConfigurationError, Configuration, usage
 from aspen.website import Website
 from aspen.wsgiserver import CherryPyWSGIServer as Server
+from aspen.utils import host_middleware
 
 
 if 'win' in sys.platform:
@@ -115,13 +116,11 @@ def server_factory(configuration):
     globals_['paths'] = configuration.paths
     configuration.load_plugins() # user modules loaded here
     website = Website(configuration)
-    for app in configuration.middleware:
-        website = app(website)
-    server = Server( configuration.address
-                   , website
-                   , configuration.threads
-                   , configuration.server_name
-                    )
+    for middleware in configuration.middleware:
+        website = middleware(website)
+    if configuration.http_host is not None:
+        website = host_middleware(configuration.http_host, website)
+    server = Server(configuration.address, website, configuration.threads)
 
 
     # Monkey-patch server to support restarting.

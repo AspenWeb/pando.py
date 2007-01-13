@@ -411,15 +411,16 @@ optparser.add_option( "-r", "--root"
         self.threads = threads
 
 
-        # server_name
+        # http_host
         # -----------
-        # @@: Should test that this indeed gets passed to Server.
 
-        server_name = conf.main.get('server_name', None)
-        if server_name is not None:
-            if server_name == '':
-                raise ValueError("empty server_name")
-        self.server_name = server_name
+        http_host = conf.main.get('http_host', None)
+        if http_host is not None:
+            if http_host == '':
+                raise ValueError("empty http_host")
+            elif '://' in http_host:
+                raise ValueError("http_host should not include protocol")
+        self.http_host = http_host
 
 
 #        # user
