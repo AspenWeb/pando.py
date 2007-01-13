@@ -101,9 +101,9 @@ def full_url(environ):
         host = environ['HTTP_HOST']
         if ':' in host:
             assert host.count(':') == 1 # sanity check
-            port = host.split(':')[1]
+            host, port = host.split(':')
         else:
-            port = ''
+            port = (environ['wsgi.url_scheme'] == 'http') and '80' or '443'
     else:                                   # fall back to SERVER_NAME
         host = environ['SERVER_NAME']
         port = environ['SERVER_PORT']
@@ -115,14 +115,13 @@ def full_url(environ):
     # =============
     # http://example.com:8080
 
-    if port:
-        if environ['wsgi.url_scheme'] == 'https':
-            if port != '443':
-               url.extend([':', port])
-        else:
-            assert environ['wsgi.url_scheme'] == 'http' # sanity check
-            if port != '80':
-               url.extend([':', port])
+    if environ['wsgi.url_scheme'] == 'https':
+        if port != '443':
+           url.extend([':', port])
+    else:
+        assert environ['wsgi.url_scheme'] == 'http' # sanity check
+        if port != '80':
+           url.extend([':', port])
 
 
     # Add any path info and querystring.

@@ -86,6 +86,168 @@ def test_cmp_routines_mixed2():
 
 
 
+# full_url
+# ========
+
+def test_full_url_basic():
+    environ = { 'wsgi.url_scheme':'http'
+              , 'HTTP_HOST':'example.com'
+               }
+    expected = 'http://example.com/'
+    actual = u.full_url(environ)
+    assert actual == expected, actual
+
+def test_full_url_no_HTTP_HOST():
+    environ = { 'wsgi.url_scheme':'http'
+              , 'SERVER_NAME':'example.com'
+              , 'SERVER_PORT':'53700'
+               }
+    expected = 'http://example.com:53700/'
+    actual = u.full_url(environ)
+    assert actual == expected, actual
+
+def test_full_url_empty_HTTP_HOST():
+    environ = { 'wsgi.url_scheme':'http'
+              , 'HTTP_HOST':''
+              , 'SERVER_NAME':'example.com'
+              , 'SERVER_PORT':'53700'
+               }
+    expected = 'http://example.com:53700/'
+    actual = u.full_url(environ)
+    assert actual == expected, actual
+
+def test_full_url_HTTP_HOST_with_port():
+    environ = { 'wsgi.url_scheme':'http'
+              , 'HTTP_HOST':'example.com:53700'
+               }
+    expected = 'http://example.com:53700/'
+    actual = u.full_url(environ)
+    assert actual == expected, actual
+
+def test_full_url_HTTP_HOST_with_port_and_SERVER_STAR():
+    environ = { 'wsgi.url_scheme':'http'
+              , 'HTTP_HOST':'example.com:53700'
+              , 'SERVER_NAME':'blahblah'
+              , 'SERVER_PORT':'bloobloo'
+               }
+    expected = 'http://example.com:53700/'
+    actual = u.full_url(environ)
+    assert actual == expected, actual
+
+def test_full_url_standard_port_elided():
+    environ = { 'wsgi.url_scheme':'http'
+              , 'HTTP_HOST':'example.com:80'
+               }
+    expected = 'http://example.com/'
+    actual = u.full_url(environ)
+    assert actual == expected, actual
+
+def test_full_url_with_SCRIPT_NAME_basic():
+    environ = { 'wsgi.url_scheme':'http'
+              , 'HTTP_HOST':'example.com'
+              , 'SCRIPT_NAME':'/'
+               }
+    expected = 'http://example.com/'
+    actual = u.full_url(environ)
+    assert actual == expected, actual
+
+def test_full_url_with_SCRIPT_NAME_foo():
+    environ = { 'wsgi.url_scheme':'http'
+              , 'HTTP_HOST':'example.com'
+              , 'SCRIPT_NAME':'/foo'
+               }
+    expected = 'http://example.com/foo'
+    actual = u.full_url(environ)
+    assert actual == expected, actual
+
+def test_full_url_with_PATH_INFO_basic():
+    environ = { 'wsgi.url_scheme':'http'
+              , 'HTTP_HOST':'example.com'
+              , 'PATH_INFO':'/'
+               }
+    expected = 'http://example.com/'
+    actual = u.full_url(environ)
+    assert actual == expected, actual
+
+def test_full_url_with_PATH_INFO_bar():
+    environ = { 'wsgi.url_scheme':'http'
+              , 'HTTP_HOST':'example.com'
+              , 'PATH_INFO':'/bar'
+               }
+    expected = 'http://example.com/bar'
+    actual = u.full_url(environ)
+    assert actual == expected, actual
+
+def test_full_url_with_SCRIPT_NAME_and_PATH_INFO():
+    environ = { 'wsgi.url_scheme':'http'
+              , 'HTTP_HOST':'example.com'
+              , 'SCRIPT_NAME':'/foo'
+              , 'PATH_INFO':'/bar'
+               }
+    expected = 'http://example.com/foo/bar'
+    actual = u.full_url(environ)
+    assert actual == expected, actual
+
+def test_full_url_with_SCRIPT_NAME_and_PATH_INFO():
+    environ = { 'wsgi.url_scheme':'http'
+              , 'HTTP_HOST':'example.com'
+              , 'SCRIPT_NAME':'/foo'
+              , 'PATH_INFO':'/bar'
+               }
+    expected = 'http://example.com/foo/bar'
+    actual = u.full_url(environ)
+    assert actual == expected, actual
+
+def test_full_url_with_QUERY_STRING():
+    environ = { 'wsgi.url_scheme':'http'
+              , 'HTTP_HOST':'example.com'
+              , 'QUERY_STRING':'baz=buz'
+               }
+    expected = 'http://example.com/?baz=buz'
+    actual = u.full_url(environ)
+    assert actual == expected, actual
+
+def test_full_url_with_QUERY_STRING_empty():
+    environ = { 'wsgi.url_scheme':'http'
+              , 'HTTP_HOST':'example.com'
+              , 'QUERY_STRING':''
+               }
+    expected = 'http://example.com/'
+    actual = u.full_url(environ)
+    assert actual == expected, actual
+
+def test_full_url_with_SCRIPT_NAME_and_QUERY_STRING():
+    environ = { 'wsgi.url_scheme':'http'
+              , 'HTTP_HOST':'example.com'
+              , 'SCRIPT_NAME':'/foo'
+              , 'QUERY_STRING':'baz=buz'
+               }
+    expected = 'http://example.com/foo?baz=buz'
+    actual = u.full_url(environ)
+    assert actual == expected, actual
+
+def test_full_url_with_PATH_INFO_and_QUERY_STRING():
+    environ = { 'wsgi.url_scheme':'http'
+              , 'HTTP_HOST':'example.com'
+              , 'PATH_INFO':'/bar'
+              , 'QUERY_STRING':'baz=buz'
+               }
+    expected = 'http://example.com/bar?baz=buz'
+    actual = u.full_url(environ)
+    assert actual == expected, actual
+
+def test_full_url_with_SCRIPT_NAME_and_PATH_INFO_and_QUERY_STRING():
+    environ = { 'wsgi.url_scheme':'http'
+              , 'HTTP_HOST':'example.com'
+              , 'SCRIPT_NAME':'/foo'
+              , 'PATH_INFO':'/bar'
+              , 'QUERY_STRING':'baz=buz'
+               }
+    expected = 'http://example.com/foo/bar?baz=buz'
+    actual = u.full_url(environ)
+    assert actual == expected, actual
+
+
 # host_middleware
 # ===============
 
@@ -99,14 +261,14 @@ def start_response(status, headers, exc=None):
     return write
 
 
-def test_host_middleware_basic():
+def test_rm_host_middleware_basic():
     mk()
     environ = {'HTTP_HOST':'foo', 'PATH_INFO':'/'}
     expected = ["You hit foo."]
     actual = u.host_middleware('foo', wsgi)(environ, start_response)
     assert actual == expected, actual
 
-def test_host_middleware_no_HTTP_HOST():
+def test_rm_host_middleware_no_HTTP_HOST():
     mk('__', '__/etc', ('__/etc/aspen.conf', '[main]\nhttp_host=foo'))
     environ = { 'PATH_INFO':'/'
               , 'wsgi.url_scheme':'http'
@@ -115,7 +277,7 @@ def test_host_middleware_no_HTTP_HOST():
     actual = u.host_middleware('foo', wsgi)(environ, start_response)
     assert actual == expected, actual
 
-def test_host_middleware_mismatch():
+def test_rm_host_middleware_mismatch():
     mk('__', '__/etc', ('__/etc/aspen.conf', '[main]\nhttp_host=foo'))
     environ = { 'HTTP_HOST':'bar:9000'
               , 'wsgi.url_scheme':'http'
@@ -130,6 +292,4 @@ def test_host_middleware_mismatch():
 # Remove the filesystem fixture after some tests.
 # ===============================================
 
-#attach_rm(globals(), 'test_find_default')
-attach_rm(globals(), 'test_check_trailing_slash')
-attach_rm(globals(), 'test_host_middleware_')
+attach_rm(globals(), 'test_rm_')
