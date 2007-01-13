@@ -157,4 +157,25 @@ def test_daemon():
     assert actual == expected, actual
 
 
+def test_auto_index():
+    mk( 'root', 'root/__', 'root/FOO'
+      , ('smoke-it.py', "import aspen; aspen.main()") # simulate bin/aspen
+       )
+    proc = subprocess.Popen([ 'python' # assumed to be on PATH
+                            , join('fsfix', 'smoke-it.py')
+                            , '--address', ':53700'
+                            , '--root', join('fsfix', 'root')
+                            , '--mode', 'production'
+                             ])
+    time.sleep(1) # give time to startup
+    actual = urllib.urlopen('http://localhost:53700/').read()
+    # @@: how do we check for 200 response code?
+    # for now just hit localhost:53700 to test manually
+    kill(proc.pid, signal.SIGTERM)
+    proc.wait()
+    assert 'FOO' in actual
+    assert '__' not in actual
+
+
+
 attach_rm(globals(), 'test_')

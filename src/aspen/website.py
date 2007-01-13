@@ -26,9 +26,6 @@ log = logging.getLogger('aspen.website')
         """Main WSGI callable.
         """
 
-        environ['aspen.website'] = self
-
-
         # Translate the request to the filesystem.
         # ========================================
 

@@ -10,7 +10,7 @@ from datetime import datetime
 from email import message_from_file, message_from_string
 from os.path import isdir, isfile, join
 
-from aspen import mode, __version__, conf
+from aspen import mode, __version__, paths
 from aspen.utils import is_valid_identifier
 
 
@@ -167,7 +167,7 @@ def autoindex(environ, start_response):
     fspath = environ['PATH_TRANSLATED']
     assert isdir(fspath) # sanity check
 
-    root = environ['aspen.website'].config.paths.root
+    root = paths.root
     urlpath = fspath[len(root):]
     urlpath = '/'.join(urlpath.split(os.sep))
     title = urlpath and urlpath or '/'
@@ -182,6 +182,8 @@ def autoindex(environ, start_response):
     others = []
     for name in os.listdir(fspath):
         _fspath = os.path.join(fspath, name)
+        if _fspath == paths.__: # don't list magic directory
+            continue
         _urlpath = '/'.join([urlpath, name])
         x = (_fspath, _urlpath, name)
         el = others
