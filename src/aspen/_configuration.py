@@ -411,6 +411,16 @@ optparser.add_option( "-r", "--root"
         self.threads = threads
 
 
+        # server_name
+        # -----------
+        # @@: Should test that this indeed gets passed to Server.
+
+        server_name = conf.main.get('server_name', None)
+        if server_name is not None:
+            if server_name == '':
+                raise ValueError("empty server_name")
+        self.server_name = server_name
+
 
 #        # user
 #        # ----

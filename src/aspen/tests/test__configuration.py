@@ -150,23 +150,42 @@ def test_threads_ten_billion():
 
 def test_threads_zero():
     mk('__/etc', ('__/etc/aspen.conf', '[main]\nthreads=0000000000'))
-    exc = assert_raises(ValueError, Config, ['-rfsfix'])
-    actual = exc.args[0]
+    actual = assert_raises(ValueError, Config, ['-rfsfix']).args[0]
     expected = "thread count less than 1: '0'"
     assert actual == expected, actual
 
 def test_threads_negative_one():
     mk('__/etc', ('__/etc/aspen.conf', '[main]\nthreads=-1'))
-    exc = assert_raises(TypeError, Config, ['-rfsfix'])
-    actual = exc.args[0]
+    actual = assert_raises(TypeError, Config, ['-rfsfix']).args[0]
     expected = "thread count not a positive integer: '-1'"
     assert actual == expected, actual
 
 def test_threads_blah_blah():
     mk('__/etc', ('__/etc/aspen.conf', '[main]\nthreads=blah blah'))
-    exc = assert_raises(TypeError, Config, ['-rfsfix'])
-    actual = exc.args[0]
+    actual = assert_raises(TypeError, Config, ['-rfsfix']).args[0]
     expected = "thread count not a positive integer: 'blah blah'"
+    assert actual == expected, actual
+
+
+# server_name
+# ===========
+
+def test_server_name_default():
+    mk()
+    actual = Config(['-rfsfix']).server_name
+    expected = None
+    assert actual is expected, actual
+
+def test_server_name_something():
+    mk('__/etc', ('__/etc/aspen.conf', '[main]\nserver_name=foo'))
+    actual = Config(['-rfsfix']).server_name
+    expected = 'foo'
+    assert actual == expected, actual
+
+def test_server_name_empty():
+    mk('__/etc', ('__/etc/aspen.conf', '[main]\nserver_name='))
+    actual = assert_raises(ValueError, Config, ['-rfsfix']).args[0]
+    expected = "empty server_name"
     assert actual == expected, actual
 
 

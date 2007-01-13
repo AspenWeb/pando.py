@@ -108,7 +108,11 @@ def server_factory(configuration):
     website = Website(configuration)
     for app in configuration.middleware:
         website = app(website)
-    server = Server(configuration.address, website, configuration.threads)
+    server = Server( configuration.address
+                   , website
+                   , configuration.threads
+                   , configuration.server_name
+                    )
 
 
     # Monkey-patch server to support restarting.

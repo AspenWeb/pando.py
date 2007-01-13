@@ -82,29 +82,26 @@ def check_trailing_slash(environ, start_response):
 def full_url(environ):
     """Given a WSGI environ, return the full URL of the request.
 
-    This is Ian's recipe from PEP 333.
+    Adapted from Ian Bicking's recipe in PEP 333.
 
     """
-    url = environ['wsgi.url_scheme']+'://'
-
-    if environ.get('HTTP_HOST'):
-        url += environ['HTTP_HOST']
+    url = [environ['wsgi.url_scheme']]
+    url.append('://')
+    url.append(environ['SERVER_NAME'])
+    if environ['wsgi.url_scheme'] == 'https':
+        if environ['SERVER_PORT'] != '443':
+           url.extend([':', environ['SERVER_PORT']])
     else:
-        url += environ['SERVER_NAME']
+        assert environ['wsgi.url_scheme'] == 'http' # sanity check
+        if environ['SERVER_PORT'] != '80':
+           url.extend([':', environ['SERVER_PORT']])
 
-        if environ['wsgi.url_scheme'] == 'https':
-            if environ['SERVER_PORT'] != '443':
-               url += ':' + environ['SERVER_PORT']
-        else:
-            if environ['SERVER_PORT'] != '80':
-               url += ':' + environ['SERVER_PORT']
-
-    url += urllib.quote(environ.get('SCRIPT_NAME',''))
-    url += urllib.quote(environ.get('PATH_INFO',''))
+    url.append(urllib.quote(environ.get('SCRIPT_NAME','')))
+    url.append(urllib.quote(environ.get('PATH_INFO','')))
     if environ.get('QUERY_STRING'):
-        url += '?' + environ['QUERY_STRING']
+        url.append('?' + environ['QUERY_STRING'])
 
-    return url
+    return ''.join(url)
 
 
 def translate(root, url):
