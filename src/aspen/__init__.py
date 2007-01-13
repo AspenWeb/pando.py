@@ -330,7 +330,8 @@ def start_server(configuration):
 
             __ = configuration.paths.__
             if __:
-                for path in ( join(__, 'etc', 'aspen.conf')
+                for path in ( join(__, 'etc', 'apps.conf')
+                            , join(__, 'etc', 'aspen.conf')
                             , join(__, 'etc', 'handlers.conf')
                             , join(__, 'etc', 'middleware.conf')
                              ):
