@@ -1,15 +1,13 @@
 ========================================
-    ~~VERSION~~ -- ~~DATE~~
+    0.7 -- January 15, 2007
 ========================================
 
-  - can now use tabs in config files
-  - exposed the server, website, and configuration objects in the aspen module
-    namespace
-  - classes no longer instantiated; use aspen.config instead
-  - SCRIPT_NAME and PATH_INFO now set for apps
-  - upgraded to wsgiserver.py from CherryPy 3.0.0
-  - sanitized default config: no more executable python scripts
-  - default file browser
+The focus of this release is configuration. We have cleaned up and documented
+Aspen's main configuration file, and we have exposed a documented interface for
+interacting with Aspen's configuration from your plugin modules. There is one
+API change to note: Aspen no longer instantiates plugin classes; instead, you
+may import configuration objects as needed from the top-level aspen package.
+Please see the Subversion logs for full details of this release.
 
 
 ========================================
