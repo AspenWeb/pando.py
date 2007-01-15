@@ -116,10 +116,10 @@ catch_all   aspen.rules:catch_all
 isdir       aspen.rules:isdir
 
 
-[aspen.handlers:default_or_autoindex]
-  isdir                         # do smart things for directories
+[aspen.handlers.autoindex:autoindex]
+  isdir                         # directories get an automatic index
 
-[aspen.handlers:static]
+[aspen.handlers.static:static]
   catch_all                     # anything else, serve it statically
 \end{verbatim}
 

@@ -35,10 +35,10 @@ rulefuncs = dict()
 rulefuncs['catch_all'] = rules.catch_all
 rulefuncs['isdir'] = rules.isdir
 
-dirsmarts = load.Handler(rulefuncs, handlers.autoindex)
+dirsmarts = load.Handler(rulefuncs, handlers.autoindex.autoindex)
 dirsmarts.add("isdir", 0)
 
-static = load.Handler(rulefuncs, handlers.static)
+static = load.Handler(rulefuncs, handlers.static.static)
 static.add("catch_all", 0)
 
 DEFAULTS = [dirsmarts, static]

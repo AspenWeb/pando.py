@@ -18,10 +18,10 @@ default_handlers_conf = """\
     isdir       aspen.rules:isdir
 
 
-    [aspen.handlers:autoindex]
+    [aspen.handlers.autoindex:autoindex]
       isdir                         # directories get an automatic index
 
-    [aspen.handlers:static]
+    [aspen.handlers.static:static]
       catch_all                     # anything else, serve it statically
 
 """

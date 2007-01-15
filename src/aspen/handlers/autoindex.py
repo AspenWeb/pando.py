@@ -1,116 +1,11 @@
-"""A few default handlers for aspen.
+"""Define a handler that generates an index for directories.
 """
-import mimetypes
-import rfc822
 import os
 import stat
-import time
-import traceback
 from datetime import datetime
-from email import message_from_file, message_from_string
 from os.path import isdir, isfile, join
 
-from aspen import mode, __version__, paths
-from aspen.utils import is_valid_identifier
-
-
-# File or Directory
-# =================
-
-def HTTP404(environ, start_response):
-    start_response('404 Not Found', [])
-    return ['Resource not found.']
-
-
-# File Handlers
-# =============
-
-def pyscript(environ, start_response):
-    """Execute the script pseudo-CGI-style.
-    """
-    path = environ['PATH_TRANSLATED']
-    assert isfile(path) # sanity check
-
-    context = dict()
-    context['environ'] = environ
-    context['start_response'] = start_response
-    context['response'] = []
-    context['__file__'] = path
-
-    try:
-        exec open(path) in context
-        response = context['response']
-    except SystemExit:
-        pass
-#    except:
-#        start_response( '500 Internal Server Error'
-#                      , [('Content-type', 'text/plain')]
-#                       )
-#        if mode.debdev:
-#            return [traceback.format_exc()]
-#        else:
-#            return ['Internal Server Error']
-
-    return response
-
-
-def static(environ, start_response):
-    """Serve a static file off of the filesystem.
-
-    In staging and deployment modes, we honor any 'If-Modified-Since'
-    header, an HTTP header used for caching.
-
-    XXX: look at Luke Arno's ACK GPL and some others ... Etags? Iteration?
-
-    """
-    assert isfile(environ['PATH_TRANSLATED']) # sanity check
-
-    path = environ['PATH_TRANSLATED']
-    ims = environ.get('HTTP_IF_MODIFIED_SINCE', '')
-
-
-    # Get basic info from the filesystem and start building a response.
-    # =================================================================
-
-    stats = os.stat(path)
-    mtime = stats[stat.ST_MTIME]
-    size = stats[stat.ST_SIZE]
-    content_type = mimetypes.guess_type(path)[0] or 'text/plain'
-
-
-    # Support 304s, but only in production mode.
-    # ==========================================
-
-    status = '200 OK'
-    if mode.stprod:
-        if ims:
-            mod_since = rfc822.parsedate(ims)
-            last_modified = time.gmtime(mtime)
-            if last_modified[:6] <= mod_since[:6]:
-                status = '304 Not Modified'
-
-
-    # Set up the response.
-    # ====================
-
-    headers = []
-    headers.append(('Last-Modified', rfc822.formatdate(mtime)))
-    headers.append(('Content-Type', content_type))
-    headers.append(('Content-Length', str(size)))
-
-    start_response(status, headers)
-    if status == '304 Not Modified':
-        return []
-    else:
-        return open(path)
-
-
-# Directory Handlers
-# ==================
-
-def HTTP403(environ, start_response):
-    start_response('403 Forbidden', [])
-    return ['This directory has no index.']
+import aspen
 
 
 STYLE = """\
@@ -167,7 +62,7 @@ def autoindex(environ, start_response):
     fspath = environ['PATH_TRANSLATED']
     assert isdir(fspath) # sanity check
 
-    root = paths.root
+    root = aspen.paths.root
     urlpath = fspath[len(root):]
     urlpath = '/'.join(urlpath.split(os.sep))
     title = urlpath and urlpath or '/'
@@ -181,8 +76,8 @@ def autoindex(environ, start_response):
     files = []
     others = []
     for name in os.listdir(fspath):
-        _fspath = os.path.join(fspath, name)
-        if _fspath == paths.__: # don't list magic directory
+        _fspath = join(fspath, name)
+        if _fspath == aspen.paths.__: # don't list magic directory
             continue
         _urlpath = '/'.join([urlpath, name])
         x = (_fspath, _urlpath, name)
@@ -233,7 +128,7 @@ def autoindex(environ, start_response):
     a('</table>')
     a('<hr /><div id="footer">This index was brought to you by')
     a('<a href="http://www.zetadev.com/software/aspen/">')
-    a('Aspen v%s</a>.</div>' % __version__)
+    a('Aspen v%s</a>.</div>' % aspen.__version__)
     a('</body></html>')
 
 
