@@ -10,7 +10,7 @@ MKHOWTO    = $(PYTHONSRC)/Doc/tools/mkhowto \
 				--logging \
 				--up-link "http://www.zetadev.com/software/aspen/" \
 				--up-title "aspen homepage" \
-				--address "<a href=\"http://www.zetadev.com/software/aspen/\">Aspen</a> is copyright &copy; 2006 by Chad Whitacre and contributors, and is offered under the MIT license." \
+				--address "<a href=\"http://www.zetadev.com/software/aspen/\">Aspen</a> is copyright &copy; 2006-2007 by Chad Whitacre and contributors, and is offered under the MIT license." \
 #				--style style.css
 
 
