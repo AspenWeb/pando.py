@@ -102,8 +102,9 @@ Otherwise, it is interpreted as AF_INET. If \var{address} begins with a colon,
 then the AF_INET loopback address is assumed.}{\code{0.0.0.0:8080}}
 
 \lineiii{defaults}{A comma-separated list of names to look for when a directory
-is requested.}{\code{index.html, index.htm}}
-%
+is requested. Any default resource is located immediately before dispatching to
+a handler.}{\code{index.html, index.htm}}
+
 % \lineiii{group}{A groupname or gid to which, if given, Aspen will attempt to
 % switch after binding to the socket.}{}
 %
