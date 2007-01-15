@@ -53,9 +53,9 @@ choosing an application to service a request, the most specific pathname matches
 first.
 
 Object names are in colon notation, and they name WSGI callables. Aspen updates
-the \code{PATH_INFO} and \code{SCRIPT_NAME} settings in \code{environ} before
-handing off to the relevant callable. Any trailing slash will be included in
-\code{PATH_INFO}, not in \code{SCRIPT_NAME}.
+the \code{SCRIPT_NAME} and \code{PATH_INFO} settings in \code{environ} before
+handing off to the relevant callable. \code{SCRIPT_NAME} will never end with a
+slash, and if \code{PATH_INFO} is not empty, it will always begin with a slash.
 
 Aspen will (over)write a file called \file{README.aspen} in each directory
 mentioned in \file{apps.conf}, containing the relevant line from

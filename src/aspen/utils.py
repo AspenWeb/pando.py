@@ -159,23 +159,6 @@ def translate(root, url):
     return realpath(os.sep.join(parts))
 
 
-# For downstream apps.
-# ====================
-
-def middleware(routine):
-    """Decorator to turn the a WSGI callable into middleware.
-
-    The decorated routine must accept a third positional argument, which is the
-    next WSGI callable on the stack.
-
-    """
-    def factory(next):
-        def wsgi(environ, start_response):
-            return routine(environ, start_response, next)
-        return wsgi
-    return factory
-
-
 if __name__ == '__main__':
     import doctest
     doctest.testmod()
