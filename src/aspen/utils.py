@@ -97,24 +97,32 @@ def full_url(environ):
     # =============
     # http://example.com
 
-    if environ.get('HTTP_HOST'):            # try Host header
+    port = None
+    if environ.get('HTTP_X_FORWARDED_HOST'):    # try X-Forwarded-Host header
+        host = environ['HTTP_X_FORWARDED_HOST']
+    elif environ.get('HTTP_HOST'):              # then try Host header
         host = environ['HTTP_HOST']
-        if ':' in host:
-            assert host.count(':') == 1 # sanity check
-            host, port = host.split(':')
-        else:
-            port = (environ['wsgi.url_scheme'] == 'http') and '80' or '443'
-    else:                                   # fall back to SERVER_NAME
+    else:                                       # fall back to SERVER_NAME
         host = environ['SERVER_NAME']
         port = environ['SERVER_PORT']
-
-    url.append(host)
 
 
     # Get the port.
     # =============
     # http://example.com:8080
 
+    if port is None: # i.e., using X-Forwarded-Host or Host
+        if ':' in host:
+            assert host.count(':') == 1 # sanity check
+            host, port = host.split(':')
+        else:
+            port = (environ['wsgi.url_scheme'] == 'http') and '80' or '443'
+
+
+    # Add host and port to the url.
+    # =============================
+
+    url.append(host)
     if environ['wsgi.url_scheme'] == 'https':
         if port != '443':
            url.extend([':', port])
@@ -151,24 +159,6 @@ def translate(root, url):
     return realpath(os.sep.join(parts))
 
 
-def host_middleware(http_host, next):
-    """Return a middleware that canonicalizes the HTTP_HOST
-    """
-    def _middleware(environ, start_response):
-        if 'HTTP_HOST' in environ:
-            if environ['HTTP_HOST'] != http_host:
-                environ['HTTP_HOST'] = http_host
-                location = full_url(environ)
-                headers = [('Location', location)]
-                start_response('301 Moved Permanently', headers)
-                return ['Please use %s.' % location]
-        else:
-            environ['HTTP_HOST'] = http_host
-        return next(environ, start_response)
-    return _middleware
-
-
 if __name__ == '__main__':
     import doctest
     doctest.testmod()
-

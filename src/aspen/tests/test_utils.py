@@ -134,6 +134,17 @@ def test_full_url_HTTP_HOST_with_port_and_SERVER_STAR():
     actual = u.full_url(environ)
     assert actual == expected, actual
 
+def test_full_url_HTTP_X_FORWARDED_HOST():
+    environ = { 'wsgi.url_scheme':'http'
+              , 'HTTP_X_FORWARDED_HOST':'example.com'
+              , 'HTTP_HOST':'foo:53700'
+              , 'SERVER_NAME':'blahblah'
+              , 'SERVER_PORT':'bloobloo'
+               }
+    expected = 'http://example.com/'
+    actual = u.full_url(environ)
+    assert actual == expected, actual
+
 def test_full_url_standard_port_elided():
     environ = { 'wsgi.url_scheme':'http'
               , 'HTTP_HOST':'example.com:80'
@@ -246,47 +257,6 @@ def test_full_url_with_SCRIPT_NAME_and_PATH_INFO_and_QUERY_STRING():
     expected = 'http://example.com/foo/bar?baz=buz'
     actual = u.full_url(environ)
     assert actual == expected, actual
-
-
-# host_middleware
-# ===============
-
-def wsgi(environ, start_response):
-    start_response('200 OK', [])
-    return ["You hit %s." % environ.get('HTTP_HOST', '_______')]
-
-def start_response(status, headers, exc=None):
-    def write():
-        return status, headers
-    return write
-
-
-def test_rm_host_middleware_basic():
-    mk()
-    environ = {'HTTP_HOST':'foo', 'PATH_INFO':'/'}
-    expected = ["You hit foo."]
-    actual = u.host_middleware('foo', wsgi)(environ, start_response)
-    assert actual == expected, actual
-
-def test_rm_host_middleware_no_HTTP_HOST():
-    mk('__', '__/etc', ('__/etc/aspen.conf', '[main]\nhttp_host=foo'))
-    environ = { 'PATH_INFO':'/'
-              , 'wsgi.url_scheme':'http'
-               }
-    expected = ['You hit foo.']
-    actual = u.host_middleware('foo', wsgi)(environ, start_response)
-    assert actual == expected, actual
-
-def test_rm_host_middleware_mismatch():
-    mk('__', '__/etc', ('__/etc/aspen.conf', '[main]\nhttp_host=foo'))
-    environ = { 'HTTP_HOST':'bar:9000'
-              , 'wsgi.url_scheme':'http'
-               }
-    expected = ['Please use http://foo/.']
-    actual = u.host_middleware('foo', wsgi)(environ, start_response)
-    assert actual == expected, actual
-
-
 
 
 # Remove the filesystem fixture after some tests.
