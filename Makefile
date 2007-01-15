@@ -1,8 +1,8 @@
 # This Makefile is used to create an aspen distribution. Before calling, set the
 # VERSION environment variable.
 
-VERSION=trunk
-DATE=today
+VERSION=0.7
+DATE=January 15, 2007
 
 UPDATE_VERSION=sed -e 's/~~VERSION~~/$(VERSION)/g' -i ''
 UPDATE_DATE=sed -e 's/~~DATE~~/$(DATE)/g' -i ''
