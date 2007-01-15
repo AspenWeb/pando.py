@@ -84,13 +84,37 @@ def test_get_app_environ_without_slash():
     actual.sort()
     assert actual == expected, actual
 
+def test_get_app_environ_with_slash_and_slash_goes_in_PATH_INFO():
+    mk('__', '__/etc', ('__/etc/apps.conf', '/foo/ random:choice'))
+    env = {'PATH_INFO':'/foo/bar'}
+    Website().get_app(env, start_response)
+    expected = [ ('PATH_INFO', '/bar')
+               , ('PATH_TRANSLATED', realpath(join('fsfix', 'foo')))
+               , ('SCRIPT_NAME', '/foo')
+                ]
+    actual = list(env.items())
+    actual.sort()
+    assert actual == expected, actual
+
+def test_get_app_environ_without_slash_and_slash_goes_in_PATH_INFO():
+    mk('__', '__/etc', ('__/etc/apps.conf', '/foo random:choice'))
+    env = {'PATH_INFO':'/foo/bar'}
+    Website().get_app(env, start_response)
+    expected = [ ('PATH_INFO', '/bar')
+               , ('PATH_TRANSLATED', realpath(join('fsfix', 'foo')))
+               , ('SCRIPT_NAME', '/foo')
+                ]
+    actual = list(env.items())
+    actual.sort()
+    assert actual == expected, actual
+
 def test_get_app_environ_root_app():
     mk('__', '__/etc', ('__/etc/apps.conf', '/ random:choice'))
     env = {'PATH_INFO':'/', 'SERVER_NAME': 'foo'}
     Website().get_app(env, start_response)
-    expected = [ ('PATH_INFO', '')
+    expected = [ ('PATH_INFO', '/')
                , ('PATH_TRANSLATED', realpath('fsfix'))
-               , ('SCRIPT_NAME', '/')
+               , ('SCRIPT_NAME', '')
                , ('SERVER_NAME', 'foo')
                 ]
     actual = list(env.items())

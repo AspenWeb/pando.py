@@ -62,7 +62,7 @@ def cmp_routines(f1, f2):
 # =====
 
 def check_trailing_slash(environ, start_response):
-    """Given WSGI stuff, return None or raise 301.
+    """Given WSGI stuff, return None or 301.
 
     environ must have PATH_TRANSLATED set in addition to PATH_INFO, which
     latter is required by the spec.

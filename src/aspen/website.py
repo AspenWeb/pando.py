@@ -17,6 +17,7 @@ log = logging.getLogger('aspen.website')
 
     def __init__(self, configuration):
         self.configuration = configuration
+        self.root = self.configuration.paths.root
 
 
     # Main Dispatcher
@@ -79,28 +80,48 @@ log = logging.getLogger('aspen.website')
     def get_app(self, environ, start_response):
         """Given a WSGI environ, return the first matching app.
         """
+
         app = None
-        path = test_path = environ['PATH_INFO']
-        if not test_path.endswith('/'):
-            test_path += '/'
+        path = match_against = environ['PATH_INFO']
+        if not match_against.endswith('/'):
+            match_against += '/'
+
         for app_urlpath, _app in self.configuration.apps:
-            if test_path.startswith(app_urlpath):
-                environ['PATH_TRANSLATED'] = translate( self.configuration.paths.root
-                                                      , app_urlpath
-                                                       )
-                if not isdir(environ['PATH_TRANSLATED']):
-                    start_response('404 Not Found', [])
-                    return ['Resource not found.']
-                if app_urlpath.endswith('/'):
+
+            # Do basic validation.
+            # ====================
+
+            if not match_against.startswith(app_urlpath):
+                continue
+            environ['PATH_TRANSLATED'] = translate(self.root, app_urlpath)
+            if not isdir(environ['PATH_TRANSLATED']):
+                start_response('404 Not Found', [])
+                return ['Resource not found.']
+
+
+            # Check trailing slash.
+            # =====================
+
+            if app_urlpath.endswith('/'): # "please canonicalize"
+                if path == app_urlpath[:-1]:
                     response = check_trailing_slash(environ, start_response)
-                    if response is not None:
-                        return response
-                environ["SCRIPT_NAME"] = app_urlpath
-                environ["PATH_INFO"] = path[len(app_urlpath):]
-                app = _app
-                break
+                    assert response is not None # sanity check
+                    return response # redirect to trailing slash
+                app_urlpath = app_urlpath[:-1] # trailing slash goes in
+                                               # PATH_INFO, not SCRIPT_NAME
+
+            # Update environ.
+            # ===============
+
+            environ["SCRIPT_NAME"] = app_urlpath
+            environ["PATH_INFO"] = path[len(app_urlpath):]
+
+            app = _app
+            break
+
         if app is None:
             log.debug("No app found for '%s'" % environ['PATH_INFO'])
+
         return app
 
 
