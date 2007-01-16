@@ -245,13 +245,18 @@ the magic directory
 \end{memberdesc}
 
 \begin{memberdesc}[string]{lib}
-the site's local Python library
+the site's local Python library, \file{__/lib/python2.x}
+\end{memberdesc}
+
+\begin{memberdesc}[string]{pkg}
+\file{site-packages} under the site's local Python library,
+\file{__/lib/python2.x}
 \end{memberdesc}
 
 \begin{memberdesc}[string]{plat}
-the local platform-specific Python library
+the local platform-specific Python library, \file{__/lib/plat-x}
 \end{memberdesc}
 
-If there is no magic directory, then \code{__}, \code{lib}, and \code{plat} are
-all \class{None}. If there is, then \code{lib} and \code{plat} are added to
-\code{sys.path}.
+If there is no magic directory, then \code{__}, \code{lib}, \code{pkg} and
+\code{plat} are all \class{None}. If there is, then \code{lib}, \code{pkg} and
+\code{plat} are added to \code{sys.path}.

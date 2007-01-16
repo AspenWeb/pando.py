@@ -340,7 +340,7 @@ optparser.add_option( "-r", "--root"
 
         # command/daemon
         # ==============
-        # Like root, 'command' can only be set on the command line.
+        # Like root, 'command' can only be given on the command line.
 
         command = args and args[0] or 'runfg'
         if command not in COMMANDS:
@@ -409,18 +409,6 @@ optparser.add_option( "-r", "--root"
             if not threads >= 1:
                 raise ValueError("thread count less than 1: '%d'" % threads)
         self.threads = threads
-
-
-        # http_host
-        # -----------
-
-        http_host = conf.main.get('http_host', None)
-        if http_host is not None:
-            if http_host == '':
-                raise ValueError("empty http_host")
-            elif '://' in http_host:
-                raise ValueError("http_host should not include protocol")
-        self.http_host = http_host
 
 
 #        # user
