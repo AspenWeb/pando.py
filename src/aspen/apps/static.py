@@ -2,7 +2,7 @@ from os.path import isdir, isfile
 
 from aspen import configuration
 from aspen.handlers.static import static as static_handler
-from aspen.utils import translate, find_default
+from aspen.utils import find_default, translate
 
 
 def static(environ, start_response):
