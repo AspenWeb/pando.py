@@ -159,6 +159,26 @@ def translate(root, url):
     return realpath(os.sep.join(parts))
 
 
+def find_default(defaults, environ):
+    """Given a WSGI environ and a list of defaults, update environ.
+
+    This function updates environ['PATH_TRANSLATED'] and returns the new
+    filesystem path, or the old one if no default is found.
+
+    """
+    fspath = environ['PATH_TRANSLATED']
+    if isdir(fspath):
+        default = None
+        for name in defaults:
+            _path = join(fspath, name)
+            if isfile(_path):
+                default = _path
+                break
+        if default is not None:
+            environ['PATH_TRANSLATED'] = fspath = default
+    return fspath
+
+
 if __name__ == '__main__':
     import doctest
     doctest.testmod()

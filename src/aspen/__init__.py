@@ -97,6 +97,18 @@ def get_perms(path):
 pidfiler = PIDFiler() # must actually set pidfiler.path before starting
 
 
+CLEANUPS = []
+
+def register_cleanup(func):
+    CLEANUPS.append(func)
+    
+def cleanup():
+    if CLEANUPS:
+        print "cleaning up ..."
+        for func in CLEANUPS:
+            func()
+        
+
 globals_ = globals()
 def server_factory(configuration):
     """This is the heavy work of instantiating the server.
@@ -131,6 +143,7 @@ def server_factory(configuration):
             if restarter.should_restart():
                 print "restarting ..."
                 server.stop()
+                cleanup()
                 raise SystemExit(75)
         server.tick = tick
 
@@ -152,6 +165,7 @@ def start_server(configuration):
         print "stopping server"
         sys.stdout.flush()
         server.stop()
+        cleanup()
         if not WINDOWS:
             if configuration.sockfam == socket.AF_UNIX:     # clean up socket
                 try:

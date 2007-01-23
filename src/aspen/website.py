@@ -5,7 +5,7 @@ from os.path import exists, isdir, isfile, join
 
 from aspen import mode
 from aspen.exceptions import HandlerError
-from aspen.utils import check_trailing_slash, translate
+from aspen.utils import check_trailing_slash, find_default, translate
 
 
 log = logging.getLogger('aspen.website')
@@ -57,15 +57,7 @@ log = logging.getLogger('aspen.website')
         else:                                               # handler
             response = check_trailing_slash(environ, start_response)
             if response is None: # no redirection
-                if isdir(fspath): # locate any default resource
-                    default = None
-                    for name in self.configuration.defaults:
-                        _path = join(fspath, name)
-                        if isfile(_path):
-                            default = _path
-                            break
-                    if default is not None:
-                        environ['PATH_TRANSLATED'] = fspath = default
+                fspath = find_default(self.configuration.defaults, environ)
                 handler = self.get_handler(fspath)
                 response = handler.handle(environ, start_response) # WSGI
 
