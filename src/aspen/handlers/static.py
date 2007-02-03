@@ -10,6 +10,8 @@ from os.path import isdir, isfile
 
 from aspen import mode, conf
 from aspen.exceptions import ConfigError
+from aspen.handlers.autoindex import autoindex
+from aspen.handlers.http import HTTP403
 
 
 # import-time configuration
@@ -22,7 +24,7 @@ val = conf.static.get('chunk_size', '8192')
 if not val.isdigit() or (int(val) == 0):
     raise ConfigError( "chunk_size must be an integer greater than 0"
                      , "__/etc/aspen.conf"
-                     , "<?>" # lineno
+                     , -1 # lineno
                       )
 CHUNK_SIZE = int(val)
 
@@ -41,7 +43,7 @@ else:
     else:
         raise ConfigError( "autoindex must be 'yes' or 'no'"
                          , "__/etc/aspen.conf"
-                         , "<?>" # lineno
+                         , -1 # lineno
                           )
 AUTOINDEX = val
 
@@ -61,6 +63,8 @@ class Resource(object):
     For documentation on this last item, look at aspen-users around Jan 31,
     2007.
 
+    This implementation is borrowed from Quixote. Since it's only a few lines of
+    code we aren't bothering with license documentation.
 
     """
 
@@ -105,7 +109,8 @@ def static(environ, start_response):
 
     path = environ['PATH_TRANSLATED']
     if isdir(path):
-        raise NotImplementedError
+        call = AUTOINDEX and autoindex or HTTP403
+        return call(environ, start_response)
     else:
         assert isfile(environ['PATH_TRANSLATED']) # sanity check
 

@@ -15,14 +15,9 @@ clean = lambda x: x.split('#',1)[0].strip() # clears comments & whitespace
 default_handlers_conf = """\
 
     catch_all   aspen.rules:catch_all
-    isdir       aspen.rules:isdir
-
-
-    [aspen.handlers.autoindex:autoindex]
-      isdir                         # directories get an automatic index
 
     [aspen.handlers.static:static]
-      catch_all                     # anything else, serve it statically
+      catch_all
 
 """
 
