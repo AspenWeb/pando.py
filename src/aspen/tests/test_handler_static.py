@@ -20,7 +20,7 @@ def test_basic():
     mk(('index.html', "Foo."))
     environ = {'PATH_TRANSLATED':realpath(join('fsfix', 'index.html'))}
     expected = 'Foo.'
-    actual = static(environ, start_response).read()
+    actual = static(environ, start_response).next()
     assert actual == expected, actual
 
 
