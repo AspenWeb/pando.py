@@ -1,0 +1,49 @@
+========================================
+    INTRO & INSTALL
+========================================
+
+This is a quick orientation to writing documentation for Aspen. Aspen uses the
+Python documentation system:
+
+    http://docs.python.org/doc/doc.html
+
+The reasons for using this system are as follows:
+
+    - it generates documentation in a variety of formats
+    - the markup isn't that hard
+    - the HTML it generates looks familiar to Python programmers
+
+Python's doc system is basically a tweaked LaTeX, so googling for LaTeX-related
+search terms will also yield useful information. The tools for this system come
+with the full Python source distribution. You'll also need latex2html, which I
+install on FreeBSD with:
+
+  # pkg_add -r latex2html
+
+This is a nasty Perl script(?!), so you'll need Perl too.
+
+
+========================================
+    WORKFLOW
+========================================
+
+Basically, all documentation starts life in the tex/ subdirectory, and from
+there, the Makefile generates HTML and PDF versions. Also in there is an
+update.py script which repeatedly makes the docs whenever the source files
+change: this is useful during development. When update.py exits, it calls make
+clean which removes the built HTML and PDF docs too.
+
+When the docs are made, the HTML version will be in the html/ subdirectory, and
+I usually serve that directory with Aspen itself. So my doc dev cycle looks
+like:
+
+  1. make the html subdir if it isn't already there
+  2. start Aspen as a daemon in the html directory (`aspen start -rhtml`)
+  3. change into tex/ and start update.py
+  4. open the fresh html docs in a browser
+  5. open a tex file in my editor and edit it
+  6. watch latex2html churn, and then refresh my web browser
+
+
+Hopefully that's enough to get you started. Please keep lines to 80 chars, and
+in general try to harmonize your style with the existing docs.
