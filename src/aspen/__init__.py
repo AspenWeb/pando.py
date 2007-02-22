@@ -101,13 +101,13 @@ pidfiler = PIDFiler() # must actually set pidfiler.path before starting
 
 def register_cleanup(func):
     CLEANUPS.append(func)
-    
+
 def cleanup():
     if CLEANUPS:
         print "cleaning up ..."
         for func in CLEANUPS:
             func()
-        
+
 
 globals_ = globals()
 def server_factory(configuration):
@@ -135,8 +135,10 @@ def server_factory(configuration):
     # Monkey-patch server to support restarting.
     # ==========================================
     # Giving server a chance to shutdown cleanly largely avoids the terminal
-    # screw-up bug that plagued httpy < 1.0.
+    # screw-up bug that plagued httpy < 1.0. We also insinuate ourselves into
+    # the Server header at this point.
 
+    server.version = "Aspen/%s (%s)" % (__version__, server.version)
     if restarter.CHILD:
         def tick():
             Server.tick(server)
