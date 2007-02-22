@@ -83,6 +83,9 @@ which is a newline-separated list of white-space-separated rule name/object name
 pairs. Rule names can be any string without whitespace. Each object name (in
 colon notation) specifies a \dfn{rule}, a callable taking a filesystem path name
 and an arbitrary predicate string, and returning \class{True} or \class{False}.
+The path argument is absolute and is guaranteed to exist; it is
+\envvar{PATH_TRANSLATED} from the WSGI environment, with any default resource
+already located.
 
 Following the rule specification are sections specifying \dfn{handlers}, which
 as mentioned above are WSGI callables.
