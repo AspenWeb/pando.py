@@ -167,7 +167,7 @@ def start_server(configuration):
         print "stopping server"
         sys.stdout.flush()
         server.stop()
-        cleanup()
+        cleanup()                                           # user hook
         if not WINDOWS:
             if configuration.sockfam == socket.AF_UNIX:     # clean up socket
                 try:
@@ -184,12 +184,14 @@ def start_server(configuration):
 
     # Start the server.
     # =================
-    # We could do a try/finally here to shut down cleanly in case of bugs, but
-    # then we'd have less incentive to fix the bugs, wouldn't we? :^)
 
     print "aspen starting on %s" % str(configuration.address)
     sys.stdout.flush()
-    server.start()
+    try:
+        server.start()
+    finally:
+        print "cleaning up after critical exception"
+        shutdown(None, None)
 
 
 def drive_daemon(configuration):

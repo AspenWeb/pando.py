@@ -6,7 +6,7 @@ import subprocess
 import sys
 import time
 import urllib
-from os.path import join
+from os.path import isfile, join
 
 import aspen
 from aspen._configuration import Configuration
@@ -29,6 +29,7 @@ def Website():
     config = Configuration(['-rfsfix'])
     config.load_plugins()
     return _Website(config)
+
 
 # Define a cross-platform kill().
 # ===============================
@@ -95,65 +96,6 @@ fnmatch *.asp
 
     expected = [os.path.realpath(os.path.join('fsfix', 'handled.asp'))]
     actual = Website()({'PATH_INFO':'handled.asp'}, lambda a,b:a)
-    assert actual == expected, actual
-
-
-# Another top-level test
-# ======================
-
-def test_daemon():
-    if 'win' in sys.platform:
-        return # don't bother running this test on Windows
-
-    mk( 'root', 'root/__', ('root/index.html', "Greetings, program!")
-      , ('smoke-it.py', "import aspen; aspen.main()") # simulate bin/aspen
-       )
-
-
-    # Start the daemon.
-    # =================
-
-    proc = subprocess.Popen([ 'python' # assumed to be on PATH
-                            , join('fsfix', 'smoke-it.py')
-                            , '--address', ':53700'
-                            , '--root', join('fsfix', 'root')
-                            , 'start'
-                             ])
-    time.sleep(1) # give time to startup
-    expected = 'Greetings, program!'
-    actual = urllib.urlopen('http://localhost:53700/').read()
-    assert actual == expected, actual # site running
-
-
-    # Check pidfile permissions.
-    # ==========================
-
-    actual = stat.S_IMODE(os.stat('fsfix/root/__/var/aspen.pid')[stat.ST_MODE])
-    expected = 0600
-    assert actual == expected, actual
-
-
-    # Check logfile permissions.
-    # ==========================
-
-    actual = stat.S_IMODE(os.stat('fsfix/root/__/var/aspen.log')[stat.ST_MODE])
-    expected = 0600
-    assert actual == expected, actual
-
-
-    # Stop the daemon.
-    # ================
-
-    proc = subprocess.Popen([ 'python' # assumed to be on PATH
-                            , join('fsfix', 'smoke-it.py')
-                            , '--address', ':53700'
-                            , '--root', join('fsfix', 'root')
-                            , 'stop'
-                             ])
-    proc.wait()
-    exc = assert_raises(IOError, urllib.urlopen, 'http://localhost:53700/')
-    actual = str(exc.strerror)
-    expected = "(61, 'Connection refused')"
     assert actual == expected, actual
 
 
