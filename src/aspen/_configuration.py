@@ -66,6 +66,9 @@ class ConfigurationError(StandardError):
         # must be between 0 and 65535, inclusive.
 
 
+        err = "Bad address %s" % str(address)
+
+
         # Break out IP and port.
         # ======================
 

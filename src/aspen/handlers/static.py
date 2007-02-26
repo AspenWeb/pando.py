@@ -16,6 +16,7 @@ from aspen.handlers.http import HTTP403
 
 # Configure directory browsing.
 # =============================
+# @@: This validation crap should be abstracted at some point.
 
 AUTOINDEX = conf.static.get('autoindex', None)
 if AUTOINDEX is None:
