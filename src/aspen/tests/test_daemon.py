@@ -8,7 +8,7 @@ import time
 import urllib
 from os.path import join, isfile
 
-from aspen.tests import assert_raises
+from aspen.tests import BIN_ASPEN, assert_raises
 from aspen.tests.fsfix import mk, attach_rm
 
 
@@ -20,7 +20,7 @@ def test_daemon():
         return # don't bother running this test on Windows
 
     mk( 'root', 'root/__', ('root/index.html', "Greetings, program!")
-      , ('smoke-it.py', "import aspen; aspen.main()") # simulate bin/aspen
+      , ('smoke-it.py', BIN_ASPEN) # simulate bin/aspen
        )
 
 
@@ -76,7 +76,7 @@ def test_pidfile_waxed_when_address_in_use():
         return # don't bother running this test on Windows
 
     mk( 'root', 'root/__', ('root/index.html', "Greetings, program!")
-      , ('smoke-it.py', "import aspen; aspen.main()") # simulate bin/aspen
+      , ('smoke-it.py', BIN_ASPEN) # simulate bin/aspen
        )
 
 

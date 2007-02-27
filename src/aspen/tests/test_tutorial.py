@@ -11,7 +11,7 @@ from os.path import isfile, join
 import aspen
 from aspen._configuration import Configuration
 from aspen.exceptions import *
-from aspen.tests import assert_raises
+from aspen.tests import BIN_ASPEN, assert_raises
 from aspen.tests.fsfix import mk, attach_rm
 from aspen.website import Website as _Website
 
@@ -63,7 +63,7 @@ def test_greetings_program():
     """This is also a general smoke test, as it runs the entire Aspen stack.
     """
     mk( 'root', ('root/index.html', "Greetings, program!")
-      , ('smoke-it.py', "import aspen; aspen.main()") # simulate bin/aspen
+      , ('smoke-it.py', BIN_ASPEN) # simulate bin/aspen
        )
     proc = subprocess.Popen([ 'python' # assumed to be on PATH
                             , join('fsfix', 'smoke-it.py')
@@ -101,7 +101,7 @@ fnmatch *.asp
 
 def test_auto_index():
     mk( 'root', 'root/__', 'root/FOO'
-      , ('smoke-it.py', "import aspen; aspen.main()") # simulate bin/aspen
+      , ('smoke-it.py', BIN_ASPEN) # simulate bin/aspen
        )
     proc = subprocess.Popen([ 'python' # assumed to be on PATH
                             , join('fsfix', 'smoke-it.py')

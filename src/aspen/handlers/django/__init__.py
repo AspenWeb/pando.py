@@ -20,7 +20,7 @@ The additional keys are:
   response      a Django HttpResponse object [scripts only]
 
 
-Our main module here is _wsgi, a thin wrapper around BaseHandler.get_response
+Our main class here is wsgi.WSGI, a thin wrapper around BaseHandler.get_response
 (WSGIHandler doesn't define the method), which hacks request.urlconf to use the
 filesystem for site hierarchy rather than the settings module. Since Django
 finds an urlconf based on a magic name within a module ('urlpatterns'), we need
@@ -29,7 +29,17 @@ for the layout of this package.
 
 """
 # the imports are relative to support use outside aspen
-from _script import wsgi as script
-from _template import wsgi as template
+
+try:
+    import django
+except ImportError:
+    def wsgi(environ, start_response):
+        # This should probably raise at import time, but that would take more
+        # work to not trigger in tests.
+        raise NotImplementedError("django is not on PYTHONPATH")
+    script = template = wsgi
+else:
+    from _script import wsgi as script
+    from _template import wsgi as template
 
 __all__ = ['script', 'template']
