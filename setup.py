@@ -23,7 +23,11 @@ classifiers = [
 setup( name = 'aspen'
      , version = '~~VERSION~~'
      , package_dir = {'':'src'}
-     , packages = ['aspen', 'aspen.handlers', 'aspen.apps']
+     , packages = [ 'aspen'
+                  , 'aspen.apps'
+                  , 'aspen.handlers'
+                  , 'aspen.handlers.django'
+                   ]
      , scripts = ['bin/aspen']
      , description = 'Aspen is a highly extensible Python webserver.'
      , author = 'Chad Whitacre'
