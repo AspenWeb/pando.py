@@ -35,7 +35,7 @@ else:
     from aspen.daemon import Daemon # this actually fails on Windows; needs pwd
 
 
-__version__ = '~~VERSION~~'
+__version__ = '0.7.1'
 __all__ = ['configuration', 'conf', 'paths', '']
 
 
