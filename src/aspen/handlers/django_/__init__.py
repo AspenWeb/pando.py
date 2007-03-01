@@ -28,18 +28,52 @@ a separate module for each type of file: script and template. That's the reason
 for the layout of this package.
 
 """
-# the imports are relative to support use outside aspen
+import os
+
+
+__all__ = ['script', 'template']
+
 
 try:
     import django
+
 except ImportError:
+
+    # If no django, set up a dummy.
+    # =============================
+
     def wsgi(environ, start_response):
         # This should probably raise at import time, but that would take more
-        # work to not trigger in tests.
+        # work to not trigger in our tests.
         raise NotImplementedError("django is not on PYTHONPATH")
     script = template = wsgi
+
 else:
+
+    # If we have django, find the settings module.
+    # ============================================
+
+    from django.core.exceptions import ImproperlyConfigured
+
+    try:
+        import aspen
+    except ImportError:
+        raise
+    else:
+        if not os.environ.has_key('DJANGO_SETTINGS_MODULE'):
+            settings_module = aspen.conf.django.get('settings_module', None)
+            if settings_module is None:
+                raise ImproperlyConfigured( "Please set DJANGO_SETTINGS_MODULE "
+                                          + "in the environment or "
+                                          + "settings_module in the [django] "
+                                          + "section of __/etc/aspen.conf."
+                                           )
+            else:
+                os.environ['DJANGO_SETTINGS_MODULE'] = settings_module
+
+
+    # Lastly, import our handlers.
+    # ============================
+
     from _script import wsgi as script
     from _template import wsgi as template
-
-__all__ = ['script', 'template']

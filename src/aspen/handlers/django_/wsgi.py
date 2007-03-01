@@ -14,5 +14,5 @@ class WSGI(WSGIHandler):
         """
         assert ( isfile(request.META['PATH_TRANSLATED'])
                , "This handler only serves files." )
-        request.urlconf = 'aspen.handlers.django._' + self.filetype
+        request.urlconf = 'aspen.handlers.django_._' + self.filetype
         return WSGIHandler.get_response(self, request)

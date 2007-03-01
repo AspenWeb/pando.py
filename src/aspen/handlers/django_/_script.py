@@ -21,7 +21,6 @@ wsgi.filetype = 'script'
 def build(fspath):
     """Given a filesystem path, return a compiled (but unbound) object.
     """
-    print 'compiling script'
     return compile(open(fspath).read().replace('\r\n', '\n'), fspath, 'exec')
 
 

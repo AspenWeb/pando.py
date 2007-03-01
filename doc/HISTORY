@@ -2,7 +2,7 @@
     ??? -- ???
 ========================================
 
-    - Upgraded to CherryPyWSGIServer from CherryPy 3.0.1 [issue 81].
+    - Upgraded to CherryPyWSGIServer from CherryPy 3.0.1 [issue 88, 81?].
 
     - Downstream errors triggered in conf files now propagate more transparently
       through colonize().
