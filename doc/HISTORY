@@ -1,4 +1,18 @@
 ========================================
+    ??? -- ???
+========================================
+
+    - Downstream errors triggered in conf files now propagate more transparently
+      through colonize().
+
+    - Exposed HTTP version to configuration [issue 88].
+
+    - Changed outbound Server header.
+
+    - Started fine-grained tracking in doc/HISTORY.
+
+
+========================================
     0.7 -- January 15, 2007
 ========================================
 

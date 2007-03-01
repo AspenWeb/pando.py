@@ -99,11 +99,14 @@ are meaningful to your application, which you may access using the
 begins with a dot or a forward slash, then it is interpreted as an AF_UNIX
 socket. If it contains more than one colon, it is seen as an AF_INET6 address.
 Otherwise, it is interpreted as AF_INET. If \var{address} begins with a colon,
-then the AF_INET loopback address is assumed.}{\code{0.0.0.0:8080}}
+the IP address defaults to \code{0.0.0.0}.}{\code{0.0.0.0:8080}}
 
 \lineiii{defaults}{A comma-separated list of names to look for when a directory
 is requested. Any default resource is located immediately before dispatching to
 a handler.}{\code{index.html, index.htm}}
+
+\lineiii{http_version}{The version of HTTP to speak, either \code{1.0} or
+\code{1.1}.}{\code{1.1}}
 
 % \lineiii{group}{A groupname or gid to which, if given, Aspen will attempt to
 % switch after binding to the socket.}{}

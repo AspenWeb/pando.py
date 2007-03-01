@@ -130,16 +130,21 @@ def server_factory(configuration):
     website = Website(configuration)
     for middleware in configuration.middleware:
         website = middleware(website)
+
+
+    # Instantiate and configure the server.
+    # =====================================
+
     server = Server(configuration.address, website, configuration.threads)
+    server.protocol = "HTTP/%s" % configuration.http_version
+    server.version = "Aspen/%s" % __version__
 
 
     # Monkey-patch server to support restarting.
     # ==========================================
     # Giving server a chance to shutdown cleanly largely avoids the terminal
-    # screw-up bug that plagued httpy < 1.0. We also insinuate ourselves into
-    # the Server header at this point.
+    # screw-up bug that plagued httpy < 1.0.
 
-    server.version = "Aspen/%s (%s)" % (__version__, server.version)
     if restarter.CHILD:
         def tick():
             Server.tick(server)

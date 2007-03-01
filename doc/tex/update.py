@@ -1,11 +1,13 @@
 #!/usr/bin/env python
-
+"""Remake the html docs whenever source files change.
+"""
 import os
 import stat
 import subprocess
 import time
 
-c = 'make'
+
+c = 'make html'
 mtimes = {}
 try:
     while 1:

@@ -167,6 +167,40 @@ def test_threads_blah_blah():
     assert actual == expected, actual
 
 
+# http_version
+# ============
+
+def test_http_version_default():
+    mk()
+    actual = Config(['-rfsfix']).http_version
+    expected = '1.1'
+    assert actual == expected, actual
+
+def test_http_version_explicit_default():
+    mk('__/etc', ('__/etc/aspen.conf', '[main]\nhttp_version=1.1'))
+    actual = Config(['-rfsfix']).http_version
+    expected = '1.1'
+    assert actual == expected, actual
+
+def test_http_version_1_0():
+    mk('__/etc', ('__/etc/aspen.conf', '[main]\nhttp_version=1.0'))
+    actual = Config(['-rfsfix']).http_version
+    expected = '1.0'
+    assert actual == expected, actual
+
+def test_http_version_0_9():
+    mk('__/etc', ('__/etc/aspen.conf', '[main]\nhttp_version=0.9'))
+    actual = assert_raises(TypeError, Config, ['-rfsfix']).args[0]
+    expected = "http_version must be 1.0 or 1.1, not '0.9'"
+    assert actual == expected, actual
+
+def test_http_version_anything_else():
+    mk('__/etc', ('__/etc/aspen.conf', '[main]\nhttp_version=HTTP/1.2'))
+    actual = assert_raises(TypeError, Config, ['-rfsfix']).args[0]
+    expected = "http_version must be 1.0 or 1.1, not 'HTTP/1.2'"
+    assert actual == expected, actual
+
+
 # Test layering: CLI, conf file, environment.
 # ===========================================
 

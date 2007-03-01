@@ -414,6 +414,17 @@ optparser.add_option( "-r", "--root"
         self.threads = threads
 
 
+        # http_version
+        # ------------
+
+        http_version = conf.main.get('http_version', '1.1')
+        if http_version not in ('1.0', '1.1'):
+            raise TypeError( "http_version must be 1.0 or 1.1, "
+                           + "not '%s'" % http_version
+                            )
+        self.http_version = http_version
+
+
 #        # user
 #        # ----
 #        # Must be a valid user account on this system.

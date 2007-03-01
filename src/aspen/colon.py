@@ -1,5 +1,7 @@
 """Module for loading objects specified in colon notation.
 """
+from os.path import basename
+
 from aspen import utils
 from aspen.exceptions import ConfigError
 
@@ -7,11 +9,9 @@ from aspen.exceptions import ConfigError
 class ColonizeError(ConfigError):
     pass
 
-class ColonizeAttributeError(ColonizeError): pass
 class ColonizeBadColonsError(ColonizeError): pass
 class ColonizeBadObjectError(ColonizeError): pass
 class ColonizeBadModuleError(ColonizeError): pass
-class ColonizeImportError(ColonizeError): pass
 
 
 def colonize(name, filename, lineno):
@@ -22,6 +22,7 @@ def colonize(name, filename, lineno):
     an object within the module.
 
     """
+
     if name.count(':') != 1:
         msg = "'%s' is not valid colon notation" % name
         raise ColonizeBadColonsError(msg, filename, lineno)
@@ -37,7 +38,9 @@ def colonize(name, filename, lineno):
     try:
         exec 'import %s as obj' % modname
     except ImportError, err:
-        raise ColonizeImportError(err.args[0], filename, lineno)
+        newmsg = "%s [%s, line %s]" % (err.args[0], basename(filename), lineno)
+        err.args = (newmsg,)
+        raise # preserve the original traceback
 
     for _name in objname.split('.'):
         if not utils.is_valid_identifier(_name):
@@ -48,6 +51,11 @@ def colonize(name, filename, lineno):
         try:
             obj = getattr(obj, _name)
         except AttributeError, err:
-            raise ColonizeAttributeError(err.args[0], filename, lineno)
+            newmsg = "%s [%s, line %s]" % ( err.args[0]
+                                          , basename(filename)
+                                          , lineno
+                                           )
+            err.args = (newmsg,)
+            raise # preserve the original traceback
 
     return obj

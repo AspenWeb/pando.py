@@ -3,7 +3,7 @@ from aspen.tests import assert_raises as _assert_raises
 
 
 def assert_raises(name, Err):
-    _assert_raises(Err, colonize, name, 'filename', 0)
+    return _assert_raises(Err, colonize, name, 'filename', 0)
 
 
 # Working
@@ -45,13 +45,19 @@ def test_module_name():
     assert_raises('foo.bar; import os; os.remove();:', ColonizeBadModuleError)
 
 def test_module_not_there():
-    assert_raises('foo.bar:baz', ColonizeImportError)
+    actual = assert_raises('foo.bar:baz', ImportError).args[0]
+    expected = "No module named foo.bar [filename, line 0]"
+    assert actual == expected, actual
 
 def test_object_name():
     assert_raises('string:baz; import os; os.remove();', ColonizeBadObjectError)
 
 def test_object_not_there():
-    assert_raises('string:foo', ColonizeAttributeError)
+    actual = assert_raises('string:foo', AttributeError).args[0]
+    expected = "'module' object has no attribute 'foo' [filename, line 0]"
+    assert actual == expected, actual
 
 def test_nested_object_not_there():
-    assert_raises('string:digits.duggems', ColonizeAttributeError)
+    actual = assert_raises('string:digits.duggems', AttributeError).args[0]
+    expected = "'str' object has no attribute 'duggems' [filename, line 0]"
+    assert actual == expected, actual
