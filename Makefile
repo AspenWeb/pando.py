@@ -26,6 +26,7 @@ stamp:
 	$(UPDATE_VERSION) doc/tex/aspen.tex
 	$(UPDATE_VERSION) doc/tex/installation.tex
 	$(UPDATE_VERSION) doc/HISTORY
+	$(UPDATE_VERSION) doc/ACKNOWLEDGMENTS
 	$(UPDATE_VERSION) setup.py
 	$(UPDATE_VERSION) src/aspen/__init__.py
 
