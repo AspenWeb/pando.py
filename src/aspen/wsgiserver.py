@@ -22,17 +22,20 @@ Simplest example on how to use this module directly
     # server.ssl_private_key = <filename>
     
     if __name__ == '__main__':
-        server.start()
+        try:
+            server.start()
+        except KeyboardInterrupt:
+            server.stop()
 
 This won't call the CherryPy engine (application side) at all, only the
 WSGI server, which is independant from the rest of CherryPy. Don't
 let the name "CherryPyWSGIServer" throw you; the name merely reflects
 its origin, not it's coupling.
 
-The CherryPy WSGI server can serve as many WSGI application
+The CherryPy WSGI server can serve as many WSGI applications
 as you want in one instance:
 
-    wsgi_apps = [('/', my_crazy_app), (/blog', my_blog_app)]
+    wsgi_apps = [('/', my_crazy_app), ('/blog', my_blog_app)]
 
 """
 
@@ -140,10 +143,11 @@ class HTTPRequest(object):
                 return
         
         server = self.connection.server
-        self.environ["SERVER_SOFTWARE"] = "%s WSGI Server" % server.version
+        environ = self.environ
+        environ["SERVER_SOFTWARE"] = "%s WSGI Server" % server.version
         
         method, path, req_protocol = request_line.strip().split(" ", 2)
-        self.environ["REQUEST_METHOD"] = method
+        environ["REQUEST_METHOD"] = method
         
         # path may be an abs_path (including "http://host.domain.tld");
         scheme, location, path, params, qs, frag = urlparse(path)
@@ -154,7 +158,7 @@ class HTTPRequest(object):
             return
         
         if scheme:
-            self.environ["wsgi.url_scheme"] = scheme
+            environ["wsgi.url_scheme"] = scheme
         if params:
             path = path + ";" + params
         
@@ -170,15 +174,15 @@ class HTTPRequest(object):
         if path == "*":
             # This means, of course, that the last wsgi_app (shortest path)
             # will always handle a URI of "*".
-            self.environ["SCRIPT_NAME"] = ""
-            self.environ["PATH_INFO"] = "*"
+            environ["SCRIPT_NAME"] = ""
+            environ["PATH_INFO"] = "*"
             self.wsgi_app = server.mount_points[-1][1]
         else:
             for mount_point, wsgi_app in server.mount_points:
                 # The mount_points list should be sorted by length, descending.
                 if path.startswith(mount_point + "/") or path == mount_point:
-                    self.environ["SCRIPT_NAME"] = mount_point
-                    self.environ["PATH_INFO"] = path[len(mount_point):]
+                    environ["SCRIPT_NAME"] = mount_point
+                    environ["PATH_INFO"] = path[len(mount_point):]
                     self.wsgi_app = wsgi_app
                     break
             else:
@@ -187,7 +191,7 @@ class HTTPRequest(object):
         
         # Note that, like wsgiref and most other WSGI servers,
         # we unquote the path but not the query string.
-        self.environ["QUERY_STRING"] = qs
+        environ["QUERY_STRING"] = qs
         
         # Compare request and server HTTP protocol versions, in case our
         # server does not support the requested protocol. Limit our output
@@ -207,61 +211,61 @@ class HTTPRequest(object):
             self.simple_response("505 HTTP Version Not Supported")
             return
         # Bah. "SERVER_PROTOCOL" is actually the REQUEST protocol.
-        self.environ["SERVER_PROTOCOL"] = req_protocol
+        environ["SERVER_PROTOCOL"] = req_protocol
         # set a non-standard environ entry so the WSGI app can know what
         # the *real* server protocol is (and what features to support).
         # See http://www.faqs.org/rfcs/rfc2145.html.
-        self.environ["ACTUAL_SERVER_PROTOCOL"] = server.protocol
+        environ["ACTUAL_SERVER_PROTOCOL"] = server.protocol
         self.response_protocol = "HTTP/%s.%s" % min(rp, sp)
         
         # If the Request-URI was an absoluteURI, use its location atom.
         if location:
-            self.environ["SERVER_NAME"] = location
+            environ["SERVER_NAME"] = location
         
         # then all the http headers
-        headers = rfc822.Message(self.rfile, seekable=0)
-        self.environ.update(self.parse_headers(headers))
+        try:
+            self.read_headers()
+        except ValueError, ex:
+            self.simple_response("400 Bad Request", repr(ex.args))
+            return
         
-        creds = headers.getheader("Authorization", "").split(" ", 1)
-        self.environ["AUTH_TYPE"] = creds[0]
+        creds = environ.get("HTTP_AUTHORIZATION", "").split(" ", 1)
+        environ["AUTH_TYPE"] = creds[0]
         if creds[0].lower() == 'basic':
             user, pw = base64.decodestring(creds[1]).split(":", 1)
-            self.environ["REMOTE_USER"] = user
+            environ["REMOTE_USER"] = user
         
         # Persistent connection support
         if self.response_protocol == "HTTP/1.1":
-            if headers.getheader("Connection", "") == "close":
+            if environ.get("HTTP_CONNECTION", "") == "close":
                 self.close_connection = True
-                self.outheaders.append(("Connection", "close"))
         else:
             # HTTP/1.0
-            if headers.getheader("Connection", "") == "Keep-Alive":
-                if self.close_connection == False:
-                    self.outheaders.append(("Connection", "Keep-Alive"))
-            else:
+            if environ.get("HTTP_CONNECTION", "") != "Keep-Alive":
                 self.close_connection = True
         
         # Transfer-Encoding support
-        te = headers.getheader("Transfer-Encoding", "")
-        te = [x.strip() for x in te.split(",") if x.strip()]
+        te = None
+        if self.response_protocol == "HTTP/1.1":
+            te = environ.get("HTTP_TRANSFER_ENCODING")
+            if te:
+                te = [x.strip().lower() for x in te.split(",") if x.strip()]
+        
+        read_chunked = False
+        
         if te:
-            while te:
-                enc = te.pop()
-                if enc.lower() == "chunked":
-                    if not self.decode_chunked():
-                        return
+            for enc in te:
+                if enc == "chunked":
+                    read_chunked = True
                 else:
+                    # Note that, even if we see "chunked", we must reject
+                    # if there is an extension we don't recognize.
                     self.simple_response("501 Unimplemented")
                     self.close_connection = True
                     return
-        else:
-            cl = headers.getheader("Content-length")
-            if method in ("POST", "PUT") and cl is None:
-                # No Content-Length header supplied. This will hang
-                # cgi.FieldStorage, since it cannot determine when to
-                # stop reading from the socket.
-                # See http://www.cherrypy.org/ticket/493.
-                self.simple_response("411 Length Required")
+        
+        if read_chunked:
+            if not self.decode_chunked():
                 return
         
         # From PEP 333:
@@ -281,23 +285,27 @@ class HTTPRequest(object):
         #
         # We used to do 3, but are now doing 1. Maybe we'll do 2 someday,
         # but it seems like it would be a big slowdown for such a rare case.
-        if headers.getheader("Expect", "") == "100-continue":
+        if environ.get("HTTP_EXPECT", "") == "100-continue":
             self.simple_response(100)
         
         self.ready = True
     
-    def parse_headers(self, headers):
-        """Parse the given HTTP request message-headers."""
-        environ = {}
-        ct = headers.dict.get("content-type")
-        if ct:
-            environ["CONTENT_TYPE"] = ct
-        cl = headers.dict.get("content-length")
-        if cl:
-            environ["CONTENT_LENGTH"] = cl
+    def read_headers(self):
+        """Read header lines from the incoming stream."""
+        environ = self.environ
         
-        for line in headers.headers:
-            if line[:1].isspace():
+        while True:
+            line = self.rfile.readline()
+            if not line:
+                # No more data--illegal end of headers
+                raise ValueError("Illegal end of headers.")
+            
+            if line == '\r\n':
+                # Normal end of headers
+                break
+            
+            if line[0] in ' \t':
+                # It's a continuation line.
                 v = line.strip()
             else:
                 k, v = line.split(":", 1)
@@ -310,7 +318,12 @@ class HTTPRequest(object):
                     v = ", ".join((existing, v))
             environ[envname] = v
         
-        return environ
+        ct = environ.pop("HTTP_CONTENT_TYPE", None)
+        if ct:
+            environ["CONTENT_TYPE"] = ct
+        cl = environ.pop("HTTP_CONTENT_LENGTH", None)
+        if cl:
+            environ["CONTENT_LENGTH"] = cl
     
     def decode_chunked(self):
         """Decode the 'chunked' transfer coding."""
@@ -332,8 +345,7 @@ class HTTPRequest(object):
                 return
         
         # Grab any trailer headers
-        headers = rfc822.Message(self.rfile, seekable=0)
-        self.environ.update(self.parse_headers(headers))
+        self.read_headers()
         
         data.seek(0)
         self.environ["wsgi.input"] = data
@@ -345,7 +357,14 @@ class HTTPRequest(object):
         response = self.wsgi_app(self.environ, self.start_response)
         try:
             for chunk in response:
-                self.write(chunk)
+                # "The start_response callable must not actually transmit
+                # the response headers. Instead, it must store them for the
+                # server or gateway to transmit only after the first
+                # iteration of the application return value that yields
+                # a NON-EMPTY string, or upon the application's first
+                # invocation of the write() callable." (PEP 333)
+                if chunk:
+                    self.write(chunk)
         finally:
             if hasattr(response, "close"):
                 response.close()
@@ -376,7 +395,8 @@ class HTTPRequest(object):
         """WSGI callable to begin the HTTP response."""
         if self.started_response:
             if not exc_info:
-                assert False, "Already started response"
+                raise AssertionError("WSGI start_response called a second "
+                                     "time with no exc_info.")
             else:
                 try:
                     raise exc_info[0], exc_info[1], exc_info[2]
@@ -393,38 +413,49 @@ class HTTPRequest(object):
         This method is also used internally by start_response (to write
         data from the iterable returned by the WSGI application).
         """
+        if not self.started_response:
+            raise AssertionError("WSGI write called before start_response.")
+        
         if not self.sent_headers:
             self.sent_headers = True
             self.send_headers()
-        if self.chunked_write:
-            buf = [hex(len(chunk))[2:],
-                   "\r\n", chunk, "\r\n"]
+        
+        if self.chunked_write and chunk:
+            buf = [hex(len(chunk))[2:], "\r\n", chunk, "\r\n"]
             self.sendall("".join(buf))
         else:
             self.sendall(chunk)
     
     def send_headers(self):
         """Assert, process, and send the HTTP response message-headers."""
-        hkeys = [key.lower() for (key, value) in self.outheaders]
+        hkeys = [key.lower() for key, value in self.outheaders]
         status = int(self.status[:3])
         
-        if self.response_protocol == 'HTTP/1.1':
-            if status == 413:
-                # Request Entity Too Large. Close conn to avoid garbage.
-                self.close_connection = True
-            elif "content-length" not in hkeys:
-                # "All 1xx (informational), 204 (no content),
-                # and 304 (not modified) responses MUST NOT
-                # include a message-body." So no point chunking.
-                if status < 200 or status in (204, 205, 304):
-                    pass
-                else:
+        if status == 413:
+            # Request Entity Too Large. Close conn to avoid garbage.
+            self.close_connection = True
+        elif "content-length" not in hkeys:
+            # "All 1xx (informational), 204 (no content),
+            # and 304 (not modified) responses MUST NOT
+            # include a message-body." So no point chunking.
+            if status < 200 or status in (204, 205, 304):
+                pass
+            else:
+                if self.response_protocol == 'HTTP/1.1':
                     # Use the chunked transfer-coding
                     self.chunked_write = True
                     self.outheaders.append(("Transfer-Encoding", "chunked"))
+                else:
+                    # Closing the conn is the only way to determine len.
+                    self.close_connection = True
         
-        if self.close_connection and "connection" not in hkeys:
-            self.outheaders.append(("Connection", "close"))
+        if "connection" not in hkeys:
+            if self.response_protocol == 'HTTP/1.1':
+                if self.close_connection:
+                    self.outheaders.append(("Connection", "close"))
+            else:
+                if not self.close_connection:
+                    self.outheaders.append(("Connection", "Keep-Alive"))
         
         if "date" not in hkeys:
             self.outheaders.append(("Date", rfc822.formatdate()))
@@ -436,8 +467,7 @@ class HTTPRequest(object):
         
         buf = [server.protocol, " ", self.status, "\r\n"]
         try:
-            for k, v in self.outheaders:
-                buf.append(k + ": " + v + "\r\n")
+            buf += [k + ": " + v + "\r\n" for k, v in self.outheaders]
         except TypeError:
             if not isinstance(k, str):
                 raise TypeError("WSGI response header key %r is not a string.")
@@ -447,6 +477,11 @@ class HTTPRequest(object):
                 raise
         buf.append("\r\n")
         self.sendall("".join(buf))
+
+
+class NoSSLError(Exception):
+    """Exception raised when a client speaks HTTP to an HTTPS socket."""
+    pass
 
 
 def _ssl_wrap_method(method, is_reader=False):
@@ -478,8 +513,18 @@ def _ssl_wrap_method(method, is_reader=False):
             except SSL.Error, e:
                 if is_reader and e.args == (-1, 'Unexpected EOF'):
                     return ""
-                if is_reader and e.args[0][0][2] == 'ssl handshake failure':
+                
+                thirdarg = None
+                try:
+                    thirdarg = e.args[0][0][2]
+                except IndexError:
+                    pass
+                
+                if is_reader and thirdarg == 'ssl handshake failure':
                     return ""
+                if thirdarg == 'http request':
+                    # The client is talking HTTP to an HTTPS server.
+                    raise NoSSLError()
                 raise
             if time.time() - start > self.ssl_timeout:
                 raise socket.timeout("timed out")
@@ -588,6 +633,12 @@ class HTTPConnection(object):
             return
         except (KeyboardInterrupt, SystemExit):
             raise
+        except NoSSLError:
+            # Unwrap our sendall
+            req.sendall = self.socket._sock.sendall
+            req.simple_response("400 Bad Request",
+                                "The client sent a plain HTTP request, but "
+                                "this server only speaks HTTPS on this port.")
         except:
             if req:
                 req.simple_response("500 Internal Server Error", format_exc())
@@ -705,7 +756,7 @@ class CherryPyWSGIServer(object):
     """
     
     protocol = "HTTP/1.1"
-    version = "CherryPy/3.0.0"
+    version = "CherryPy/3.0.1"
     ready = False
     _interrupt = None
     ConnectionClass = HTTPConnection
@@ -748,22 +799,6 @@ class CherryPyWSGIServer(object):
         # trap those exceptions in whatever code block calls start().
         self._interrupt = None
         
-        def bind(family, type, proto=0):
-            """Create (or recreate) the actual socket object."""
-            self.socket = socket.socket(family, type, proto)
-            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-            if self.ssl_certificate and self.ssl_private_key:
-                if SSL is None:
-                    raise ImportError("You must install pyOpenSSL to use HTTPS.")
-                
-                # See http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/442473
-                ctx = SSL.Context(SSL.SSLv23_METHOD)
-                ctx.use_privatekey_file(self.ssl_private_key)
-                ctx.use_certificate_file(self.ssl_certificate)
-                self.socket = SSLConnection(ctx, self.socket)
-                self.populate_ssl_environ()
-            self.socket.bind(self.bind_addr)
-        
         # Select the appropriate socket
         if isinstance(self.bind_addr, basestring):
             # AF_UNIX socket
@@ -805,7 +840,7 @@ class CherryPyWSGIServer(object):
         for res in info:
             af, socktype, proto, canonname, sa = res
             try:
-                bind(af, socktype, proto)
+                self.bind(af, socktype, proto)
             except socket.error, msg:
                 if self.socket:
                     self.socket.close()
@@ -837,6 +872,23 @@ class CherryPyWSGIServer(object):
                     # Wait for self.stop() to complete. See _set_interrupt.
                     time.sleep(0.1)
                 raise self.interrupt
+    
+    def bind(self, family, type, proto=0):
+        """Create (or recreate) the actual socket object."""
+        self.socket = socket.socket(family, type, proto)
+        self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+##        self.socket.setsockopt(socket.SOL_SOCKET, socket.TCP_NODELAY, 1)
+        if self.ssl_certificate and self.ssl_private_key:
+            if SSL is None:
+                raise ImportError("You must install pyOpenSSL to use HTTPS.")
+            
+            # See http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/442473
+            ctx = SSL.Context(SSL.SSLv23_METHOD)
+            ctx.use_privatekey_file(self.ssl_private_key)
+            ctx.use_certificate_file(self.ssl_certificate)
+            self.socket = SSLConnection(ctx, self.socket)
+            self.populate_ssl_environ()
+        self.socket.bind(self.bind_addr)
     
     def tick(self):
         """Accept a new connection and put it on the Queue."""
@@ -964,4 +1016,5 @@ class CherryPyWSGIServer(object):
                 if key and value:
                     wsgikey = 'SSL_SERVER_%s_DN_%s' % (prefix, key)
                     self.ssl_environ[wsgikey] = value
+
 
