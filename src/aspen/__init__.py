@@ -18,6 +18,7 @@ import stat
 import sys
 import threading
 import time
+import traceback
 from os.path import isdir, isfile, join
 
 from aspen import mode, restarter
@@ -164,7 +165,14 @@ def start_server(configuration):
     # ================================================
 
     def shutdown(signum, frame):
-        print "stopping server"
+        msg = ""
+        if signum is not None:
+            msg = "caught "
+            msg += { signal.SIGINT:'SIGINT'
+                   , signal.SIGTERM:'SIGTERM'
+                    }.get(signum, "signal %d" % signum)
+            msg += ", "
+        print msg + "shutting down"
         sys.stdout.flush()
         server.stop()
         cleanup()                                           # user hook
@@ -184,14 +192,20 @@ def start_server(configuration):
 
     # Start the server.
     # =================
+    # And gracefully handle exit conditions.
 
     print "aspen starting on %s" % str(configuration.address)
     sys.stdout.flush()
     try:
         server.start()
-    finally:
-        print "cleaning up after critical exception"
+    except SystemExit, exc:
+        print "exiting with code %d" % exc.code
+        raise
+    except:
+        print "cleaning up after critical exception:"
+        print traceback.format_exc()
         shutdown(None, None)
+        raise SystemExit(1)
 
 
 def drive_daemon(configuration):
