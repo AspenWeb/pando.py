@@ -9,9 +9,8 @@ commit the changes until you switch back to trunk.
 # ===
 
 - update the following on trunk/
-    - doc/CHANGELOG -- detailed list of changes; update throughout
-    - doc/HISTORY -- summary of releases; update at release time
-    - doc/ACKNOWLEDGEMENTS -- list of contributors
+    - doc/HISTORY -- summary and details of releases
+    - doc/ACKNOWLEDGMENTS -- list of contributors
 - tag in svn
 - switch to tag
 - update version and date in Makefile and do `make stamp`

@@ -30,6 +30,7 @@ pdf:
 clean:
 	rm -rf *~ *.aux *.idx *.ilg *.ind *.log *.toc *.bkm *.syn \
 			*.pla *.eps *.pdf *.ps *.lof *.l2h *.tex2 *.dvi \
-			../html/WARNINGS ../html/*.* ../html/icons ../*.pdf
+			../html/WARNINGS ../html/*.* ../html/icons ../*.pdf \
+			./html/
 
 all: html pdf clean
