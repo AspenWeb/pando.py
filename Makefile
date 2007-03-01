@@ -32,6 +32,7 @@ stamp:
 
 	$(UPDATE_DATE) README
 	$(UPDATE_DATE) doc/HISTORY
+	$(UPDATE_DATE) doc/ACKNOWLEDGMENTS
 	$(UPDATE_DATE) doc/tex/aspen.tex
 
 dist: clean
