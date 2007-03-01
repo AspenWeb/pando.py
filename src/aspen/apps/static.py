@@ -12,9 +12,6 @@ def static(environ, start_response):
                                           , environ['PATH_INFO']
                                            )
     fspath = find_default(configuration.defaults, environ)
-    if isdir(fspath):
-        start_response('403 Forbidden', [])
-        return ['This directory has no index.']
     if not isfile(fspath) or fspath.endswith('README.aspen'):
         start_response('404 Not Found', [])
         return ['Resource not found.']

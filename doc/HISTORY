@@ -1,6 +1,17 @@
 ========================================
-    ??? -- ???
+    ~~VERSION~~ -- ~~DATE~~
 ========================================
+
+This is a minor release, with both bug-fixes and feature enhancements.
+
+    - Started to refactor into an apps subpackage, to contain framework glue
+      and the handler infrastructure.
+
+    - Now providing better feedback on exit [issues 87].
+
+    - Now tidier with our pidfile [issue 87].
+
+    - Fixed heinous bug in static file serving on Windows [issue 92].
 
     - Upgraded to CherryPyWSGIServer from CherryPy 3.0.1 [issue 88, 81?].
 
@@ -9,7 +20,9 @@
 
     - Exposed HTTP version to configuration [issue 88].
 
-    - Changed outbound Server header.
+    - Commandeered the outbound Server header.
+
+    - Started doc/ACKNOWLEDGMENTS.
 
     - Started fine-grained tracking in doc/HISTORY.
 

@@ -10,7 +10,7 @@ from django.core.exceptions import ImproperlyConfigured
 
 # Put the site root on PYTHONPATH.
 # ================================
-# But only if the site is an hegemonic application.
+# But only if the site is an hegemonic application?
 
 sys.path.insert(0, aspen.paths.root)
 
