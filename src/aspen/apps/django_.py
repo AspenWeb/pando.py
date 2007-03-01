@@ -12,8 +12,7 @@ from django.core.exceptions import ImproperlyConfigured
 # ================================
 # But only if the site is an hegemonic application.
 
-if aspen.conf.main.get('isapp', None) is not None:
-    sys.path.insert(0, aspen.paths.root)
+sys.path.insert(0, aspen.paths.root)
 
 
 # Tell Django which settings to use.

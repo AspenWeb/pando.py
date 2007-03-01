@@ -46,7 +46,7 @@ def test_module_name():
 
 def test_module_not_there():
     actual = assert_raises('foo.bar:baz', ImportError).args[0]
-    expected = "No module named foo.bar [filename, line 0]"
+    expected = "No module named bar [filename, line 0]"
     assert actual == expected, actual
 
 def test_object_name():
