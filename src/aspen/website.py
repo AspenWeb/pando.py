@@ -1,7 +1,7 @@
 import logging
 import os
 import sys
-from os.path import exists, isdir, isfile, join
+from os.path import basename, exists, isdir, isfile, join
 
 from aspen import mode
 from aspen.exceptions import HandlerError
@@ -30,11 +30,16 @@ log = logging.getLogger('aspen.website')
         # Translate the request to the filesystem.
         # ========================================
 
+        hide = False
         fspath = translate(self.configuration.paths.root, environ['PATH_INFO'])
         if self.configuration.paths.__ is not None:
-            if fspath.startswith(self.configuration.paths.__): # protect magic dir
-                start_response('404 Not Found', [])
-                return ['Resource not found.']
+            if fspath.startswith(self.configuration.paths.__):  # magic dir
+                hide = True
+        if basename(fspath) == 'README.aspen':                  # README.aspen
+            hide = True
+        if hide:
+            start_response('404 Not Found', [])
+            return ['Resource not found.']
         environ['PATH_TRANSLATED'] = fspath
 
 
@@ -58,6 +63,7 @@ log = logging.getLogger('aspen.website')
             response = check_trailing_slash(environ, start_response)
             if response is None: # no redirection
                 fspath = find_default(self.configuration.defaults, environ)
+                environ['PATH_TRANSLATED'] = fspath
                 handler = self.get_handler(fspath)
                 response = handler.handle(environ, start_response) # WSGI
 

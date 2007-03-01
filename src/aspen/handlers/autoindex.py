@@ -3,7 +3,7 @@
 import os
 import stat
 from datetime import datetime
-from os.path import isdir, isfile, join
+from os.path import basename, isdir, isfile, join
 
 import aspen
 
@@ -78,6 +78,8 @@ def autoindex(environ, start_response):
     for name in os.listdir(fspath):
         _fspath = join(fspath, name)
         if _fspath == aspen.paths.__: # don't list magic directory
+            continue
+        if basename(_fspath) == 'README.aspen': # nor these
             continue
         _urlpath = '/'.join([urlpath, name])
         x = (_fspath, _urlpath, name)

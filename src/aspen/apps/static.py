@@ -1,5 +1,3 @@
-from os.path import isdir, isfile
-
 from aspen import configuration
 from aspen.handlers.static import static as static_handler
 from aspen.utils import find_default, translate
@@ -12,7 +10,5 @@ def static(environ, start_response):
                                           , environ['PATH_INFO']
                                            )
     fspath = find_default(configuration.defaults, environ)
-    if not isfile(fspath) or fspath.endswith('README.aspen'):
-        start_response('404 Not Found', [])
-        return ['Resource not found.']
+    environ['PATH_TRANSLATED'] = fspath
     return static_handler(environ, start_response)

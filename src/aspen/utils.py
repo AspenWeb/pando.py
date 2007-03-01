@@ -82,8 +82,8 @@ def check_trailing_slash(environ, start_response):
 def find_default(defaults, environ):
     """Given a list of defaults and a WSGI environ, update the environ.
 
-    This function updates environ['PATH_TRANSLATED'] and returns the new
-    filesystem path, or the old one if no default is found.
+    This function returns the new filesystem path, or the old one if no default
+    is found. You are responsible to update environ['PATH_TRANSLATED'].
 
     """
     fspath = environ['PATH_TRANSLATED']
@@ -95,7 +95,7 @@ def find_default(defaults, environ):
                 default = _path
                 break
         if default is not None:
-            environ['PATH_TRANSLATED'] = fspath = default
+            fspath = default
     return fspath
 
 

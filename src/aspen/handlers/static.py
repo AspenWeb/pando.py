@@ -6,7 +6,7 @@ import rfc822
 import os
 import stat
 import time
-from os.path import isdir, isfile
+from os.path import exists, isdir, isfile
 
 from aspen import mode, conf
 from aspen.exceptions import ConfigError
@@ -47,10 +47,13 @@ def static(environ, start_response):
     """
 
     path = environ['PATH_TRANSLATED']
-    if isdir(path):
+    if not exists(path):
+        start_response('404 Not Found', [])
+        return ['Resource not found.']
+    elif isdir(path):
         return directory(environ, start_response)
     else:
-        assert isfile(environ['PATH_TRANSLATED']) # sanity check
+        assert isfile(path) # sanity check
 
 
     # Get basic info from the filesystem and start building a response.
