@@ -15,6 +15,9 @@ clean:
 	find . -name \*.pyc | xargs rm
 	make -C doc/tex clean
 
+distclean: clean
+# remove the final generated docs as well
+	make -C doc/tex distclean
 
 # Target for building a distribution
 # ==================================
@@ -35,7 +38,7 @@ stamp:
 	$(UPDATE_DATE) doc/CONTRIBUTORS
 	$(UPDATE_DATE) doc/tex/aspen.tex
 
-dist: clean
+dist: distclean
 	mkdir dist
 	mkdir dist/aspen-${VERSION}
 	cp -r README \

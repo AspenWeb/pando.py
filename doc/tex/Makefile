@@ -20,6 +20,7 @@ html:
 	$(MKHOWTO) aspen.tex
 	cp -r ../icons ./html/
 	rm -rf ./html/icons/.svn
+	rm -rf ../html/icons
 	mv -f ./html/* ../html/
 	rm -rf ./html
 
@@ -30,7 +31,9 @@ pdf:
 clean:
 	rm -rf *~ *.aux *.idx *.ilg *.ind *.log *.toc *.bkm *.syn \
 			*.pla *.eps *.pdf *.ps *.lof *.l2h *.tex2 *.dvi \
-			../html/WARNINGS ../html/*.* ../html/icons ../*.pdf \
 			./html/
+
+distclean:
+	rm -rf ../html/WARNINGS ../html/*.* ../html/icons ../*.pdf \
 
 all: html pdf clean
