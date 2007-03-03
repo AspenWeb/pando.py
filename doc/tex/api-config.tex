@@ -1,4 +1,5 @@
-\chapter{Application Programming Interface (API) \label{api}}
+\section{Configuration}
+\label{api-Configuration}
 
 Aspen parses and harmonizes all command-line, configuration file, and
 environment settings before it loads your plugins. This information is then
@@ -8,7 +9,7 @@ loaded---\class{conf}, \class{configuration}, and \class{paths}---and via the
 \module{mode} module.
 
 
-\section{The \class{aspen.conf} object}
+\subsection{\class{conf}}
 \label{api-conf}
 
 The \class{aspen.conf} object is an instance of
@@ -50,13 +51,13 @@ exposes the \code{RawConfigParser} API.}
 \end{seealso}
 
 
-\section{The \class{aspen.configuration} object}
+\subsection{\class{configuration}}
 \label{api-configuration}
 
 The \code{aspen.configuration} object provides raw access to the parser objects
 used to configure your server, and a number of basic settings.
 
-\subsection{Parsers}
+\subsubsection{Parsers}
 
 The various parsers and raw settings are exposed as these members:
 
@@ -65,7 +66,7 @@ An argument list as returned by \code{optparse.OptionParser.parse_args}.
 \end{memberdesc}
 
 \begin{memberdesc}[ConfFile]{conf}
-An instance of \code{aspen._configuration.ConfFile}; see below.
+An instance of \code{aspen._configuration.ConfFile}; see above.
 \end{memberdesc}
 
 \begin{memberdesc}[OptionParser]{optparser}
@@ -81,7 +82,7 @@ An instance of \code{aspen._configuration.Paths}; see below.
 \end{memberdesc}
 
 
-\subsection{Settings}
+\subsubsection{Settings}
 
 Furthermore, \code{aspen.configuration} exposes specific configuration settings
 as these members:
@@ -102,6 +103,10 @@ A boolean indicating whether Aspen is acting as a daemon.
 
 \begin{memberdesc}[tuple]{defaults}
 A tuple listing the default resource names to look for in a directory.
+\end{memberdesc}
+
+\begin{memberdesc}[string]{http_version}
+A string indicating the HTTP version to speak, either \code{1.0} or \code{1.1}.
 \end{memberdesc}
 
 \begin{memberdesc}[int]{sockfam}
@@ -129,7 +134,7 @@ convoluted. Good luck!}
 \end{seealso}
 
 
-\section{The \module{aspen.mode} module}
+\subsection{\module{mode}}
 
 \declaremodule{aspen}{mode}
 \modulesynopsis{Manage the application life-cycle, from debugging to
@@ -157,7 +162,7 @@ handling, data sourcing---will adapt to the current mode. The mode is set in the
 interacting with this variable. If \envvar{PYTHONMODE} is unset, it will be set
 to \code{development} when this module is imported.
 
-\subsection{Members}
+\subsubsection{Members}
 
 The module defines the following functions:
 
@@ -201,7 +206,7 @@ each of the following are also defined (e.g., \code{DEBUGGING}).
 \end{datadesc}
 
 
-\subsection{Example}
+\subsubsection{Example}
 
 Example usage:
 
@@ -220,16 +225,8 @@ True
 (True, False)
 \end{verbatim}
 
-\begin{seealso}
 
-\seelink{http://www.zetadev.com/software/lib537/1.0a1/doc/html/module-mode.html}
-{\module{mode}}{The \module{mode} module is maintained as part of the
-\module{lib537} library.}
-
-\end{seealso}
-
-
-\section{The \class{aspen.paths} object}
+\subsection{\class{paths}}
 \label{api-paths}
 
 The \class{aspen.paths} object is an instance of

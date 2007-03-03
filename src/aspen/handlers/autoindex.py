@@ -56,7 +56,7 @@ def _get_time(stats):
     return str(datetime.fromtimestamp(stats[stat.ST_MTIME]))
 
 
-def autoindex(environ, start_response):
+def wsgi(environ, start_response):
     """Serve an automatic index for a directory.
     """
     fspath = environ['PATH_TRANSLATED']
@@ -77,10 +77,19 @@ def autoindex(environ, start_response):
     others = []
     for name in os.listdir(fspath):
         _fspath = join(fspath, name)
-        if _fspath == aspen.paths.__: # don't list magic directory
+
+
+        # Don't list some things.
+        # =======================
+
+        if _fspath == aspen.paths.__:           # magic directory
             continue
-        if basename(_fspath) == 'README.aspen': # nor these
+        if basename(_fspath) == 'README.aspen': # README.aspen
             continue
+        if _fspath.startswith('.'):            # hidden files
+            continue
+
+
         _urlpath = '/'.join([urlpath, name])
         x = (_fspath, _urlpath, name)
         el = others

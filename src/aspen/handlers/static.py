@@ -10,7 +10,7 @@ from os.path import exists, isdir, isfile
 
 from aspen import mode, conf
 from aspen.exceptions import ConfigError
-from aspen.handlers.autoindex import autoindex
+from aspen.handlers import autoindex
 from aspen.handlers.http import HTTP403
 
 
@@ -30,7 +30,7 @@ else:
                      , "__/etc/aspen.conf"
                      , -1 # lineno
                       )
-directory = AUTOINDEX and autoindex or HTTP403
+directory = AUTOINDEX and autoindex.wsgi or HTTP403
 
 
 # WSGI callable
@@ -91,6 +91,3 @@ def wsgi(environ, start_response):
         return []
     else:
         return open(path, 'rb') # need 'rb' for Windows (issue 92)
-
-
-static = wsgi # backwards-compatibility

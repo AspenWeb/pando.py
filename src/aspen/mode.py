@@ -81,8 +81,6 @@ Example usage:
 
 
 """
-__author__ = "Chad Whitacre <chad@zetaweb.com>"
-__version__ = "1.0a1+"
 
 
 import os
@@ -186,6 +184,7 @@ def set(mode):
 if __name__ == '__main__':
     """Test the module.
     """
+    # @@: move these tests to test/
 
     import sys
     sys.stderr.write("testing...")

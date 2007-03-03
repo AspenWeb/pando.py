@@ -1,6 +1,6 @@
 from os.path import join, realpath
 
-from aspen.handlers.static import static
+from aspen.handlers import static
 from aspen.tests.fsfix import mk, attach_rm
 
 
@@ -20,7 +20,7 @@ def test_basic():
     mk(('index.html', "Foo."))
     environ = {'PATH_TRANSLATED':realpath(join('fsfix', 'index.html'))}
     expected = 'Foo.'
-    actual = static(environ, start_response).next()
+    actual = static.wsgi(environ, start_response).next()
     assert actual == expected, actual
 
 

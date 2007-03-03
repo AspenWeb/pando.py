@@ -40,15 +40,9 @@ cache = Cache(build)
 def view(request):
     """Django view to render the template at PATH_TRANSLATED.
     """
-
     fspath = request.META['PATH_TRANSLATED']
     template = cache[fspath]
-
-    context = RequestContext(request)
-    context['request'] = request # = django.core.context_processor.request
-    context['__file__'] = fspath
-
-    return HttpResponse(template.render(context))
+    return HttpResponse(template.render(RequestContext(request)))
 
 
 urlpatterns = patterns('', (r'^', view)) # wired in WSGI, above

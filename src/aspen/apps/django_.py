@@ -8,13 +8,6 @@ from django.core.handlers.wsgi import WSGIHandler
 from django.core.exceptions import ImproperlyConfigured
 
 
-# Put the site root on PYTHONPATH.
-# ================================
-# But only if the site is an hegemonic application?
-
-sys.path.insert(0, aspen.paths.root)
-
-
 # Tell Django which settings to use.
 # ==================================
 # If DJANGO_SETTINGS_MODULE is set, just use that. Otherwise, set it from

@@ -40,15 +40,15 @@ def view(request):
     for d in RequestContext(request).dicts:
         context.update(d)
     context['http'] = http # for easy access to HttpResponse subclasses
-    context['request'] = request # = django.core.context_processors.request
     context['response'] = http.HttpResponse() # outbound
-    context['__file__'] = fspath
 
     try:
         exec cache[fspath] in context
-    except SystemExit, exc:
-        context['response'].status_code = exc.code
+    except SystemExit:
+        pass
 
+    if 'response' not in context:
+        raise LookupError("script %s does not define 'response'" % path)
     return context['response']
 
 urlpatterns = patterns('', (r'^', view)) # wired in WSGI, above

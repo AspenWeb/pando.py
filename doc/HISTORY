@@ -2,12 +2,30 @@
     ~~VERSION~~ -- ~~DATE~~
 ========================================
 
+With this release we have significantly reorganized and updated Aspen's
+documentation. This sets the stage for magic removal, when we decouple the
+handler infrastructure (relegating it to an application), and otherwise make
+Aspen friendlier for the pure-application use case.
+
+    - Removed doc references to lib537/mode [issue 99]
+
+    - Added documentation on Aspen's apps, handlers, and rules [issue 61].
+
+    - Now easier to configure/unconfigure from 3rd-party tools [issue 77].
+
+    - All config files now documented under UI > Config Files [issue 91].
+
+
+========================================
+    0.7.1 -- March 1, 2007
+========================================
+
 This is a minor release, with both bug-fixes and feature enhancements.
 
     - Started to refactor into an apps subpackage, to contain framework glue
       and the handler infrastructure.
 
-    - Now providing better feedback on exit [issues 87].
+    - Now providing better feedback on exit [issue 87].
 
     - Now tidier with our pidfile [issue 87].
 

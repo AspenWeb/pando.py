@@ -16,7 +16,7 @@ MKHOWTO    = $(PYTHONSRC)/Doc/tools/mkhowto \
 
 default: html
 
-html:
+html: clean
 	$(MKHOWTO) aspen.tex
 	cp -r ../icons ./html/
 	rm -rf ./html/icons/.svn

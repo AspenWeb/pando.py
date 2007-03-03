@@ -16,7 +16,7 @@ default_handlers_conf = """\
 
     catch_all   aspen.rules:catch_all
 
-    [aspen.handlers.static:static]
+    [aspen.handlers.static:wsgi]
       catch_all
 
 """

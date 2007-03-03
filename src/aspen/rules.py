@@ -51,16 +51,6 @@ def catch_all(path, predicate):
     return True
 
 
-def isexecutable(path, predicate):
-    """Predicate is either true/yes/1 or false/no/0 (case-insensitive).
-
-    This only works on Unix.
-
-    """
-    is_executable = (os.stat(path).st_mode & 0111) != 0
-    return is_executable is what_we_want(predicate)
-
-
 def fnmatch(path, predicate):
     """Match using the fnmatch module; always case-sensitive.
     """
@@ -78,6 +68,16 @@ def hashbang(path, predicate):
 
 def isdir(path, predicate):
     return os.path.isdir(path) is what_we_want(predicate)
+
+
+def isexecutable(path, predicate):
+    """Predicate is either true/yes/1 or false/no/0 (case-insensitive).
+
+    This only works on Unix.
+
+    """
+    is_executable = (os.stat(path).st_mode & 0111) != 0
+    return is_executable is what_we_want(predicate)
 
 
 def isfile(path, predicate):

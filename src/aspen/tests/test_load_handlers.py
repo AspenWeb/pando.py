@@ -55,15 +55,10 @@ isfile      aspen.rules:isfile
 fnmatch     aspen.rules:fnmatch
 
 
-# Set up Django scripts/templates.
-# ================================
-# This requires django to be installed for this site.
+# Set up scripts.
+# ===============
 
-[aspen.handlers.django_:template]
-    isfile
-AND fnmatch *.dt
-
-[aspen.handlers.django_:script]
+[aspen.handlers.pyscript:wsgi]
     isfile
 AND fnmatch *.py
 
@@ -71,32 +66,28 @@ AND fnmatch *.py
 # Everything else is served statically.
 # =====================================
 
-[aspen.handlers.static:static]
+[aspen.handlers.static:wsgi]
   catch_all
 """
 
 def DOC_EXAMPLE():
     """Lazy so we can call aspen.configure() first.
     """
-    from aspen.handlers import static, django_
+    from aspen.handlers import pyscript, static
 
     rulefuncs = dict()
     rulefuncs['catch_all'] = rules.catch_all
     rulefuncs['isfile'] = rules.isfile
     rulefuncs['fnmatch'] = rules.fnmatch
 
-    django_template = load.Handler(rulefuncs, django_.template)
-    django_template.add("isfile", 0)
-    django_template.add("AND fnmatch *.dt", 0)
-
-    django_script = load.Handler(rulefuncs, django_.script)
-    django_script.add("isfile", 0)
-    django_script.add("AND fnmatch *.py", 0)
+    script = load.Handler(rulefuncs, pyscript.wsgi)
+    script.add("isfile", 0)
+    script.add("AND fnmatch *.py", 0)
 
     static = load.Handler(rulefuncs, static.wsgi)
     static.add("catch_all", 0)
 
-    return [django_template, django_script, static]
+    return [script, static]
 
 
 # Working

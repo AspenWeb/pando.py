@@ -1,0 +1,115 @@
+\section{Handlers}
+\label {api-handlers}
+
+Aspen \dfn{handlers} are WSGI callables that are intended to be associated with
+multiple files or directories via the \file{handlers.conf} file. Aspen comes
+bundled with the following handlers, in the \module{aspen.handlers} subpackage.
+
+
+\subsection{\class{autoindex}}
+\label{api-handlers-http}
+
+The \module{aspen.handlers.autoindex} module defines one function:
+
+\begin{funcdesc}{wsgi}{environ, start_response} This handler displays an HTML
+listing of the files in the directory at \code{environ['PATH_TRANSLATED']}. If
+it is associated with a non-directory, it will raise \class{AssertionError}. The
+listing will not include the magic directory, nor files named
+\file{README.aspen}, nor hidden files (those whose name begins with '\file{.}').
+\end{funcdesc}
+
+The static handler can be configured to automatically call the autoindex handler
+for all directories. See below for details.
+
+
+\subsection{\class{django_}}
+\label{api-handlers-django}
+
+Aspen comes bundled with glue code for the Django web framework. In addition to
+the \module{aspen.apps.django_} app, which serves Django in usual monolithic
+fashion, we also provide handlers for serving Django scripts and templates. This
+requires that you install Django for your site:
+
+\begin{itemize}
+\item{Put \module{django} on your \envvar{PYTHONPATH} (e.g., in \file{__/lib/python2.x}).}
+\item{Put your Django project on your \envvar{PYTHONPATH} (e.g., in \file{__/lib/python2.x}).}
+\item{Add a \code{[django]} section to \file{aspen.conf}, with a \var{settings_module} key that points to your \module{settings} module.}
+\item{Configure your Django project's \file{settings} module.}
+\end{itemize}
+
+The \module{aspen.handlers.django_} module defines two functions:
+
+\begin{funcdesc}{script}{environ, start_response} This handler executes
+\code{environ['PATH_TRANSLATED']} within a \ulink{Django
+\class{RequestContext}}{http://www.djangobook.com/en/beta/chapter10/#cn62}. The
+\module{django.http} module is added to the namespace as \var{http} (for easy
+access to \module{HttpResponse} subclasses), and a Django \code{HttpResponse} as
+\var{response}. \end{funcdesc}
+
+\begin{funcdesc}{template}{environ, start_response} This handler renders
+\code{environ['PATH_TRANSLATED']} as a Django template within a \ulink{Django
+\class{RequestContext}}{http://www.djangobook.com/en/beta/chapter10/#cn62}.
+\end{funcdesc}
+
+In staging and production modes, the result of compiling both scripts and
+templates is cached after the first time each is called.
+
+
+\subsection{\class{http}}
+\label{api-handlers-http}
+
+The \module{aspen.handlers.http} module provides two handlers:
+
+\begin{funcdesc}{HTTP403}{environ, start_response}
+Responds to every request with \code{403 Forbidden}.
+\end{funcdesc}
+
+\begin{funcdesc}{HTTP404}{environ, start_response}
+Responds to every request with \code{404 Not Found}.
+\end{funcdesc}
+
+
+\subsection{\class{pyscript}}
+\label{api-handlers-pyscript}
+
+The \module{aspen.handlers.pyscript} module defines the following function:
+
+\begin{funcdesc}{wsgi}{environ, start_response}
+
+This handler executes \code{environ['PATH_TRANSLATED']} with the following
+objects in its namespace:
+
+\begin{tableii}{l|l}{code}{name}{value}
+\lineii{environ}{a WSGI \code{environ} mapping}
+\lineii{response}{\class{None}}
+\lineii{start_response}{a WSGI \code{start_response} callable}
+\end{tableii}
+
+Your script must define a WSGI response object as \var{response}, or
+\class{LookupError} is raised. You can raise \class{SystemExit} to terminate the
+script; it is trapped silently.
+
+\end{funcdesc}
+
+
+\subsection{\class{static}}
+\label{api-handlers-static}
+
+The \module{aspen.handlers.static} module defines one function:
+
+\begin{funcdesc}{wsgi}{environ, start_response}
+
+This handler serves \code{environ['PATH_TRANSLATED']} as a static resource. The
+\code{Content-Type} is set using the standard library's
+\code{mimetypes.guess_type} function, defaulting to \code{text/plain}. In
+staging and production mode, we obey any \code{If-Modified-Since} header.
+
+This handler adapts to the \var{autoindex} setting in the \code{[static]}
+section of \file{aspen.conf}. If set to \code{yes} (the default), then the
+\code{aspen.handlers.autoindex.wsgi} handler will be used to serve requests for
+directories. If set to \code{no}, the \code{aspen.handlers.http.HTTP403} handler
+is used instead. The \var{autoindex} value is case-insensitive, but if other
+than \code{yes} or \code{no} is given, \class{ConfigError} is raised at start
+up.
+
+\end{funcdesc}

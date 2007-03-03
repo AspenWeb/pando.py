@@ -110,6 +110,7 @@ def test_auto_index():
                             , '--mode', 'production'
                              ])
     time.sleep(1) # give time to startup
+
     actual = urllib.urlopen('http://localhost:53700/').read()
     # @@: how do we check for 200 response code?
     # for now just hit localhost:53700 to test manually

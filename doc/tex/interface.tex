@@ -67,14 +67,6 @@ Aspen's command-line options are as follows:
 
 \end{tableiii}
 
-\begin{seealso}
-
-\seelink{http://zetadev.com/software/lib537/1.0a1/doc/html/module-mode.html}
-{mode}{Aspen uses the \module{mode} module to model the application life-cycle.
-It is available to your applications at \module{aspen.mode}}
-
-\end{seealso}
-
 
 \section{Configuration Files \label{config-files}}
 
@@ -97,7 +89,8 @@ example.package.foo:bar.baz
 
 
 
-\subsection{apps.conf \label{apps}}
+\subsection{apps.conf}
+\label{apps-conf}
 
 In Aspen, an \dfn{application} or \dfn{app} refers to a WSGI application that is
 connected to a particular directory. Apps are set up in \file{__/etc/apps.conf}.
@@ -131,7 +124,8 @@ also remove any obsolete \file{README.aspen} files within your site tree.
 \end{verbatim}
 
 
-\subsection{aspen.conf \label{aspen-conf}}
+\subsection{aspen.conf}
+\label{aspen-conf}
 
 Aspen's general configuration file is at \file{__/etc/aspen.conf}. It is in
 \file{.ini}-style format per the \module{ConfigParser} module. Aspen responds to
@@ -206,16 +200,8 @@ knob = true
 \end{verbatim}
 
 
-\begin{seealso}
-
-\seelink{http://zetadev.com/software/lib537/1.0a1/doc/html/module-mode.html}
-{\code{mode}}{Aspen relies on this module to model the application life-cycle.
-It is available to your applications at \module{aspen.mode}}
-
-\end{seealso}
-
-
-\subsection{handlers.conf \label{handlers}}
+\subsection{handlers.conf}
+\label{handlers-conf}
 
 Aspen \dfn{handlers} are WSGI applications that are associated with files and
 directories on the filesystem according to arbitrary rules. This provides a
@@ -260,8 +246,8 @@ This is Aspen's default handler configuration:
 \begin{verbatim}
 catch_all   aspen.rules:catch_all
 
-[aspen.handlers.static:static]
-  catch_all                     # anything else, serve it statically
+[aspen.handlers.static:wsgi]
+  catch_all
 \end{verbatim}
 
 
@@ -273,15 +259,10 @@ isfile      aspen.rules:isfile
 fnmatch     aspen.rules:fnmatch
 
 
-# Set up Django scripts/templates.
-# ================================
-# This requires django to be installed for this site.
+# Set up scripts.
+# ===============
 
-[aspen.handlers.django_:template]
-    isfile
-AND fnmatch *.dt
-
-[aspen.handlers.django_:script]
+[aspen.handlers.pyscript:wsgi]
     isfile
 AND fnmatch *.py
 
@@ -289,11 +270,12 @@ AND fnmatch *.py
 # Everything else is served statically.
 # =====================================
 
-[aspen.handlers.static:static]
+[aspen.handlers.static:wsgi]
   catch_all
 \end{verbatim}
 
-\subsection{middleware.conf \label{middleware}}
+\subsection{middleware.conf}
+\label{middleware-conf}
 
 Aspen allows for a full WSGI middleware stack, configured via the
 \file{__/etc/middleware.conf} file. This is simply a newline-separated list of
@@ -311,30 +293,15 @@ example.baz:buz # closest to your apps/handlers
 \end{verbatim}
 
 
-\section{The Environment \label{environment}}
+\section{The Environment}
+\label{environment}
 
-Aspen incorporates the \module{mode} module, which uses the \envvar{PYTHONMODE}
+Aspen incorporates a \module{mode} module, which uses the \envvar{PYTHONMODE}
 environment variable to model the application life-cycle through four deployment
 modes: \code{debugging}, \code{development}, \code{staging}, and
 \code{production}. This module is available to your applications at
 \module{aspen.mode}, and its API is documented in the "API" chapter, below.
 
 Aspen itself adapts to the current \envvar{PYTHONMODE}. In debugging and
-development modes, Aspen will restart itself any time the following
-configuration files or any module source files change on the filesystem:
-
-\begin{itemize}
-\item{\file{apps.conf}}
-\item{\file{aspen.conf}}
-\item{\file{handlers.conf}}
-\item{\file{middleware.conf}}
-\end{itemize}
-
-
-\begin{seealso}
-
-\seelink{http://zetadev.com/software/lib537/1.0a1/doc/html/module-mode.html}
-{\code{mode}}{Aspen relies on this module to model the application life-cycle.
-It is available to your applications at \module{aspen.mode}}
-
-\end{seealso}
+development modes, Aspen will restart itself any time a configuration file or
+module source file changes on the filesystem.

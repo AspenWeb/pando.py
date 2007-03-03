@@ -3,7 +3,7 @@
 from os.path import isfile
 
 
-def pyscript(environ, start_response):
+def wsgi(environ, start_response):
     """Execute the script pseudo-CGI-style.
     """
     path = environ['PATH_TRANSLATED']
@@ -12,13 +12,12 @@ def pyscript(environ, start_response):
     context = dict()
     context['environ'] = environ
     context['start_response'] = start_response
-    context['response'] = []
-    context['__file__'] = path
 
     try:
         exec open(path) in context
-        response = context['response']
     except SystemExit:
         pass
 
-    return response
+    if 'response' not in context:
+        raise LookupError("script %s does not define 'response'" % path)
+    return context['response']
