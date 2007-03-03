@@ -3,7 +3,7 @@ import sys
 import threading
 import urllib
 
-from aspen import server_factory, mode
+from aspen import server_factory, mode, configure, unconfigure
 from aspen._configuration import ConfFile, Configuration as Config
 from aspen.tests import assert_raises
 from aspen.tests.fsfix import mk, rm
@@ -69,12 +69,16 @@ def wsgi_app(environ, start_response):
     return ["My setting is %s" % my_setting]
 """)
        )
-    server = server_factory(Config(['-rfsfix']))
-    thread_ = threading.Thread(target=server.start).start()
-    expected = "My setting is bar"
-    actual = urllib.urlopen('http://localhost:53700/').read()
-    server.stop()
-    assert actual == expected, actual
+    configure(['-rfsfix'])
+    try:
+        server = server_factory()
+        thread_ = threading.Thread(target=server.start).start()
+        expected = "My setting is bar"
+        actual = urllib.urlopen('http://localhost:53700/').read()
+        server.stop()
+        assert actual == expected, actual
+    finally:
+        unconfigure()
 
 
 # mode

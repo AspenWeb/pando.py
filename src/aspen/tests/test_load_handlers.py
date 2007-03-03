@@ -2,7 +2,6 @@ import os
 import sys
 
 from aspen import load, rules, configure, unconfigure
-from aspen._configuration import Configuration
 from aspen.tests import assert_raises
 from aspen.tests.fsfix import mk, attach_rm
 from aspen.exceptions import *
@@ -126,7 +125,7 @@ def test_basic():
 
 def test_no_magic_directory():
     mk()
-    configure(Configuration(['-rfsfix']))
+    configure(['-rfsfix'])
     try:
         loader = Loader()
         loader.paths.__ = None
@@ -150,7 +149,7 @@ def test_empty_file():
 
 def test_doc_example():
     mk('__/etc', ('__/etc/handlers.conf', DOC_EXAMPLE_CONF))
-    configure(Configuration(['-rfsfix']))
+    configure(['-rfsfix'])
     try:
         expected = DOC_EXAMPLE()
         actual = Loader().load_handlers()

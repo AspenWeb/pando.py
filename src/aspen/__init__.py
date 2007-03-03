@@ -41,17 +41,16 @@ __all__ = ['configuration', 'conf', 'paths', '']
 
 # Configuration API
 # =================
-# To be populated in server_factory, below. The configure callable can also be
-# used in your own wrappers.
 
 configuration = None # an aspen._configuration.Configuration instance
 conf = None # an aspen._configuration.ConfFile instance
 paths = None # an aspen._configuration.Paths instance
 
 globals_ = globals()
-def configure(configuration):
+
+def configure(argv):
     global globals_
-    globals_['configuration'] = configuration
+    globals_['configuration'] = Configuration(argv)
     globals_['conf'] = configuration.conf
     globals_['paths'] = configuration.paths
 
@@ -124,18 +123,13 @@ def cleanup():
             func()
 
 
-def server_factory(configuration):
+def server_factory():
     """This is the heavy work of instantiating the server.
     """
 
-    # Construct the server.
-    # =====================
-    # This is done in such a way that user modules may get the already-
-    # initialized Configuration, ConfFile, and Paths objects by doing:
-    #
-    #   from aspen import configuration, conf, paths
+    # Construct the website.
+    # ======================
 
-    configure(configuration)
     configuration.load_plugins() # user modules loaded here
     website = Website(configuration)
     for middleware in configuration.middleware:
@@ -169,11 +163,11 @@ def cleanup():
     return server
 
 
-def start_server(configuration):
+def start_server():
     """Get a server object and start it up.
     """
 
-    server = server_factory(configuration) # factored out to ease testing
+    server = server_factory() # factored out to ease testing
 
 
     # Define a shutdown handler and attach to signals.
@@ -223,7 +217,7 @@ def start_server(configuration):
         raise SystemExit(1)
 
 
-def drive_daemon(configuration):
+def drive_daemon():
     """Manipulate a daemon or become one ourselves.
     """
 
@@ -260,7 +254,7 @@ def start_server(configuration):
             os.chmod(logpath, 0600)
         pidfiler.path = pidfile
         pidfiler.start()
-        start_server(configuration)
+        start_server()
 
 
     def stop(stop_output=True):
@@ -354,7 +348,7 @@ def start_server(configuration):
         argv = sys.argv[1:]
 
     try:
-        configuration = Configuration(argv)
+        configure(argv)
     except ConfigurationError, err:
         print usage
         print err.msg
@@ -362,7 +356,7 @@ def start_server(configuration):
 
     try:
         if configuration.daemon:
-            drive_daemon(configuration)
+            drive_daemon()
         elif mode.DEBDEV and restarter.PARENT:
             print 'launching child process'
             restarter.launch_child()
@@ -382,10 +376,10 @@ def start_server(configuration):
                         restarter.track(path)
 
             print 'starting child server'
-            start_server(configuration)
+            start_server()
         else:
             print 'starting server'
-            start_server(configuration)
+            start_server()
 
     except KeyboardInterrupt:
         pass
