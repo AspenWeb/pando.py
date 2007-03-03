@@ -41,11 +41,25 @@ __all__ = ['configuration', 'conf', 'paths', '']
 
 # Configuration API
 # =================
-# To be populated in server_factory, below.
+# To be populated in server_factory, below. The configure callable can also be
+# used in your own wrappers.
 
 configuration = None # an aspen._configuration.Configuration instance
 conf = None # an aspen._configuration.ConfFile instance
 paths = None # an aspen._configuration.Paths instance
+
+globals_ = globals()
+def configure(configuration):
+    global globals_
+    globals_['configuration'] = configuration
+    globals_['conf'] = configuration.conf
+    globals_['paths'] = configuration.paths
+
+def unconfigure(): # for completeness and tests
+    global globals_
+    globals_['configuration'] = None
+    globals_['conf'] = None
+    globals_['paths'] = None
 
 
 def get_perms(path):
@@ -110,8 +124,7 @@ def cleanup():
             func()
 
 
-globals_ = globals()
-def server_factory(configuration):
+def server_factory(configuration):
     """This is the heavy work of instantiating the server.
     """
 
@@ -122,10 +135,7 @@ def server_factory(configuration):
     #
     #   from aspen import configuration, conf, paths
 
-    global globals_
-    globals_['configuration'] = configuration
-    globals_['conf'] = configuration.conf
-    globals_['paths'] = configuration.paths
+    configure(configuration)
     configuration.load_plugins() # user modules loaded here
     website = Website(configuration)
     for middleware in configuration.middleware:

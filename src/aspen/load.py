@@ -42,6 +42,7 @@ TAB = '\t'
       - cache the results of match()
       - evaluate the expression after each rule is added, exit early if False
       - um, write it in C? :)
+      - index this in dewey
 
     """
 

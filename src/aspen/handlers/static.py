@@ -36,7 +36,7 @@ directory = AUTOINDEX and autoindex or HTTP403
 # WSGI callable
 # =============
 
-def static(environ, start_response):
+def wsgi(environ, start_response):
     """Serve a static file off of the filesystem.
 
     In staging and deployment modes, we honor any 'If-Modified-Since'
@@ -90,4 +90,7 @@ def static(environ, start_response):
     if status == '304 Not Modified':
         return []
     else:
-        return open(path, 'rb') # need 'rb' for Windows
+        return open(path, 'rb') # need 'rb' for Windows (issue 92)
+
+
+static = wsgi # backwards-compatibility

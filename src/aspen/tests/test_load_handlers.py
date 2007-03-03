@@ -1,7 +1,8 @@
 import os
 import sys
 
-from aspen import handlers, load, rules
+from aspen import load, rules, configure, unconfigure
+from aspen._configuration import Configuration
 from aspen.tests import assert_raises
 from aspen.tests.fsfix import mk, attach_rm
 from aspen.exceptions import *
@@ -28,30 +29,75 @@ def Loader():
     loader.paths.__ = os.path.realpath('fsfix/__')
     return loader
 
-handler = load.Handler({'fnmatch':rules.fnmatch}, random.choice)
-handler.add("fnmatch *", 0)
 
-rulefuncs = dict()
-rulefuncs['catch_all'] = rules.catch_all
+# Defaults
+# --------
 
-static = load.Handler(rulefuncs, handlers.static.static)
-static.add("catch_all", 0)
+def DEFAULTS():
+    """Lazy so we have a chance to call aspen.configure().
+    """
+    from aspen.handlers import static
 
-DEFAULTS = [static]
+    rulefuncs = dict()
+    rulefuncs['catch_all'] = rules.catch_all
 
-MODULE = """\
-class Rule:
-  def __init__(self, website):
-    self.website = website
-  def __call__(self, path, predicate):
-    return True
+    static = load.Handler(rulefuncs, static.wsgi)
+    static.add("catch_all", 0)
 
-class App:
-  def __init__(self, website):
-    self.website = website
-  def __call__(self, env, start):
-    return "Greetings, program!"
+    return [static]
+
+
+# Doc example
+# -----------
+
+DOC_EXAMPLE_CONF = """\
+catch_all   aspen.rules:catch_all
+isfile      aspen.rules:isfile
+fnmatch     aspen.rules:fnmatch
+
+
+# Set up Django scripts/templates.
+# ================================
+# This requires django to be installed for this site.
+
+[aspen.handlers.django_:template]
+    isfile
+AND fnmatch *.dt
+
+[aspen.handlers.django_:script]
+    isfile
+AND fnmatch *.py
+
+
+# Everything else is served statically.
+# =====================================
+
+[aspen.handlers.static:static]
+  catch_all
 """
+
+def DOC_EXAMPLE():
+    """Lazy so we can call aspen.configure() first.
+    """
+    from aspen.handlers import static, django_
+
+    rulefuncs = dict()
+    rulefuncs['catch_all'] = rules.catch_all
+    rulefuncs['isfile'] = rules.isfile
+    rulefuncs['fnmatch'] = rules.fnmatch
+
+    django_template = load.Handler(rulefuncs, django_.template)
+    django_template.add("isfile", 0)
+    django_template.add("AND fnmatch *.dt", 0)
+
+    django_script = load.Handler(rulefuncs, django_.script)
+    django_script.add("isfile", 0)
+    django_script.add("AND fnmatch *.py", 0)
+
+    static = load.Handler(rulefuncs, static.wsgi)
+    static.add("catch_all", 0)
+
+    return [django_template, django_script, static]
 
 
 # Working
@@ -66,6 +112,8 @@ def test_basic():
         fnmatch *
 
         """))
+    handler = load.Handler({'fnmatch':rules.fnmatch}, random.choice)
+    handler.add("fnmatch *", 0)
     expected = [handler]
     actual = Loader().load_handlers()
     assert actual == expected, actual
@@ -77,15 +125,20 @@ def test_basic():
 # file.
 
 def test_no_magic_directory():
-    loader = Loader()
-    loader.paths.__ = None
-    expected = DEFAULTS
-    actual = loader.load_handlers()
-    assert actual == expected, actual
+    mk()
+    configure(Configuration(['-rfsfix']))
+    try:
+        loader = Loader()
+        loader.paths.__ = None
+        expected = DEFAULTS()
+        actual = loader.load_handlers()
+        assert actual == expected, actual
+    finally:
+        unconfigure()
 
 def test_no_file():
     mk('__/etc')
-    expected = DEFAULTS
+    expected = DEFAULTS()
     actual = Loader().load_handlers()
     assert actual == expected, actual
 
@@ -95,6 +148,15 @@ def test_empty_file():
     actual = Loader().load_handlers()
     assert actual == expected, actual
 
+def test_doc_example():
+    mk('__/etc', ('__/etc/handlers.conf', DOC_EXAMPLE_CONF))
+    configure(Configuration(['-rfsfix']))
+    try:
+        expected = DOC_EXAMPLE()
+        actual = Loader().load_handlers()
+        assert actual == expected, actual
+    finally:
+        unconfigure()
 
 
 # Errors

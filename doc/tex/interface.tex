@@ -1,10 +1,10 @@
 \chapter{User Interface (UI) \label{interface}}
 
-Users interface with Aspen through three mechanisms: the command line, a
-configuration file, and the environment. Where a program parameter is set in
+Users interface with Aspen through three mechanisms: the command line,
+configuration files, and the environment. Where a program parameter is set in
 more than one of these contexts, they take precedence in the order given here.
 For example, a \var{mode} option on the command line will override any
-\var{mode} setting in the config file or in the environment.
+\var{mode} setting in a config file or in the environment.
 
 
 \section{Command Line \label{command-line}}
@@ -42,8 +42,8 @@ Aspen's command-line options are as follows:
     {The address to which Aspen should bind. If \var{address} begins with a dot
     or a forward slash, then it is interpreted as an AF_UNIX socket. If it
     contains more than one colon, it is seen as an AF_INET6 address. Otherwise,
-    it is interpreted as AF_INET. If \var{address} begins with a colon, then the
-    AF_INET loopback address is assumed.} {\code{0.0.0.0:8080}}
+    it is interpreted as AF_INET. If \var{address} begins with a colon, the IP
+    address defaults to \code{0.0.0.0}.} {\code{0.0.0.0:8080}}
 
 % \lineiii{\programopt{-l}/\longprogramopt{-log_filter}=\var{log_filter}}
 %     {A subsystem filter to apply to the error log, per the logging module.}
@@ -76,15 +76,68 @@ It is available to your applications at \module{aspen.mode}}
 \end{seealso}
 
 
-\section{Configuration File \label{config-file}}
+\section{Configuration Files \label{config-files}}
 
-This section describes the general Aspen configuration file at
-\file{__/etc/aspen.conf}. Additional configuration files are described in the
-"Extending Aspen" chapter. \file{aspen.conf} is in \file{.ini}-style format per
-the \module{ConfigParser} module. Aspen responds to the following settings in
-the \code{main} section. You may define additional settings and sections that
-are meaningful to your application, which you may access using the
-\class{aspen.conf} object described below in the "API" chapter.
+Aspen obeys several configuration files, all located in \file{__/etc}. The
+comment character for these files is \#, and comments can be included in-line.
+Blank lines are ignored, as is initial and trailing whitespace per-line. Where
+section names are called for, they are given in brackets.
+
+Where a configuration file calls for a Python object to be specified, this is
+done in a notation derived from setuptools' entry_points feature: a dotted
+module name, followed by a colon and a dotted identifier naming an object within
+the module. This is referred to below as \dfn{colon notation}. The following
+example would import the \code{bar} object from \code{example.package.foo}, and
+use its \code{baz} attribute:
+
+\begin{verbatim}
+example.package.foo:bar.baz
+\end{verbatim}
+
+
+
+
+\subsection{apps.conf \label{apps}}
+
+In Aspen, an \dfn{application} or \dfn{app} refers to a WSGI application that is
+connected to a particular directory. Apps are set up in \file{__/etc/apps.conf}.
+
+The \file{__/etc/apps.conf} file contains a newline-separated list of
+white-space-separated path name/object name pairs. The path names refer to
+URL-space, and are translated literally to the filesystem. If the trailing slash
+is given, then requests for that directory will first be redirected to the
+trailing slash before being handed off to the application. If no trailing slash
+is given, the application will also get requests without the slash. When
+choosing an application to service a request, the most specific pathname matches
+first.
+
+Object names are in colon notation, and they name WSGI callables. Aspen updates
+the \code{SCRIPT_NAME} and \code{PATH_INFO} settings in \code{environ} before
+handing off to the relevant callable. \code{SCRIPT_NAME} will never end with a
+slash, and if \code{PATH_INFO} is not empty, it will always begin with a slash.
+
+Aspen will (over)write a file called \file{README.aspen} in each directory
+mentioned in \file{apps.conf}, containing the relevant line from
+\file{apps.conf}. If the directory does not exist, it is created. Aspen will
+also remove any obsolete \file{README.aspen} files within your site tree.
+
+
+\subsubsection{Example apps.conf}
+
+\begin{verbatim}
+/foo        example.apps:foo    # will get both /foo and /foo/
+/bar/       example.apps:bar    # /bar will redirect to /bar/
+/bar/baz    example.apps:baz    # will 'steal' some of /bar's requests
+\end{verbatim}
+
+
+\subsection{aspen.conf \label{aspen-conf}}
+
+Aspen's general configuration file is at \file{__/etc/aspen.conf}. It is in
+\file{.ini}-style format per the \module{ConfigParser} module. Aspen responds to
+the following settings in the \code{main} section. You may define additional
+settings and sections that are meaningful to your application, which you may
+access using the \class{aspen.conf} object described below in the "API" chapter.
 
 % There are five sections recognized: \code{DEFAULT},
 % \code{debugging}, \code{development}, \code{staging}, and \code{production}. Any
@@ -140,7 +193,7 @@ thread pool.}{\code{10}}
 %
 \end{tableiii}
 
-\subsection{Example}
+\subsubsection{Example}
 
 Here is an example \file{aspen.conf} configuration file:
 
@@ -155,15 +208,107 @@ knob = true
 
 \begin{seealso}
 
-\seelink{extending.html}
-{Extending Aspen}{Aspen's three additional configuration files are described
-here.}
-
 \seelink{http://zetadev.com/software/lib537/1.0a1/doc/html/module-mode.html}
 {\code{mode}}{Aspen relies on this module to model the application life-cycle.
 It is available to your applications at \module{aspen.mode}}
 
 \end{seealso}
+
+
+\subsection{handlers.conf \label{handlers}}
+
+Aspen \dfn{handlers} are WSGI applications that are associated with files and
+directories on the filesystem according to arbitrary rules. This provides a
+flexible infrastructure for many different development patterns.
+
+The \file{__/etc/handlers.conf} file begins with an anonymous "rules" section,
+which is a newline-separated list of white-space-separated rule name/object name
+pairs. Rule names can be any string without whitespace. Each object name (in
+colon notation) specifies a \dfn{rule}, a callable taking a filesystem path name
+and an arbitrary predicate string, and returning \class{True} or \class{False}.
+The path argument is absolute and is guaranteed to exist; it is
+\envvar{PATH_TRANSLATED} from the WSGI environment, with any default resource
+already located.
+
+Following the rule specification are sections specifying \dfn{handlers}, which
+as mentioned above are WSGI callables.
+
+The name of each section specifies a handler (a WSGI callable) in colon
+notation. The body of each section is a newline-separated list of conditions
+under which this handler is to be called. Fundamentally, these conditions are
+made up of a rule name as defined at the beginning of the file, and an arbitrary
+predicate string (which can include whitespace) that is meaningful to the
+matching rule callable. If no predicate is given, then the rule callable will
+receive \class{None} for its predicate argument. Rules must be explicitly
+specified at the beginning of the file before being available within handler
+sections. After the first condition in a handler section, additional condition
+lines must begin with one of \code{AND}, \code{OR}, or \code{NOT}. These
+case-insensitive tokens specify how conditions are to be combined in evaluating
+whether to use this handler.
+
+On each request, handlers are considered in the order given, and the first
+matching handler is used. Only one handler is used for any given request.
+
+Note that if the file \file{__/etc/handlers.conf} exists at all, the defaults
+(see the example below) disappear, and you must respecify any of the default
+rules in your own file if you want them.
+
+
+\subsubsection{Example handlers.conf}
+This is Aspen's default handler configuration:
+
+\begin{verbatim}
+catch_all   aspen.rules:catch_all
+
+[aspen.handlers.static:static]
+  catch_all                     # anything else, serve it statically
+\end{verbatim}
+
+
+Here is a more full-featured example:
+
+\begin{verbatim}
+catch_all   aspen.rules:catch_all
+isfile      aspen.rules:isfile
+fnmatch     aspen.rules:fnmatch
+
+
+# Set up Django scripts/templates.
+# ================================
+# This requires django to be installed for this site.
+
+[aspen.handlers.django_:template]
+    isfile
+AND fnmatch *.dt
+
+[aspen.handlers.django_:script]
+    isfile
+AND fnmatch *.py
+
+
+# Everything else is served statically.
+# =====================================
+
+[aspen.handlers.static:static]
+  catch_all
+\end{verbatim}
+
+\subsection{middleware.conf \label{middleware}}
+
+Aspen allows for a full WSGI middleware stack, configured via the
+\file{__/etc/middleware.conf} file. This is simply a newline-separated list of
+middleware factories in colon notation. Each factory (which may be a class
+constructor or other callable) is called with exactly one positional argument,
+the next middleware on the stack. The first-mentioned middleware will therefore
+be the outer-most in the stack (i.e., closest to the browser).
+
+
+\subsubsection{Example middleware.conf}
+
+\begin{verbatim}
+example.foo:bar # closest to browser
+example.baz:buz # closest to your apps/handlers
+\end{verbatim}
 
 
 \section{The Environment \label{environment}}

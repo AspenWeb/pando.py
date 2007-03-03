@@ -3,8 +3,8 @@
 VERSION=~~VERSION~~
 MKHOWTO    = $(PYTHONSRC)/Doc/tools/mkhowto \
 				--iconserver icons \
-				--split 4 \
-				--link 2 \
+				--split 5 \
+				--link 3 \
 				--favicon icons/zeta.ico \
 				--dir ./html \
 				--logging \
