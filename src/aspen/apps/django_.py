@@ -28,4 +28,10 @@ if not os.environ.has_key('DJANGO_SETTINGS_MODULE'):
 # ==================================
 # This is then wired up to the website root in __/etc/apps.conf.
 
-wsgi = WSGIHandler()
+_wsgi = WSGIHandler()
+def wsgi(environ, start_response):
+    """Trick Django into thinking that it owns the place.
+    """
+    environ['PATH_INFO'] = environ['SCRIPT_NAME'] + environ['PATH_INFO']
+    environ['SCRIPT_NAME'] = ''
+    return _wsgi(environ, start_response)
