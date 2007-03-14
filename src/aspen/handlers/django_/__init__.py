@@ -1,10 +1,12 @@
 """This package provides WSGI apps for serving Django w/o urlconf madness.
 
-The two apps:
+The three  apps:
 
   script        execs PATH_TRANSLATED as a Python script
 
   template      renders PATH_TRANSLATED as a Django template
+
+  scrimplate    renders PATH_TRANSLATED as a Django template
 
 
 The namespace for each is an extended Django RenderContext:
@@ -31,7 +33,7 @@ for the layout of this package.
 import os
 
 
-__all__ = ['script', 'template']
+__all__ = ['script', 'template', 'scrimplate']
 
 
 try:
@@ -76,4 +78,5 @@ else:
     # ============================
 
     from _script import wsgi as script
+    from _scrimplate import wsgi as scrimplate
     from _template import wsgi as template
