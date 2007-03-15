@@ -73,7 +73,12 @@ def view(request):
         script_context = dict()
         for d in template_context.dicts:
             script_context.update(d)
-        exec script in script_context
+        try:
+            exec script in script_context
+        except SystemExit:
+            pass
+        if 'response' in script_context:
+            return script_context['response']
         template_context.update(script_context)
 
     return HttpResponse(template.render(template_context))

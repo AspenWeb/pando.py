@@ -39,8 +39,6 @@ def view(request):
     context = dict()
     for d in RequestContext(request).dicts:
         context.update(d)
-    context['http'] = http # for easy access to HttpResponse subclasses
-    context['response'] = http.HttpResponse() # outbound
 
     try:
         exec cache[fspath] in context
