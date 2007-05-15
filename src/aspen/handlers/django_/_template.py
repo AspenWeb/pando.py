@@ -42,7 +42,9 @@ def view(request):
     """
     fspath = request.META['PATH_TRANSLATED']
     template = cache[fspath]
-    return HttpResponse(template.render(RequestContext(request)))
+    response = HttpResponse(template.render(RequestContext(request)))
+    del response.headers['Content-Type'] # take this from the extension
+    return response
 
 
 urlpatterns = patterns('', (r'^', view)) # wired in WSGI, above

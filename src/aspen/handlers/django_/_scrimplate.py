@@ -36,8 +36,7 @@ def build(fspath):
     ^L, \x0c, 12). The first Python section is exec'd when the scrimplate is
     first called, and the namespace it populates is saved for all subsequent
     runs (so make sure it is thread-safe!). The second Python section is exec'd
-    within the template namespace before the template is rendered, giving you a
-    chance to add custom stuff in there.
+    within the template namespace each time the template is rendered.
 
     Since RequestContext doesn't actually combine dictionaries on update, we
     don't have to worry about the import context being mutated at runtime.
@@ -97,7 +96,9 @@ def view(request):
                     return response
         template_context.update(script_context)
 
-    return HttpResponse(template.render(template_context))
+    response = HttpResponse(template.render(template_context))
+    del response.headers['Content-Type'] # take this from the extension
+    return response
 
 
 urlpatterns = patterns('', (r'^', view)) # wired in WSGI, above
