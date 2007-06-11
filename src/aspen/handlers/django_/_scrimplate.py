@@ -1,3 +1,4 @@
+import linecache
 from os.path import isfile
 
 from django.conf.urls.defaults import patterns # django must be on PYTHONPATH
@@ -58,12 +59,30 @@ def build(fspath):
                          + "form feeds; it has %d." % numff
                           )
 
+    # Standardize newlines.
+    # =====================
+    # compile requires \n, and doing it now makes the next line easier.
+
+    imports = imports.replace('\r\n', '\n')
+    script = script.replace('\r\n', '\n')
+
+
+    # Pad the beginning of the script section so we get accurate tracebacks.
+    # ======================================================================
+
+    script = ''.join(['\n' for n in range(imports.count('\n')-1)]) + script
+
+
+    # Prep our cachable objects and return.
+    # =====================================
+
     c_imports = dict()
-    exec compile(imports.replace('\r\n', '\n'), fspath, 'exec') in c_imports
-    c_script = compile(script.replace('\r\n', '\n'), fspath, 'exec')
+    exec compile(imports, fspath, 'exec') in c_imports
+    c_script = compile(script, fspath, 'exec')
     c_template = Template(template)
 
     return (c_imports, c_script, c_template)
+
 
 cache = Cache(build)
 
