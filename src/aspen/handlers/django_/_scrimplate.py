@@ -70,7 +70,7 @@ def build(fspath):
     # Pad the beginning of the script section so we get accurate tracebacks.
     # ======================================================================
 
-    script = ''.join(['\n' for n in range(imports.count('\n')-1)]) + script
+    script = ''.join(['\n' for n in range(imports.count('\n')-2)]) + script
 
 
     # Prep our cachable objects and return.

@@ -232,7 +232,7 @@ optparser.add_option( "-r", "--root"
 
             root    website's filesystem root: /
             __      magic directory: /__
-            lib     python library: /__/lib/python2.x
+            lib     python library: /__/lib/python{x.y}
             plat    platform-specific python library: /__/lib/plat-<foo>
 
         If there is no magic directory, then __, lib, and plat are all None. If
@@ -246,8 +246,12 @@ optparser.add_option( "-r", "--root"
             self.lib = None
             self.plat = None
         else:
-            lib = join(self.__, 'lib', 'python'+sys.version[:3])
-            self.lib = isdir(lib) and lib or None
+            lib = join(self.__, 'lib', 'python')
+            if isdir(lib):
+                self.lib = lib
+            else:
+                lib = join(self.__, 'lib', 'python'+sys.version[:3])
+                self.lib = isdir(lib) and lib or None
 
             plat = join(lib, 'plat-'+sys.platform)
             self.plat = isdir(plat) and plat or None
