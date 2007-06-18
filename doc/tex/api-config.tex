@@ -242,12 +242,13 @@ the magic directory
 \end{memberdesc}
 
 \begin{memberdesc}[string]{lib}
-the site's local Python library, \file{__/lib/python2.x}
+the site's local Python library. First we look for \file{__/lib/python},
+then for \file{__/lib/pythonx.y}, using only the first found
 \end{memberdesc}
 
 \begin{memberdesc}[string]{pkg}
 \file{site-packages} under the site's local Python library,
-\file{__/lib/python2.x}
+\file{__/lib/pythonx.y/site-packages}
 \end{memberdesc}
 
 \begin{memberdesc}[string]{plat}

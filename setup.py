@@ -22,7 +22,7 @@ classifiers = [
 
 setup( name = 'aspen'
      , version = '~~VERSION~~'
-     , package_dir = {'':'src'}
+     , package_dir = {'':'lib/python'}
      , packages = [ 'aspen'
                   , 'aspen.apps'
                   , 'aspen.handlers'
