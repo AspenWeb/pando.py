@@ -42,7 +42,7 @@ dist: distclean
 	mkdir dist
 	mkdir dist/aspen-${VERSION}
 	cp -r README \
-	      src \
+	      lib \
 	      setup.py \
 	      dist/aspen-${VERSION}
 
