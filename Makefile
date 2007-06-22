@@ -31,7 +31,7 @@ stamp:
 	$(UPDATE_VERSION) doc/HISTORY
 	$(UPDATE_VERSION) doc/CONTRIBUTORS
 	$(UPDATE_VERSION) setup.py
-	$(UPDATE_VERSION) src/aspen/__init__.py
+	$(UPDATE_VERSION) lib/python/aspen/__init__.py
 
 	$(UPDATE_DATE) README
 	$(UPDATE_DATE) doc/HISTORY
