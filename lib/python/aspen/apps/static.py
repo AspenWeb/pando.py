@@ -1,5 +1,5 @@
 from aspen import configuration
-from aspen.handlers.static import static as static_handler
+from aspen.handlers.static import wsgi as static_handler
 from aspen.utils import find_default, translate
 
 
