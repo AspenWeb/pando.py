@@ -23,7 +23,7 @@ if AUTOINDEX is None:
     AUTOINDEX = True # default
 elif AUTOINDEX.lower() == 'yes':
     AUTOINDEX = True
-elif val.lower() == 'no':
+elif AUTOINDEX.lower() == 'no':
     AUTOINDEX = False
 else:
     raise ConfigError( "autoindex must be 'yes' or 'no'"

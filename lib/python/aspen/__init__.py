@@ -45,20 +45,32 @@ __all__ = ['configuration', 'conf', 'paths', '']
 configuration = None # an aspen._configuration.Configuration instance
 conf = None # an aspen._configuration.ConfFile instance
 paths = None # an aspen._configuration.Paths instance
+CONFIGURED = False
 
 globals_ = globals()
+
+ROOT_SPLIT = os.sep + '__' + os.sep
+def find_root(argv=None):
+    if argv is None:
+        argv = sys.argv
+    script_path = argv and argv[0] or ''
+    if not script_path.startswith(os.sep):
+        script_path = os.path.join(os.getcwd(), script_path)
+    return script_path.split(ROOT_SPLIT)[0]
 
 def configure(argv):
     global globals_
     globals_['configuration'] = Configuration(argv)
     globals_['conf'] = configuration.conf
     globals_['paths'] = configuration.paths
+    globals_['CONFIGURED'] = True
 
 def unconfigure(): # for completeness and tests
     global globals_
     globals_['configuration'] = None
     globals_['conf'] = None
     globals_['paths'] = None
+    globals_['CONFIGURED'] = False
 
 
 def get_perms(path):

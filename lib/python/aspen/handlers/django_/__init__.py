@@ -48,7 +48,7 @@ except ImportError:
         # This should probably raise at import time, but that would take more
         # work to not trigger in our tests.
         raise NotImplementedError("django is not on PYTHONPATH")
-    script = template = wsgi
+    script = template = scrimplate = wsgi
 
 else:
 
