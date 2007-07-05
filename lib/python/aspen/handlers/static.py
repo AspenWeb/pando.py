@@ -48,7 +48,7 @@ def wsgi(environ, start_response):
 
     path = environ['PATH_TRANSLATED']
     if not exists(path):
-        start_response('404 Not Found', [])
+        start_response('404 Not Found', [('Content-Type', 'text/plain')])
         return ['Resource not found.']
     elif isdir(path):
         return directory(environ, start_response)
