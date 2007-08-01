@@ -5,11 +5,6 @@ from django.conf.urls.defaults import patterns # django must be on PYTHONPATH
 from django.http import HttpResponse
 from django.template import RequestContext, Template
 
-from wsgi import WSGI # our imports are relative to support use outside aspen
-from cache import Cache
-
-
-FORM_FEED = chr(12) # ^L, ASCII page break
 
 
 # Register additional features
@@ -149,10 +144,6 @@ for the layout of this package.
 
 """
 import os
-
-
-__all__ = ['script', 'template', 'scrimplate']
-
 
 try:
     import django

@@ -1,30 +1,120 @@
+"""Three-part resources.
 
-class Scrimplate(object):
-    """Represent a resource that can be called as wsgi.
+Simplates
+Triplates
+
+thin wedge to allow a simplate to handle all requests for at or below a given
+directory
+
+========================================
+    User's POV
+========================================
+
+1. wire up handlers.conf
+
+    [aspen.handlers.simplates:wsgi_{python,django,cherrypy,zope,turbogears}]
+    fnmatch *.html
+
+
+2. wire in aspen.conf
+
+    [django]
+    settings_module = my_project.settings
+
+    [simplates]
+
+
+3. install any Python modules
+
+    $ django-admin.py startproject
+
+
+4. configure framework
+
+5. GGG!
+
+
+========================================
+    Request Processing
+========================================
+
+request comes in, matches simplates:wsgi_* in handlers.conf
+WSGI passes to aspen.handlers.simplates:wsgi_*
+simplates:wsgi_* loads the simplate from a cache
+    cache is global to Aspen handlers (static only other?)
+    cache is tunable by mem-size, max obj size
+    cache invalidates on tunables + resource modtime
+    cache is thread-safe
+    cache builds simplate
+        import section is always built and run the same
+        script section is always built the same, but is run differently
+        template section needs to be built differently for each type (but buffet?)
+simplates:wsgi runs the script
+    namespace population is framework-specific
+    raise SystemExit => stop script, proceed to template
+    raise SystemExit(response) => stop script, skip template, return response
+        response obj is framework-specific
+    @@: allow multiple frameworks in one simplate?
+simplates:wsgi renders the template
+    uses buffet's render API
+        need a Buffet wrapper for Django and ZPT, eh?
+    building contexts will differ by framework
+simplates:wsgi converts response/rendered template to WSGI return val
+
+
+"""
+
+import threading
+
+from aspen import mode
+
+
+FORM_FEED = chr(12) # ^L, ASCII page break
+
+
+class Simplate(object):
+    """Base class for framework-specific simplate implementations.
     """
 
 
-    def __call__(self, environ, start_response):
-        """WSGI contract.
-        """
-    def get_response(self, request):
-        """Extend WSGIHandler.get_response to bypass usual Django urlconf.
-        """
-        fspath = request.META['PATH_TRANSLATED']
-        assert isfile(fspath), "This handler only serves files."
-        request.urlconf = 'aspen.handlers.django_._' + self.filetype
-        response = WSGIHandler.get_response(self, request)
-        if 'Content-Type' not in response.headers:
-            guess = mimetypes.guess_type(fspath, 'text/plain')[0]
-            response.headers['Content-Type'] = guess
-        return response
 
-    def __build(self, fspath):
+class Cache(object):
+    """A simple thread-safe cache; values never expire.
+    """
+
+    def __init__(self, build):
+        """
+        """
+        self.build = build
+        self.cache = dict()
+        self.lock = threading.Lock()
+
+    if (mode is not None) and mode.DEVDEB:              # uncached
+        def __getitem__(self, key):
+            """Key access always calls build.
+            """
+            return self.build(key)
+
+    else:                                               # cached
+        def __getitem__(self, key):
+            """Key access only calls build the first time.
+            """
+            if key not in self.cache:
+                self.lock.acquire()
+                try: # critical section
+                    if key not in self.cache: # were we in fact blocking?
+                        self.cache[key] = self.build(key)
+                finally:
+                    self.lock.release()
+            return self.cache[key]
+
+
+    def build(fspath):
         """Given a filesystem path, return a compiled (but unbound) object.
 
-        A scrimplate is a template with two optional Python components at the head
+        A simplate is a template with two optional Python components at the head
         of the file, delimited by an ASCII form feed (also called a page break, FF,
-        ^L, \x0c, 12). The first Python section is exec'd when the scrimplate is
+        ^L, \x0c, 12). The first Python section is exec'd when the simplate is
         first called, and the namespace it populates is saved for all subsequent
         runs (so make sure it is thread-safe!). The second Python section is exec'd
         within the template namespace each time the template is rendered.
@@ -33,19 +123,19 @@ class Scrimplate(object):
         runtime.
 
         """
-        scrimplate = open(fspath).read()
+        simplate = open(fspath).read()
 
-        numff = scrimplate.count(FORM_FEED)
+        numff = simplate.count(FORM_FEED)
         if numff == 0:
             script = imports = ""
-            template = scrimplate
+            template = simplate
         elif numff == 1:
             imports = ""
-            script, template = scrimplate.split(FORM_FEED)
+            script, template = simplate.split(FORM_FEED)
         elif numff == 2:
-            imports, script, template = scrimplate.split(FORM_FEED)
+            imports, script, template = simplate.split(FORM_FEED)
         else:
-            raise SyntaxError( "Scrimplate <%s> may have at most two " % fspath
+            raise SyntaxError( "Simplate <%s> may have at most two " % fspath
                              + "form feeds; it has %d." % numff
                               )
 
@@ -69,13 +159,13 @@ class Scrimplate(object):
         c_imports = dict()
         exec compile(imports, fspath, 'exec') in c_imports
         c_script = compile(script, fspath, 'exec')
-        c_template = Template(template)
+        c_template = self.build_template(template)
 
         return (c_imports, c_script, c_template)
 
 
     def view(self, request):
-        """Django view to exec and render the scrimplate at PATH_TRANSLATED.
+        """Django view to exec and render the simplate at PATH_TRANSLATED.
 
         Your script section may raise SystemExit to terminate execution. Instantiate
         the SystemExit with an HttpResponse to bypass template rendering entirely;
@@ -102,3 +192,12 @@ class Scrimplate(object):
         response = HttpResponse(template.render(template_context))
         del response.headers['Content-Type'] # take this from the extension
         return response
+
+
+
+def wsgi(self, environ, start_response):
+    """WSGI contract.
+    """
+
+
+
