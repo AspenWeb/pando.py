@@ -4,32 +4,34 @@ Simplates
 Triplates
 
 thin wedge to allow a simplate to handle all requests for at or below a given
-directory
+directory: nope, use middleware for that to rewrite URLs and pass through
 
 ========================================
     User's POV
 ========================================
 
-1. wire up handlers.conf
+1. install framework
 
-    [aspen.handlers.simplates:wsgi_{python,django,cherrypy,zope,turbogears}]
-    fnmatch *.html
+    $ easy_install django
 
 
-2. wire in aspen.conf
+2. configure framework
+
+    $ django-admin.py startproject foo
+    $ vi foo/settings.py
+
+
+3. wire framework in aspen.conf
 
     [django]
-    settings_module = my_project.settings
-
-    [simplates]
+    settings_module = foo.settings
 
 
-3. install any Python modules
+4. wire up handlers.conf
 
-    $ django-admin.py startproject
+    [aspen.handlers.simplates:django
+    fnmatch *.html
 
-
-4. configure framework
 
 5. GGG!
 
@@ -38,9 +40,9 @@ directory
     Request Processing
 ========================================
 
-request comes in, matches simplates:wsgi_* in handlers.conf
-WSGI passes to aspen.handlers.simplates:wsgi_*
-simplates:wsgi_* loads the simplate from a cache
+request comes in, matches simplates:<framework> in handlers.conf
+control passes to aspen.handlers.simplates:<framework>
+simplates:<framework> loads the simplate from a cache
     cache is global to Aspen handlers (static only other?)
     cache is tunable by mem-size, max obj size
     cache invalidates on tunables + resource modtime
@@ -72,42 +74,7 @@ from aspen import mode
 FORM_FEED = chr(12) # ^L, ASCII page break
 
 
-class Simplate(object):
-    """Base class for framework-specific simplate implementations.
 
-    This class is instantiated on import when each framework is available, and
-    is then wired up in handlers.conf.
-
-
-    Django = Django_0_96
-
-    """
-
-    response_class = None # override w/ framework's response class
-                          # used for "raise SystemExit" semantics.
-
-    def __call__(self, environ, start_response):
-        """Framework shouldn't override this.
-        """
-
-    def build_template(self, template):
-        """Given a string, return a framework-specific template object.
-        """
-        raise NotImplementedError
-
-    def namespace_script(self, namespace):
-        """Given a dictionary, populate it with framework objects.
-        """
-        raise NotImplementedError
-
-    def namespace_template(self, namespace):
-        """Given an empty dictionary, populate it with framework objects.
-
-        The result of this call is updated with the result of namespace_script,
-        before being used to render the template.
-
-        """
-        raise NotImplementedError
 
 
 

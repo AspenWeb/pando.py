@@ -1,3 +1,18 @@
+from aspen.handlers.simplate._wsgi import Simplate
+
+
+
+class DjangoSimplate(Simplate):
+    pass
+
+
+
+
+wsgi = DjangoSimplate()
+
+
+
+
 import linecache
 from os.path import isfile
 
