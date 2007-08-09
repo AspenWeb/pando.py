@@ -23,6 +23,8 @@ def env(environ, start_response):
     environ['trac.env_path'] = ROOT + environ['SCRIPT_NAME']
     return dispatch_request(environ, start_response)
 
+wsgi = env # default is to serve a single environment
+
 
 def env_parent_dir(environ, start_response):
     """Serve the directory as a TRAC_ENV_PARENT_DIR

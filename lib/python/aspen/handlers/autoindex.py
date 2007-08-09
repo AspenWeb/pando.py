@@ -63,7 +63,7 @@ def wsgi(environ, start_response):
     assert isdir(fspath) # sanity check
 
     root = aspen.paths.root
-    urlpath = fspath[len(root):]
+    urlpath = fspath[len(root):] + os.sep
     urlpath = '/'.join(urlpath.split(os.sep))
     title = urlpath and urlpath or '/'
 
@@ -86,11 +86,11 @@ def wsgi(environ, start_response):
             continue
         if basename(_fspath) == 'README.aspen': # README.aspen
             continue
-        if _fspath.startswith('.'):            # hidden files
+        if basename(_fspath).startswith('.'):   # hidden files
             continue
 
 
-        _urlpath = '/'.join([urlpath, name])
+        _urlpath = urlpath + name
         x = (_fspath, _urlpath, name)
         el = others
         if isdir(_fspath):
@@ -124,7 +124,7 @@ def wsgi(environ, start_response):
             stats = os.stat(_fspath)
             a('<tr class="%s">' % ((i%2) and 'even' or 'odd'))
             if isdir(_fspath):
-                a('  <td class="dir"><a href="%s">%s/</a></td>' % (_urlpath, name))
+                a('  <td class="dir"><a href="%s/">%s/</a></td>' % (_urlpath, name))
                 a('  <td>&nbsp;</td>')
             elif isfile(_fspath):
                 a('  <td class="file"><a href="%s">%s</a></td>' % (_urlpath, name))
