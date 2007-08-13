@@ -1,6 +1,6 @@
 from os.path import join, realpath
 
-from aspen.handlers import static
+import aspen
 from aspen.tests.fsfix import mk, attach_rm
 
 
@@ -18,10 +18,13 @@ def start_response(status, headers, exc=None):
 
 def test_basic():
     mk(('index.html', "Foo."))
+    aspen.configure(['--root', 'fsfix'])
+    from aspen.handlers import static
     environ = {'PATH_TRANSLATED':realpath(join('fsfix', 'index.html'))}
     expected = 'Foo.'
     actual = static.wsgi(environ, start_response).next()
     assert actual == expected, actual
 
 
+test_basic.teardown = aspen.unconfigure
 attach_rm(globals(), 'test_')

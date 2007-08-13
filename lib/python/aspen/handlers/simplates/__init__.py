@@ -55,13 +55,33 @@ simplates:wsgi runs the script
         response obj is framework-specific
     @@: allow multiple frameworks in one simplate?
 simplates:wsgi renders the template
-    uses buffet's render API
+    uses buffet's render API?
         need a Buffet wrapper for Django and ZPT, eh?
     building contexts will differ by framework
 simplates:wsgi converts response/rendered template to WSGI return val
 
 
 """
+
+# Basic simplates are always available.
+# =====================================
+
 from aspen.handlers.simplates._wsgi import wsgi as wsgi
-from aspen.handlers.simplates._django import wsgi as django
+
+
+# Framework simplates depend on the framework being installed.
+# ============================================================
+
+def stub(framework):
+    """Given a framework string, return a stub WSGI callable.
+    """
+    def stub(environ, start_response):
+        msg = "We couldn't find the '%s' framework." % framework
+        raise NotImplementedError(msg)
+    return stub
+
+try:
+    from aspen.handlers.simplates._django import wsgi as django
+except ImportError:
+    django = stub('django')
 

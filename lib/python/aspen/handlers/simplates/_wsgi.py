@@ -38,11 +38,6 @@ class Cache(object):
             return self.cache[key]
 
 
-class Namespaces(object):
-    pass
-
-
-
 class Simplate(object):
     """Base class for framework-specific simplate implementations.
 
@@ -86,12 +81,12 @@ class Simplate(object):
         fspath = environ['PATH_TRANSLATED']
         assert isfile(fspath), "This handler only serves files."
         namespaces = self.build(fspath)
-        start_response
-        return []
+        start_response(environ, start_response)
+        return ["Greetings, program!"]
 
 
     def build(fspath):
-        """Given a filesystem path, return a Namespaces object.
+        """Given a filesystem path, return a mapping of namespaces.
 
         A simplate is a template with two optional Python components at the head
         of the file, delimited by an ASCII form feed (also called a page break, FF,
@@ -104,7 +99,8 @@ class Simplate(object):
         runtime.
 
         """
-        simplate = open(fspath).read().decode('UTF-8')
+        encoding = aspen.conf.simplates.get('encoding', 'UTF-8')
+        simplate = open(fspath).read().decode(encoding)
 
         numff = simplate.count(FORM_FEED)
         if numff == 0:
@@ -141,12 +137,12 @@ class Simplate(object):
         # Prep our cachable objects and return.
         # =====================================
 
-        namespaces = Namespaces()
-        namespaces.imports = dict()
-        namespaces.script = compile(script, fspath, 'exec')
-        namespaces.template = self.build_template(template)
+        namespaces = dict()
+        namespaces['imports'] = dict()
+        namespaces['script'] = compile(script, fspath, 'exec')
+        namespaces['template'] = self.build_template(template)
 
-        exec compile(imports, fspath, 'exec') in namespaces.imports
+        exec compile(imports, fspath, 'exec') in namespaces['imports']
 
         return namespaces
 
