@@ -9,7 +9,7 @@ import mimetypes
 import os
 from os.path import isfile
 
-from aspen.handlers.simplate.cache import SimplateCache
+from aspen.handlers.simplate.base import BaseSimplate
 from django.conf.urls.defaults import patterns
 from django.core.handlers.wsgi import WSGIHandler
 from django.http import HttpResponse

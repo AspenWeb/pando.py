@@ -1,6 +1,6 @@
 from os.path import isfile
 
-from aspen.handlers.simplate.base import BaseSimplate
+from aspen.handlers.simplates.base import BaseSimplate
 
 
 class WSGISimplate(BaseSimplate):
@@ -18,7 +18,7 @@ class WSGISimplate(BaseSimplate):
         fspath = environ['PATH_TRANSLATED']
         assert isfile(fspath), "This handler only serves files."
 
-        namespace, script, template  = self.load(fspath)
+        namespace, script, template  = self.load_simplate(fspath)
 
         namespace['__file__'] = fspath
         namespace['environ'] = environ
@@ -40,4 +40,4 @@ class WSGISimplate(BaseSimplate):
         return response
 
 
-wsgi = Simplate()
+wsgi = WSGISimplate()

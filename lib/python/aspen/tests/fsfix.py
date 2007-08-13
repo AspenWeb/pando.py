@@ -67,3 +67,9 @@ def attach_rm(context, prefix):
     for name in context.keys():
         if name.startswith(prefix):
             context[name].teardown = rm
+
+
+def path(*parts):
+    """Given relative path parts, convert to absolute path on the filesystem.
+    """
+    return os.path.realpath(os.path.join(*parts))

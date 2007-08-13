@@ -71,6 +71,7 @@ def unconfigure(): # for completeness and tests
     globals_['conf'] = None
     globals_['paths'] = None
     globals_['CONFIGURED'] = False
+    mode.set('development')
 
 
 def get_perms(path):
