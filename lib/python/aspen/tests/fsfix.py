@@ -1,5 +1,7 @@
 import os
 
+import aspen
+
 
 def convert_path(path):
     """Given a Unix path, convert it for the current platform.
@@ -13,7 +15,7 @@ def convert_paths(paths):
     return tuple([convert_path(p) for p in paths])
 
 
-def mk(*treedef):
+def mk(*treedef, **kw):
     """Given a treedef, build a filesystem fixture in ./fsfix.
 
     treedef is a sequence of strings and tuples. If a string, it is interpreted
@@ -21,7 +23,11 @@ def mk(*treedef):
     element is a path to a file, the second is the contents of the file. We do
     it this way to ease cross-platform testing.
 
+    The one meaningful keyword argument is configure. If True, mk will call
+    aspen.configure with ./fsfix as the root.
+
     """
+    configure = kw.get('configure', False)
     root = os.path.realpath('fsfix')
     os.mkdir(root)
     for item in treedef:
@@ -33,12 +39,18 @@ def mk(*treedef):
             filepath, contents = item
             path = convert_path(filepath.lstrip('/'))
             path = os.sep.join([root, path])
+            parent = os.path.dirname(path)
+            if not os.path.isdir(parent):
+                os.makedirs(parent)
             file(path, 'w').write(contents)
+    if configure is True:
+        aspen.configure(['--root', root])
 
 
 def rm():
-    """Remove the filesystem fixture at ./fsfix.
+    """Remove the filesystem fixture at ./fsfix, and run aspen.unconfigure.
     """
+    aspen.unconfigure()
     root = os.path.realpath('fsfix')
     if os.path.isdir(root):
         for root, dirs, files in os.walk(root, topdown=False):

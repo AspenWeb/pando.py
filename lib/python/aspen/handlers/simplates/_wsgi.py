@@ -1,10 +1,12 @@
 import threading
+from BaseHTTPServer import BaseHTTPRequestHandler
 from os.path import isfile
 
-from aspen import mode
+import aspen
 
 
-FORM_FEED = chr(12) # ^L, ASCII page break
+FORM_FEED = chr(12) # == '\x0c', ^L, ASCII page break
+RESPONSES = BaseHTTPRequestHandler.responses
 
 
 class Cache(object):
@@ -18,7 +20,7 @@ class Cache(object):
         self.cache = dict()
         self.lock = threading.Lock()
 
-    if (mode is not None) and mode.DEVDEB:              # uncached
+    if (aspen.mode is not None) and aspen.mode.DEVDEB:  # uncached
         def __getitem__(self, key):
             """Key access always calls build.
             """
@@ -38,54 +40,113 @@ class Cache(object):
             return self.cache[key]
 
 
+
+class SimpleResponse(object):
+    """An HTTP Response message.
+    """
+
+    def __init__(self, code=200, body='', headers=None):
+        """Takes an int, a string, and a dict. Validation is Task's job.
+
+            - code        an HTTP response code, e.g., 404
+            - body        the message body as a string
+            - headers     a dictionary of HTTP headers (or list of tuples)
+
+        Body is second because one more often wants to specify a body without
+        headers, than a header without a body.
+
+        """
+        if not isinstance(code, int):
+            raise TypeError("'code' must be an integer")
+        elif not isinstance(body, basestring) and not(isiter(body)):
+            raise TypeError("'body' must be a string or an iterator")
+        elif headers is not None and not isinstance(headers, (dict, list)):
+            raise TypeError("'headers' must be a dictionary or a list of " +
+                            "2-tuples")
+
+        self.code = code
+        self.body = body
+        self.headers = Message()
+        if headers:
+            if isinstance(headers, dict):
+                headers = headers.items()
+            for k, v in headers:
+                self.headers[k] = v
+
+
+    def __repr__(self):
+        return "<Response: %s>" % str(self)
+
+    def __str__(self):
+        return "%d %s" % (self.code, RESPONSES.get(self.code, ('???',))[0])
+
+
 class Simplate(object):
     """Base class for framework-specific simplate implementations.
 
     This class is instantiated on import when each framework is available, and
     is then wired up in handlers.conf.
 
+    The base implementation uses straight Python string interpolation as its
+    templating language.
+
     """
 
     # To be overriden
     # ===============
 
-    response_class = None # override w/ framework's response class
-                          # used for "raise SystemExit" semantics.
-
     def build_template(self, template):
         """Given a string, return a framework-specific template object.
         """
-        raise NotImplementedError
+        return template
 
-    def populate_script_namespace(self, namespace):
-        """Given a dictionary, populate it with framework objects.
+    def update_namespace(self, namespace):
+        """Given a dictionary, return it with per-request framework objects.
         """
-        raise NotImplementedError
+        return namespace
 
-    def populate_template_namespace(self, namespace):
-        """Given an empty dictionary, populate it with framework objects.
-
-        The result of this call is updated with the result of namespace_script,
-        before being used to render the template.
-
+    def start_response(self, namespace, start_response):
+        """Given a namespace and a WSGI start_response function, call it.
         """
-        raise NotImplementedError
+        start_response('200 OK', [()])
 
 
     # Not intended to be overriden
     # ============================
 
     def __call__(self, environ, start_response):
-        """Framework should *not* override this.
+        """WSGI contract.
         """
         fspath = environ['PATH_TRANSLATED']
         assert isfile(fspath), "This handler only serves files."
-        namespaces = self.build(fspath)
-        start_response(environ, start_response)
-        return ["Greetings, program!"]
+
+        namespace, script, template  = self.__build(fspath) # @@ replace w/ cache call!
+        namespace = namespace.copy() # don't mutate the cached version
+        namespace['__file__'] = fspath
+        namespace['environ'] = environ
+        namespace['start_response'] = start_response
+        self.update_namespace(namespace)
+
+        if script:
+            try:
+                exec script in namespace
+            except SystemExit:
+                pass
+
+        self.start_response(namespace, start_response)
+
+        if 'response' in namespace:
+            response = namespace['response']
+        else:
+            response = [template % namespace]
+
+        return response
 
 
-    def build(fspath):
+    # This should end up in a cache.
+    # ==============================
+
+    def __build(self, fspath):
         """Given a filesystem path, return a mapping of namespaces.
 
         A simplate is a template with two optional Python components at the head
@@ -137,14 +198,13 @@ class Simplate(object):
         # Prep our cachable objects and return.
         # =====================================
 
-        namespaces = dict()
-        namespaces['imports'] = dict()
-        namespaces['script'] = compile(script, fspath, 'exec')
-        namespaces['template'] = self.build_template(template)
+        namespace = dict()
+        script = compile(script, fspath, 'exec')
+        template = self.build_template(template)
 
-        exec compile(imports, fspath, 'exec') in namespaces['imports']
+        exec compile(imports, fspath, 'exec') in namespace
 
-        return namespaces
+        return (namespace, script, template)
 
 
 wsgi = Simplate()
