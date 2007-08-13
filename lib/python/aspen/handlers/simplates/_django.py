@@ -1,16 +1,8 @@
 """This module provides WSGI apps for serving Django w/o urlconf madness.
 
-The namespace for each is an extended Django RenderContext:
+The namespace for a Django template is an extended Django RenderContext:
 
   http://www.djangobook.com/en/beta/chapter10/#cn62
-
-
-Our main class here is wsgi.WSGI, a thin wrapper around BaseHandler.get_response
-(WSGIHandler doesn't define the method), which hacks request.urlconf to use the
-filesystem for site hierarchy rather than the settings module. Since Django
-finds an urlconf based on a magic name within a module ('urlpatterns'), we need
-a separate module for each type of file: script and template. That's the reason
-for the layout of this package.
 
 """
 import mimetypes
@@ -50,6 +42,8 @@ if not os.environ.has_key('DJANGO_SETTINGS_MODULE'):
 
 # Enable the present module to fulfill Django's 'urlconf' contract.
 # =================================================================
+# This is the basis of our hack to circumvent Django's URL routing without also
+# cutting out all of its other frameworky goodness.
 
 urlpatterns = patterns('', (r'^', wsgi.view))
 
@@ -100,9 +94,7 @@ class DjangoSimplate(BaseSimplate, WSGIHandler):
                 exec script in namespace
             except SystemExit:
                 pass
-
             template_context.update(namespace)
-
 
         if 'response' in namespace:
             response = namespace['response']
