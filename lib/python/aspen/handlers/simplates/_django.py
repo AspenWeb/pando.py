@@ -48,8 +48,8 @@ if not os.environ.has_key('DJANGO_SETTINGS_MODULE'):
         os.environ['DJANGO_SETTINGS_MODULE'] = settings_module
 
 
-# Enable the present module to fulfill the Django 'urlconf' contract.
-# ===================================================================
+# Enable the present module to fulfill Django's 'urlconf' contract.
+# =================================================================
 
 urlpatterns = patterns('', (r'^', wsgi.view))
 
@@ -57,40 +57,40 @@ urlpatterns = patterns('', (r'^', wsgi.view))
 # Define our class.
 # =================
 
-class DjangoSimplate(SimplateCache, WSGIHandler):
-    """Simplate implementation for the Django web framework. """
+class DjangoSimplate(BaseSimplate, WSGIHandler):
+    """Simplate implementation for the Django web framework.
+    """
 
-    # WSGIHandler API
-    # ===============
 
-    def get_response(self, request):
-        """Extend WSGIHandler.get_response to bypass usual Django urlconf.
+    # BaseSimplate
+    # ============
 
-        We could ask folks to do this in their
-
+    def compile_template(self, template):
         """
-        request.urlconf = 'aspen.handlers.simplates._django'
-        return WSGIHandler.get_response(self, request)
+        """
+        return Template(template)
 
 
     def view(self, request):
-        """Django view to exec and render the scrimplate at PATH_TRANSLATED.
+        """Django view to exec and render the simplate at PATH_TRANSLATED.
 
-        Your script section may raise SystemExit to terminate execution. Instantiate
-        the SystemExit with an HttpResponse to bypass template rendering entirely;
-        in all other cases, the template section will still be rendered.
+        We get here like this:
+
+            aspen.website
+            aspen.handlers
+            django WSGI
+            wacko urlconf override
+            DjangoSimplate.view
 
         """
         fspath = request.META['PATH_TRANSLATED']
         assert isfile(fspath), "This handler only serves files."
 
-        namespace, script, template = self.__build(fspath)
+        namespace, script, template = self.load(fspath)
         namespace = namespace.copy() # don't mutate the cached version
         namespace['__file__'] = fspath
-        namespace['environ'] = environ
-        namespace['start_response'] = start_response
 
-
+        template = Template(template)
         template_context = RequestContext(request, imports)
 
         if script:
@@ -112,6 +112,22 @@ class DjangoSimplate(SimplateCache, WSGIHandler):
             response.headers['Content-Type'] = guess # doubles-up?
 
         return response
+
+
+    # WSGIHandler
+    # ===========
+
+    def get_response(self, request):
+        """Extend WSGIHandler.get_response to bypass usual Django urlconf.
+
+        We could ask folks to do this in their settings.py. Is that better?
+
+        """
+        request.urlconf = 'aspen.handlers.simplates._django'
+        return WSGIHandler.get_response(self, request)
+
+
+
 
 
 wsgi = DjangoSimplate()
