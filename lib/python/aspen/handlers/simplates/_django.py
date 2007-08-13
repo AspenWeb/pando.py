@@ -9,7 +9,7 @@ import mimetypes
 import os
 from os.path import isfile
 
-from aspen.handlers.simplate.base import BaseSimplate
+from aspen.handlers.simplates.base import BaseSimplate
 from django.conf.urls.defaults import patterns
 from django.core.handlers.wsgi import WSGIHandler
 from django.http import HttpResponse
@@ -40,20 +40,16 @@ if not os.environ.has_key('DJANGO_SETTINGS_MODULE'):
         os.environ['DJANGO_SETTINGS_MODULE'] = settings_module
 
 
-# Enable the present module to fulfill Django's 'urlconf' contract.
-# =================================================================
-# This is the basis of our hack to circumvent Django's URL routing without also
-# cutting out all of its other frameworky goodness.
-
-urlpatterns = patterns('', (r'^', wsgi.view))
-
-
 # Define our class.
 # =================
 
-class DjangoSimplate(BaseSimplate, WSGIHandler):
+class DjangoSimplate(WSGIHandler, BaseSimplate):
     """Simplate implementation for the Django web framework.
     """
+
+    def __init__(self):
+        WSGIHandler.__init__(self)
+        BaseSimplate.__init__(self)
 
 
     # BaseSimplate
@@ -65,7 +61,7 @@ class DjangoSimplate(BaseSimplate, WSGIHandler):
         return Template(template)
 
 
-    def view(self, request):
+    def view(self, request): # under __call__
         """Django view to exec and render the simplate at PATH_TRANSLATED.
 
         We get here like this:
@@ -77,31 +73,63 @@ class DjangoSimplate(BaseSimplate, WSGIHandler):
             DjangoSimplate.view
 
         """
+
+        # 1. Check for file
+        # =================
+
         fspath = request.META['PATH_TRANSLATED']
         assert isfile(fspath), "This handler only serves files."
 
-        namespace, script, template = self.load(fspath)
-        namespace = namespace.copy() # don't mutate the cached version
-        namespace['__file__'] = fspath
 
-        template = Template(template)
-        template_context = RequestContext(request, imports)
+        # 2. Load simplate
+        # ================
 
+        namespace, script, template = self.load_simplate(fspath)
+
+
+        # 3. Populate namespace
+        # =====================
+        # Django templates can't take a straight dict.
+
+        template_context = RequestContext(request, namespace)
+
+
+        # 4. Run the script
+        # =================
+
+        WANT_TEMPLATE = True
         if script:
             for d in template_context.dicts:
                 namespace.update(d)
             try:
                 exec script in namespace
             except SystemExit:
-                pass
+                WANT_TEMPLATE = False
             template_context.update(namespace)
+
+
+        # 5. Get a response
+        # =================
 
         if 'response' in namespace:
             response = namespace['response']
         else:
-            response = HttpResponse(template.render(template_context))
-            guess = mimetypes.guess_type(fspath, 'text/plain')[0]
-            response.headers['Content-Type'] = guess # doubles-up?
+            response = HttpResponse()
+
+
+        # 6. Render the template
+        # ======================
+
+        if WANT_TEMPLATE:
+            response.write(template.render(template_context))
+            headers = [h.lower() for h in response.headers.keys()]
+            if 'content-type' not in headers:
+                guess = mimetypes.guess_type(fspath, 'text/plain')[0]
+                response.headers['Content-Type'] = guess
+
+
+        # 7. Return
+        # =========
 
         return response
 
@@ -119,7 +147,12 @@ class DjangoSimplate(BaseSimplate, WSGIHandler):
         return WSGIHandler.get_response(self, request)
 
 
-
-
-
 wsgi = DjangoSimplate()
+
+
+# Enable the present module to fulfill Django's 'urlconf' contract.
+# =================================================================
+# This is the basis of our hack to circumvent Django's URL routing without also
+# cutting out all of its other frameworky goodness.
+
+urlpatterns = patterns('', (r'^', wsgi.view))

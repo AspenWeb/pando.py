@@ -61,7 +61,33 @@ simplates:wsgi renders the template
 simplates:wsgi converts response/rendered template to WSGI return val
 
 
+
+========================================
+    SIMPLATE ALGORITHM
+========================================
+1. check that we are processing a file
+2. call load_simplate
+3. add anything special to namespace
+4. run the script
+5. get the response
+6. render the template
+7. return
+
+
+Need to support several cases:
+
+headers, response, template
+
+
+
+
+
+
+
 """
+import os
+import traceback
+
 
 # Basic simplates are always available.
 # =====================================
@@ -72,16 +98,18 @@ from aspen.handlers.simplates._wsgi import wsgi as wsgi
 # Framework simplates depend on the framework being installed.
 # ============================================================
 
-def stub(framework):
-    """Given a framework string, return a stub WSGI callable.
+def stub(framework, problem):
+    """Given a framework string and an ImportError, return a stub WSGI callable.
     """
     def stub(environ, start_response):
-        msg = "We couldn't find the '%s' framework." % framework
+        msg = "We couldn't import the '%s' framework for this reason: " % framework
+        msg = os.linesep.join([msg, problem])
         raise NotImplementedError(msg)
     return stub
 
 try:
     from aspen.handlers.simplates._django import wsgi as django
 except ImportError:
-    django = stub('django')
+    problem = traceback.format_exc()
+    django = stub('django', problem)
 
