@@ -18,8 +18,11 @@ def start_response(status, headers, exc=None):
 
 def test_basic():
     mk(('index.html', "Foo."))
-    aspen.configure(['--root', 'fsfix'])
-    from aspen.handlers import static
+
+    aspen.configure(['--root', 'fsfix'])    # can't configure until root exists
+    from aspen.handlers import static       # lazy import since we use conf at
+                                            #   import-time
+
     environ = {'PATH_TRANSLATED':realpath(join('fsfix', 'index.html'))}
     expected = 'Foo.'
     actual = static.wsgi(environ, start_response).next()
