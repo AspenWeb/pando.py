@@ -74,16 +74,6 @@ simplates:wsgi converts response/rendered template to WSGI return val
 7. return
 
 
-Need to support several cases:
-
-headers, response, template
-
-
-
-
-
-
-
 """
 import os
 import traceback
@@ -104,9 +94,10 @@ def stub(framework, problem):
     def stub(environ, start_response):
         msg = "We couldn't import the '%s' framework for this reason: " % framework
         msg = os.linesep.join([msg, problem])
-        raise NotImplementedError(msg)
+        raise ImportError(msg)
     return stub
 
+# @@: for loop here w/ more frameworks
 try:
     from aspen.handlers.simplates._django import wsgi as django
 except ImportError:

@@ -98,12 +98,17 @@ class DjangoSimplate(WSGIHandler, BaseSimplate):
         # =================
 
         WANT_TEMPLATE = True
+        response = None
         if script:
             for d in template_context.dicts:
                 namespace.update(d)
             try:
                 exec script in namespace
-            except SystemExit:
+            except SystemExit, exc:
+                if len(exc.args) > 0:
+                    r = exc.args[0]
+                    if isinstance(r, HttpResponse):
+                        response = r
                 WANT_TEMPLATE = False
             template_context.update(namespace)
 
@@ -111,10 +116,11 @@ class DjangoSimplate(WSGIHandler, BaseSimplate):
         # 5. Get a response
         # =================
 
-        if 'response' in namespace:
-            response = namespace['response']
-        else:
-            response = HttpResponse()
+        if response is None:
+            if 'response' in namespace:
+                response = namespace['response']
+            else:
+                response = HttpResponse()
 
 
         # 6. Render the template
