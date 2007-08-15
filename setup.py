@@ -26,7 +26,7 @@ setup( name = 'aspen'
      , packages = [ 'aspen'
                   , 'aspen.apps'
                   , 'aspen.handlers'
-                  , 'aspen.handlers.django_'
+                  , 'aspen.handlers.simplates'
                    ]
      , scripts = ['bin/aspen']
      , description = 'Aspen is a highly extensible Python webserver.'
