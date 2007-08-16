@@ -136,21 +136,23 @@ def cleanup():
             func()
 
 
-def server_factory():
-    """This is the heavy work of instantiating the server.
+def website_factory():
+    """Return an aspen.website.Website instance.
     """
-
-    # Construct the website.
-    # ======================
-
+    if not CONFIGURED:
+        configure([]) # sets globals, e.g., configuration
     configuration.load_plugins() # user modules loaded here
     website = Website(configuration)
     for middleware in configuration.middleware:
         website = middleware(website)
+    return website
 
 
-    # Instantiate and configure the server.
-    # =====================================
+def server_factory():
+    """Return an aspen.wsgiserver.CherryPyWSGIServer instance.
+    """
+
+    website = website_factory()
 
     server = Server(configuration.address, website, configuration.threads)
     server.protocol = "HTTP/%s" % configuration.http_version

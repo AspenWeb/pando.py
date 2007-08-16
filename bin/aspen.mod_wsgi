@@ -1,0 +1,23 @@
+#!/usr/local/env python
+"""Connector for mod_wsgi.
+"""
+import os, sys
+from pprint import pformat
+
+from aspen import website_factory
+application = website_factory()
+
+def pplication(environ, start_response):
+    pformat(sorted(sys.path))
+    pformat(sorted(os.environ.items()))
+    pformat(os.getcwd())
+    foo = pformat(sorted(environ.items()))
+
+    status = '200 OK'
+    output = 'Right?!'
+
+    response_headers = [('Content-type', 'text/plain'),
+                        ('Content-Length', str(len(output)))]
+    start_response(status, response_headers)
+
+    return [foo]
