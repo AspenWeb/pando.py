@@ -136,11 +136,13 @@ def cleanup():
             func()
 
 
-def website_factory():
+def website_factory(argv=None):
     """Return an aspen.website.Website instance.
     """
     if not CONFIGURED:
-        configure([]) # sets globals, e.g., configuration
+        if argv is None:
+            argv = sys.argv[1:]
+        configure(argv) # sets globals, e.g., configuration
     configuration.load_plugins() # user modules loaded here
     website = Website(configuration)
     for middleware in configuration.middleware:
