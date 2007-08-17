@@ -1,4 +1,4 @@
-#!/usr/local/env python
+#!/usr/bin/env python
 """Connector for mod_wsgi.
 """
 from aspen import website_factory
