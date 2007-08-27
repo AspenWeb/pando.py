@@ -80,14 +80,13 @@ def check_trailing_slash(environ, start_response):
         return ['Resource moved to: ' + new_url]
 
 
-def find_default(defaults, environ):
-    """Given a list of defaults and a WSGI environ, update the environ.
+def find_default(defaults, fspath):
+    """Given a list of defaults and a filesystem path, return a filesystem path.
 
     This function returns the new filesystem path, or the old one if no default
-    is found. You are responsible to update environ['PATH_TRANSLATED'].
+    is found.
 
     """
-    fspath = environ['PATH_TRANSLATED']
     if isdir(fspath):
         default = None
         for name in defaults:

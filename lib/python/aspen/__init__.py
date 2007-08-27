@@ -58,7 +58,9 @@ def find_root(argv=None):
         script_path = os.path.join(os.getcwd(), script_path)
     return script_path.split(ROOT_SPLIT)[0]
 
-def configure(argv):
+def configure(argv=None):
+    if argv is None:
+        argv = ['--root', find_root()]
     global globals_
     globals_['configuration'] = Configuration(argv)
     globals_['conf'] = configuration.conf

@@ -9,6 +9,7 @@ import mimetypes
 import os
 from os.path import isfile
 
+from aspen.apps import django_ # may raise ImproperlyConfigured
 from aspen.handlers.simplates.base import BaseSimplate
 from django.conf.urls.defaults import patterns
 from django.core.handlers.wsgi import WSGIHandler
@@ -21,23 +22,6 @@ from django.template import RequestContext, Template
 # To get "extends," etc., we need to import the following.
 
 from django.template import loader, loader_tags
-
-
-# If we have django, make sure we have a settings module.
-# =======================================================
-
-from django.core.exceptions import ImproperlyConfigured
-
-if not os.environ.has_key('DJANGO_SETTINGS_MODULE'):
-    settings_module = aspen.conf.django.get('settings_module', None)
-    if settings_module is None:
-        raise ImproperlyConfigured( "Please set DJANGO_SETTINGS_MODULE "
-                                  + "in the environment or "
-                                  + "settings_module in the [django] "
-                                  + "section of __/etc/aspen.conf."
-                                   )
-    else:
-        os.environ['DJANGO_SETTINGS_MODULE'] = settings_module
 
 
 # Define our class.
@@ -66,11 +50,11 @@ class DjangoSimplate(WSGIHandler, BaseSimplate):
 
         We get here like this:
 
-            aspen.website
-            aspen.handlers
-            django WSGI
-            wacko urlconf override
-            DjangoSimplate.view
+            aspen.website:Website.__call__
+            aspen.handlers.simplates.django_:DjangoSimplate.__call__
+              [i.e., django.core.handlers.wsgi:WSGIHandler.__call__]
+            <your_project>.urls:urlpatterns
+            aspen.handlers.simplates.django_:DjangoSimplate.view
 
         """
 
@@ -138,19 +122,6 @@ class DjangoSimplate(WSGIHandler, BaseSimplate):
         # =========
 
         return response
-
-
-    # WSGIHandler
-    # ===========
-
-    def get_response(self, request):
-        """Extend WSGIHandler.get_response to bypass usual Django urlconf.
-
-        We could ask folks to do this in their settings.py. Is that better?
-
-        """
-        request.urlconf = 'aspen.handlers.simplates._django'
-        return WSGIHandler.get_response(self, request)
 
 
 wsgi = DjangoSimplate()

@@ -4,7 +4,7 @@ import time
 from aspen.tests import assert_raises
 from aspen.tests import fsfix
 
-from aspen.handlers.simplates import wsgi
+from aspen.handlers.simplates import stdlib
 from aspen.handlers.simplates.base import BaseSimplate
 
 
@@ -25,7 +25,7 @@ def mk(*treedef, **kw):
     fsfix.mk(('__/etc/handlers.conf', """
       catch_all aspen.rules:catch_all
 
-      [aspen.handlers.simplates:wsgi]
+      [aspen.handlers.simplates:stdlib]
       catch_all
     """), *treedef, **kw)
 
@@ -35,7 +35,7 @@ def mk_prod(*treedef, **kw):
     fsfix.mk(('__/etc/handlers.conf', """
       catch_all aspen.rules:catch_all
 
-      [aspen.handlers.simplates:wsgi]
+      [aspen.handlers.simplates:stdlib]
       catch_all
     """),
     ('__/etc/aspen.conf', "[main]\nmode=production"),
@@ -48,14 +48,14 @@ def mk_prod(*treedef, **kw):
 def test_basic():
     mk(('index.html', "Greetings, program!"), configure=True)
     expected = ['Greetings, program!']
-    actual = wsgi(*WSGI_ARGS)
+    actual = stdlib(*WSGI_ARGS)
     assert actual == expected, actual
 
 
 def test_two_parts():
     mk(('index.html', "foo='program'\x0cGreetings, %(foo)s!"), configure=True)
     expected = [u'Greetings, program!']
-    actual = wsgi(*WSGI_ARGS)
+    actual = stdlib(*WSGI_ARGS)
     assert actual == expected, actual
 
 
@@ -64,7 +64,7 @@ def test_three_parts():
        , "foo='Greetings'\x0cbar='program'\x0c%(foo)s, %(bar)s!"
         ), configure=True)
     expected = [u'Greetings, program!']
-    actual = wsgi(*WSGI_ARGS)
+    actual = stdlib(*WSGI_ARGS)
     assert actual == expected, actual
 
 
@@ -73,7 +73,7 @@ def test_namespace_overlap():
        , "foo='perl'\x0cfoo='python'\x0cGreetings, %(foo)s!"
         ), configure=True)
     expected = [u'Greetings, python!']
-    actual = wsgi(*WSGI_ARGS)
+    actual = stdlib(*WSGI_ARGS)
     assert actual == expected, actual
 
 
@@ -82,16 +82,16 @@ def test_namespace_overlap():
        , "foo='perl'\x0cfoo='python'\x0cGreetings, %(foo)s!"
         ), configure=True)
     expected = [u'Greetings, python!']
-    actual = wsgi(*WSGI_ARGS)
+    actual = stdlib(*WSGI_ARGS)
     assert actual == expected, actual
 
 
-def _test_SystemExit_first_section(): # this kills the test :)
+def _test_SystemExit_first_section(): # this kills the test run :)
     mk(( 'index.html'
        , "raise SystemExit\x0cfoo='python'\x0cGreetings, %(foo)s!"
         ), configure=True)
     expected = [u'Greetings, python!']
-    actual = wsgi(*WSGI_ARGS)
+    actual = stdlib(*WSGI_ARGS)
     assert actual == expected, actual
 
 
@@ -100,7 +100,7 @@ def test_SystemExit_second_section():
        , "foo='perl'\nraise SystemExit\nfoo='python'\x0cGreetings, %(foo)s!"
         ), configure=True)
     expected = [u'Greetings, perl!']
-    actual = wsgi(*WSGI_ARGS)
+    actual = stdlib(*WSGI_ARGS)
     assert actual == expected, actual
 
 
@@ -109,7 +109,7 @@ def test_explicit_response():
        , "response=[u'Greetings, program!']\x0cblip"
         ), configure=True)
     expected = [u'Greetings, program!']
-    actual = wsgi(*WSGI_ARGS)
+    actual = stdlib(*WSGI_ARGS)
     assert actual == expected, actual
 
 

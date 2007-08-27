@@ -62,7 +62,7 @@ log = logging.getLogger('aspen.website')
         else:                                               # handler
             response = check_trailing_slash(environ, start_response)
             if response is None: # no redirection
-                fspath = find_default(self.configuration.defaults, environ)
+                fspath = find_default(self.configuration.defaults, fspath)
                 environ['PATH_TRANSLATED'] = fspath
                 handler = self.get_handler(fspath)
                 response = handler.handle(environ, start_response) # WSGI

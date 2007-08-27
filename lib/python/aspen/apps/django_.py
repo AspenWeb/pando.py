@@ -16,9 +16,10 @@ from django.core.exceptions import ImproperlyConfigured
 if not os.environ.has_key('DJANGO_SETTINGS_MODULE'):
     settings_module = aspen.conf.django.get('settings_module', None)
     if settings_module is None:
-        raise ImproperlyConfigured( "Please set DJANGO_SETTINGS_MODULE in the "
-                                  + "environment or settings_module in the "
-                                  + "[django] section of __/etc/aspen.conf."
+        raise ImproperlyConfigured( "Please set DJANGO_SETTINGS_MODULE in "
+                                  + "the environment or settings_module in "
+                                  + "the [django] section of __/etc/aspen."
+                                  + "conf."
                                    )
     else:
         os.environ['DJANGO_SETTINGS_MODULE'] = settings_module

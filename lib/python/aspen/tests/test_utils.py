@@ -58,22 +58,19 @@ def test_cmp_routines_mixed2():
 
 def test_find_default_basic():
     mk(('index.html', ''))
-    environ = {'PATH_TRANSLATED':realpath('fsfix')}
     expected = realpath(join('fsfix', 'index.html'))
-    actual = u.find_default(['index.html'], environ)
+    actual = u.find_default(['index.html'], realpath('fsfix'))
     assert actual == expected, actual
 
 def test_find_default_non_dir():
     mk(('foo', ''))
-    environ = {'PATH_TRANSLATED':realpath(join('fsfix', 'foo'))}
     expected = realpath(join('fsfix', 'foo'))
-    actual = u.find_default(['index.html'], environ)
+    actual = u.find_default(['index.html'], realpath(join('fsfix', 'foo')))
     assert actual == expected, actual
 
 def test_find_default_non_existant():
-    environ = {'PATH_TRANSLATED':realpath(join('fsfix', 'foo'))}
     expected = realpath(join('fsfix', 'foo'))
-    actual = u.find_default(['index.html'], environ)
+    actual = u.find_default(['index.html'], realpath(join('fsfix', 'foo')))
     assert actual == expected, actual
 
 

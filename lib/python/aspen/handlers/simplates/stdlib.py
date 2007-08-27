@@ -53,7 +53,7 @@ class WSGISimplate(BaseSimplate):
             try:
                 exec script in namespace
             except SystemExit:
-                WANT_TEMPLATE = False
+                pass
 
 
         # 5. Get a response
@@ -61,6 +61,7 @@ class WSGISimplate(BaseSimplate):
 
         if 'response' in namespace:
             response = namespace['response']
+            WANT_TEMPLATE = False
         else:
             response = []
 
@@ -70,9 +71,9 @@ class WSGISimplate(BaseSimplate):
 
         if WANT_TEMPLATE:
             response = [template % namespace]
-            if not _START_RESPONSE_CALLED:
-                guess = mimetypes.guess_type(fspath, 'text/plain')[0]
-                start_response('200 OK', [('Content-Type', guess)])
+        if not _START_RESPONSE_CALLED:
+            guess = mimetypes.guess_type(fspath, 'text/plain')[0]
+            start_response('200 OK', [('Content-Type', guess)])
 
 
         # 7. Return
