@@ -71,9 +71,9 @@ class WSGISimplate(BaseSimplate):
 
         if WANT_TEMPLATE:
             response = [template % namespace]
-        if not _START_RESPONSE_CALLED:
-            guess = mimetypes.guess_type(fspath, 'text/plain')[0]
-            start_response('200 OK', [('Content-Type', guess)])
+            if not _START_RESPONSE_CALLED:
+                guess = mimetypes.guess_type(fspath, 'text/plain')[0]
+                start_response('200 OK', [('Content-Type', guess)])
 
 
         # 7. Return
