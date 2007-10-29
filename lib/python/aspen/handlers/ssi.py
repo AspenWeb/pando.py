@@ -8,6 +8,7 @@ This module is currently very incomplete:
     - options: none (should go in aspen.conf [ssi] section)
 
 """
+import mimetypes
 import os
 import re
 
@@ -20,6 +21,10 @@ from aspen.handlers import static
 
 element = re.compile(r"(<!--#(\S*)\s+(.*?)\s+-->)", re.DOTALL)
 WHITESPACE = ' \n\r\t'
+
+
+mimetypes.init()
+mimetypes.add_type('text/html', '.shtml')
 
 
 class ServerSideIncludeFilter(WSGIFilter):

@@ -85,11 +85,11 @@ class BaseSimplate(object):
     # ====
 
     def _load_simplate_uncached(self, fspath):
-        """Given a filesystem path, return a three objects.
+        """Given a filesystem path, return three objects.
 
         A simplate is a template with two optional Python components at the head
         of the file, delimited by an ASCII form feed (also called a page break, FF,
-        ^L, \x0c, 12). The first Python section is exec'd when the simplate is
+        ^L, 0xc, 12). The first Python section is exec'd when the simplate is
         first called, and the namespace it populates is saved for all subsequent
         runs (so make sure it is thread-safe!). The second Python section is exec'd
         within the template namespace each time the template is rendered.
@@ -134,9 +134,8 @@ class BaseSimplate(object):
 
         # Pad the beginning of the script section so we get accurate tracebacks.
         # ======================================================================
-        # @@: maybe remove the -2 now that we add FORM_FEED back to sections?
 
-        script = ''.join(['\n' for n in range(imports.count('\n')-2)]) + script
+        script = ''.join(['\n' for n in range(imports.count('\n'))]) + script
 
 
         # Prep our cachable objects and return.
