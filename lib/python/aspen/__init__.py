@@ -192,7 +192,7 @@ def start_server():
     # Define a shutdown handler and attach to signals.
     # ================================================
 
-    def shutdown(signum, frame):
+    def shutdown(signum, frame, exit=True):
         msg = ""
         if signum is not None:
             msg = "caught "
@@ -214,6 +214,9 @@ def start_server():
             pidfiler.stop.set()
             pidfiler.join()
 
+        if exit:
+            raise SystemExit(0)
+
     signal.signal(signal.SIGINT, shutdown)
     signal.signal(signal.SIGTERM, shutdown)
 
@@ -224,16 +227,17 @@ def start_server():
 
     print "aspen starting on %s" % str(configuration.address)
     sys.stdout.flush()
-    try:
-        server.start()
-    except SystemExit, exc:
-        print "exiting with code %d" % exc.code
-        raise
-    except:
-        print "cleaning up after critical exception:"
-        print traceback.format_exc()
-        shutdown(None, None)
-        raise SystemExit(1)
+    while 1:
+        try:
+            server.start()
+        except SystemExit, exc:
+            print "exiting with code %d" % exc.code
+            raise
+        except:
+            print "recovering from critical error:"
+            print traceback.format_exc()
+            shutdown(None, None, False)
+            time.sleep(1)
 
 
 def drive_daemon():
