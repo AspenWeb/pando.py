@@ -124,6 +124,8 @@ class DjangoSimplate(WSGIHandler, BaseSimplate):
 
         if WANT_CONTENT_TYPE:
             guess = mimetypes.guess_type(fspath, 'text/plain')[0]
+            if guess is None:
+                guess = settings.DEFAULT_CONTENT_TYPE
             if guess.startswith('text/'):
                 guess += "; charset=%s" % settings.DEFAULT_CHARSET
             response.headers['Content-Type'] = guess
