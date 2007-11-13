@@ -11,6 +11,7 @@ from os.path import isfile
 
 from aspen.apps import django_ # may raise ImproperlyConfigured
 from aspen.handlers.simplates.base import BaseSimplate
+from django.conf import settings
 from django.conf.urls.defaults import patterns
 from django.core.handlers.wsgi import WSGIHandler
 from django.http import HttpResponse
@@ -82,6 +83,7 @@ class DjangoSimplate(WSGIHandler, BaseSimplate):
         # =================
 
         WANT_TEMPLATE = True
+        WANT_CONTENT_TYPE = True
         response = None
         if script:
             for d in template_context.dicts:
@@ -94,6 +96,7 @@ class DjangoSimplate(WSGIHandler, BaseSimplate):
                     if isinstance(r, HttpResponse):
                         response = r
                 WANT_TEMPLATE = False
+                WANT_CONTENT_TYPE = False
             template_context.update(namespace)
 
 
@@ -103,19 +106,27 @@ class DjangoSimplate(WSGIHandler, BaseSimplate):
         if response is None:
             if 'response' in namespace:
                 response = namespace['response']
+                WANT_CONTENT_TYPE = False
             else:
                 response = HttpResponse()
 
 
         # 6. Render the template
         # ======================
+        # Django 0.96 through trunk:6670 defaults to text/html, so if they
+        # don't provide an explicit response object (either by defining it
+        # in the namespace or raising it w/ SystemExit) then we guess the
+        # mimetype from the filename extension, and we take the charset from
+        # Django settings.
 
         if WANT_TEMPLATE:
             response.write(template.render(template_context))
-            headers = [h.lower() for h in response.headers.keys()]
-            if 'content-type' not in headers:
-                guess = mimetypes.guess_type(fspath, 'text/plain')[0]
-                response.headers['Content-Type'] = guess
+
+        if WANT_CONTENT_TYPE:
+            guess = mimetypes.guess_type(fspath, 'text/plain')[0]
+            if guess.startswith('text/'):
+                guess += "; charset=%s" % settings.DEFAULT_CHARSET
+            response.headers['Content-Type'] = guess
 
 
         # 7. Return
