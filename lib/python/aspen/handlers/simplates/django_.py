@@ -113,8 +113,8 @@ class DjangoSimplate(WSGIHandler, BaseSimplate):
 
         # 6. Render the template
         # ======================
-        # Django 0.96 through trunk:6670 defaults to text/html, so if they
-        # don't provide an explicit response object (either by defining it
+        # Django 0.96 through trunk:6670 defaults to text/html, so if the user
+        # doesn't provide an explicit response object (either by defining it
         # in the namespace or raising it w/ SystemExit) then we guess the
         # mimetype from the filename extension, and we take the charset from
         # Django settings.
