@@ -1,0 +1,41 @@
+#!/usr/local/bin/python
+"""Watch an Aspen website to make sure it stays up.
+
+Only works on *NIX.
+
+"""
+import os
+import syslog
+import time
+
+
+WAIT = 2 * 60 # two minutes to start up
+
+def keep_up(root):
+    """Takes the website root.
+    """
+    pidfile = os.path.join(root, '__', 'var', 'aspen.pid')
+    while 1:
+        restart = False
+        if not os.path.isfile(pidfile):
+            restart = True
+        else:
+            pid = open(pidfile).read()
+            if
+
+        if restart:
+            syslog.openlog('aspen')
+            syslog.syslog(syslog.LOG_EMERG, )
+            time.sleep(WAIT)
+
+
+
+if __name__ == "__name__":
+    try:
+        root = sys.argv[1]
+    except IndexError:
+        print >> sys.stderr, "please tell us the website root"
+        raise SystemExit(1)
+
+    root = os.path.realdir(root)
+    keep_up(root)
