@@ -4,38 +4,75 @@
 Only works on *NIX.
 
 """
+import commands
 import os
+import sys
 import syslog
 import time
+import traceback
+from os.path import isdir, isfile, join
+
+from aspen.daemon import Daemon
 
 
-WAIT = 2 * 60 # two minutes to start up
+# Configure logging
+# =================
 
-def keep_up(root):
-    """Takes the website root.
+syslog.openlog('keep-up')
+
+
+# Get the root of the website we are tracking.
+# ============================================
+
+try:
+    root = sys.argv[1]
+except IndexError:
+    print >> sys.stderr, "please tell us the website root"
+    raise SystemExit(1)
+root = os.path.realpath(root)
+if not isdir(root):
+    print >> sys.stderr, "couldn't find %s" % root
+    raise SystemExit(1)
+
+
+# Daemonize
+# =========
+# We keep our own pidfile around, but just use kill if you want to stop us.
+
+_pidfile = join(root, '__', 'var', 'keep-up.pid')
+daemon = Daemon(stdout='/dev/null', stderr='/dev/null', pidfile=_pidfile)
+daemon.start()
+syslog.syslog(syslog.LOG_EMERG, "daemon now tracking %s" % root)
+
+
+# Keep it up.
+# ===========
+
+pidfile = join(root, '__', 'var', 'aspen.pid')
+
+class Restart(SystemExit):
+    """Propagate a termination of the monitored process.
     """
-    pidfile = os.path.join(root, '__', 'var', 'aspen.pid')
-    while 1:
-        restart = False
-        if not os.path.isfile(pidfile):
-            restart = True
+
+while 1:
+    try:
+        if not isfile(pidfile):
+            syslog.syslog(syslog.LOG_EMERG, "missing pidfile %s" % pidfile)
+            raise Restart
         else:
             pid = open(pidfile).read()
-            if
-
-        if restart:
-            syslog.openlog('aspen')
-            syslog.syslog(syslog.LOG_EMERG, )
-            time.sleep(WAIT)
-
-
-
-if __name__ == "__name__":
-    try:
-        root = sys.argv[1]
-    except IndexError:
-        print >> sys.stderr, "please tell us the website root"
-        raise SystemExit(1)
-
-    root = os.path.realdir(root)
-    keep_up(root)
+            raw = commands.getoutput('ps -p%s' % pid)
+            if raw.count('\n') == 0: # 2 lines == process is running
+                syslog.syslog(syslog.LOG_EMERG, "dead pid %s" % pid)
+                raise Restart        #  running
+    except Restart: # syslog the error and then restart the sucker
+        syslog.syslog(syslog.LOG_EMERG, "restarting %s" % root)
+        if isfile(pidfile):
+            os.remove(pidfile)
+        os.system("aspen start --root=%s" % root)
+        time.sleep(20) # give it time to restart
+    except: # syslog traceback
+        syslog.syslog(syslog.LOG_EMERG, traceback.format_exc())
+        time.sleep(5)
+    else:
+        time.sleep(1)
