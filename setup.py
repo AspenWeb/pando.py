@@ -28,7 +28,7 @@ setup( name = 'aspen'
                   , 'aspen.handlers'
                   , 'aspen.handlers.simplates'
                    ]
-     , scripts = ['bin/aspen', 'bin/aspen.mod_wsgi']
+     , scripts = ['bin/aspen', 'bin/aspen.mod_wsgi', 'bin/keep-up']
      , description = 'Aspen is a highly extensible Python webserver.'
      , author = 'Chad Whitacre'
      , author_email = 'chad@zetaweb.com'
