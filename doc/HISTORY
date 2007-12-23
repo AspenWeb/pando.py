@@ -9,8 +9,9 @@ Aspen friendlier for the pure-application use case.
 
     - Added the simplates handler.
 
-    - Pruned the pyscript handler, because simplates make it obsolete. [issue
-      114]
+    - Fixed a couple little bugs in the autoindex handler [issues 104, 105].
+
+    - Pruned the pyscript handler (simplates make it obsolete) [issue 114].
 
     - Removed doc references to lib537/mode [issue 99]
 
