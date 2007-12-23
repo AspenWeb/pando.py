@@ -2,12 +2,11 @@
     ~~VERSION~~ -- ~~DATE~~
 ========================================
 
-With this release we have significantly reorganized and updated Aspen's
-documentation. This sets the stage for magic removal, when we decouple the
-handler infrastructure (relegating it to an application), and otherwise make
-Aspen friendlier for the pure-application use case.
-
-    - Added the simplates handler.
+In this release we debut simplates, which combine the power of Python web
+frameworks with the ease of filesystem-based development patterns. You will also
+find new helper programs: one to serve Aspen websites (unchanged) with mod_wsgi,
+and another to monitor an aspen daemon and restart it if it dies. Lastly, the
+documentation has been refactored, and a number of issues addressed:
 
     - Fixed a couple little bugs in the autoindex handler [issues 104, 105].
 

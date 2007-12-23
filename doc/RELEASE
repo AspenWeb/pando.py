@@ -10,7 +10,7 @@ commit the changes until you switch back to trunk.
 
 - update the following on trunk/
     - doc/HISTORY -- summary and details of releases
-    - doc/ACKNOWLEDGMENTS -- list of contributors
+    - doc/CONTRIBUTORS -- list of contributors
 - tag in svn
 - switch to tag
 - update version and date in Makefile and do `make stamp`
@@ -19,8 +19,8 @@ commit the changes until you switch back to trunk.
 
 # Distribute
 # ==========
-# This happens on erilich. We can't make it in place because latex2html barfs on
-# dots in the path. So we make it in ~ and then move it into place.
+# This happens on zetadev.com. We can't make it in place because latex2html barfs
+# on dots in the path. So we make it in ~ and then move it into place.
 
 $ svn export $TAG ~/aspen
 $ cd aspen && make dist
