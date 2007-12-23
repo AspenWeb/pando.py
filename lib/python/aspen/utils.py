@@ -174,9 +174,14 @@ def full_url(environ):
 
 def translate(root, url):
     """Translate a URL to the filesystem.
+
+    We specifically avoid removing symlinks in the path so that the filepath
+    remains under the website root. Also, we don't want trailing slashes for
+    directories.
+
     """
     parts = [root] + url.lstrip('/').split('/')
-    return realpath(os.sep.join(parts))
+    return os.sep.join(parts).rstrip(os.sep)
 
 
 # WSGIFilter
