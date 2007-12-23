@@ -58,9 +58,9 @@ fnmatch     aspen.rules:fnmatch
 # Set up scripts.
 # ===============
 
-[aspen.handlers.pyscript:wsgi]
+[aspen.handlers.simplates:stdlib]
     isfile
-AND fnmatch *.py
+AND fnmatch *.html
 
 
 # Everything else is served statically.
@@ -73,16 +73,16 @@ AND fnmatch *.py
 def DOC_EXAMPLE():
     """Lazy so we can call aspen.configure() first.
     """
-    from aspen.handlers import pyscript, static
+    from aspen.handlers import simplates, static
 
     rulefuncs = dict()
     rulefuncs['catch_all'] = rules.catch_all
     rulefuncs['isfile'] = rules.isfile
     rulefuncs['fnmatch'] = rules.fnmatch
 
-    script = load.Handler(rulefuncs, pyscript.wsgi)
-    script.add("isfile", 0)
-    script.add("AND fnmatch *.py", 0)
+    simplate = load.Handler(rulefuncs, simplates.stdlib)
+    simplate.add("isfile", 0)
+    simplate.add("AND fnmatch *.html", 0)
 
     static = load.Handler(rulefuncs, static.wsgi)
     static.add("catch_all", 0)
