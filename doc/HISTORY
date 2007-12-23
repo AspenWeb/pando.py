@@ -7,6 +7,11 @@ documentation. This sets the stage for magic removal, when we decouple the
 handler infrastructure (relegating it to an application), and otherwise make
 Aspen friendlier for the pure-application use case.
 
+    - Added the simplates handler.
+
+    - Pruned the pyscript handler, because simplates make it obsolete. [issue
+      114]
+
     - Removed doc references to lib537/mode [issue 99]
 
     - Added documentation on Aspen's apps, handlers, and rules [issue 61].

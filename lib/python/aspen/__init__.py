@@ -319,7 +319,7 @@ def start_server():
                 print "%d still going; resending SIGTERM" % pid
                 kill(signal.SIGTERM)
             elif nattempts == 2:
-                print "%d STILL going; sending SIGKILL and quiting" % pid
+                print "%d STILL going; sending SIGKILL and quitting" % pid
                 kill(signal.SIGKILL)
                 raise SystemExit(1)
             nattempts += 1

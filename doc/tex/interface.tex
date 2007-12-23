@@ -262,9 +262,9 @@ fnmatch     aspen.rules:fnmatch
 # Set up scripts.
 # ===============
 
-[aspen.handlers.pyscript:wsgi]
+[aspen.handlers.simplates:stdlib]
     isfile
-AND fnmatch *.py
+AND fnmatch *.html
 
 
 # Everything else is served statically.

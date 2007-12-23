@@ -14,9 +14,9 @@ body {font-family: "Trebuchet MS", sans-serif;}
 table {font-family: monospace;}
 .dir {font-weight: bold;}
 .file {}
-td {padding: 0 1em 0 0;}
+td {padding: 0 1em 0 0; white-space: nowrap;}
 td.size {text-align: right;}
-th {text-align: left;}
+th {text-align: left; white-space: nowrap;}
 tr.even {background: #eee;}
 tr:hover {background: #eef;}
 #footer {font-size: smaller; font-style: italic;}
