@@ -27,7 +27,11 @@ def colonize(name, filename, lineno):
         msg = "'%s' is not valid colon notation" % name
         raise ColonizeBadColonsError(msg, filename, lineno)
 
-    modname, objname = name.rsplit(':', 1)
+    #modname, objname = name.rsplit(':', 1) -- no rsplit < Python 2.4
+    idx = name.rfind(":")
+    modname = name[:idx]
+    objname = name[idx+1:]
+
     for _name in modname.split('.'):
         if not utils.is_valid_identifier(_name):
             msg = ( "'%s' is not valid colon notation: " % name
