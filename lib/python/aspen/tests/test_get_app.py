@@ -52,7 +52,7 @@ def test_get_app_environ_basic():
     env = {'PATH_INFO':'/foo/bar'}
     Website().get_app(env, start_response)
     expected = [ ('PATH_INFO', '/bar')
-               , ('PATH_TRANSLATED', abspath(join('fsfix', 'foo')))
+               , ('PATH_TRANSLATED', join('fsfix', 'foo'))
                , ('SCRIPT_NAME', '/foo')
                 ]
     actual = list(env.items())
@@ -64,7 +64,7 @@ def test_get_app_environ_with_slash():
     env = {'PATH_INFO':'/foo/', 'SERVER_NAME': 'foo'}
     Website().get_app(env, start_response)
     expected = [ ('PATH_INFO', '/')
-               , ('PATH_TRANSLATED', abspath(join('fsfix', 'foo')))
+               , ('PATH_TRANSLATED', join('fsfix', 'foo'))
                , ('SCRIPT_NAME', '/foo')
                , ('SERVER_NAME', 'foo')
                 ]
@@ -77,7 +77,7 @@ def test_get_app_environ_without_slash():
     env = {'PATH_INFO':'/foo'}
     Website().get_app(env, start_response)
     expected = [ ('PATH_INFO', '')
-               , ('PATH_TRANSLATED', abspath(join('fsfix', 'foo')))
+               , ('PATH_TRANSLATED', join('fsfix', 'foo'))
                , ('SCRIPT_NAME', '/foo')
                 ]
     actual = list(env.items())
@@ -89,7 +89,7 @@ def test_get_app_environ_with_slash_and_slash_goes_in_PATH_INFO():
     env = {'PATH_INFO':'/foo/bar'}
     Website().get_app(env, start_response)
     expected = [ ('PATH_INFO', '/bar')
-               , ('PATH_TRANSLATED', abspath(join('fsfix', 'foo')))
+               , ('PATH_TRANSLATED', join('fsfix', 'foo'))
                , ('SCRIPT_NAME', '/foo')
                 ]
     actual = list(env.items())
@@ -101,7 +101,7 @@ def test_get_app_environ_without_slash_and_slash_goes_in_PATH_INFO():
     env = {'PATH_INFO':'/foo/bar'}
     Website().get_app(env, start_response)
     expected = [ ('PATH_INFO', '/bar')
-               , ('PATH_TRANSLATED', abspath(join('fsfix', 'foo')))
+               , ('PATH_TRANSLATED', join('fsfix', 'foo'))
                , ('SCRIPT_NAME', '/foo')
                 ]
     actual = list(env.items())
@@ -113,7 +113,7 @@ def test_get_app_environ_root_app():
     env = {'PATH_INFO':'/', 'SERVER_NAME': 'foo'}
     Website().get_app(env, start_response)
     expected = [ ('PATH_INFO', '/')
-               , ('PATH_TRANSLATED', abspath('fsfix'))
+               , ('PATH_TRANSLATED', 'fsfix')
                , ('SCRIPT_NAME', '')
                , ('SERVER_NAME', 'foo')
                 ]

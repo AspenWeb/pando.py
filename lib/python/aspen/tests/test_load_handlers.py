@@ -87,7 +87,7 @@ def DOC_EXAMPLE():
     static = load.Handler(rulefuncs, static.wsgi)
     static.add("catch_all", 0)
 
-    return [script, static]
+    return [simplate, static]
 
 
 # Working

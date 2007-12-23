@@ -123,7 +123,7 @@ def test_cache():
     assert actual == expected, actual
     first = cache._BaseSimplate__cache[INDEX_HTML].modtime
 
-    time.sleep(1)
+    time.sleep(2)
     open(INDEX_HTML, 'w+').write('Greetings, python!')
 
     expected = 'Greetings, python!'
