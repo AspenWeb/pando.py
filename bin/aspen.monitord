@@ -18,7 +18,7 @@ from aspen.daemon import Daemon
 # Configure logging
 # =================
 
-syslog.openlog('keep-up')
+syslog.openlog('aspen.monitord')
 
 
 # Get the root of the website we are tracking.
@@ -39,10 +39,10 @@ if not isdir(root):
 # =========
 # We keep our own pidfile around, but just use kill if you want to stop us.
 
-_pidfile = join(root, '__', 'var', 'keep-up.pid')
+_pidfile = join(root, '__', 'var', 'aspen.monitord.pid')
 daemon = Daemon(stdout='/dev/null', stderr='/dev/null', pidfile=_pidfile)
 daemon.start()
-syslog.syslog(syslog.LOG_EMERG, "daemon now tracking %s" % root)
+syslog.syslog(syslog.LOG_NOTICE, "daemon now tracking %s" % root)
 
 
 # Keep it up.
@@ -57,13 +57,13 @@ class Restart(SystemExit):
 while 1:
     try:
         if not isfile(pidfile):
-            syslog.syslog(syslog.LOG_EMERG, "missing pidfile %s" % pidfile)
+            syslog.syslog(syslog.LOG_NOTICE, "missing pidfile %s" % pidfile)
             raise Restart
         else:
             pid = open(pidfile).read()
             raw = commands.getoutput('ps -p%s' % pid)
             if raw.count('\n') == 0: # 2 lines == process is running
-                syslog.syslog(syslog.LOG_EMERG, "dead pid %s" % pid)
+                syslog.syslog(syslog.LOG_NOTICE, "dead pid %s" % pid)
                 raise Restart        #  running
     except Restart: # syslog the error and then restart the sucker
         syslog.syslog(syslog.LOG_EMERG, "restarting %s" % root)
