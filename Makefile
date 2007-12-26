@@ -55,6 +55,8 @@ dist: distclean
 
 	mkdir dist/aspen-${VERSION}/bin
 	cp -r bin/aspen \
+	      bin/aspen.mod_wsgi \
+	      bin/aspen.monitord \
 	      dist/aspen-${VERSION}/bin
 
 	mkdir dist/aspen-${VERSION}/etc
