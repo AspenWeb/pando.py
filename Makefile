@@ -51,6 +51,7 @@ dist: distclean
 	cp -r doc/html \
 	      doc/aspen-${VERSION}.pdf \
 	      doc/HISTORY \
+	      doc/CONTRIBUTORS \
 	      dist/aspen-${VERSION}/doc
 
 	mkdir dist/aspen-${VERSION}/bin
