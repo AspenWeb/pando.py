@@ -51,10 +51,13 @@ dist: distclean
 	cp -r doc/html \
 	      doc/aspen-${VERSION}.pdf \
 	      doc/HISTORY \
+	      doc/CONTRIBUTORS \
 	      dist/aspen-${VERSION}/doc
 
 	mkdir dist/aspen-${VERSION}/bin
 	cp -r bin/aspen \
+	      bin/aspen.mod_wsgi \
+	      bin/aspen.monitord \
 	      dist/aspen-${VERSION}/bin
 
 	mkdir dist/aspen-${VERSION}/etc
