@@ -82,7 +82,7 @@ import traceback
 # Basic simplates are always available.
 # =====================================
 
-from aspen.handlers.simplates.stdlib import wsgi as stdlib
+from stdlib import wsgi as stdlib # relative for separability
 
 
 # Framework simplates depend on the framework being installed.
@@ -97,8 +97,13 @@ def stub(framework, problem):
         raise ImportError(msg)
     return stub
 
+
 # @@: for loop here w/ more frameworks
 excs = (ImportError,)
+
+# Django
+# ======
+
 try:
     # django may be available but we don't want to use it here
     from django.core.exceptions import ImproperlyConfigured
@@ -106,7 +111,7 @@ try:
 except ImportError:
     pass
 try:
-    from aspen.handlers.simplates.django_ import wsgi as django
+    from django_ import wsgi as django
 except excs:
     problem = traceback.format_exc()
     django = stub('django', problem)

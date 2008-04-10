@@ -7,10 +7,23 @@ The namespace for a Django template is an extended Django RenderContext:
 """
 import mimetypes
 import os
-from os.path import isfile
+from os.path import exists, isfile
 
-from aspen.apps import django_ # may raise ImproperlyConfigured
-from aspen.handlers.simplates.base import BaseSimplate
+
+# Import gymnastics to support GAE as well as Aspen.
+# ==================================================
+
+try:
+    from aspen.apps import django_ # may raise ImproperlyConfigured
+except:
+    DJANGO_SETTINGS_MODULE = 'settings' # @@ unhardcode
+    os.environ['DJANGO_SETTINGS_MODULE'] = DJANGO_SETTINGS_MODULE
+try:
+    from aspen.handlers.simplates.base import BaseSimplate
+except:
+    from simplates.base import BaseSimplate
+
+
 from django.conf import settings
 from django.conf.urls.defaults import patterns
 from django.core.handlers.wsgi import WSGIHandler
@@ -33,6 +46,7 @@ class DjangoSimplate(WSGIHandler, BaseSimplate):
     """
 
     def __init__(self):
+        # @@: Why are we doing this? --cwlw 2008-04-10
         WSGIHandler.__init__(self)
         BaseSimplate.__init__(self)
 
@@ -146,3 +160,77 @@ wsgi = DjangoSimplate()
 # cutting out all of its other frameworky goodness.
 
 urlpatterns = patterns('', (r'^', wsgi.view))
+
+
+# Enable the present module also to fulfill Google App Engine's script API.
+# =========================================================================
+
+def gae_middleware(next):
+    """Look for defaults, set PATH_TRANSLATED, ensure the file exists.
+
+    This stuff is all duplicated from aspen for standalonability.
+
+    """
+    import logging
+    import settings # @@: remove hardcode
+    from simplates import _path_utils
+
+    ROOT_PATH = os.path.dirname(settings.__file__) # @@: remove hardcode
+    DYN_PATH = os.path.join(ROOT_PATH, 'dyn') # @@: remove hardcode
+
+    def wsgi(environ, start_response):
+
+        fspath = _path_utils.translate(DYN_PATH, environ['PATH_INFO'])
+        _path_utils.check_trailing_slash(environ, start_response)
+        fspath = _path_utils.find_default(['index.html'], fspath)
+
+        if not exists(fspath):
+            logging.info("Request for missing file: %s" % fspath)
+            start_response('404 Not Found', [])
+            response = ['Resource not found.']
+        else:
+            environ['PATH_TRANSLATED'] = fspath
+            response = next(environ, start_response)
+
+        return response
+
+    return wsgi
+
+
+def main():
+    """http://code.google.com/appengine/articles/django.html
+    """
+    import logging
+    import os
+
+    from google.appengine.ext.webapp import util
+
+
+    # Force Django to reload its settings.
+    from django.conf import settings
+    settings._target = None
+
+    # Must set this env var before importing any part of Django
+    os.environ['DJANGO_SETTINGS_MODULE'] = DJANGO_SETTINGS_MODULE
+
+    import django.core.handlers.wsgi
+    import django.core.signals
+    import django.db
+    import django.dispatch.dispatcher
+
+    def log_exception(*args, **kwds):
+        logging.exception('Exception in request:')
+
+    # Log errors.
+    django.dispatch.dispatcher.connect( log_exception
+                                     , django.core.signals.got_request_exception
+                                        )
+
+    # Unregister the rollback event handler.
+    django.dispatch.dispatcher.disconnect( django.db._rollback_on_exception
+                                     , django.core.signals.got_request_exception
+                                          )
+
+
+    util.run_wsgi_app(gae_middleware(wsgi))
+

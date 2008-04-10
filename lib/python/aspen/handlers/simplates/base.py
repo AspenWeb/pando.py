@@ -4,7 +4,16 @@ import threading
 import traceback
 import sys
 
-import aspen
+try:
+    import aspen
+except: # defaults when run apart from Aspen
+    ENCODING = 'UTF-8'
+    MODE_STPROD = True 
+    MODE_DEBUG = False
+else:
+    ENCODING = aspen.conf.simplates.get('encoding', 'UTF-8')
+    MODE_STPROD = aspen.mode.STPROD
+    MODE_DEBUG = aspen.mode.DEBUG
 
 
 FORM_FEED = chr(12) # == '\x0c', ^L, ASCII page break
@@ -104,7 +113,7 @@ class BaseSimplate(object):
             __file__
 
         """
-        encoding = aspen.conf.simplates.get('encoding', 'UTF-8')
+        encoding = ENCODING
         simplate = open(fspath).read().decode(encoding)
 
         numff = simplate.count(FORM_FEED)
@@ -234,7 +243,7 @@ class BaseSimplate(object):
                 entry.modtime = modtime
                 self.__cache[fspath] = entry
                 if entry.exc is not None:
-                    if aspen.mode.debugging:
+                    if MODE_DEBUG:
                         print >> sys.stderr, entry.exc[0]
                         pdb.post_mortem(entry.exc[1])
                     raise entry.exc[0]
@@ -257,7 +266,7 @@ class BaseSimplate(object):
     # Set API to cached or not based on mode.
     # =======================================
 
-    if aspen.mode.STPROD:
+    if MODE_STPROD:
         load_simplate = _load_simplate_cached
     else:
         load_simplate = _load_simplate_uncached

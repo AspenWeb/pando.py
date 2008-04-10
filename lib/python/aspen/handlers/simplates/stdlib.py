@@ -1,7 +1,7 @@
 import mimetypes
 from os.path import isfile
 
-from aspen.handlers.simplates.base import BaseSimplate
+from base import BaseSimplate # relative for separability
 
 
 class WSGISimplate(BaseSimplate):
