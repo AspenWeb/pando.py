@@ -1,0 +1,76 @@
+\section{Middleware}
+
+The Aspen package bundles the following WSGI middleware in the
+\module{aspen.middleware} subpackage.
+
+
+\subsection{\module{raised}}
+
+\declaremodule{aspen}{raised}
+
+The \module{aspen.middleware.raised} module provides for ending WSGI requests by
+raising a \class{Response} object that is caught by a middleware:
+
+\begin{classdesc}{Response}{\optional{code} \optional{, body} \optional{,
+    headers}}
+Constructs a new \class{Response} object. If given, \var{code} must be an
+integer; the default is
+\ulink{200}{http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1}
+(see \ulink{the HTTP
+spec}{http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html} for other values
+that will be meaningful to most HTTP clients). \var{headers} may be a dictionary
+or a list of 2-tuples. \var{body} may be a string or other iterable.
+\end{classdesc}
+
+\begin{funcdesc}{middleware}{next}
+WSGI middleware; \var{next} is the next WSGI callable on the stack. This
+middleware catches any \class{Response} objects raised by \var{next} and calls
+them (they are themselves WSGI callables) to produce the response.
+\end{funcdesc}
+
+
+\subsubsection{\class{Response} Objects}
+
+Instances of \class{aspen.middleware.raised.Response} are WSGI applications,
+with the following data attributes. Note that values are only validated in the
+constructor, so it is possible to raise a malformed \class{Response} by setting
+instance attributes post-instantiation.
+
+\begin{datadesc}{code}
+The \ulink{HTTP code}{http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html} as an integer.
+\end{datadesc}
+
+\begin{datadesc}{body}
+The message body as a string or other iterable.
+\end{datadesc}
+
+\begin{datadesc}{headers}
+The message headers as an instance of the standard library's
+\ulink{\module{email.Message.Message}}{http://docs.python.org/lib/module-email.message.html}.
+\end{datadesc}
+
+When called, \class{Response} instances call \code{start_response} with
+adaptations of \var{code} and \var{headers}, and return \var{body}, or a 
+one-item list containing \var{body} if \var{body} is a string.
+
+
+\subsubsection{Example}
+
+Here is an example:
+
+\begin{verbatim}
+Python 2.5 (r25:52005, Sep 25 2006, 21:37:36)
+[GCC 3.4.4 [FreeBSD] 20050518] on freebsd6
+Type "help", "copyright", "credits" or "license" for more information.
+>>>
+>>> from aspen import raised
+>>> def app(env, start):
+>>>     raise raised.Response(200, "Greetings, program!")
+>>> app = raised.middleware(app)
+>>>
+>>> from wsgiref.simple_server import make_server
+>>> server = make_server('', 8080, app)
+>>> server.serve_forever() # now hit http://localhost:8080/
+>>>
+192.168.1.100 - - [09/Nov/2006 23:52:45] "GET / HTTP/1.1" 200 19
+\end{verbatim}
