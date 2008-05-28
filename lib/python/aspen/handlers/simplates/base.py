@@ -13,7 +13,7 @@ except: # defaults when run apart from Aspen
 else:
     ENCODING = aspen.conf.simplates.get('encoding', 'UTF-8')
     MODE_STPROD = aspen.mode.STPROD
-    MODE_DEBUG = aspen.mode.DEBUG
+    MODE_DEBUG = aspen.mode.DEB
 
 
 FORM_FEED = chr(12) # == '\x0c', ^L, ASCII page break
