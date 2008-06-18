@@ -109,20 +109,20 @@ class DjangoSimplate(WSGIHandler, BaseSimplate):
                     r = exc.args[0]
                     if isinstance(r, HttpResponse):
                         response = r
-                WANT_TEMPLATE = False
-                WANT_CONTENT_TYPE = False
+                        WANT_TEMPLATE = False
+                        WANT_CONTENT_TYPE = False
             template_context.update(namespace)
 
 
         # 5. Get a response
         # =================
+        # First, explicit response, then, raised response, lastly, implicit.
 
-        if response is None:
-            if 'response' in namespace:
-                response = namespace['response']
-                WANT_CONTENT_TYPE = False
-            else:
-                response = HttpResponse()
+        if 'response' in namespace:             # explicit
+            response = namespace['response']
+            WANT_CONTENT_TYPE = False
+        elif response is None:                  # raised? (per above)
+            response = HttpResponse()           # implicit
 
 
         # 6. Render the template
