@@ -10,13 +10,12 @@ import sys
 import syslog
 import time
 import traceback
-from os.path import isdir, isfile, join
 
 from aspen.daemon import Daemon
 
 
-# Configure logging
-# =================
+# Configure logging.
+# ==================
 
 syslog.openlog('aspen.monitord')
 
@@ -30,7 +29,7 @@ except IndexError:
     print >> sys.stderr, "please tell us the website root"
     raise SystemExit(1)
 root = os.path.realpath(root)
-if not isdir(root):
+if not os.path.isdir(root):
     print >> sys.stderr, "couldn't find %s" % root
     raise SystemExit(1)
 
@@ -39,7 +38,7 @@ if not isdir(root):
 # =========
 # We keep our own pidfile around, but just use kill if you want to stop us.
 
-_pidfile = join(root, '__', 'var', 'aspen.monitord.pid')
+_pidfile = os.path.join(root, '__', 'var', 'aspen.monitord.pid')
 daemon = Daemon(stdout='/dev/null', stderr='/dev/null', pidfile=_pidfile)
 daemon.start()
 syslog.syslog(syslog.LOG_NOTICE, "daemon now tracking %s" % root)
@@ -48,31 +47,103 @@ syslog.syslog(syslog.LOG_NOTICE, "daemon now tracking %s" % root)
 # Keep it up.
 # ===========
 
-pidfile = join(root, '__', 'var', 'aspen.pid')
-
 class Restart(SystemExit):
     """Propagate a termination of the monitored process.
     """
 
+
+def check(pidfile):
+    """Given the path to a pidfile, return None or raise Restart.
+    """
+
+    # Locate the pidfile.
+    # ===================
+    
+    if not os.path.isfile(pidfile):
+        syslog.syslog(syslog.LOG_NOTICE, "missing pidfile: %s" % pidfile)
+        raise Restart
+
+
+    # Parse and validate the pid.
+    # ===========================
+    
+    pid = open(pidfile).read()
+    if not pid:
+        syslog.syslog(syslog.LOG_NOTICE, "empty pidfile: %s" % pidfile)
+        raise Restart
+    elif not pid.isdigit(): # catches mangled or missing pid
+        syslog.syslog( syslog.LOG_NOTICE
+                     , "mangled pid (%s) in pidfile: %s" % ( pid
+                                                           , pidfile
+                                                            )
+                      )
+        raise Restart
+
+
+    # Look for the process.
+    # =====================
+
+    raw = commands.getoutput('ps -p%s' % pid) # portable?!
+    nlines = raw.count('\n') + 1
+
+    if nlines == 1:                                 # not running
+        #  PID  TT  STAT      TIME COMMAND
+        syslog.syslog( syslog.LOG_NOTICE
+                     , "dead pid (%s) in pidfile: %s" % (pid, pidfile)
+                      )
+        raise Restart
+    elif nlines == 2:                               # running
+        #  PID  TT  STAT      TIME COMMAND
+        #  45489  ??  S      0:02.42 /usr/local/bin/python /usr/local/bi...
+        pass
+
+
+# Main loop
+# =========
+
+pidfile = os.path.join(root, '__', 'var', 'aspen.pid')
+
 while 1:
     try:
-        if not isfile(pidfile):
-            syslog.syslog(syslog.LOG_NOTICE, "missing pidfile %s" % pidfile)
-            raise Restart
-        else:
-            pid = open(pidfile).read()
-            raw = commands.getoutput('ps -p%s' % pid)
-            if raw.count('\n') == 0: # 2 lines == process is running
-                syslog.syslog(syslog.LOG_NOTICE, "dead pid %s" % pid)
-                raise Restart        #  running
-    except Restart: # syslog the error and then restart the sucker
+        try:
+            check(pidfile)
+        except Restart:
+
+            # Benefit of the doubt
+            # ====================
+            # Give any existing aspen instance a chance to fix its pidfile 
+            # before assuming it is dead and restarting. If we start another 
+            # instance when there is already one running then ours will thrash
+            # trying to bind to the port, which will already be in use.
+
+            time.sleep(2)
+            check(pidfile)
+
+
+    except Restart: 
+        
+        # Syslog the error and then restart the sucker.
+        # =============================================
+
         syslog.syslog(syslog.LOG_EMERG, "restarting %s" % root)
-        if isfile(pidfile):
+        if os.path.isfile(pidfile):
             os.remove(pidfile)
         os.system("aspen start --root=%s" % root)
         time.sleep(20) # give it time to restart
-    except: # syslog traceback
+
+    except: 
+        
+        # Syslog the traceback.
+        # =====================
+
         syslog.syslog(syslog.LOG_EMERG, traceback.format_exc())
         time.sleep(5)
+
     else:
+
+        # Wait a second.
+        # ==============
+
         time.sleep(1)
+
+

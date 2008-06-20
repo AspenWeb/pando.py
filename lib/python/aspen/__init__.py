@@ -92,7 +92,6 @@ def get_perms(path):
 
     stop = threading.Event()
     path = '' # path to the pidfile
-    pidcheck_timeout = 60 # seconds between pidfile writes
     pidfile_mode = 0600 # the permission bits on the pidfile
 
     def __init__(self):
@@ -100,28 +99,51 @@ def get_perms(path):
         self.setDaemon(True)
 
     def write(self):
-        open(self.path, 'w+').write(str(os.getpid()))
         self.set_perms()
+        open(self.path, 'w+').write(str(os.getpid()))
 
     def set_perms(self):
         os.chmod(self.path, self.pidfile_mode)
 
     def run(self):
         """Pidfile is initially created and finally destroyed by our Daemon.
+
+        I'm not quite sure how, but one time I saw an aspen.pid of size 0. I
+        don't think anything else touched it (aspen.monitord only reads it), so
+        somehow os.getpid() returned nothing?! Anyway, now we handle this case
+        as well as the case of a mangled pidfile (non-integer) both here and in
+        aspen.monitord.
+
+        Note that we need to sleep less than aspen.monitord, so that we have a
+        chance to correct our pidfile before aspen.monitord starts another aspen
+        instance, which will thrash trying to bind to our port. 
+
         """
         self.set_perms()
-        last_pidcheck = 0
         while not self.stop.isSet():
+
+            err = ''
             if not isfile(self.path):
-                print "no pidfile; recreating"
+                err = 'missing'
+            else:
+                pid = open(self.path).read()
+                if not pid:
+                    err = 'empty'
+                elif not pid.isdigit():
+                    err = 'mangled (%s)' % pid
+                elif not int(pid) == os.getpid():
+                    err = 'incorrect (%s)' % pid
+
+            if err:
+                print "pidfile %s ... recreating" % err
                 sys.stdout.flush()
                 self.write()
-            elif (last_pidcheck + self.pidcheck_timeout) < time.time():
-                self.write()
-                last_pidcheck = time.time()
-            time.sleep(1)
+
+            time.sleep(1) # sleep less than aspen.monitord
+
         if isfile(self.path): # sometimes we beat handlesigterm
             os.remove(self.path)
+
 
 pidfiler = PIDFiler() # must actually set pidfiler.path before starting
 
