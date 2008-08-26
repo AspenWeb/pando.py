@@ -67,7 +67,7 @@ Here's an example of what this looks like:
 
     def main():
         # startup code here
-        restarter.watch('foo.conf') # your conf file; change to trigger
+        restarter.track('foo.conf') # your conf file; change to trigger
                                     # reloading
         while 1:
             # program logic here
@@ -103,7 +103,7 @@ except ImportError:
     _HAVE_SUBPROCESS = False
 
 
-_FILES = []                         # non-module files to watch
+_FILES = []                         # non-module files to track
 _FLAG = '_RESTARTER_CHILD_FLAG'     # flag for tracking child/parent process
 CHILD = _FLAG in os.environ         # True w/in child process
 PARENT = not CHILD                  # True w/in parent process

@@ -6,7 +6,7 @@ import sys
 
 try:
     import aspen
-except: # defaults when run apart from Aspen
+except ImportError: # defaults when run apart from Aspen
     ENCODING = 'UTF-8'
     MODE_STPROD = True 
     MODE_DEBUG = False

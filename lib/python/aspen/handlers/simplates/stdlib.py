@@ -1,5 +1,5 @@
+import os
 import mimetypes
-from os.path import isfile
 
 from base import BaseSimplate # relative for separability
 
@@ -22,7 +22,7 @@ class WSGISimplate(BaseSimplate):
         # =================
 
         fspath = environ['PATH_TRANSLATED']
-        assert isfile(fspath), "This handler only serves files."
+        assert os.path.isfile(fspath), "This handler only serves files."
 
 
         # 2. Load simplate
@@ -73,7 +73,10 @@ class WSGISimplate(BaseSimplate):
             response = [template % namespace]
             if not _START_RESPONSE_CALLED:
                 guess = mimetypes.guess_type(fspath, 'text/plain')[0]
-                start_response('200 OK', [('Content-Type', guess)])
+                headers = []
+                headers.append(('Content-Type', guess))
+                headers.append(('Content-Length', str(len(response[0]))))
+                start_response('200 OK', headers)
 
 
         # 7. Return
