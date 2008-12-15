@@ -142,7 +142,7 @@ class DjangoSimplate(WSGIHandler, BaseSimplate):
                 guess = settings.DEFAULT_CONTENT_TYPE
             if guess.startswith('text/'):
                 guess += "; charset=%s" % settings.DEFAULT_CHARSET
-            response.headers['Content-Type'] = guess
+            response['Content-Type'] = guess
 
 
         # 7. Return
