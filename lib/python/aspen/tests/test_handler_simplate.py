@@ -4,9 +4,6 @@ import time
 from aspen.tests import assert_raises
 from aspen.tests import fsfix
 
-from aspen.handlers.simplates import stdlib
-from aspen.handlers.simplates.base import BaseSimplate
-
 
 # Fixture
 # =======
@@ -40,6 +37,16 @@ def mk_prod(*treedef, **kw):
     """),
     ('__/etc/aspen.conf', "[main]\nmode=production"),
      *treedef, **kw)
+
+def stdlib(*args):
+    """Given args, return a stdlib-flavored simplate
+
+    Need lazy import because importing aspen.handlers.simplates requires that
+    aspen be configured.
+
+    """
+    from aspen.handlers.simplates import stdlib
+    return stdlib(*args)
 
 
 # Tests
@@ -116,6 +123,7 @@ def test_explicit_response():
 def test_cache():
     mk_prod(('index.html', "Greetings, perl!"), configure=True)
 
+    from aspen.handlers.simplates.base import BaseSimplate
     cache = BaseSimplate()
 
     expected = 'Greetings, perl!'

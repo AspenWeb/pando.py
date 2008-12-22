@@ -11,17 +11,17 @@ global aspen namespace.
 
 """
 import logging
+import logging.config
 import os
 import socket
 import sys
 import optparse
 import ConfigParser
-from os.path import join, isdir, realpath
 
 from aspen import load, mode
 
 
-log = logging.getLogger('aspen.configuration')
+log = logging.getLogger('aspen') # configured below; not used until then
 COMMANDS = ('start', 'status', 'stop', 'restart', 'runfg')
 WINDOWS = 'win' in sys.platform
 if not WINDOWS:
@@ -53,7 +53,7 @@ class ConfigurationError(StandardError):
             # but what about named pipes?
         sockfam = socket.AF_UNIX
         # We could test to see if the path exists or is creatable, etc.
-        address = realpath(address)
+        address = os.path.realpath(address)
 
     elif address.count(':') > 1:
         sockfam = socket.AF_INET6
@@ -142,22 +142,11 @@ def callback_address(option, opt, value, parser_):
     parser_.values.have_address = True
 
 
-#def callback_log_level(option, opt, value, parser_):
-#    """
-#    """
-#    try:
-#        level = getattr(logging, value.upper())
-#    except AttributeError:
-#        msg = "Bad log level: %s" % value
-#        raise optparse.OptionValueError(msg)
-#    parser_.values.log_level = level
-
-
 def callback_root(option, opt, value, parser_):
     """Expand the root directory path and make sure the directory exists.
     """
-    value = realpath(value)
-    if not isdir(value):
+    value = os.path.realpath(value)
+    if not os.path.isdir(value):
         msg = "%s does not point to a directory" % value
         raise optparse.OptionValueError(msg)
     parser_.values.root = value
@@ -181,12 +170,6 @@ optparser.add_option( "-a", "--address"
                     , help="the IP or Unix address to bind to [:8080]"
                     , type='string'
                      )
-#optparser.add_option( "-l", "--log_filter"
-#                    , default=''
-#                    , dest="log_filter"
-#                    , help="a subsystem filter for logging []"
-#                    , type='string'
-#                     )
 optparser.add_option( "-m", "--mode"
                     , action="callback"
                     , callback=callback_mode
@@ -208,19 +191,6 @@ optparser.add_option( "-r", "--root"
                     , help="the root publishing directory [.]"
                     , type='string'
                      )
-#optparser.add_option( "-v", "--log_level"
-#                    , action="callback"
-#                    , callback=callback_log_level
-#                    , choices=[ 'notset', 'debug', 'info', 'warning', 'error'
-#                              , 'critical'
-#                               ]
-#                    , default='info'
-#                    , dest="log_level"
-#                    , help=( "the level below which messages will be stiffled "
-#                           + "[warning]"
-#                            )
-#                    , type='choice'
-#                     )
 
 
 class Paths:
@@ -240,27 +210,27 @@ optparser.add_option( "-r", "--root"
 
         """
         self.root = root
-        self.__ = join(self.root, '__')
-        if not isdir(self.__):
+        self.__ = os.path.join(self.root, '__')
+        if not os.path.isdir(self.__):
             self.__ = None
             self.lib = None
             self.plat = None
         else:
-            lib = join(self.__, 'lib', 'python')
-            if isdir(lib):
+            lib = os.path.join(self.__, 'lib', 'python')
+            if os.path.isdir(lib):
                 self.lib = lib
             else:
-                lib = join(self.__, 'lib', 'python'+sys.version[:3])
-                self.lib = isdir(lib) and lib or None
+                lib = os.path.join(self.__, 'lib', 'python'+sys.version[:3])
+                self.lib = os.path.isdir(lib) and lib or None
 
-            plat = join(lib, 'plat-'+sys.platform)
-            self.plat = isdir(plat) and plat or None
+            plat = os.path.join(lib, 'plat-'+sys.platform)
+            self.plat = os.path.isdir(plat) and plat or None
 
-            pkg = join(lib, 'site-packages')
-            self.pkg = isdir(pkg) and pkg or None
+            pkg = os.path.join(lib, 'site-packages')
+            self.pkg = os.path.isdir(pkg) and pkg or None
 
             for path in (lib, plat, pkg):
-                if isdir(path):
+                if os.path.isdir(path):
                     sys.path.insert(0, path)
 
 
@@ -336,7 +306,7 @@ optparser.add_option( "-r", "--root"
 
         opts, args = optparser.parse_args(argv)
         paths = Paths(opts.root)                # default handled by optparse
-        conf = ConfFile(join(paths.root, '__', 'etc', 'aspen.conf'))
+        conf = ConfFile(os.path.join(paths.root, '__', 'etc', 'aspen.conf'))
 
         self.args = args
         self.conf = conf
@@ -444,19 +414,18 @@ optparser.add_option( "-r", "--root"
 
         # Logging
         # =======
-        # When run in the foreground, always log to stdout/stderr; otherwise,
-        # always log to __/var/log/error.log.x, rotating per megabyte.
-        #
-        # Currently we just support throttling from the command line based on
-        # subsystem and level.
+        # Configured using the standard library's logging.config.fileConfig.
+       
+        logging_configured = False
+        if paths.__ is not None:
+            logging_conf = os.path.join(paths.__, 'etc', 'logging.conf')
+            if os.path.exists(logging_conf):
+                logging.config.fileConfig(logging_conf) 
+                log.info("logging configured from file")
+                logging_configured = True
+        if not logging_configured:
+            logging.basicConfig()
+            logging.root.setLevel(logging.NOTSET)
+            log.info("basic logging configured")
 
 
-#        #logging.basicConfig(format=FORMAT)
-#
-#        handler = logging.StreamHandler()
-#        handler.addFilter(logging.Filter(self.opts.log_filter))
-#        form = logging.Formatter(logging.BASIC_FORMAT)
-#        handler.setFormatter(form)
-#        logging.root.addHandler(handler)
-#        logging.root.setLevel(self.opts.log_level)
-#        log.debug("logging configured")

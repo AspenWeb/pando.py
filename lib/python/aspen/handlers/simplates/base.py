@@ -1,3 +1,4 @@
+import logging
 import os
 import stat
 import threading
@@ -17,6 +18,9 @@ else:
 
 
 FORM_FEED = chr(12) # == '\x0c', ^L, ASCII page break
+
+
+log = logging.getLogger('simplates')
 
 
 class LoadError(StandardError):
@@ -96,12 +100,13 @@ class BaseSimplate(object):
     def _load_simplate_uncached(self, fspath):
         """Given a filesystem path, return three objects.
 
-        A simplate is a template with two optional Python components at the head
-        of the file, delimited by an ASCII form feed (also called a page break, FF,
-        ^L, 0xc, 12). The first Python section is exec'd when the simplate is
-        first called, and the namespace it populates is saved for all subsequent
-        runs (so make sure it is thread-safe!). The second Python section is exec'd
-        within the template namespace each time the template is rendered.
+        A simplate is a template with two optional Python components at the
+        head of the file, delimited by an ASCII form feed (also called a page
+        break, FF, ^L, 0xc, 12). The first Python section is exec'd when the
+        simplate is first called, and the namespace it populates is saved for
+        all subsequent runs (so make sure it is thread-safe!). The second
+        Python section is exec'd within the template namespace each time the
+        template is rendered.
 
         Two more things:
 
@@ -244,7 +249,7 @@ class BaseSimplate(object):
                 self.__cache[fspath] = entry
                 if entry.exc is not None:
                     if MODE_DEBUG:
-                        print >> sys.stderr, entry.exc[0]
+                        log.debug(entry.exc[0])
                         pdb.post_mortem(entry.exc[1])
                     raise entry.exc[0]
             finally:

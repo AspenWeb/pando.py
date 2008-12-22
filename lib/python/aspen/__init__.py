@@ -11,6 +11,7 @@ restarting options. Here are the objects defined below:
 
 """
 import base64
+import logging
 import os
 import signal
 import socket
@@ -25,6 +26,9 @@ from aspen import mode, restarter
 from aspen._configuration import ConfigurationError, Configuration, usage
 from aspen.website import Website
 from aspen.wsgiserver import CherryPyWSGIServer as Server
+
+
+log = logging.getLogger('aspen')
 
 
 if 'win' in sys.platform:
@@ -135,7 +139,7 @@ def get_perms(path):
                     err = 'incorrect (%s)' % pid
 
             if err:
-                print "pidfile %s ... recreating" % err
+                log.info("pidfile %s ... recreating" % err)
                 sys.stdout.flush()
                 self.write()
 
@@ -155,7 +159,7 @@ def register_cleanup(func):
 
 def cleanup():
     if CLEANUPS:
-        print "cleaning up ..."
+        log.info("cleaning up ...")
         for func in CLEANUPS:
             func()
 
@@ -194,7 +198,7 @@ def server_factory():
         def tick():
             Server.tick(server)
             if restarter.should_restart():
-                print "restarting ..."
+                log.info("restarting ...")
                 server.stop()
                 cleanup()
                 raise SystemExit(75)
@@ -222,7 +226,7 @@ def start_server():
                    , signal.SIGTERM:'SIGTERM'
                     }.get(signum, "signal %d" % signum)
             msg += ", "
-        print msg + "shutting down"
+        log.info(msg + "shutting down")
         sys.stdout.flush()
         server.stop()
         cleanup()                                           # user hook
@@ -231,7 +235,7 @@ def start_server():
                 try:
                     os.remove(configuration.address)
                 except EnvironmentError, exc:
-                    print "error removing socket:", exc.strerror
+                    log.error("error removing socket:", exc.strerror)
         if pidfiler.isAlive():                              # we're a daemon
             pidfiler.stop.set()
             pidfiler.join()
@@ -247,17 +251,17 @@ def start_server():
     # =================
     # And gracefully handle exit conditions.
 
-    print "aspen starting on %s" % str(configuration.address)
+    log.info("aspen starting on %s" % str(configuration.address))
     sys.stdout.flush()
     while 1:
         try:
             server.start()
         except SystemExit, exc:
-            print "exiting with code %d" % exc.code
+            log.warn("exiting with code %d" % exc.code)
             raise
         except:
-            print "recovering from critical error:"
-            print traceback.format_exc()
+            log.critical("recovering from critical error:")
+            log.critical(traceback.format_exc())
             shutdown(None, None, False)
             time.sleep(1)
 
@@ -308,13 +312,13 @@ def start_server():
         # ============
 
         if not isfile(pidfile):
-            print "daemon not running"
+            log.info("daemon not running")
             raise SystemExit(1)
         data = open(pidfile).read()
         try:
             pid = int(data)
         except ValueError:
-            print "mangled pidfile: '%r'" % data
+            log.info("mangled pidfile: '%r'" % data)
             raise SystemExit(1)
 
 
@@ -329,7 +333,7 @@ def start_server():
             try:
                 os.kill(pid, sig)
             except OSError, exc:
-                print str(exc)
+                log.error(str(exc))
                 raise SystemExit(1)
 
         nattempts = 0
@@ -338,10 +342,11 @@ def start_server():
             if nattempts == 0:
                 kill(signal.SIGTERM)
             elif nattempts == 1:
-                print "%d still going; resending SIGTERM" % pid
+                log.error("%d still going; resending SIGTERM" % pid)
                 kill(signal.SIGTERM)
             elif nattempts == 2:
-                print "%d STILL going; sending SIGKILL and quitting" % pid
+                log.critical("%d STILL going; sending SIGKILL and quitting"
+                             % pid)
                 kill(signal.SIGKILL)
                 raise SystemExit(1)
             nattempts += 1
@@ -361,7 +366,9 @@ def start_server():
 
     if configuration.command == 'start':
         if isfile(pidfile):
-            print "pidfile already exists with pid %s" % open(pidfile).read()
+            log.error( "pidfile already exists with pid %s" 
+                     % open(pidfile).read()
+                      )
             raise SystemExit(1)
         start()
 
@@ -373,7 +380,7 @@ def start_server():
             os.system(command)
             raise SystemExit(0)
         else:
-            print "daemon not running"
+            log.warn("daemon not running")
             raise SystemExit(0)
 
     elif configuration.command == 'stop':
@@ -395,15 +402,15 @@ def start_server():
     try:
         configure(argv)
     except ConfigurationError, err:
-        print usage
-        print err.msg
+        print >> sys.stderr, usage
+        print >> sys.stderr, err.msg
         raise SystemExit(2)
 
     try:
         if configuration.daemon:
             drive_daemon()
         elif mode.DEBDEV and restarter.PARENT:
-            print 'launching child process'
+            log.info('launching child process')
             restarter.launch_child()
         elif restarter.CHILD:
 
@@ -415,15 +422,16 @@ def start_server():
                 for path in ( join(__, 'etc', 'apps.conf')
                             , join(__, 'etc', 'aspen.conf')
                             , join(__, 'etc', 'handlers.conf')
+                            , join(__, 'etc', 'logging.conf')
                             , join(__, 'etc', 'middleware.conf')
                              ):
                     if isfile(path):
                         restarter.track(path)
 
-            print 'starting child server'
+            log.info('starting child server')
             start_server()
         else:
-            print 'starting server'
+            log.info('starting server')
             start_server()
 
     except KeyboardInterrupt:

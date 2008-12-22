@@ -274,6 +274,68 @@ AND fnmatch *.html
   catch_all
 \end{verbatim}
 
+\subsection{logging.conf}
+\label{logging-conf}
+
+Aspen uses the Python \module{logging} library. You can configure logging with
+a \file{__/etc/logging.conf} file, which is processed by the logging library's
+\code{fileConfig} routine. If there is no \file{logging.conf} file, then Aspen
+logs all messages to \file{sys.stderr}.
+
+
+\subsubsection{Example logging.conf}
+
+Below is an example logging configuration file that logs all messages to a file
+at \file{/var/log/aspen.log}, rotating every night at midnight, keeping old
+logs for six days. See more examples in
+\ulink{the
+Python \module{logging} documentation}{http://docs.python.org/library/logging.html#configuring-logging}.
+
+
+\begin{verbatim}
+[loggers]
+keys=root,aspen
+
+[handlers]
+keys=handler
+
+[formatters]
+keys=formatter
+
+
+[logger_root]
+level=NOTSET
+handlers=handler
+
+[logger_aspen]
+level=NOTSET
+handlers=handler
+propagate=0
+qualname=aspen
+
+
+[handler_handler]
+class=handlers.TimedRotatingFileHandler
+level=NOTSET
+formatter=formatter
+args=('/var/log/aspen.log', 'midnight', -1, 6)
+     #filename, when, interval [ignored], backupCount
+
+
+[formatter_formatter]
+format=%(asctime)s %(name)s %(levelname)s %(message)s
+datefmt=
+class=logging.Formatter
+\end{verbatim}
+
+\begin{seealso}
+
+\seelink{http://docs.python.org/library/logging.html}
+{\code{logging}}{The documentation for the standard Python logging library.}
+
+\end{seealso}
+
+
 \subsection{middleware.conf}
 \label{middleware-conf}
 
