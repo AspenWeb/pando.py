@@ -137,8 +137,8 @@ class PIDFile(object):
             raise exc
 
         pid = int(pid)
-        ps = subprocess.Popen( ["ps", "p%s" % pid, "ww"] # portable?! verified
-                             , stdout=subprocess.PIPE    # on FreeBSD and CentOS
+        ps = subprocess.Popen( ["ps", "-wwp%s" % pid]   # portable?! verified
+                             , stdout=subprocess.PIPE   # on FreeBSD and CentOS
                               )
         ps = ps.communicate()[0]
         nlines = ps.count('\n')
