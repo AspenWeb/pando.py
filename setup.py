@@ -27,6 +27,7 @@ setup( name = 'aspen'
                   , 'aspen.apps'
                   , 'aspen.handlers'
                   , 'aspen.handlers.simplates'
+                  , 'aspen.ipc'
                   , 'aspen.middleware'
                    ]
      , scripts = ['bin/aspen', 'bin/aspen.mod_wsgi']
