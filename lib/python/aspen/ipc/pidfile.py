@@ -137,7 +137,7 @@ class PIDFile(object):
             raise exc
 
         pid = int(pid)
-        ps = subprocess.Popen( ["ps", "-wwp%s" % pid]   # portable?! verified
+        ps = subprocess.Popen( ["ps", "wwp%s" % pid]    # portable?! verified
                              , stdout=subprocess.PIPE   # on FreeBSD and CentOS
                               )
         ps = ps.communicate()[0]
