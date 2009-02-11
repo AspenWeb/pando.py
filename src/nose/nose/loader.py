@@ -222,7 +222,12 @@ class TestLoader(unittest.TestLoader):
                 test_func, arg = self.parseGeneratedTest(test)
                 if not callable(test_func):
                     test_func = getattr(m, test_func)
-                yield FunctionTestCase(test_func, arg=arg, descriptor=g)
+                yield FunctionTestCase( test_func
+                                      , arg=arg
+                                      , setUp=g.func_dict.get('setup')
+                                      , tearDown=g.func_dict.get('teardown')
+                                      , descriptor=g
+                                       )
         return self.suiteClass(generate, context=generator, can_split=False)
 
     def loadTestsFromGeneratorMethod(self, generator, cls):
