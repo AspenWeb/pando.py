@@ -1,0 +1,15 @@
+#!/usr/local/bin/python -S
+import sys, os
+join, dirname, abspath = os.path.join, os.path.dirname, os.path.abspath
+site_dirs = [join(dirname(dirname(abspath(__file__))), 'lib', 'python%s.%s' % tuple(sys.version_info[:2])), join(dirname(dirname(abspath(__file__))), 'lib', 'python')]
+sys.path[0:0] = site_dirs
+import site
+[site.addsitedir(d) for d in site_dirs]
+# EASY-INSTALL-ENTRY-SCRIPT: 'nose==0.10.4','console_scripts','nosetests'
+__requires__ = 'nose==0.10.4'
+import sys
+from pkg_resources import load_entry_point
+
+sys.exit(
+   load_entry_point('nose==0.10.4', 'console_scripts', 'nosetests')()
+)
