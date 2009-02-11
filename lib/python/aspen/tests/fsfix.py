@@ -53,7 +53,7 @@ def mk(*treedef, **kw):
         aspen.configure(['--root', root])
 
 
-pid_re = re.compile('^(\d*) .*$')
+pid_re = re.compile('^\s*(\d*) .*$')
 def kill_aspen_test():
     """Kill any lingering test processes (this doesn't work on, um, Windows).
 

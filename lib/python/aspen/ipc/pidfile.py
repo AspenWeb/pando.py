@@ -137,12 +137,12 @@ class PIDFile(object):
             raise exc
 
         pid = int(pid)
-        ps = subprocess.Popen( ["ps", "-p%s" % pid, "-ww"] # portable?!
-                             , stdout=subprocess.PIPE
+        ps = subprocess.Popen( ["ps", "p%s" % pid, "ww"] # portable?! verified
+                             , stdout=subprocess.PIPE    # on FreeBSD and CentOS
                               )
         ps = ps.communicate()[0]
         nlines = ps.count('\n')
-        assert nlines in (1,2), "bad input from `ps -p%s': %s" % (pid, ps)
+        assert nlines in (1,2), "bad input from `ps p%s': %s" % (pid, ps)
         if nlines == 1:                                 # not running
             #  PID  TT  STAT      TIME COMMAND
             raise PIDDead(self.path, pid)
@@ -151,6 +151,7 @@ class PIDFile(object):
             #  45489  ??  S      0:02.42 /usr/local/bin/python /usr/local/bi...
             if self.ASPEN is not None: # make allowances for testing
                 if self.ASPEN not in ps: # rough approximation
+                    log.debug("%s not in %s" % (self.ASPEN, ps))
                     raise PIDNotAspen(self.path, pid)
 
         return pid
