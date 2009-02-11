@@ -70,7 +70,9 @@ class WSGISimplate(BaseSimplate):
         # ======================
 
         if WANT_TEMPLATE:
-            response = [template % namespace]
+            response = template % namespace
+            response = response.encode(self.encoding)
+            response = [response]
             if not _START_RESPONSE_CALLED:
                 guess = mimetypes.guess_type(fspath, 'text/plain')[0]
                 headers = []

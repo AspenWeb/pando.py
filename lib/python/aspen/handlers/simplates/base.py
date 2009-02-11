@@ -118,8 +118,8 @@ class BaseSimplate(object):
             __file__
 
         """
-        encoding = ENCODING
-        simplate = open(fspath).read().decode(encoding)
+        self.encoding = ENCODING
+        simplate = open(fspath).read().decode(self.encoding)
 
         numff = simplate.count(FORM_FEED)
         if numff == 0:

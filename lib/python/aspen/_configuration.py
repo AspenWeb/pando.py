@@ -10,22 +10,39 @@ This module is so-named because we place an instance of Configuration in the
 global aspen namespace.
 
 """
+import atexit
+import base64
 import logging
 import logging.config
+import optparse
 import os
 import socket
 import sys
-import optparse
+import tempfile
 import ConfigParser
+from logging import StreamHandler
+from logging.handlers import TimedRotatingFileHandler
 
-from aspen import load, mode
-
+from aspen import __version__, load, mode
+from aspen.ipc.daemon import Daemon
+from aspen.ipc.pidfile import PIDFile
 
 log = logging.getLogger('aspen') # configured below; not used until then
-COMMANDS = ('start', 'status', 'stop', 'restart', 'runfg')
+COMMANDS = ('start', 'status', 'stop', 'restart')
 WINDOWS = 'win' in sys.platform
-if not WINDOWS:
-    import pwd
+#if not WINDOWS:
+#    import pwd
+
+LOG_FORMAT = "%(message)s"
+LOG_LEVEL = logging.WARNING
+LOG_LEVELS = ( 'NIRVANA'    # oo
+             , 'CRITICAL'   # 50
+             , 'ERROR'      # 40
+             , 'WARNING'    # 30
+             , 'INFO'       # 20
+             , 'DEBUG'      # 10
+             , 'NOTSET'     #  0
+              )
 
 
 class ConfigurationError(StandardError):
@@ -40,7 +57,7 @@ class ConfigurationError(StandardError):
         return self.msg
 
 
-def validate_address(address):
+def validate_address(address):
     """Given a socket address string, return a tuple (sockfam, address).
 
     This is called from a couple places, and is a bit complex.
@@ -66,7 +83,7 @@ class ConfigurationError(StandardError):
         # must be between 0 and 65535, inclusive.
 
 
-        err = "Bad address %s" % str(address)
+        err = ConfigurationError("Bad address %s" % str(address))
 
 
         # Break out IP and port.
@@ -129,9 +146,22 @@ class ConfigurationError(StandardError):
     return address, sockfam
 
 
-# optparse
+def validate_log_level(log_level):
+    """Convert a string to an int.
+    """
+    if log_level not in LOG_LEVELS:
+        msg = "logging level must be one of %s, not %s"
+        log_levels = ', '.join(LOG_LEVELS)
+        raise ConfigurationError(msg % (log_levels, log_level))
+    if log_level == 'NIRVANA':
+        log_level = sys.maxint
+    else:
+        log_level = getattr(logging, log_level)
+    return log_level
+
+
+# optparse
 # ========
-# Does this look ugly to anyone else? It works I guess.
 
 def callback_address(option, opt, value, parser_):
     """Must be a valid AF_INET or AF_UNIX address.
@@ -140,29 +170,65 @@ def callback_address(option, opt, value, parser_):
     parser_.values.address = address
     parser_.values.sockfam = sockfam
     parser_.values.have_address = True
-
+    parser_.values.raw_address = value 
 
 def callback_root(option, opt, value, parser_):
     """Expand the root directory path and make sure the directory exists.
     """
-    value = os.path.realpath(value)
-    if not os.path.isdir(value):
-        msg = "%s does not point to a directory" % value
+    dirpath = os.path.realpath(value)
+    if not os.path.isdir(dirpath):
+        msg = "%s does not point to a directory" % dirpath
         raise optparse.OptionValueError(msg)
-    parser_.values.root = value
-
+    parser_.values.root = dirpath
+    parser_.values.raw_root = value
 
 def callback_mode(option, opt, value, parser_):
     """Indicate that we have a mode from the command line.
     """
     parser_.values.mode = value
     parser_.values.have_mode= True
+    parser_.values.raw_mode = value
+
+def callback_log_level(option, opt, value, parser_):
+    """Convert the string to an int.
+    """
+    parser_.values.log_level = validate_log_level(value)
+    parser_.values.raw_log_level = value
+
+def store_raw(option, opt, value, parser_):
+    """Store both the computed and the raw value for get_clean_argv in __init__.
+    """
+    setattr(parser_.values, option.dest, value)
+    setattr(parser_.values, 'raw_'+option.dest, value)
 
 
-usage = "aspen [options] [start,stop,&c.]; --help for more"
-optparser = optparse.OptionParser(usage=usage)
+usage = "aspen [options] [restart,start,status,stop]; --help for "\
+        "more"
+version = """\
+aspen, version %s
 
-optparser.add_option( "-a", "--address"
+(c) 2006-2009 Chad Whitacre and contributors
+http://www.zetadev.com/software/aspen/
+""" % __version__
+
+optparser = optparse.OptionParser(usage=usage, version=version)
+optparser.description = """\
+Aspen is a Python webserver. If given no arguments or options, it will start in
+the foreground serving a website from the current directory on port 8080, based
+on configuration files in ./__/etc/, logging to stdout. Full documentation is
+on the web at http://www.zetadev.com/software/aspen/.
+"""
+
+
+# Basic
+# -----
+
+basic_group = optparse.OptionGroup( optparser
+                                  , "Basics"
+                                  , "Configure filesystem and network "\
+                                    "location, and lifecycle stage."
+                                   )
+basic_group.add_option( "-a", "--address"
                     , action="callback"
                     , callback=callback_address
                     , default=('0.0.0.0', 8080)
@@ -170,7 +236,7 @@ optparser.add_option( "-a", "--address"
                     , help="the IP or Unix address to bind to [:8080]"
                     , type='string'
                      )
-optparser.add_option( "-m", "--mode"
+basic_group.add_option( "-m", "--mode"
                     , action="callback"
                     , callback=callback_mode
                     , choices=[ 'debugging', 'deb', 'development', 'dev'
@@ -183,7 +249,7 @@ optparser.add_option( "-m", "--mode"
                             )
                     , type='choice'
                      )
-optparser.add_option( "-r", "--root"
+basic_group.add_option( "-r", "--root"
                     , action="callback"
                     , callback=callback_root
                     , default=os.getcwd()
@@ -192,8 +258,67 @@ optparser.add_option( "-r", "--root"
                     , type='string'
                      )
 
+optparser.add_option_group(basic_group)
 
-class Paths:
+
+# Logging 
+# -------
+
+logging_group = optparse.OptionGroup( optparser
+                                    , "Logging"
+                                    , "Basic configuration of Python's "\
+                                      "logging library; for more complex "\
+                                      "needs use a logging.conf file"
+                                     )
+
+logging_group.add_option( "-o", "--log-file"
+                    , action="callback"
+                    , callback=store_raw
+                    , default=None
+                    , dest="log_file"
+                    , help="the file to which messages will be logged; if "\
+                           "specified, it will be rotated nightly for 7 days "\
+                           "[stdout]"
+                    , type='string'
+                    , metavar="FILE"
+                     )
+logging_group.add_option( "-i", "--log-filter"
+                    , action="callback"
+                    , callback=store_raw
+                    , default=None
+                    , dest="log_filter"
+                    , help="the subsystem outside of which messages will "\
+                           "not be logged []"
+                    , type='string'
+                    , metavar="FILTER"
+                     )
+logging_group.add_option( "-t", "--log-format"
+                    , action="callback"
+                    , callback=store_raw
+                    , default=None
+                    , dest="log_format"
+                    , help="the log message format per the Formatter class "\
+                           "in the Python standard library's logging module "\
+                           "[%(message)s]"
+                    , type='string'
+                    , metavar="FORMAT"
+                     )
+logging_group.add_option( "-v", "--log-level"
+                    , action="callback"
+                    , callback=callback_log_level
+                    , choices=LOG_LEVELS
+                    , default=None
+                    , help="the importance level at or above which to log "\
+                           "a message; options are %s [WARNING]" % \
+                           ', '.join(LOG_LEVELS)
+                    , type='choice'
+                    , metavar="LEVEL"
+                     )
+optparser.add_option_group(logging_group)
+
+
+
+class Paths:
     """Junkdrawer for a few paths we like to keep around.
     """
 
@@ -234,7 +359,7 @@ optparser.add_option( "-r", "--root"
                     sys.path.insert(0, path)
 
 
-class ConfFile(ConfigParser.RawConfigParser):
+class ConfFile(ConfigParser.RawConfigParser):
     """Represent a configuration file.
 
     This class wraps the standard library's RawConfigParser class. The
@@ -245,9 +370,10 @@ optparser.add_option( "-r", "--root"
 
     """
 
-    def __init__(self, filepath):
+    def __init__(self, filepath=None):
         ConfigParser.RawConfigParser.__init__(self)
-        self.read([filepath])
+        if filepath is not None:
+            self.read([filepath])
 
     def __getitem__(self, name):
         return self.has_section(name) and dict(self.items(name)) or {}
@@ -278,22 +404,22 @@ optparser.add_option( "-r", "--root"
             yield self[k]
 
 
-class Configuration(load.Mixin):
+class Configuration(load.Mixin):
     """Aggregate configuration from several sources.
     """
 
-    args = None # argument list as returned by OptionParser.parse_args
-    conf = None # a ConfFile instance
+    args = None     # argument list as returned by OptionParser.parse_args
+    conf = None     # a ConfFile instance
     optparser = None # an optparse.OptionParser instance
-    opts = None # an optparse.Values instance per OptionParser.parse_args
-    paths = None # a Paths instance
+    opts = None     # an optparse.Values instance per OptionParser.parse_args
+    paths = None    # a Paths instance
 
-    address = None # the AF_INET, AF_INET6, or AF_UNIX address to bind to
-    command = None # one of restart, runfg, start, status, stop [runfg]
-    daemon = None # boolean; whether to daemonize
+    address = None  # the AF_INET, AF_INET6, or AF_UNIX address to bind to
+    command = None  # one of restart, start, status, stop; optional []
+    daemon = None   # Daemon object or None; whether to daemonize
     defaults = None # tuple of default resource names for a directory
-    sockfam = None # one of socket.AF_{INET,INET6,UNIX}
-    threads = None # the number of threads in the pool
+    sockfam = None  # one of socket.AF_{INET,INET6,UNIX}
+    threads = None  # the number of threads in the pool
 
 
     def __init__(self, argv):
@@ -319,15 +445,17 @@ optparser.add_option( "-r", "--root"
         # ==============
         # Like root, 'command' can only be given on the command line.
 
-        command = args and args[0] or 'runfg'
-        if command not in COMMANDS:
+        command = ''
+        if args:
+            command = args[0]
+        if command and command not in COMMANDS:
             raise ConfigurationError("Bad command: %s" % command)
-        daemon = command != 'runfg'
-        if daemon and WINDOWS:
+        want_daemon = command != ''
+        if want_daemon and WINDOWS:
             raise ConfigurationError("Can only daemonize on UNIX.")
 
         self.command = command
-        self.daemon = daemon
+        self.daemon = Daemon(self)
 
 
         # address/sockfam & mode
@@ -414,18 +542,124 @@ optparser.add_option( "-r", "--root"
 
         # Logging
         # =======
-        # Configured using the standard library's logging.config.fileConfig.
-       
-        logging_configured = False
-        if paths.__ is not None:
-            logging_conf = os.path.join(paths.__, 'etc', 'logging.conf')
+        # Logging can be configured from four places, in this order of 
+        # precedence:
+        #
+        #   1) some other module (theoretically, I'm not sure an aspen user 
+        #      could make this happen easily)
+        #   2) the command line
+        #   3) a logging.conf file
+        #   4) a [logging] section in the aspen.conf file
+        #
+        # These are not layered; only one is used.
+
+        #FMT = "%(process)-6s%(levelname)-9s%(name)-14s%(message)s"
+
+        logging_configured = bool(len(logging.getLogger().handlers))
+                             # this test is taken from logging.basicConfig.
+
+        if logging_configured:              # some other module
+            log.warn("logging is already configured")
+
+        if not logging_configured:          # command line
+            kw = dict()
+            kw['filename'] = opts.log_file
+            kw['filter'] = opts.log_filter
+            kw['format'] = opts.log_format
+            kw['level'] = opts.log_level
+            if kw.values() != [None, None, None, None]: # at least one knob set
+                if kw['format'] is None:
+                    kw['format'] = LOG_FORMAT
+                if kw['level'] is None:
+                    kw['level'] = LOG_LEVEL
+                self.configure_logging(**kw)
+                log.info("logging configured from the command line")
+                logging_configured = True
+
+        if not logging_configured:          # logging.conf
+            logging_conf = os.path.join(paths.root, '__', 'etc', 'logging.conf')
             if os.path.exists(logging_conf):
                 logging.config.fileConfig(logging_conf) 
-                log.info("logging configured from file")
+                log.info("logging configured from logging.conf")
                 logging_configured = True
-        if not logging_configured:
-            logging.basicConfig()
-            logging.root.setLevel(logging.NOTSET)
-            log.info("basic logging configured")
 
+        if not logging_configured:          # aspen.conf [logging]
+            kw = dict()
+            kw['filename'] = conf.logging.get('file')
+            kw['filter'] = conf.logging.get('filter')
+            kw['format'] = conf.logging.get('format', LOG_FORMAT)
+
+            log_level = conf.logging.get('level')
+            if log_level is not None:
+                log_level = validate_log_level(log_level) 
+            else:
+                log_level = LOG_LEVEL
+            kw['level'] = log_level
+
+            self.configure_logging(**kw)
+            log.info("logging configured from aspen.conf")
+            logging_configured = True
+
+
+        # PIDFile
+        # =======
+        # Pidfile only gets written in CHILD of a daemon.
+
+        vardir = os.path.join(self.paths.root, '__', 'var')
+        pidpath = os.path.join(vardir, 'aspen.pid')
+        pidfile = PIDFile(pidpath)
+        self.pidfile = pidfile
+
+
+    def configure_logging(self, filename, filter, format, level):
+        """Used for configuring logging from the command line or aspen.conf.
+        """
+    
+        # Handler
+        # =======
+        # sys.stdout or rotated file
+   
+        if filename is None:
+            handler = StreamHandler(sys.stdout)
+        else:
+            # @@: Handle absolute paths on Windows
+            #  http://sluggo.scrapping.cc/python/unipath/Unipath-current/unipath/abstractpath.py
+            #  http://docs.python.org/library/os.path.html#os.path.splitunc
+            if not filename.startswith('/'):
+                filename = os.path.join(self.paths.root, filename)
+                filename = os.path.realpath(filename)
+            logdir = os.path.dirname(filename)
+            if not os.path.isdir(logdir):
+                os.makedirs(logdir, 0755)
+            handler = TimedRotatingFileHandler( filename=filename
+                                              , when='midnight'
+                                              , backupCount=7
+                                               )
+        # Filter
+        # ======
+        
+        if filter is not None:
+            filter = logging.Filter(filter)
+            handler.addFilter(filter)
+    
+    
+        # Format
+        # ======
+   
+        formatter = logging.Formatter(fmt=format)
+        handler.setFormatter(formatter)
+
+
+        # Level
+        # =====
+
+        handler.setLevel(level)
+
+    
+        # Installation
+        # ============
+   
+        root_logger = logging.getLogger()
+        root_logger.addHandler(handler)
+        root_logger.setLevel(level) # bah
 

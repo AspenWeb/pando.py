@@ -2,7 +2,7 @@ import os.path
 import time
 
 from aspen.tests import assert_raises
-from aspen.tests import fsfix
+from aspen.tests import fsfix # importing as module to extend somewhat
 
 
 # Fixture
@@ -145,4 +145,4 @@ def test_cache():
 # Teardown
 # ========
 
-fsfix.attach_rm(globals(), 'test_')
+fsfix.attach_teardown(globals())

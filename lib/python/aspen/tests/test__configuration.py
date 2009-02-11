@@ -1,19 +1,13 @@
+import re
 import os
 import sys
 import threading
 import urllib
 
-from aspen import server_factory, mode, configure, unconfigure
+from aspen import mode, configure, unconfigure
 from aspen._configuration import ConfFile, Configuration as Config
 from aspen.tests import assert_raises
-from aspen.tests.fsfix import mk, rm
-
-
-# Fixture
-# =======
-
-lib_python = os.path.join('__', 'lib', 'python%s' % sys.version[:3])
-sys.path.insert(0, os.path.join('fsfix', lib_python))
+from aspen.tests.fsfix import mk, attach_teardown
 
 
 # ConfFile
@@ -53,32 +47,6 @@ def test_no_main_section():
     actual = Config(['--root=fsfix']).conf.custom['foo']
     expected = 'bar'
     assert actual == expected, actual
-
-def test_from_aspen_import_config():
-    """This actually tests Aspen at a pretty high level.
-    """
-    mk( '__/etc', lib_python
-      , ('__/etc/aspen.conf', '[main]\naddress=:53700\n[my_settings]\nfoo=bar')
-      , ('__/etc/apps.conf', '/ foo:wsgi_app')
-      , (lib_python+'/foo.py', """\
-import aspen
-
-def wsgi_app(environ, start_response):
-    my_setting = aspen.conf.my_settings.get('foo', 'default')
-    start_response('200 OK', [])
-    return ["My setting is %s" % my_setting]
-""")
-       )
-    configure(['--root=fsfix'])
-    try:
-        server = server_factory()
-        thread_ = threading.Thread(target=server.start).start()
-        expected = "My setting is bar"
-        actual = urllib.urlopen('http://localhost:53700/').read()
-        server.stop()
-        assert actual == expected, actual
-    finally:
-        unconfigure()
 
 
 # mode
@@ -205,6 +173,17 @@ def test_http_version_anything_else():
     assert actual == expected, actual
 
 
+# pidfile 
+# =======
+
+def test_pidfile____var():
+    mk('__/var')
+    configuration = Config(['--root', 'fsfix'])
+    actual = configuration.pidfile.path
+    expected = os.path.realpath(os.path.join('fsfix', '__', 'var', 'aspen.pid'))
+    assert actual == expected, actual
+
+
 # Test layering: CLI, conf file, environment.
 # ===========================================
 
@@ -227,15 +206,4 @@ def test_layering_conffile_trumps_environment():
     assert actual == expected, actual
 
 
-# Remove the filesystem fixture after each test, and clear the environment.
-# =========================================================================
-
-def teardown():
-    rm()
-    if 'PYTHONMODE' in os.environ:
-        del os.environ['PYTHONMODE']
-
-context = globals()
-for name in context.keys():
-    if name.startswith('test_'):
-        context[name].teardown = teardown
+attach_teardown(globals())

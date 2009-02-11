@@ -6,29 +6,52 @@ import subprocess
 import sys
 import time
 import urllib
-from os.path import isfile, join
 
 import aspen
 from aspen._configuration import Configuration
 from aspen.exceptions import *
-from aspen.tests import BIN_ASPEN, assert_raises
-from aspen.tests.fsfix import mk, attach_rm
+from aspen.tests import Block, assert_, assert_actual, assert_raises
+from aspen.tests import hit_with_timeout
+from aspen.tests.fsfix import mk, attach_teardown
 from aspen.website import Website as _Website
 
 
 # Fixture
 # =======
 
-lib_python = os.path.join('__', 'lib', 'python%s' % sys.version[:3])
-sys.path.insert(0, os.path.join('fsfix', lib_python))
-
-class Foo:
+class DummyServer:
     pass
 
 def Website():
-    config = Configuration(['-rfsfix'])
+    config = Configuration(['--root=fsfix'])
     config.load_plugins()
-    return _Website(config)
+    server = DummyServer()
+    server.configuration = config
+    return _Website(server)
+
+class Aspen(Block):
+    """Encapsulate a running aspen server.
+    """
+
+    def __init__(self):
+        proc = subprocess.Popen( [ 'aspen' # assumed to be on PATH
+                                 , '--address=:53700'
+                                 , '--root=fsfix'
+                                 , '--mode=production'
+                                 , '--log-level=NIRVANA'
+                                  ]
+                                )
+        self.proc = proc
+
+    def getpid(self):
+        return self.proc.pid
+
+    def hit_and_terminate(self, path='/'):
+        url = "http://localhost:53700" + path
+        output = hit_with_timeout(url)
+        kill(self.proc.pid, signal.SIGTERM)
+        self.stop(self.proc.pid)
+        return output
 
 
 # Define a cross-platform kill().
@@ -36,6 +59,7 @@ def Website():
 # http://python.org/infogami-faq/windows/how-do-i-emulate-os-kill-in-windows/
 
 if 'win' in sys.platform:
+    # @@: in 2.6 os.kill works on windows
     try:
         import win32api
     except ImportError:
@@ -60,65 +84,58 @@ else:
 # =====
 
 def test_greetings_program():
-    """This is also a general smoke test, as it runs the entire Aspen stack.
-    """
-    mk( 'root', ('root/index.html', "Greetings, program!")
-      , ('smoke-it.py', BIN_ASPEN) # simulate bin/aspen
-       )
-    proc = subprocess.Popen([ 'python' # assumed to be on PATH
-                            , join('fsfix', 'smoke-it.py')
-                            , '--address', ':53700'
-                            , '--root', join('fsfix', 'root')
-                            , '--mode', 'production'
-                             ])
-    time.sleep(1) # give time to startup
-    expected = 'Greetings, program!'
-    actual = urllib.urlopen('http://localhost:53700/').read()
-    kill(proc.pid, signal.SIGTERM)
-    proc.wait()
+    mk(('index.html', "Greetings, program!"))
+    aspen = Aspen()
+    expected = "Greetings, program!"
+    actual = aspen.hit_and_terminate()
     assert actual == expected, actual
 
+
 def test_your_first_handler():
-    mk( lib_python, '__/etc'
-      , (lib_python+'/handy.py', """
+
+    def setup():
+        mk( ('__/lib/python/handy.py', """\
 def handle(environ, start_response):
     start_response('200 OK', [('Content-Type', 'text/plain')])
     return [environ['PATH_TRANSLATED']]
-""")
-      , ('__/etc/handlers.conf', """
+    """)
+          , ('__/etc/handlers.conf', """\
 fnmatch aspen.rules:fnmatch
 
 [handy:handle]
 fnmatch *.asp
-""")
-      , ('handled.asp', "Greetings, program?")
-        )
+    """)
+          , ('handled.asp', "Greetings, program?")
+            )
 
-    expected = [os.path.realpath(os.path.join('fsfix', 'handled.asp'))]
+    PATH_TRANSLATED = os.path.realpath(os.path.join('fsfix', 'handled.asp'))
+
+
+    # Hit it from the inside.
+    # =======================
+
+    setup()
+    expected = [PATH_TRANSLATED]
     actual = Website()({'PATH_INFO':'handled.asp'}, lambda a,b:a)
-    assert actual == expected, actual
+    yield assert_actual, expected, actual
+
+
+    # Then hit it from the outside.
+    # =============================
+
+    setup()
+    expected = PATH_TRANSLATED
+    aspen = Aspen()
+    actual = aspen.hit_and_terminate('/handled.asp')
+    yield assert_actual, expected, actual
 
 
 def test_auto_index():
-    mk( 'root', 'root/__', 'root/FOO'
-      , ('smoke-it.py', BIN_ASPEN) # simulate bin/aspen
-       )
-    proc = subprocess.Popen([ 'python' # assumed to be on PATH
-                            , join('fsfix', 'smoke-it.py')
-                            , '--address', ':53700'
-                            , '--root', join('fsfix', 'root')
-                            , '--mode', 'production'
-                             ])
-    time.sleep(1) # give time to startup
-
-    actual = urllib.urlopen('http://localhost:53700/').read()
-    # @@: how do we check for 200 response code?
-    # for now just hit localhost:53700 to test manually
-    kill(proc.pid, signal.SIGTERM)
-    proc.wait()
-    assert 'FOO' in actual
-    assert '__' not in actual
+    mk('FOO', '__')
+    aspen = Aspen()
+    actual = aspen.hit_and_terminate()
+    yield assert_, 'FOO' in actual
+    yield assert_, '__' not in actual
 
 
-
-attach_rm(globals(), 'test_')
+attach_teardown(globals())

@@ -2,7 +2,7 @@ from os.path import join, realpath
 
 from aspen import utils as u
 from aspen.tests import assert_raises
-from aspen.tests.fsfix import mk, attach_rm
+from aspen.tests.fsfix import mk, attach_teardown
 
 
 # Fixture
@@ -250,5 +250,6 @@ def test_full_url_with_SCRIPT_NAME_and_PATH_INFO_and_QUERY_STRING():
 # Remove the filesystem fixture after some tests.
 # ===============================================
 
-attach_rm(globals(), 'test_rm_')
-attach_rm(globals(), 'test_find_default_')
+g = globals()
+attach_teardown(g, 'test_rm_')
+attach_teardown(g, 'test_find_default_')

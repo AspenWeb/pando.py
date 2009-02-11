@@ -1,6 +1,12 @@
+import commands
 import os
+import re
+import signal
 
 import aspen
+from aspen import restarter
+from aspen.tests import reset_log_filter, reset_log_format
+from nose.tools import with_setup
 
 
 def convert_path(path):
@@ -47,10 +53,39 @@ def mk(*treedef, **kw):
         aspen.configure(['--root', root])
 
 
-def rm():
-    """Remove the filesystem fixture at ./fsfix, and run aspen.unconfigure.
+pid_re = re.compile('^(\d*) .*$')
+def kill_aspen_test():
+    """Kill any lingering test processes (this doesn't work on, um, Windows).
+
+    I thought of extending this to also kill aspen processes (for 
+    test_tutorial) but then what happens if you run this on a production box? 
+    So kill those yourself.
+
+    We sort the pids for test_ipc_daemon. I think what happens is if you kill
+    the child first and reap it ourselves, then the parent never completes? Or 
+    something? Can't get to the bottom of it now. :^(
+
     """
-    aspen.unconfigure()
+    cmd = "ps xww | grep 'fsfix/aspen-test' | grep -v 'grep'" # portable?!
+    raw = commands.getoutput(cmd).splitlines()
+    pids = []
+    for line in raw:
+        match = pid_re.match(line)
+        if match is not None:
+            pid = int(match.group(1))
+            pids.append(pid)
+    pids.sort() # kill parent before child, but why?
+    for pid in pids:
+        try:
+            os.kill(pid, signal.SIGTERM)
+            os.wait()
+        except OSError:
+            pass # if parent is terminated first, killing child lands here
+
+
+def rm():
+    """Remove the filesystem fixture at fsfix/.
+    """
     root = os.path.realpath('fsfix')
     if os.path.isdir(root):
         for root, dirs, files in os.walk(root, topdown=False):
@@ -61,12 +96,31 @@ def rm():
         os.rmdir(root)
 
 
-def attach_rm(context, prefix):
-    """Given a namespace and a routine prefix, attach the rm function.
+def teardown():
+    """Standard teardown function.
     """
-    for name in context.keys():
+    rm()
+    kill_aspen_test()
+    aspen.unconfigure()
+    reset_log_filter()
+    reset_log_format()
+    if restarter.MONITORING:
+        restarter.stop_monitoring()
+    else:
+        restarter._initialize() # recreate _monitor thread in case it was used
+    open('log', 'r+').truncate(0)
+    if 'PYTHONMODE' in os.environ:
+        del os.environ['PYTHONMODE']
+
+teardown() # start clean
+
+
+def attach_teardown(context, prefix='test_'):
+    """Given a namespace and a routine prefix, attach the teardown function.
+    """
+    for name, func in context.items():
         if name.startswith(prefix):
-            context[name].teardown = rm
+            func = with_setup(teardown=teardown)(func) # non-destructive
 
 
 def path(*parts):

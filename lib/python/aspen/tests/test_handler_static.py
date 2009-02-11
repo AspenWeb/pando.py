@@ -1,7 +1,7 @@
 from os.path import join, realpath
 
 import aspen
-from aspen.tests.fsfix import mk, attach_rm
+from aspen.tests.fsfix import mk, attach_teardown
 
 
 # Fixture
@@ -29,5 +29,4 @@ def test_basic():
     assert actual == expected, actual
 
 
-test_basic.teardown = aspen.unconfigure
-attach_rm(globals(), 'test_')
+attach_teardown(globals())

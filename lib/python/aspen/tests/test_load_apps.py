@@ -3,7 +3,7 @@ import sys
 
 from aspen import load
 from aspen.tests import assert_raises
-from aspen.tests.fsfix import mk, attach_rm
+from aspen.tests.fsfix import mk, attach_teardown
 from aspen.exceptions import *
 
 
@@ -206,4 +206,4 @@ def test_tab_ok():
 # Remove the filesystem fixture after each test.
 # ==============================================
 
-attach_rm(globals(), 'test_')
+attach_teardown(globals())

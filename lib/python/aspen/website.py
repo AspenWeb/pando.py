@@ -1,8 +1,8 @@
 import logging
 import os
 import sys
-from os.path import basename, exists, isdir, isfile, join
 
+import aspen
 from aspen import mode
 from aspen.exceptions import HandlerError
 from aspen.utils import check_trailing_slash, find_default, translate
@@ -11,12 +11,14 @@ from aspen.utils import check_trailing_slash, find_default, translate
 log = logging.getLogger('aspen.website')
 
 
-class Website:
+class Website(object):
     """Represent a publication, application, or hybrid website.
     """
 
-    def __init__(self, configuration):
-        self.configuration = configuration
+    def __init__(self, server):
+        self.server = server
+        self.configuration = server.configuration
+        self.configuration.load_plugins() # user modules imported here
         self.root = self.configuration.paths.root
 
 
@@ -31,11 +33,11 @@ log = logging.getLogger('aspen.website')
         # ========================================
 
         hide = False
-        fspath = translate(self.configuration.paths.root, environ['PATH_INFO'])
+        fspath = translate(self.root, environ['PATH_INFO'])
         if self.configuration.paths.__ is not None:
             if fspath.startswith(self.configuration.paths.__):  # magic dir
                 hide = True
-        if basename(fspath) == 'README.aspen':                  # README.aspen
+        if os.path.basename(fspath) == 'README.aspen':          # README.aspen
             hide = True
         if hide:
             start_response('404 Not Found', [])
@@ -47,11 +49,11 @@ log = logging.getLogger('aspen.website')
         # ===================
 
         app = self.get_app(environ, start_response) # 301
-        if isinstance(app, list):                           # redirection
+        if isinstance(app, list):                           # want redirection
             response = app
-        elif app is not None:                               # app
+        elif app is not None:                               # have app
             response = app(environ, start_response) # WSGI
-        elif not exists(fspath):                            # 404 NOT FOUND
+        elif not os.path.exists(fspath):                    # 404 NOT FOUND
             start_response('404 Not Found', [])
             response = ['Resource not found.']
 
@@ -92,7 +94,7 @@ log = logging.getLogger('aspen.website')
             if not match_against.startswith(app_urlpath):
                 continue
             environ['PATH_TRANSLATED'] = translate(self.root, app_urlpath)
-            if not isdir(environ['PATH_TRANSLATED']):
+            if not os.path.isdir(environ['PATH_TRANSLATED']):
                 start_response('404 Not Found', [])
                 return ['Resource not found.']
 

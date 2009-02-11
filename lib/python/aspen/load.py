@@ -4,7 +4,6 @@ import cStringIO
 import inspect
 import logging
 import os
-from os.path import isdir, isfile, join, realpath
 
 from aspen import colon, utils
 from aspen.exceptions import *
@@ -34,7 +33,7 @@ SPACE = ' '
 TAB = '\t'
 
 
-class Handler(object):
+class Handler(object):
     """Represent a function that knows how to obey the rules.
 
     Some optimization ideas:
@@ -51,10 +50,10 @@ TAB = '\t'
     _funcs = None # a mapping of rulenames to rulefuncs
     _name = '' # the name of the callable
 
-    def __init__(self, rulefuncs, handle):
+    def __init__(self, rules, handle):
         """Takes a mapping of rulename to rulefunc, and a WSGI callable.
         """
-        self._funcs = rulefuncs
+        self._funcs = rules
         self.handle = handle
 
     def __str__(self):
@@ -168,7 +167,7 @@ TAB = '\t'
         return eval(expression) # e.g.: True or False and not True
 
 
-class Mixin:
+class Mixin:
 
     apps = None # a list of apps, reverse-sorted by SCRIPT_NAME
     handlers = None # a list of Handlers, unsorted
@@ -198,8 +197,8 @@ TAB = '\t'
         try:
             if self.paths.__ is None:
                 raise NotImplementedError
-            path = join(self.paths.__, 'etc', 'apps.conf')
-            if not isfile(path):
+            path = os.path.join(self.paths.__, 'etc', 'apps.conf')
+            if not os.path.isfile(path):
                 raise NotImplementedError
         except NotImplementedError:
             log.info("No apps configured.")
@@ -216,7 +215,7 @@ TAB = '\t'
         for dirpath, dirnames, filenames in os.walk(self.paths.root):
             if 'README.aspen' not in filenames:
                 continue
-            os.remove(join(dirpath, 'README.aspen'))
+            os.remove(os.path.join(dirpath, 'README.aspen'))
 
         for line in fp:
             lineno += 1
@@ -242,10 +241,10 @@ TAB = '\t'
                 # ======================================
 
                 fspath = utils.translate(self.paths.root, urlpath)
-                if not isdir(fspath):
+                if not os.path.isdir(fspath):
                     os.makedirs(fspath)
                     log.info("created app directory '%s'"% fspath)
-                readme = join(fspath, 'README.aspen')
+                readme = os.path.join(fspath, 'README.aspen')
                 open(readme, 'w+').write(README_aspen % (lineno, original))
 
 
@@ -291,7 +290,7 @@ TAB = '\t'
         user_conf = False
         if self.paths.__ is not None:
             path = join(self.paths.__, 'etc', 'handlers.conf')
-            if isfile(path):
+            if os.path.isfile(path):
                 user_conf = True
 
         if user_conf:
@@ -364,8 +363,8 @@ TAB = '\t'
         try:
             if self.paths.__ is None:
                 raise NotImplementedError
-            path = join(self.paths.__, 'etc', 'middleware.conf')
-            if not isfile(path):
+            path = os.path.join(self.paths.__, 'etc', 'middleware.conf')
+            if not os.path.isfile(path):
                 raise NotImplementedError
         except NotImplementedError:
             log.info("No middleware configured.")

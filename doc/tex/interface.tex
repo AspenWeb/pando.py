@@ -34,7 +34,6 @@ that can be used to configure the bash shell to autocomplete from among Aspen's
 arguments. See the source for more information.
 
 Aspen's command-line options are as follows:
-% a subset of the options available in the config file:
 
 \begin{tableiii}{l|l|l}{var}{Option}{Description}{Default}
 
@@ -44,10 +43,6 @@ Aspen's command-line options are as follows:
     contains more than one colon, it is seen as an AF_INET6 address. Otherwise,
     it is interpreted as AF_INET. If \var{address} begins with a colon, the IP
     address defaults to \code{0.0.0.0}.} {\code{0.0.0.0:8080}}
-
-% \lineiii{\programopt{-l}/\longprogramopt{-log_filter}=\var{log_filter}}
-%     {A subsystem filter to apply to the error log, per the logging module.}
-%     {\code{}}
 
 \lineiii{\programopt{-m}/\longprogramopt{-mode}=\var{mode}}
     {One of \code{debugging}, \code{development}, \code{staging}, or
@@ -59,11 +54,6 @@ Aspen's command-line options are as follows:
 \lineiii{\programopt{-r}/\longprogramopt{-root}=\var{root}}
     {The directory containing the website for Aspen to serve.}
     {\code{.}}
-
-% \lineiii{\programopt{-v}/\longprogramopt{-log_level}=\var{log_level}}
-%     {The error log level. Valid options per the logging module
-%     are (case-insensitive): \code{notset}, \code{debug}, \code{info},
-%     \code{warning}, \code{error}, \code{critical}.}{\code{warning}}
 
 \end{tableiii}
 
@@ -280,7 +270,10 @@ AND fnmatch *.html
 Aspen uses the Python \module{logging} library. You can configure logging with
 a \file{__/etc/logging.conf} file, which is processed by the logging library's
 \code{fileConfig} routine. If there is no \file{logging.conf} file, then Aspen
-logs all messages to \file{sys.stderr}.
+logs all messages to \file{sys.stderr}. Note that you are responsible to create
+any directories needed to store log files that you specify in
+\file{logging.conf}; Aspen does not create those directories for you, and will
+not work if they do not exist.
 
 
 \subsubsection{Example logging.conf}
