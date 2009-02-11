@@ -5,7 +5,7 @@ except:
 
 
 classifiers = [
-    'Development Status :: 3 - Alpha'
+    'Development Status :: 4 - Beta'
   , 'Environment :: Console'
   , 'Intended Audience :: Developers'
   , 'License :: OSI Approved :: MIT License'
@@ -29,7 +29,7 @@ setup( name = 'aspen'
                   , 'aspen.handlers.simplates'
                   , 'aspen.middleware'
                    ]
-     , scripts = ['bin/aspen', 'bin/aspen.mod_wsgi', 'bin/aspen.monitord']
+     , scripts = ['bin/aspen', 'bin/aspen.mod_wsgi']
      , description = 'Aspen is a highly extensible Python webserver.'
      , author = 'Chad Whitacre'
      , author_email = 'chad@zetaweb.com'
