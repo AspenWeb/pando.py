@@ -1,0 +1,85 @@
+# put this in ~/.subversion/ or %HOMEPATH%/Application Data/Subversion
+# it will make it harder for you to put crap in the repo
+
+[miscellany]
+global-ignores = *.pyc *.o *.lo *.la #*# .*.rej *.rej .*~ *~ .#* .DS_Store Thumbs.db .*.sw*
+enable-auto-props = yes
+
+[auto-props]
+*.bak       = svn:eol-style=native
+*.c         = svn:eol-style=native
+*.cfg       = svn:eol-style=native
+*.cnf       = svn:eol-style=native
+*.conf      = svn:eol-style=native
+*.css       = svn:eol-style=native
+*.csv       = svn:eol-style=native
+*.h         = svn:eol-style=native
+*.htm       = svn:eol-style=native
+*.html      = svn:eol-style=native
+*.how       = svn:eol-style=native
+*.idx       = svn:eol-style=native
+*.inc       = svn:eol-style=native
+*.inf       = svn:eol-style=native
+*.ini       = svn:eol-style=native
+*.js        = svn:eol-style=native
+*.log       = svn:eol-style=native
+*.pl        = svn:eol-style=native
+*.props     = svn:eol-style=native
+*.rdf       = svn:eol-style=native
+*.shtml     = svn:eol-style=native
+*.sql       = svn:eol-style=native
+*.ssi       = svn:eol-style=native
+*.tex       = svn:eol-style=native
+*.tmp       = svn:eol-style=native
+*.tsv       = svn:eol-style=native
+*.txt       = svn:eol-style=native
+*.utf8      = svn:eol-style=native
+*.xml       = svn:eol-style=native
+
+# common files w/o extensions
+HISTORY     = svn:eol-style=native
+INSTALL     = svn:eol-style=native
+Makefile    = svn:eol-style=native
+README      = svn:eol-style=native
+TODO        = svn:eol-style=native
+WARNINGS    = svn:eol-style=native
+config      = svn:eol-style=native
+
+# python/zope/plone
+*.cpt       = svn:eol-style=native
+*.cpy       = svn:eol-style=native
+*.dtml      = svn:eol-style=native
+*.metadata  = svn:eol-style=native
+*.py        = svn:eol-style=native
+*.pt        = svn:eol-style=native
+*.smpl      = svn:eol-style=native
+*.vpy       = svn:eol-style=native
+index_html  = svn:eol-style=native
+
+# man pages
+*.1         = svn:eol-style=native
+*.2         = svn:eol-style=native
+*.3         = svn:eol-style=native
+*.4         = svn:eol-style=native
+*.5         = svn:eol-style=native
+*.6         = svn:eol-style=native
+*.7         = svn:eol-style=native
+*.8         = svn:eol-style=native
+*.9         = svn:eol-style=native
+
+# gleaned from FCKeditor
+*.afp       = svn:eol-style=native
+*.afpa      = svn:eol-style=native
+*.asp       = svn:eol-style=native
+*.aspx      = svn:eol-style=native
+*.cfc       = svn:eol-style=native
+*.cfm       = svn:eol-style=native
+*.cgi       = svn:eol-style=native
+*.code      = svn:eol-style=native
+*.ent       = svn:eol-style=native
+*.htaccess  = svn:eol-style=native
+*.htc       = svn:eol-style=native
+*.lasso     = svn:eol-style=native
+*.php       = svn:eol-style=native
+*.suspended = svn:eol-style=native
+*.vbs       = svn:eol-style=native

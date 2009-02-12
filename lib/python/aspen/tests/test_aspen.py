@@ -2,6 +2,7 @@
 """
 import os
 import socket
+import sys
 import time
 from subprocess import Popen, PIPE, STDOUT
 
@@ -10,14 +11,17 @@ from aspen.server import Server
 from aspen.tests import LOG, hit_with_timeout
 from aspen.tests import assert_, assert_actual, assert_logs, assert_raises
 from aspen.tests.fsfix import mk, attach_teardown
+from nose import SkipTest
 
 
-ARGV = ['aspen']
+if sys.platform == 'win32':
+    raise SkipTest
 
 
 # Fixture
 # =======
 
+ARGV = ['aspen']
 PIDPATH = os.path.join('fsfix', '__', 'var', 'aspen.pid')
 def getpid(): # for our use of this in these test, missing PIDPATH is a bug
     return open(PIDPATH).read()
@@ -40,6 +44,8 @@ def with_daemon(func):
 # =====
 
 def test_daemon():
+    if WINDOWS:
+        raise SkipTest
     mk() 
     daemon_cmd('start')
     daemon_cmd('stop')

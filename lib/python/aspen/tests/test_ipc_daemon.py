@@ -15,6 +15,10 @@ from aspen.tests.fsfix import mk, attach_teardown
 from nose import SkipTest
 
 
+if sys.platform == 'win32':
+    raise SkipTest
+
+
 ARGV = ['python', os.path.join('fsfix', 'aspen-test.py')]
 
 

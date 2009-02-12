@@ -14,7 +14,6 @@ __version__ = '~~VERSION~~'
 
 from aspen._configuration import ConfigurationError, Configuration, usage
 from aspen.ipc import restarter
-from aspen.ipc.daemon import Daemon
 from aspen.ipc.pidfile import PIDFile
 from aspen.server import Server
 
@@ -104,17 +103,16 @@ def main_loop(configuration):
 
         argv = sys.argv[:]
 
-        if configuration.daemon:
+        if configuration.daemon is not None:
             argv = absolutize_root(argv)
-            daemon = Daemon(configuration)
-            daemon.drive() # will either daemonize us or raise SystemExit
+            configuration.daemon.drive() # will daemonize or raise SystemExit
 
         restarter.loop(argv)
 
     else:
         assert restarter.CHILD # sanity check
 
-        if configuration.daemon:
+        if configuration.daemon is not None:
             configuration.pidfile.write() # only in CHILD of daemon
             atexit.register(configuration.pidfile.remove)
 
