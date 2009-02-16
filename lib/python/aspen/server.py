@@ -54,6 +54,7 @@ class Server(BaseServer):
                             , os.path.join(__, 'etc', 'handlers.conf')
                             , os.path.join(__, 'etc', 'logging.conf')
                             , os.path.join(__, 'etc', 'middleware.conf')
+                            , os.path.join(__, 'etc', 'urlmap.conf')
                              ):
                     if os.path.isfile(path):
                         restarter.monitor(path)
