@@ -95,7 +95,7 @@ def middleware(next):
     # =============================
 
     config = aspen.conf.urlmap
-    prefix = config.get('prefix', 'urlmap')
+    prefix = config.get('prefix', 'urlmap.')
     allow_direct = 'allow_direct' in config
     if allow_direct:
         endpoints = []
