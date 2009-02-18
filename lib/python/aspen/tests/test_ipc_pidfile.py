@@ -1,9 +1,15 @@
 import os
 import stat
+import sys
 
 from aspen.ipc.pidfile import *
 from aspen.tests import assert_logs, assert_raises, set_log_filter
 from aspen.tests.fsfix import attach_teardown, mk
+from nose import SkipTest
+
+
+if 'win32' == sys.platform:
+    raise SkipTest # PIDFile object is created on windows but never written
 
 
 class TestPIDFile(PIDFile):

@@ -14,10 +14,15 @@ from aspen.tests import Block, assert_, assert_actual, assert_raises
 from aspen.tests import hit_with_timeout
 from aspen.tests.fsfix import mk, attach_teardown
 from aspen.website import Website as _Website
+from nose import SkipTest
 
 
 # Fixture
 # =======
+
+if 'win32' == sys.platform:
+    raise SkipTest # skip for now until we feel like putting aspen on PATH
+
 
 class DummyServer:
     pass
@@ -58,7 +63,7 @@ class Aspen(Block):
 # ===============================
 # http://python.org/infogami-faq/windows/how-do-i-emulate-os-kill-in-windows/
 
-if 'win' in sys.platform:
+if 'win32' == sys.platform:
     # @@: in 2.6 os.kill works on windows
     try:
         import win32api

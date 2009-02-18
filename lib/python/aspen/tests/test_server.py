@@ -50,6 +50,7 @@ def test_log():
                , "configuring filesystem monitor"
                , "No app found for '/'"
                , "cleaning up server"
+               , force_unix_EOL=True
                 )
 
 def test_from_aspen_import_config():

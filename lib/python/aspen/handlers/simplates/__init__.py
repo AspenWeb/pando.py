@@ -107,9 +107,10 @@ excs = (ImportError,)
 try:
     # django may be available but we don't want to use it here
     from django.core.exceptions import ImproperlyConfigured
-    excs = (ImportError, ImproperlyConfigured)
+    excs = (EnvironmentError, ImportError, ImproperlyConfigured)
 except ImportError:
     pass
+
 try:
     from django_ import wsgi as django
 except excs:

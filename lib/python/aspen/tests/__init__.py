@@ -88,7 +88,12 @@ def assert_logs(*lines, **kw):
     if lines[0] is None:
         expected = ''
     else:
-        expected = os.linesep.join(lines) + os.linesep
+        # when logged output is printed, system-specific newlines are used
+        # when logged output is written to a file, universal newline support 
+        #  kicks in, and we have to work around it here
+        force_unix_EOL = kw.get('force_unix_EOL', False)
+        linesep = force_unix_EOL and '\n' or os.linesep
+        expected = linesep.join(lines) + linesep
     actual = kw.get('actual', open(LOG, 'r').read())
     assert actual == expected, actual.splitlines()
 

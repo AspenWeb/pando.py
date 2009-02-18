@@ -180,7 +180,7 @@ def test_log_file():
                            , '--log-level=ERROR'
                            , '--log-file=%s' % LOG
                             )
-    assert_logs('critical!' , 'error!')
+    assert_logs('critical!' , 'error!', force_unix_EOL=True)
 
 
 # From aspen.conf
@@ -213,6 +213,7 @@ def test_aspen_conf_file():
     actual = hit_with_flags('')
     assert_logs( 'critical!' , 'error!', 'warning!'
                , 'critical!' , 'error!', 'warning!'
+               , force_unix_EOL=True
                 )
 
 

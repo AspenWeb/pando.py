@@ -3,11 +3,17 @@ import logging
 import os
 import signal
 import subprocess
+import sys
 import time
 
 from aspen.ipc import restarter
 from aspen.tests import LOG, Block, assert_logs
 from aspen.tests.fsfix import mk, attach_teardown
+from nose import SkipTest
+
+
+if 'win32' == sys.platform:
+    raise SkipTest # blah ... what am I doing?
 
 
 ARGV = ['python', os.path.join('fsfix', 'aspen-test.py')] 
