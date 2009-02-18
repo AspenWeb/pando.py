@@ -24,6 +24,7 @@ from logging import StreamHandler
 from logging.handlers import TimedRotatingFileHandler
 
 from aspen import __version__, load, mode
+from aspen.ipc.daemon import Daemon
 from aspen.ipc.pidfile import PIDFile
 
 log = logging.getLogger('aspen') # configured below; not used until then
@@ -415,7 +416,7 @@ class Configuration(load.Mixin):
 
     address = None  # the AF_INET, AF_INET6, or AF_UNIX address to bind to
     command = None  # one of restart, start, status, stop; optional []
-    daemon = None   # Daemon object or None; whether to daemonize (on Unix)
+    daemon = None   # Daemon object or None; whether to daemonize
     defaults = None # tuple of default resource names for a directory
     sockfam = None  # one of socket.AF_{INET,INET6,UNIX}
     threads = None  # the number of threads in the pool
@@ -450,12 +451,12 @@ class Configuration(load.Mixin):
         if command and command not in COMMANDS:
             raise ConfigurationError("Bad command: %s" % command)
         want_daemon = command != ''
-        if want_daemon:
-            if WINDOWS:
-                raise ConfigurationError("Can only daemonize on UNIX.")
-            from aspen.ipc.daemon import Daemon # lazy to avoid err on Windows
-            self.daemon = Daemon(self)
+        if want_daemon and WINDOWS:
+            raise ConfigurationError("Can only daemonize on UNIX.")
+
         self.command = command
+        if want_daemon:
+            self.daemon = Daemon(self)
 
 
         # address/sockfam & mode

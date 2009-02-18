@@ -44,8 +44,6 @@ def with_daemon(func):
 # =====
 
 def test_daemon():
-    if WINDOWS:
-        raise SkipTest
     mk() 
     daemon_cmd('start')
     daemon_cmd('stop')

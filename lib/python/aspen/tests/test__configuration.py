@@ -16,14 +16,14 @@ from aspen.tests.fsfix import mk, attach_teardown
 def test_ConfFile():
     mk(('foo.conf', '[blah]\nfoo = bar\nbaz=True\n[bar]\nbuz=blam\nlaaa=4'))
     conf = ConfFile(os.path.join('fsfix', 'foo.conf'))
-    actual = [(k,[t for t in v.iteritems()]) for (k,v) in conf.iteritems()]
-    for foo in actual:
-        foo[1].sort()
-    actual.sort()
     expected = [ ('bar', [ ('buz', 'blam')
                          , ('laaa', '4')])
                , ('blah', [ ('baz', 'True')
                           , ('foo', 'bar')])]
+    actual = [(k,[t for t in v.iteritems()]) for (k,v) in conf.iteritems()]
+    for foo in actual:
+        foo[1].sort()
+    actual.sort()
     assert actual == expected, actual
 
 
@@ -32,20 +32,20 @@ def test_ConfFile():
 
 def test_basic():
     mk('__/etc', ('__/etc/aspen.conf', '[main]\n\naddress = :53700'))
-    actual = Config(['--root=fsfix']).address
     expected = ('0.0.0.0', 53700)
+    actual = Config(['--root=fsfix']).address
     assert actual == expected, actual
 
 def test_no_aspen_conf():
     mk()
-    actual = Config(['--root=fsfix']).address
     expected = ('0.0.0.0', 8080)
+    actual = Config(['--root=fsfix']).address
     assert actual == expected, actual
 
 def test_no_main_section():
     mk('__/etc', ('__/etc/aspen.conf', '[custom]\nfoo = bar'))
-    actual = Config(['--root=fsfix']).conf.custom['foo']
     expected = 'bar'
+    actual = Config(['--root=fsfix']).conf.custom['foo']
     assert actual == expected, actual
 
 
@@ -57,8 +57,8 @@ def test_mode_default():
     if 'PYTHONMODE' in os.environ:
         del os.environ['PYTHONMODE']
     Config(['--root=fsfix'])
-    actual = mode.get()
     expected = 'development'
+    actual = mode.get()
     assert actual == expected, actual
 
 def test_mode_set_in_conf_file():
@@ -66,8 +66,8 @@ def test_mode_set_in_conf_file():
     if 'PYTHONMODE' in os.environ:
         del os.environ['PYTHONMODE']
     Config(['--root=fsfix'])
-    actual = mode.get()
     expected = 'production'
+    actual = mode.get()
     assert actual == expected, actual
 
 
@@ -76,26 +76,26 @@ def test_mode_set_in_conf_file():
 
 def test_default_defaults():
     mk()
-    actual = Config(['--root=fsfix']).defaults
     expected = ('index.html', 'index.htm')
+    actual = Config(['--root=fsfix']).defaults
     assert actual == expected, actual
 
 def test_defaults_space_separated():
     mk('__/etc', ('__/etc/aspen.conf', '[main]\ndefaults=foo bar'))
-    actual = Config(['--root=fsfix']).defaults
     expected = ('foo', 'bar')
+    actual = Config(['--root=fsfix']).defaults
     assert actual == expected, actual
 
 def test_defaults_comma_separated():
     mk('__/etc', ('__/etc/aspen.conf', '[main]\ndefaults=foo,bar'))
-    actual = Config(['--root=fsfix']).defaults
     expected = ('foo', 'bar')
+    actual = Config(['--root=fsfix']).defaults
     assert actual == expected, actual
 
 def test_defaults_comma_and_space_separated():
     mk('__/etc', ('__/etc/aspen.conf', '[main]\ndefaults=foo, bar, baz'))
-    actual = Config(['--root=fsfix']).defaults
     expected = ('foo', 'bar', 'baz')
+    actual = Config(['--root=fsfix']).defaults
     assert actual == expected, actual
 
 
@@ -104,38 +104,38 @@ def test_defaults_comma_and_space_separated():
 
 def test_threads_default():
     mk()
-    actual = Config(['--root=fsfix']).threads
     expected = 10
+    actual = Config(['--root=fsfix']).threads
     assert actual == expected, actual
 
 def test_threads_ten():
     mk('__/etc', ('__/etc/aspen.conf', '[main]\nthreads=10'))
-    actual = Config(['--root=fsfix']).threads
     expected = 10
+    actual = Config(['--root=fsfix']).threads
     assert actual == expected, actual
 
 def test_threads_ten_billion():
     mk('__/etc', ('__/etc/aspen.conf', '[main]\nthreads=10000000000'))
-    actual = Config(['--root=fsfix']).threads
     expected = 10000000000
+    actual = Config(['--root=fsfix']).threads
     assert actual == expected, actual
 
 def test_threads_zero():
     mk('__/etc', ('__/etc/aspen.conf', '[main]\nthreads=0000000000'))
-    actual = assert_raises(ValueError, Config, ['--root=fsfix']).args[0]
     expected = "thread count less than 1: '0'"
+    actual = assert_raises(ValueError, Config, ['--root=fsfix']).args[0]
     assert actual == expected, actual
 
 def test_threads_negative_one():
     mk('__/etc', ('__/etc/aspen.conf', '[main]\nthreads=-1'))
-    actual = assert_raises(TypeError, Config, ['--root=fsfix']).args[0]
     expected = "thread count not a positive integer: '-1'"
+    actual = assert_raises(TypeError, Config, ['--root=fsfix']).args[0]
     assert actual == expected, actual
 
 def test_threads_blah_blah():
     mk('__/etc', ('__/etc/aspen.conf', '[main]\nthreads=blah blah'))
-    actual = assert_raises(TypeError, Config, ['--root=fsfix']).args[0]
     expected = "thread count not a positive integer: 'blah blah'"
+    actual = assert_raises(TypeError, Config, ['--root=fsfix']).args[0]
     assert actual == expected, actual
 
 
@@ -184,25 +184,36 @@ def test_pidfile____var():
     assert actual == expected, actual
 
 
+# daemon
+# ======
+
+def test_daemon_only_when_wanted():
+    mk()
+    configuration = Config(['--root', 'fsfix'])
+    expected = None
+    actual = configuration.daemon
+    assert actual is expected, actual
+
+
 # Test layering: CLI, conf file, environment.
 # ===========================================
 
 def test_layering_CLI_trumps_conffile():
     mk('__/etc', ('__/etc/aspen.conf', '[main]\naddress=:9000'))
-    actual = Config(['--root', 'fsfix', '--address', ':8080']).address
     expected = ('0.0.0.0', 8080)
+    actual = Config(['--root', 'fsfix', '--address', ':8080']).address
     assert actual == expected, actual
 
 def test_layering_CLI_trumps_environment():
     mk()
-    actual = Config(['--root', 'fsfix', '--mode', 'production'])._mode
     expected = 'production'
+    actual = Config(['--root', 'fsfix', '--mode', 'production'])._mode
     assert actual == expected, actual
 
 def test_layering_conffile_trumps_environment():
     mk('__/etc', ('__/etc/aspen.conf', '[main]\nmode=production'))
-    actual = Config(['--root', 'fsfix'])._mode
     expected = 'production'
+    actual = Config(['--root', 'fsfix'])._mode
     assert actual == expected, actual
 
 
