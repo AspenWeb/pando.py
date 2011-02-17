@@ -1,7 +1,7 @@
-try:
-    from setuptools import setup
-except:
-    from distutils.core import setup
+from ez_setup import use_setuptools
+use_setuptools()
+
+from setuptools import find_packages, setup
 
 
 classifiers = [
@@ -15,25 +15,16 @@ classifiers = [
   , 'Operating System :: POSIX'
   , 'Programming Language :: Python'
   , 'Topic :: Internet :: WWW/HTTP :: HTTP Servers'
-  , 'Topic :: Internet :: WWW/HTTP :: WSGI'
-  , 'Topic :: Internet :: WWW/HTTP :: WSGI :: Application'
-  , 'Topic :: Internet :: WWW/HTTP :: WSGI :: Server'
    ]
 
-setup( name = 'aspen'
-     , version = '~~VERSION~~'
-     , package_dir = {'':'lib/python'}
-     , packages = [ 'aspen'
-                  , 'aspen.apps'
-                  , 'aspen.handlers'
-                  , 'aspen.handlers.simplates'
-                  , 'aspen.ipc'
-                  , 'aspen.middleware'
-                   ]
-     , scripts = ['bin/aspen', 'bin/aspen.mod_wsgi']
-     , description = 'Aspen is a highly extensible Python webserver.'
-     , author = 'Chad Whitacre'
+setup( author = 'Chad Whitacre'
      , author_email = 'chad@zetaweb.com'
-     , url = 'http://www.zetadev.com/software/aspen/'
      , classifiers = classifiers
+     , description = 'Async simplates. Python, even. Nice.'
+     , entry_points = { 'console_scripts': 'aspen = aspen.cli:main' }
+     , name = 'aspen'
+     , packages = find_packages() 
+     , url = 'http://aspen.io/'
+     , version = '~~VERSION~~'
+     , zip_safe = False
       )
