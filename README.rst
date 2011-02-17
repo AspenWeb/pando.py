@@ -13,8 +13,8 @@ directory of this distribution, inline in the source files, and online at:
     CREDITS & LEGALESE
 ========================================
 
-All original work is copyright (c) 2006-2007 Chad Whitacre and contributors, all
-rights reserved, and is released under the MIT license:
+All original work is copyright (c) 2006-2011 Chad Whitacre and contributors,
+all rights reserved, and is released under the MIT license:
 
     Permission is hereby granted, f ree of charge, to any person obtaining a
     copy of this software and associated documentation files (the "Software"),
