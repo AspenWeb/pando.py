@@ -1,4 +1,4 @@
-Aspen is a web app server for Python. It's main feature is simplates.
+Aspen is a Python web app server. Killer feature: simplates.
 
 
 Installation
@@ -39,7 +39,7 @@ Simplates are Aspen's main attraction. Here's what a simplate looks like::
 Edit index.html with that content, then refresh. You're off and running.
 
 The ^L is an ASCII page break character. If you copy and paste the above, you
-need to replace the ^Ls with actual ^Ls (you feel me?). Here's how to get one:
+need to replace the ^Ls with actual ^Ls (you feel me?). Here's how:
 
 +-------------+--------------------------------+
 | *Vim*       | Ctrl-L (in insert mode)        |
