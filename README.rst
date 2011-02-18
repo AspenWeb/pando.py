@@ -38,7 +38,8 @@ Simplates are Aspen's main attraction. Here's what a simplate looks like::
 
 Edit index.html with that content, then refresh. You're off and running.
 
-The ^L is an ASCII page break character. Here's how to get one:
+The ^L is an ASCII page break character. If you copy and paste the above, you
+need to replace the ^Ls with actual ^Ls (you feel me?). Here's how to get one:
 
 +-------------+--------------------------------+
 | *Vim*       | Ctrl-L (in insert mode)        |
@@ -48,12 +49,12 @@ The ^L is an ASCII page break character. Here's how to get one:
 | *UltraEdit* | If I remember right, there is  |
 |             | a "Page Break" option on the   | 
 |             | "Insert" menu. You'd probably  | 
-|             | remap that.                    |
+|             | want to remap that in the long |
+|             | term.                          |
 +-------------+--------------------------------+
 
-Besides learning a weird character, the other kind-of wart with simplates is
-that you have to keep switching file formats to get the right syntax
-highlighting.
+Besides learning a weird character, the other niggle with simplates is that you
+have to keep switching file formats to get the right syntax highlighting.
 
 +-------------+----------------------------------+
 | *Vim*       | :set filetype={python,html,etc.} |
