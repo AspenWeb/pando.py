@@ -20,11 +20,13 @@ classifiers = [
 setup( author = 'Chad Whitacre'
      , author_email = 'chad@zetaweb.com'
      , classifiers = classifiers
-     , description = 'Async simplates. Python, even. Nice.'
-     , entry_points = { 'console_scripts': 'aspen = aspen.cli:main' }
+     , description = ('Aspen is an async web app server. '
+                      'Simplates are the thing about it.')
+     , entry_points = { 'console_scripts': ['aspen = aspen.cli:main'] }
      , name = 'aspen'
      , packages = find_packages() 
      , url = 'http://aspen.io/'
      , version = '~~VERSION~~'
+     , install_requires = ['diesel == 1.9.7b'] # waiting for public release
      , zip_safe = False
       )
