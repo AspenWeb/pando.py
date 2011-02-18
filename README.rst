@@ -4,7 +4,7 @@ Aspen is a Python web app server. Killer feature: simplates.
 Installation
 ============
 
-Let's assume you are down with virtualenv. Do this::
+Assuming virtualenv, do this::
 
     $ mkdir foo
     $ cd foo
