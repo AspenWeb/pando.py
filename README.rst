@@ -8,23 +8,20 @@ Releases, docs, support:
 Installation
 ============
 
-Let's assume you are up on virtualenv. Do this::
+Let's assume you are down with virtualenv. Do this::
 
     $ mkdir foo
     $ cd foo
     $ virtualenv .aspen
     $ source .aspen/bin/activate
     $ pip install https://github.com/jamwt/diesel/tarball/master
-    $ pip install aspen
-    $ echo Greetings, program\! > index.html
+    $ pip install https://github.com/whit537/aspen/tarball/master
+    $ echo Greetings, program! > index.html
     $ aspen
     Greetings, program! Welcome to port 8080.
 
 
 Check http://localhost:8080/ for your new page.
-
-(Sorry about the diesel install. Once there's a public release of diesel 2 that
-will be in aspen's setup.py)
 
 
 Simplates
@@ -37,7 +34,7 @@ Simplates are Aspen's main attraction. Here's what a simplate looks like::
     import random
 
     ^L
-    n = random.choice(range(10)
+    n = random.choice(range(10))
     extra_excitement = "!" * n
 
     ^L
@@ -45,25 +42,25 @@ Simplates are Aspen's main attraction. Here's what a simplate looks like::
 
 Edit index.html with that content, then refresh. You're off and running.
 
-The ^L is an ASCII page break character.
+The ^L is an ASCII page break character. Here's how to get one:
 
-    +-------------+---------------------------------+
-    | *Vim*       | Ctrl-L (in insert mode)         |
-    +-------------+---------------------------------+
-    | *Emacs*     | C-q C-l                         |
-    +-------------+---------------------------------+
-    | *UltraEdit* | If I remember right, there is   |
-    |             | a "Page Break" option on the    | 
-    |             | "Insert" menu. You'd probably   | 
-    |             | remap that.                     |
-    +-------------+---------------------------------+
++-------------+--------------------------------+
+| *Vim*       | Ctrl-L (in insert mode)        |
++-------------+--------------------------------+
+| *Emacs*     | C-q C-l                        |
++-------------+--------------------------------+
+| *UltraEdit* | If I remember right, there is  |
+|             | a "Page Break" option on the   | 
+|             | "Insert" menu. You'd probably  | 
+|             | remap that.                    |
++-------------+--------------------------------+
 
 Besides learning a weird character, the other kind-of wart with simplates is
 that you have to keep switching file formats to get the right syntax
 highlighting.
 
-    +-------------+---------------------------------+
-    | *Vim*       | :set filetype={python,html,etc} |
-    +-------------+---------------------------------+
++-------------+----------------------------------+
+| *Vim*       | :set filetype={python,html,etc.} |
++-------------+----------------------------------+
 
 
