@@ -1,8 +1,4 @@
-Aspen is an async app server for Python.
-
-Releases, docs, support:
-
-    http://aspen.io/
+Aspen is a web app server for Python. It's main feature is simplates.
 
 
 Installation
