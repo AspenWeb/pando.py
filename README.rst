@@ -23,8 +23,8 @@ Let's assume you are up on virtualenv. Do this::
 
 Check http://localhost:8080/ for your new page.
 
-(Sorry about the diesel install. Once there's a public release that will be in
-aspen's setup.py)
+(Sorry about the diesel install. Once there's a public release of diesel 2 that
+will be in aspen's setup.py)
 
 
 Simplates
@@ -47,14 +47,23 @@ Edit index.html with that content, then refresh. You're off and running.
 
 The ^L is an ASCII page break character.
 
-    || *Vim* || Ctrl-L (in insert mode) ||
-    || *Emacs* || C-q C-l ||
-    || *UltraEdit* || If I remember right, there is a "Page Break" option on the "Insert" menu. You'd probably remap that. ||
+    +-------------+---------------------------------+
+    | *Vim*       | Ctrl-L (in insert mode)         |
+    +-------------+---------------------------------+
+    | *Emacs*     | C-q C-l                         |
+    +-------------+---------------------------------+
+    | *UltraEdit* | If I remember right, there is   |
+    |             | a "Page Break" option on the    | 
+    |             | "Insert" menu. You'd probably   | 
+    |             | remap that.                     |
+    +-------------+---------------------------------+
 
 Besides learning a weird character, the other kind-of wart with simplates is
 that you have to keep switching file formats to get the right syntax
 highlighting.
 
-    || *Vim* || :set filetype={python,html,etc} ||
+    +-------------+---------------------------------+
+    | *Vim*       | :set filetype={python,html,etc} |
+    +-------------+---------------------------------+
 
 
