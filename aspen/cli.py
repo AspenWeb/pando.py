@@ -1,4 +1,6 @@
+import os
 import logging
+from os.path import isdir, join
 
 from aspen import mode, restarter
 from aspen.website import Website
@@ -14,6 +16,12 @@ def main(argv=None):
     configuration = Configuration(argv)
     configuration.app = app = Application()
     website = Website(configuration)
+
+    # restart for template files too; TODO generalize this to all of etc?
+    template_dir = join(configuration.root, '.aspen', 'etc', 'templates')
+    if isdir(template_dir):
+        for filename in os.listdir(template_dir):
+            restarter.add(join(template_dir, filename))
     
     port = configuration.address[1]
     if mode.DEVDEB:

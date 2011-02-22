@@ -14,6 +14,7 @@ from aspen.http import Request, Response
 log = logging.getLogger('aspen.website')
 find_ours = lambda s: join(os.path.dirname(__file__), 'www', s)
 
+
 class Website(object):
     """Represent a website.
     """
