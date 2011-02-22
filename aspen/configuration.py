@@ -196,10 +196,10 @@ http://aspen.io/
 
 optparser = optparse.OptionParser(usage=usage, version=version)
 optparser.description = """\
-Aspen is a Python webserver. If given no arguments or options, it will start in
-the foreground serving a website from the current directory on port 8080, based
-on configuration files in ./.aspen/etc/, logging to stdout. Full documentation
-is on the web at http://aspen.io/.
+Aspen is a Python web server. Simplates are the main attraction. If given no
+arguments or options, it will start serving a website from the current
+directory on port 8080, based on configuration files in ./.aspen/etc/, logging
+to stdout. Full documentation is on the web at http://aspen.io/.
 """
 
 
@@ -369,9 +369,9 @@ class Configuration(object):
         root = os.getcwd()
         if args:
             root = args[0]
-        dirpath = os.path.realpath(root)
-        if not os.path.isdir(dirpath):
-            msg = "%s does not point to a directory" % dirpath
+        root = os.path.realpath(root)
+        if not os.path.isdir(root):
+            msg = "%s does not point to a directory" % root
             raise ConfigurationError(msg)
 
 
