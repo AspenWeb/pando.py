@@ -7,13 +7,12 @@ import traceback
 import urlparse
 from os.path import join, isfile, isdir, dirname
 
-from aspen import mode, simplates, socket_io
+from aspen import mode, simplates
 from aspen.http import Request, Response
 
 
 log = logging.getLogger('aspen.website')
-AUTOINDEX = join(dirname(__file__), 'index.html')
-
+find_ours = lambda s: join(os.path.dirname(__file__), 'www', s)
 
 class Website(object):
     """Represent a website.
@@ -21,7 +20,6 @@ class Website(object):
 
     def __init__(self, configuration):
         self.configuration = configuration
-        self.hub = self.configuration.app.hub
         self.root = self.configuration.root
 
     def __call__(self, diesel_request):
@@ -62,7 +60,7 @@ class Website(object):
     def nice_error(self, request, response):
         fs = str(response.code) + '.html'
         theirs = join(request.root, '.aspen', 'etc', 'templates', fs)
-        ours = join(os.path.dirname(__file__), fs)
+        ours = find_ours(fs)
         if isfile(theirs):
             request.fs = theirs
         elif isfile(ours):
@@ -108,7 +106,7 @@ class Website(object):
             if not self.configuration.autoindex: # or not
                 raise Response(404)
             request.headers.set('X-Aspen-AutoIndexDir', request.fs)
-            request.fs = AUTOINDEX
+            request.fs = find_ours('index.html') 
 
         if '.sock/' in request.fs:
             parts = request.fs.split('.sock/')
@@ -124,7 +122,10 @@ class Website(object):
                 pass # what is this?
 
         if not isfile(request.fs):              # genuinely not found
-            raise Response(404)
+            if request.path == '/favicon.ico':  # special case
+                request.fs = find_ours('favicon.ico')
+            else:
+                raise Response(404)
 
 
         # Now you are one of us.

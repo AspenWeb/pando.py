@@ -27,6 +27,10 @@ FORM_FEED = chr(12) # == '\x0c', ^L, ASCII page break
 ENCODING = 'UTF-8'
 log = logging.getLogger('aspen.simplate')
 
+# relax some mimetypes
+for ext in ('py', 'sh'):
+    mimetypes.add_type('text/plain', '.'+ext)
+
 
 class LoadError(StandardError):
     """Represent a problem parsing a simplate.
@@ -56,8 +60,8 @@ class Entry:
 # Core loader
 # ===========
 
-def load_uncached(root, fspath):
-    """Given a filesystem path, return three objects (uncached).
+def load_uncached(request):
+    """Given a Request object, return three objects (uncached).
 
     A simplate is a template with two optional Python components at the head of
     the file, delimited by '^L'. The first Python section is exec'd when the
@@ -68,15 +72,18 @@ def load_uncached(root, fspath):
     If the mimetype does not start with 'text/', then it is only a simplate if
     it has at least one form feed in it. Binary files generally can't be
     decoded using UTF-8. If Python's mimetypes module doesn't know about a
-    certain extension, then we default to application/octet-stream.
+    certain extension, then we default to a configurable value (default is
+    text/plain).
 
     """
 
-    simplate = open(fspath).read()
+    simplate = open(request.fs).read()
     
-    mimetype = mimetypes.guess_type(fspath, 'text/plain')[0]
+    mimetype = mimetypes.guess_type(request.fs, 'text/plain')[0]
     if mimetype is None:
-        mimetype = 'application/octet-stream'
+        mimetype = request.config.conf.aspen.get( 'default_mimetype'
+                                                , 'text/plain'
+                                                 )
     if not mimetype.startswith('text/'):
         if simplate.count(FORM_FEED) not in [1,2]:
             # XXX: This can still give us a false positive, if a binary file
@@ -97,7 +104,7 @@ def load_uncached(root, fspath):
     elif nform_feeds == 2:
         imports, script, template = simplate.split(FORM_FEED)
     else:
-        raise SyntaxError( "Simplate <%s> may have at most two " % fspath
+        raise SyntaxError( "Simplate <%s> may have at most two " % request.fs
                          + "form feeds; it has %d." % nform_feeds
                           )
 
@@ -122,23 +129,23 @@ def load_uncached(root, fspath):
     # =====================================
 
     namespace = dict()
-    namespace['__file__'] = fspath # == request.fs
-    script = compile(script, fspath, 'exec')
+    namespace['__file__'] = request.fs
+    script = compile(script, request.fs, 'exec')
     if template.strip():
-        loader = Loader(os.path.join( root
+        loader = Loader(os.path.join( request.root
                                     , '.aspen'
                                     , 'etc'
                                     , 'templates'
                                      ))
         template = Template( template
-                           , name = fspath
+                           , name = request.fs
                            , loader = loader
                            , compress_whitespace = False
                             )
     else:
         template = None
 
-    exec compile(imports, fspath, 'exec') in namespace
+    exec compile(imports, request.fs, 'exec') in namespace
 
     return (mimetype, namespace, script, template)
 
@@ -146,31 +153,31 @@ def load_uncached(root, fspath):
 # Cache wrapper
 # =============
 
-def load(root, fspath):
-    """Given a filesystem path, return four objects (with caching).
+def load(request):
+    """Given Request object, return four objects (with caching).
     """
 
     # Get a cache Entry object.
     # =========================
 
-    if fspath not in __cache:
+    if request.fs not in __cache:
         entry = Entry()
-        entry.fspath = fspath
-        __cache[fspath] = entry
+        #entry.fspath = request.fs # TODO: What was this for?
+        __cache[request.fs] = entry
 
-    entry = __cache[fspath]
+    entry = __cache[request.fs]
 
 
     # Process the simplate.
     # =====================
 
-    modtime = os.stat(fspath)[stat.ST_MTIME]
+    modtime = os.stat(request.fs)[stat.ST_MTIME]
     if entry.modtime == modtime:                            # cache hit
         if entry.exc is not None:
             raise entry.exc
     else:                                                   # cache miss
         try:
-            entry.quadruple = load_uncached(root, fspath)
+            entry.quadruple = load_uncached(request)
         except Exception, exception:
             # NB: Old-style string exceptions will still raise.
             entry.exc = ( LoadError(traceback.format_exc())
@@ -203,7 +210,7 @@ def handle(request, response=None):
     if response is None:
         response = Response()
 
-    mimetype, namespace, script, template = load(request.root, request.fs)
+    mimetype, namespace, script, template = load(request)
 
     if namespace is None:
         response.body = template
