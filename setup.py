@@ -25,6 +25,8 @@ setup( author = 'Chad Whitacre'
      , name = 'aspen'
      , packages = find_packages(exclude=[ 'aspen.socket_io'     # not ready for
                                         , 'aspen.socket_io.*'      # prime time
+                                        , 'aspen.tests'
+                                        , 'aspen.tests.*'
                                          ]) 
      , url = 'http://aspen.io/'
      , version = '~~VERSION~~'

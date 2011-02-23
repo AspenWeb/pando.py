@@ -2,7 +2,7 @@ import os
 import logging
 from os.path import isdir, join
 
-from aspen import mode, restarter
+from aspen import restarter
 from aspen.website import Website
 from aspen.configuration import Configuration
 from diesel import Application, Loop, Service
@@ -27,7 +27,7 @@ def main(argv=None):
             restarter.add(join(template_dir, filename))
     
     port = configuration.address[1]
-    if mode.DEVDEB:
+    if configuration.conf.aspen.yes('die_when_changed'):
         app.add_loop(Loop(restarter.loop))
     app.add_service(Service(http.HttpServer(website), port))
 

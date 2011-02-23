@@ -7,7 +7,7 @@ import traceback
 import urlparse
 from os.path import join, isfile, isdir, dirname
 
-from aspen import mode, simplates
+from aspen import simplates
 from aspen.http import Request, Response
 
 
@@ -29,7 +29,8 @@ class Website(object):
         try:
             request = Request(diesel_request) # too big to fail :-/
             try:
-                request.config = self.configuration
+                request.configuration = self.configuration
+                request.conf = request.configuration.conf
                 request.root = self.configuration.root
                 request.fs = self.translate(request)
                 simplates.handle(request)

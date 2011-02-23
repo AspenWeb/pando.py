@@ -18,7 +18,6 @@ import stat
 import sys
 import traceback
 
-from aspen import mode
 from aspen.http import Response
 from _tornado.template import Loader, Template
 
@@ -81,9 +80,7 @@ def load_uncached(request):
     
     mimetype = mimetypes.guess_type(request.fs, 'text/plain')[0]
     if mimetype is None:
-        mimetype = request.config.conf.aspen.get( 'default_mimetype'
-                                                , 'text/plain'
-                                                 )
+        mimetype = request.conf.aspen.get('default_mimetype', 'text/plain')
     if not mimetype.startswith('text/'):
         s = lambda s: simplate.startswith(s)
         if not (s('#!') or s('"""') or s('import') or s('from')):
