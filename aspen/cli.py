@@ -17,6 +17,9 @@ def main(argv=None):
     configuration.app = app = Application()
     website = Website(configuration)
 
+    # change current working directory
+    os.chdir(configuration.root)
+
     # restart for template files too; TODO generalize this to all of etc?
     template_dir = join(configuration.root, '.aspen', 'etc', 'templates')
     if isdir(template_dir):

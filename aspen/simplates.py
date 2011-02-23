@@ -85,10 +85,11 @@ def load_uncached(request):
                                                 , 'text/plain'
                                                  )
     if not mimetype.startswith('text/'):
-        if simplate.count(FORM_FEED) not in [1,2]:
-            # XXX: This can still give us a false positive, if a binary file
-            # has one or two form feeds in it. The assumption here is that a 
-            # binary file with one or two form feeds will have even more.
+        s = lambda s: simplate.startswith(s)
+        if not (s('#!') or s('"""') or s('import') or s('from')):
+            # I tried checking for 1 or 2 FORM_FEEDs, but found a binary file
+            # in the wild that indeed had exactly two. Let's sniff the first
+            # few bytes.
             return (mimetype, None, None, simplate) # static file; exit early
 
     simplate = simplate.decode(ENCODING)
