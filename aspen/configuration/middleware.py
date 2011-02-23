@@ -20,6 +20,15 @@ def load_middleware(*filenames):
         my.second.middleware:outbound
 
     """
+    class Middleware(list): # weird, but makes testing nice and API nice
+        @property
+        def inbound(self):
+            return self[0]
+        @property
+        def outbound(self):
+            return self[1]
+
+
     class Section(list):
         def append_if(self, line, path, i):
             line = line.split('#', 1)[0].strip()
@@ -34,7 +43,7 @@ def load_middleware(*filenames):
 
     inbound = Section()
     outbound = Section()
-    sections = [inbound, outbound]
+    middleware = Middleware([inbound, outbound])
 
     for path in filenames:
         current = inbound
@@ -53,5 +62,4 @@ def load_middleware(*filenames):
             else:
                 current.append_if(line, path, i)
 
-    return [list(x) for x in sections]
-
+    return middleware

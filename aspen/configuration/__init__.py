@@ -18,8 +18,10 @@ from logging import StreamHandler
 from logging.handlers import TimedRotatingFileHandler
 
 import aspen
+from aspen.configuration.aspenconf import AspenConf 
 from aspen.configuration.exceptions import ConfigurationError
 from aspen.configuration.middleware import load_middleware
+from aspen.configuration.optparser import optparser
 
 
 log = logging.getLogger('aspen') # configured below; not used until then

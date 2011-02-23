@@ -1,4 +1,9 @@
+import logging
 import optparse
+import socket
+
+import aspen
+from aspen.configuration.exceptions import ConfigurationError
 
 
 LOG_LEVELS = ( 'NIRVANA'    # oo
