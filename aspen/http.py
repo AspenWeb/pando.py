@@ -120,7 +120,7 @@ class Request(object):
         self.qs = WwwForm(self.urlparts[4])
         self.cookie = SimpleCookie()
         try:
-            self.cookie.load(self.headers.one('Cookie'))
+            self.cookie.load(self.headers.one('Cookie', ''))
         except CookieError:
             pass
 
