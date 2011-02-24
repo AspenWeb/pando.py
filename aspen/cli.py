@@ -13,24 +13,31 @@ log = logging.getLogger('aspen.cli')
 
 
 def main(argv=None):
-    configuration = Configuration(argv)
-    configuration.app = app = Application()
-    website = Website(configuration)
+    try:
+        configuration = Configuration(argv)
+        configuration.app = app = Application()
+        website = Website(configuration)
+        for hook in configuration.hooks.startup:
+            website = hook(website)
 
-    # change current working directory
-    os.chdir(configuration.root)
+        # change current working directory
+        os.chdir(configuration.root)
 
-    # restart for template files too; TODO generalize this to all of etc?
-    template_dir = join(configuration.root, '.aspen', 'etc', 'templates')
-    if isdir(template_dir):
-        for filename in os.listdir(template_dir):
-            restarter.add(join(template_dir, filename))
-    
-    port = configuration.address[1]
-    if configuration.conf.aspen.yes('die_when_changed'):
-        app.add_loop(Loop(restarter.loop))
-    app.add_service(Service(http.HttpServer(website), port))
+        # restart for template files too; TODO generalize this to all of etc?
+        template_dir = join(configuration.root, '.aspen', 'etc', 'templates')
+        if isdir(template_dir):
+            for filename in os.listdir(template_dir):
+                restarter.add(join(template_dir, filename))
+        
+        port = configuration.address[1]
+        if configuration.conf.aspen.yes('die_when_changed'):
+            app.add_loop(Loop(restarter.loop))
+        app.add_service(Service(http.HttpServer(website), port))
 
-    log.warn("Greetings, program! Welcome to port %d." % port)
-    app.run()
+        log.warn("Greetings, program! Welcome to port %d." % port)
+        app.run()
+
+    except KeyboardInterrupt, SystemExit:
+        for hook in configuration.hooks.shutdown:
+            website = hook(website)
 

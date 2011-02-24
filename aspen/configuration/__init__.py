@@ -1,13 +1,4 @@
 """Define configuration objects.
-
-    1. validator_address -- called in a couple places
-    2. optparse -- command line interface
-    3. AspenConf -- represents a configuration file
-    4. Configuration -- puts it all together
-
-This module is so-named because we place an instance of Configuration in the
-global aspen namespace.
-
 """
 import logging
 import logging.config
@@ -20,7 +11,7 @@ from logging.handlers import TimedRotatingFileHandler
 import aspen
 from aspen.configuration.aspenconf import AspenConf 
 from aspen.configuration.exceptions import ConfigurationError
-from aspen.configuration.middleware import load_middleware
+from aspen.configuration.hooks import HooksConf
 from aspen.configuration.optparser import optparser
 
 
@@ -81,15 +72,13 @@ class Configuration(object):
         self.opts = opts
 
 
-        # middleware
-        # ==========
+        # hooks
+        # =====
 
-        middleware = [ '/etc/aspen/middleware.conf'
-                     , os.path.expanduser('~/.aspen/middleware.conf')
-                     , os.path.join(root, '.aspen', 'etc', 'middleware.conf')
-                      ] # later comes after earlier, per section
-        middleware = load_middleware(*middleware)
-        self.middleware = middleware
+        self.hooks = HooksConf( '/etc/aspen/hooks.conf'
+                              , os.path.expanduser('~/.aspen/hooks.conf')
+                              , os.path.join(root,'.aspen','etc','hooks.conf')
+                               ) # later comes after earlier, per section
 
 
         # address/sockfam

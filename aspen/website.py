@@ -22,7 +22,8 @@ class Website(object):
     def __init__(self, configuration):
         self.configuration = configuration
         self.root = configuration.root
-        self.middleware = configuration.middleware
+        self.hooks = configuration.hooks
+
 
     def __call__(self, diesel_request):
         """Main diesel handler.
@@ -34,8 +35,8 @@ class Website(object):
                 request.conf = self.configuration.conf
                 request.root = self.configuration.root
                 request.fs = self.translate(request)
-                for func in self.middleware.inbound:
-                    request = func(request)
+                for hook in self.hooks.inbound:
+                    request = hook(request)
                 simplates.handle(request)
             except:
                 response = sys.exc_info()[1]
@@ -43,8 +44,9 @@ class Website(object):
                     tb = traceback.format_exc()
                     log.error(tb)
                     response = Response(500, tb)
-                for func in self.middleware.outbound:
-                    response = func(response)
+                response.request = request
+                for hook in self.hooks.outbound:
+                    response = hook(response)
                 if response.code == 200:
                     raise
 

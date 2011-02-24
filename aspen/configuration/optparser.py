@@ -167,8 +167,7 @@ to stdout. Full documentation is on the web at http://aspen.io/.
 
 basic_group = optparse.OptionGroup( optparser
                                   , "Basics"
-                                  , "Configure filesystem and network "\
-                                    "location, and lifecycle stage."
+                                  , "Configure network location."
                                    )
 basic_group.add_option( "-a", "--address"
                     , action="callback"
