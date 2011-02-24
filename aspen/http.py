@@ -1,6 +1,7 @@
 import os
 import cgi
 import urlparse
+from Cookie import CookieError, SimpleCookie
 
 from diesel.protocols.http import ( http_response as DieselResponse
                                   , HttpHeaders
@@ -84,6 +85,7 @@ class Request(object):
     """Represent an HTTP Request message. Attributes:
 
         body            WwwForm object
+        cookie          a Cookie.SimpleCookie object
         diesel_request  the original diesel HttpRequest object
         headers         Headers object
         method          string
@@ -116,6 +118,11 @@ class Request(object):
         self.urlparts = urlparse.urlparse(req.url)
         self.path = self.urlparts[2]
         self.qs = WwwForm(self.urlparts[4])
+        self.cookie = SimpleCookie()
+        try:
+            self.cookie.load(self.headers.one('Cookie'))
+        except CookieError:
+            pass
 
         self.transport = None # set by Website for *.sock files
         self.session_id = None # set by Website for *.sock files
@@ -168,6 +175,8 @@ class Response(Exception):
         return status_strings.get(self.code, ('???','Unknown HTTP status'))
 
     def to_diesel(self, diesel_request):
+        for morsel in self.cookie.values():
+            self.headers.add('Set-Cookie', morsel.OutputString())
         return DieselResponse( diesel_request
                              , self.code
                              , self.headers

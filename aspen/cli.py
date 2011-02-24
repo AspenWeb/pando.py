@@ -18,7 +18,7 @@ def main(argv=None):
         configuration.app = app = Application()
         website = Website(configuration)
         for hook in configuration.hooks.startup:
-            website = hook(website)
+            website = hook(website) or website
 
         # change current working directory
         os.chdir(configuration.root)
@@ -39,5 +39,5 @@ def main(argv=None):
 
     except KeyboardInterrupt, SystemExit:
         for hook in configuration.hooks.shutdown:
-            website = hook(website)
+            website = hook(website) or website
 

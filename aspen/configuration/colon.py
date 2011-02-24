@@ -54,10 +54,7 @@ def colonize(name, filename, lineno):
         msg = "'%s' is not valid colon notation" % name
         raise ColonizeBadColonsError(msg, filename, lineno)
 
-    #modname, objname = name.rsplit(':', 1) -- no rsplit < Python 2.4
-    idx = name.rfind(":")
-    modname = name[:idx]
-    objname = name[idx+1:]
+    modname, objname = name.rsplit(':', 1) # no rsplit < Python 2.4
 
     for _name in modname.split('.'):
         if not is_valid_identifier(_name):
@@ -67,7 +64,11 @@ def colonize(name, filename, lineno):
             raise ColonizeBadModuleError(msg, filename, lineno)
 
     try:
-        exec 'import %s as obj' % modname
+        if '.' in modname:
+            pkg, mod = modname.rsplit('.', 1)
+            exec 'from %s import %s as obj' % (pkg, mod)
+        else:
+            exec 'import %s as obj' % modname
     except ImportError, err:
         newmsg = "%s [%s, line %s]" % (err.args[0], basename(filename), lineno)
         err.args = (newmsg,)

@@ -8,22 +8,34 @@ YES_NO = YES | NO
 
 class AspenConfSection(dict):
 
-    def yes(self, name, default=False):
+    def yes(self, name):
         """Given a key name, return a boolean.
         
         The value for the key must be in the set {0,1,yes,no,true,false},
-        case-insensistive. If the key is not in this section, default is
-        returned (default defaults to False).
+        case-insensistive. If the key is not in this section, we return True.
 
         """
+        return self._yes_no(name, True, YES)
+
+
+    def no(self, name):
+        """Given a key name, return a boolean.
+        
+        The value for the key must be in the set {0,1,yes,no,true,false},
+        case-insensistive. If the key is not in this section, we return False.
+
+        """
+        return self.yes_no(name, False, NO)
+
+    def _yes_no(self, name, default, check):
         if name not in self:
-            return default
+            return default 
         val = self[name].lower()
         if val not in YES_NO:
             raise ConfigurationError( "%s should be 'yes' or 'no', not %s" 
                                     % (name, self[name])
                                      )
-        return val in YES
+        return val in check 
 
 
 class AspenConf(ConfigParser.RawConfigParser):

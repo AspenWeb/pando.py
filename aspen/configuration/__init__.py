@@ -106,7 +106,7 @@ class Configuration(object):
         # autoindex
         # ---------
 
-        autoindex = self.conf.main.yes('autoindex', default=True)
+        autoindex = self.conf.main.yes('autoindex')
 
 
         # Logging

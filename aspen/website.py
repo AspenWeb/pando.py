@@ -36,7 +36,7 @@ class Website(object):
                 request.root = self.configuration.root
                 request.fs = self.translate(request)
                 for hook in self.hooks.inbound:
-                    request = hook(request)
+                    request = hook(request) or request
                 simplates.handle(request)
             except:
                 response = sys.exc_info()[1]
@@ -45,8 +45,9 @@ class Website(object):
                     log.error(tb)
                     response = Response(500, tb)
                 response.request = request
+                response.cookie = request.cookie
                 for hook in self.hooks.outbound:
-                    response = hook(response)
+                    response = hook(response) or response
                 if response.code == 200:
                     raise
 
