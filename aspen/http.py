@@ -1,5 +1,6 @@
 import os
 import cgi
+import urllib
 import urlparse
 from Cookie import CookieError, SimpleCookie
 
@@ -34,6 +35,11 @@ class Headers(object):
         """Given a header name, return True if it is known in the form.
         """
         return name in self._headers
+
+    def add(self, name, value):
+        """Given a header name and value, set the header. Pass None to remove.
+        """
+        self._headers.add(name, value)
 
     def set(self, name, value):
         """Given a header name and value, set the header. Pass None to remove.
@@ -103,7 +109,6 @@ class Request(object):
         """
         self._diesel_request = req
         self.method = req.method
-        self.url = req.url
         self.version = req.version
         self.headers = Headers(req.headers)
         self.body = WwwForm(req.body and req.body or '')
@@ -116,7 +121,10 @@ class Request(object):
 
         self.urlparts = urlparse.urlparse(req.url)
         self.path = self.urlparts[2]
-        self.qs = WwwForm(self.urlparts[4])
+        self.querystring = self.urlparts[4]
+        self.qs = WwwForm(self.querystring)
+        self.url = self.rebuild_url() # needs things above
+        self.urlparts = urlparse.urlparse(self.url) # redo
         self.cookie = SimpleCookie()
         try:
             self.cookie.load(self.headers.get('Cookie', ''))
@@ -128,6 +136,32 @@ class Request(object):
         self.root = '' # set by Website
         self.fs = '' # set by Website
 
+
+    def rebuild_url(self):
+        """Return a full URL for this request, per PEP 333:
+
+            http://www.python.org/dev/peps/pep-0333/#url-reconstruction
+
+        This function is kind of naive.
+
+        """
+        # http://docs.python.org/library/wsgiref.html#wsgiref.util.guess_scheme
+        scheme = self.headers.get('HTTPS') and 'https' or 'http'
+        url = scheme
+        url += '://'
+
+        if self.headers.has('X-Forwarded-Host'):
+            url += self.headers.get('X-Forwarded-Host')
+        elif self.headers.has('Host'):
+            url += self.headers.get('Host')
+        else:
+            raise Response(500) # naive :-/
+
+        url += urllib.quote(self.path)
+        # screw params, fragment?
+        if self.querystring:
+            url += '?' + self.querystring
+        return url
 
 class Response(Exception):
     """Represent an HTTP Response message.

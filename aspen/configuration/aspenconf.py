@@ -15,8 +15,7 @@ class AspenConfSection(dict):
         case-insensistive. If the key is not in this section, we return True.
 
         """
-        return self._yes_no(name, True, YES)
-
+        return self._yes_no(name, True)
 
     def no(self, name):
         """Given a key name, return a boolean.
@@ -25,9 +24,9 @@ class AspenConfSection(dict):
         case-insensistive. If the key is not in this section, we return False.
 
         """
-        return self.yes_no(name, False, NO)
+        return self._yes_no(name, False)
 
-    def _yes_no(self, name, default, check):
+    def _yes_no(self, name, default):
         if name not in self:
             return default 
         val = self[name].lower()
@@ -35,7 +34,7 @@ class AspenConfSection(dict):
             raise ConfigurationError( "%s should be 'yes' or 'no', not %s" 
                                     % (name, self[name])
                                      )
-        return val in check 
+        return val in YES 
 
 
 class AspenConf(ConfigParser.RawConfigParser):

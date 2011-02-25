@@ -23,7 +23,7 @@ class Website(object):
         self.configuration = configuration
         self.root = configuration.root
         self.hooks = configuration.hooks
-
+        self.show_tracebacks = configuration.conf.aspen.no('show_tracebacks')
 
     def __call__(self, diesel_request):
         """Main diesel handler.
@@ -39,33 +39,43 @@ class Website(object):
                     request = hook(request) or request
                 simplates.handle(request)
             except:
-                response = sys.exc_info()[1]
-                if not isinstance(response, Response):
-                    tb = traceback.format_exc()
-                    log.error(tb)
-                    response = Response(500, tb)
-                response.request = request
-                response.cookie = request.cookie
-                for hook in self.hooks.outbound:
-                    response = hook(response) or response
-                if response.code == 200:
-                    raise
-
                 try:
+                    first_tb = traceback.format_exc()
+                    response = sys.exc_info()[1]
+                    if not isinstance(response, Response):
+                        tb = traceback.format_exc()
+                        log.error(tb)
+                        response = Response(500, tb)
+                    response.request = request
+                    response.cookie = request.cookie
+                    for hook in self.hooks.outbound:
+                        response = hook(response) or response
+                    if response.code == 200:
+                        raise
                     self.nice_error(request, response)
                 except:
                     if sys.exc_info()[0] is Response:
-                        raise
-                    tb = traceback.format_exc()
-                    log.error(tb)
-                    raise Response(500, tb)
+                        raise # normal
+
+
+                    # Last chance for a traceback.
+                    # ============================
+
+                    tb = traceback.format_exc().strip()
+                    tbs = '\n\n'.join([tb, "... while handling ...", first_tb])
+                    log.error(tbs)
+                    if self.show_tracebacks:
+                        raise Response(500, tbs)
+                    else:
+                        raise Response(500)
+
             else:
-                raise Response(500, "No Response raised.")
+                raise Response(500)
 
         except Response, response:
             response.headers.set('Content-Length', len(response.body))
             response.cookie = {}
-            self.log_access(request, response)
+            self.log_access(request, response) # TODO this at the right level?
             return response._to_diesel(diesel_request)
 
     def nice_error(self, request, response):

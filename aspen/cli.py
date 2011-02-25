@@ -23,15 +23,17 @@ def main(argv=None):
         # change current working directory
         os.chdir(configuration.root)
 
-        # restart for template files too; TODO generalize this to all of etc?
-        template_dir = join(configuration.root, '.aspen', 'etc', 'templates')
-        if isdir(template_dir):
-            for filename in os.listdir(template_dir):
-                restarter.add(join(template_dir, filename))
+        if configuration.conf.aspen.yes('changes_kill'):
+            # restart for template files too;
+            # TODO generalize this to all of etc?
+            # TODO can't we just invalidate the simplate cache for these?
+            templates = join(configuration.root, '.aspen', 'etc', 'templates')
+            if isdir(templates):
+                for filename in os.listdir(templates):
+                    restarter.add(join(templates, filename))
+            app.add_loop(Loop(restarter.loop))
         
         port = configuration.address[1]
-        if configuration.conf.aspen.yes('die_when_changed'):
-            app.add_loop(Loop(restarter.loop))
         app.add_service(Service(http.HttpServer(website), port))
 
         log.warn("Greetings, program! Welcome to port %d." % port)
