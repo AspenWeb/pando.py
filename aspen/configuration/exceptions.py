@@ -13,5 +13,5 @@ class ConfigurationError(StandardError):
 class ConfFileError(ConfigurationError):
 
     def __init__(self, msg, filename, lineno):
-        msg = "On line %d of %s, %s" % (lineno, filename, msg)
+        msg = "%s [%s, line %s]" % (msg, lineno, filename)
         ConfigurationError.__init__(self, msg)

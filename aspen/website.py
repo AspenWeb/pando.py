@@ -39,36 +39,31 @@ class Website(object):
                     request = hook(request) or request
                 simplates.handle(request)
             except:
-                try:
-                    first_tb = traceback.format_exc()
+                try:            # nice error messages
+                    tb_1 = traceback.format_exc()
                     response = sys.exc_info()[1]
                     if not isinstance(response, Response):
-                        tb = traceback.format_exc()
-                        log.error(tb)
-                        response = Response(500, tb)
+                        log.error(tb_1)
+                        if self.show_tracebacks:
+                            response = Response(500, tb_1)
+                        else:
+                            response = Response(500)
                     response.request = request
-                    response.cookie = request.cookie
                     for hook in self.hooks.outbound:
                         response = hook(response) or response
                     if response.code == 200:
                         raise
                     self.nice_error(request, response)
-                except:
-                    if sys.exc_info()[0] is Response:
-                        raise # normal
-
-
-                    # Last chance for a traceback.
-                    # ============================
-
-                    tb = traceback.format_exc().strip()
-                    tbs = '\n\n'.join([tb, "... while handling ...", first_tb])
+                except Response, response:
+                    raise
+                except:         # last chance for a traceback in the browser
+                    tb_2 = traceback.format_exc().strip()
+                    tbs = '\n\n'.join([tb_2, "... while handling ...", tb_1])
                     log.error(tbs)
                     if self.show_tracebacks:
                         raise Response(500, tbs)
                     else:
                         raise Response(500)
-
             else:
                 raise Response(500)
 
