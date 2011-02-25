@@ -4,7 +4,7 @@ import urlparse
 from Cookie import CookieError, SimpleCookie
 
 from diesel.protocols.http import ( http_response as DieselResponse
-                                  , HttpHeaders
+                                  , HttpHeaders as DieselHeaders
                                   , status_strings
                                    )
 
@@ -25,15 +25,15 @@ class Headers(object):
             default = []
         return self._headers.get(name, default)
        
+    def get(self, name, default=None):
+        """Given a header name, return the first known value.
+        """
+        return self._headers.get_one(name, default)
+
     def has(self, name):
         """Given a header name, return True if it is known in the form.
         """
         return name in self._headers
-
-    def one(self, name, default=None):
-        """Given a header name, return the first known value.
-        """
-        return self._headers.get_one(name, default)
 
     def set(self, name, value):
         """Given a header name and value, set the header. Pass None to remove.
@@ -68,17 +68,17 @@ class WwwForm(object):
             default = []
         return self._form.get(name, default)
        
-    def has(self, name):
-        """Given a field name, return True if it is known in the form.
-        """
-        return name in self._form
-
-    def one(self, name, default=None):
+    def get(self, name, default=None):
         """Given a field name, return the first known value.
         """
         if name in self._form:
             return self._form[name][0]
         return default
+
+    def has(self, name):
+        """Given a field name, return True if it is known in the form.
+        """
+        return name in self._form
 
 
 class Request(object):
@@ -86,7 +86,6 @@ class Request(object):
 
         body            WwwForm object
         cookie          a Cookie.SimpleCookie object
-        diesel_request  the original diesel HttpRequest object
         headers         Headers object
         method          string
         path            string
@@ -102,7 +101,7 @@ class Request(object):
     def __init__(self, req):
         """Takes a diesel request.
         """
-        self.diesel_request = req
+        self._diesel_request = req
         self.method = req.method
         self.url = req.url
         self.version = req.version
@@ -120,7 +119,7 @@ class Request(object):
         self.qs = WwwForm(self.urlparts[4])
         self.cookie = SimpleCookie()
         try:
-            self.cookie.load(self.headers.one('Cookie', ''))
+            self.cookie.load(self.headers.get('Cookie', ''))
         except CookieError:
             pass
 
@@ -139,7 +138,7 @@ class Response(Exception):
 
             - code        an HTTP response code, e.g., 404
             - body        the message body as a string
-            - headers     a diesel.HttpHeaders instance
+            - headers     a Headers instance
 
         Code is first because when you're raising your own Responses, they're
         usually error conditions. Body is second because one more often wants
@@ -157,7 +156,7 @@ class Response(Exception):
         Exception.__init__(self)
         self.code = code
         self.body = body
-        self.headers = HttpHeaders()
+        self.headers = Headers(DieselHeaders())
         if headers:
             if isinstance(headers, dict):
                 headers = headers.items()
@@ -174,20 +173,20 @@ class Response(Exception):
     def _status(self):
         return status_strings.get(self.code, ('???','Unknown HTTP status'))
 
-    def to_diesel(self, diesel_request):
+    def _to_diesel(self, _diesel_request):
         for morsel in self.cookie.values():
             self.headers.add('Set-Cookie', morsel.OutputString())
-        return DieselResponse( diesel_request
+        return DieselResponse( _diesel_request
                              , self.code
-                             , self.headers
+                             , self.headers._headers
                              , self.body
                               )
 
-    def to_http(self, version):
+    def _to_http(self, version):
         status_line = "HTTP/%s %s" % (self, version)
         headers = self.headers.to_http()
         body = self.body
-        if self.headers.one('Content-Type', '').startswith('text/'):
+        if self.headers.get('Content-Type', '').startswith('text/'):
             body = body.replace('\n', '\r\n')
             body = body.replace('\r\r', '\r')
         return '\r\n'.join([status_line, headers, '', body])

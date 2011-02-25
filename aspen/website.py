@@ -64,8 +64,9 @@ class Website(object):
 
         except Response, response:
             response.headers.set('Content-Length', len(response.body))
+            response.cookie = {}
             self.log_access(request, response)
-            return response.to_diesel(diesel_request)
+            return response._to_diesel(diesel_request)
 
     def nice_error(self, request, response):
         fs = str(response.code) + '.html'
