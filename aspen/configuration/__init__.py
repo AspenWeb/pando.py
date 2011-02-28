@@ -12,7 +12,10 @@ import aspen
 from aspen.configuration.aspenconf import AspenConf 
 from aspen.configuration.exceptions import ConfigurationError
 from aspen.configuration.hooks import HooksConf
-from aspen.configuration.optparser import optparser
+from aspen.configuration.optparser import ( optparser
+                                          , validate_address
+                                          , validate_log_level
+                                           )
 
 
 log = logging.getLogger('aspen') # configured below; not used until then
