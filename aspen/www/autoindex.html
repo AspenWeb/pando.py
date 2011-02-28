@@ -48,10 +48,10 @@ def _get_time(stats):
 # Support the case where we are in the directory where this file actually
 # lives!
 
-fspath = req.headers.one('X-Aspen-AutoIndexDir', os.path.dirname(__file__))
+fspath = request.headers.get('X-Aspen-AutoIndexDir', os.path.dirname(__file__))
 assert os.path.isdir(fspath) # sanity check
 
-urlpath = fspath[len(req.root):] + os.sep
+urlpath = fspath[len(request.root):] + os.sep
 urlpath = '/'.join(urlpath.split(os.sep))
 title = urlpath and urlpath or '/'
 
@@ -110,7 +110,7 @@ others.sort()
                 <th>Last Modified</th>
             </tr>
 
-            {% if fspath != req.root %}
+            {% if fspath != request.root %}
             <tr>
                 <td class="odd"><a href="../">../</a></td>
                 <td>&nbsp;</td>

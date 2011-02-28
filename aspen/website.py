@@ -12,8 +12,6 @@ from aspen.http import Request, Response
 
 
 log = logging.getLogger('aspen.website')
-find_ours = lambda s: join(os.path.dirname(__file__), 'www', s)
-
 
 class Website(object):
     """Represent a website.
@@ -21,9 +19,11 @@ class Website(object):
 
     def __init__(self, configuration):
         self.configuration = configuration
+        self.conf = configuration.conf
+        self.opts = self.conf.aspen
         self.root = configuration.root
         self.hooks = configuration.hooks
-        self.show_tracebacks = configuration.conf.aspen.no('show_tracebacks')
+        self.show_tracebacks = self.opts.no('show_tracebacks')
 
     def __call__(self, diesel_request):
         """Main diesel handler.
@@ -70,18 +70,32 @@ class Website(object):
             self.hooks.run('outbound_late', response)
             response.headers.set('Content-Length', len(response.body))
             self.log_access(request, response) # TODO this at the right level?
-            return response._to_diesel(diesel_request)
+       
+        return response._to_diesel(diesel_request)
+
+    def find_ours(self, filename):
+        """Given a filename, return a filepath.
+        """
+        return join(os.path.dirname(__file__), 'www', filename)
+
+    def ours_or_theirs(self, filename):
+        """Given a filename, return a filepath or None.
+        """
+        ours = self.find_ours(filename)
+        theirs = join(self.root, '.aspen', 'etc', 'templates', filename)
+        if isfile(theirs):
+            out = theirs
+        elif isfile(ours):
+            out = ours
+        else:
+            out = None
+        return out
 
     def nice_error(self, request, response):
-        fs = str(response.code) + '.html'
-        theirs = join(request.root, '.aspen', 'etc', 'templates', fs)
-        ours = find_ours(fs)
-        if isfile(theirs):
-            request.fs = theirs
-        elif isfile(ours):
-            request.fs = ours
-        else:
+        fs = self.ours_or_theirs(str(response.code) + '.html')
+        if fs is None:
             raise
+        request.fs = fs
         simplates.handle(request, response)
 
     def translate(self, request):
@@ -114,7 +128,7 @@ class Website(object):
                 parts = list(request.urlparts)
                 parts[2] += '/'
                 location = urlparse.urlunparse(parts)
-                raise Response(301, "Moved", {'Location': location})
+                raise Response(301, headers={'Location': location})
 
         if isdir(request.fs):                       # index 
             index = join(request.fs, 'index.html')
@@ -122,10 +136,12 @@ class Website(object):
                 request.fs = index
 
         if isdir(request.fs):                       # auto index
-            if not self.configuration.autoindex:    # or not
+            if self.opts.no('autoindex'):
+                request.headers.set('X-Aspen-AutoIndexDir', request.fs)
+                request.fs = self.ours_or_theirs('autoindex.html') 
+                assert request.fs is not None # sanity check
+            else:                                   # or not
                 raise Response(404)
-            request.headers.set('X-Aspen-AutoIndexDir', request.fs)
-            request.fs = find_ours('index.html') 
 
         if '.sock/' in request.fs:                  # socket files -- some day
             parts = request.fs.split('.sock/')
@@ -142,7 +158,7 @@ class Website(object):
 
         if not isfile(request.fs):                  # genuinely not found
             if request.path == '/favicon.ico':      # special case
-                request.fs = find_ours('favicon.ico')
+                request.fs = self.find_ours('favicon.ico')
             else:
                 raise Response(404)
 

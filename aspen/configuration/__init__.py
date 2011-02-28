@@ -34,7 +34,6 @@ class Configuration(object):
 
     address = None  # the AF_INET, AF_INET6, or AF_UNIX address to bind to
     sockfam = None  # one of socket.AF_{INET,INET6,UNIX}
-    autoindex = True # boolean, show a default index for directories
 
 
     def __init__(self, argv):
@@ -96,17 +95,6 @@ class Configuration(object):
 
         self.address = address
         self.sockfam = sockfam
-
-
-        # aspen.conf
-        # ==========
-        # These remaining options are only settable in aspen.conf. Just a
-        # couple for now.
-
-        # autoindex
-        # ---------
-
-        autoindex = self.conf.main.yes('autoindex')
 
 
         # Logging

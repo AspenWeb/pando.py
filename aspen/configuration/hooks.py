@@ -9,20 +9,21 @@ FORM_FEED = chr(12)
 
 
 def HooksConf(*filenames):
-    """Given a list of filenames, return three lists.
+    """Given a list of filenames, return six lists.
 
-    The file format for hooks.conf is a double-newline separated list of 
-    inbound and then outbound hookss, like so:
-        
+    The file format for hooks.conf is a ^L-separated list of hooks, like so:
+      
+        startup:hook
+        ^L
         my.first.hooks:inbound
         my.second.hooks:inbound
-
+        ^L
         my.second.hooks:outbound
 
     """
     SECTIONS = [ 'startup'
                , 'inbound_early'    # _ instead of . to harmonize w/ docs,
-               , 'inbound_late'     # where we talk in terms of a function
+               , 'inbound_late'     # where we talk in terms of functions
                , 'outbound_early'   # named thus.
                , 'outbound_late'
                , 'shutdown'
