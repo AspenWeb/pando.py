@@ -170,9 +170,10 @@ class Response(Exception):
     def __init__(self, code=200, body='', headers=None):
         """Takes an int, a string, and a dict (or list of tuples).
 
-            - code        an HTTP response code, e.g., 404
-            - body        the message body as a string
-            - headers     a Headers instance
+            - code      an HTTP response code, e.g., 404
+            - body      the message body as a string
+            - headers   a Headers instance
+            - cookie    a Cookie.SimpleCookie instance
 
         Code is first because when you're raising your own Responses, they're
         usually error conditions. Body is second because one more often wants
@@ -196,6 +197,11 @@ class Response(Exception):
                 headers = headers.items()
             for k, v in headers:
                 self.headers.add(k, v)
+        self.cookie = SimpleCookie()
+        try:
+            self.cookie.load(self.headers.get('Cookie', ''))
+        except CookieError:
+            pass
 
 
     def __repr__(self):

@@ -27,10 +27,17 @@ def main(argv=None):
             # restart for template files too;
             # TODO generalize this to all of etc?
             # TODO can't we just invalidate the simplate cache for these?
+            conffiles = join(configuration.root, '.aspen', 'etc')
+            if isdir(conffiles):
+                for filename in os.listdir(conffiles):
+                    if filename.endswith('.conf'):
+                        restarter.add(join(conffiles, filename))
+
             templates = join(configuration.root, '.aspen', 'etc', 'templates')
             if isdir(templates):
                 for filename in os.listdir(templates):
                     restarter.add(join(templates, filename))
+
             app.add_loop(Loop(restarter.loop))
         
         port = configuration.address[1]

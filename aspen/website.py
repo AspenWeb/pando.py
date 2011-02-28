@@ -69,7 +69,6 @@ class Website(object):
 
         except Response, response:
             response.headers.set('Content-Length', len(response.body))
-            response.cookie = {}
             self.log_access(request, response) # TODO this at the right level?
             return response._to_diesel(diesel_request)
 
@@ -97,34 +96,38 @@ class Website(object):
 
         parts = [self.root] + request.path.lstrip('/').split('/')
         request.fs = os.sep.join(parts).rstrip(os.sep)
+        log.debug('Psht. They want %s. Waddya think?' % request.fs)
 
 
         # Gauntlet
         # ========
         # We keep request.fs up to date for logging purposes.
 
-        if request.fs.startswith('.'):          # hidden files
+        if not request.fs.startswith(request.root): # sanity check
+            raise response(404)
+
+        if '/.' in request.fs[len(request.root):]:  # hidden files
             raise Response(404)
 
-        if isdir(request.fs):                   # trailing slash
+        if isdir(request.fs):                       # trailing slash
             if not request.path.endswith('/'):
                 parts = list(request.urlparts)
                 parts[2] += '/'
                 location = urlparse.urlunparse(parts)
                 raise Response(301, "Moved", {'Location': location})
 
-        if isdir(request.fs):                   # index 
+        if isdir(request.fs):                       # index 
             index = join(request.fs, 'index.html')
             if isfile(index):
                 request.fs = index
 
-        if isdir(request.fs):                   # auto index
-            if not self.configuration.autoindex: # or not
+        if isdir(request.fs):                       # auto index
+            if not self.configuration.autoindex:    # or not
                 raise Response(404)
             request.headers.set('X-Aspen-AutoIndexDir', request.fs)
             request.fs = find_ours('index.html') 
 
-        if '.sock/' in request.fs:
+        if '.sock/' in request.fs:                  # socket files -- some day
             parts = request.fs.split('.sock/')
             assert len(parts) == 2
             request.fs = parts[0] + '.sock'
@@ -137,8 +140,8 @@ class Website(object):
             if ninfo >= 3:
                 pass # what is this?
 
-        if not isfile(request.fs):              # genuinely not found
-            if request.path == '/favicon.ico':  # special case
+        if not isfile(request.fs):                  # genuinely not found
+            if request.path == '/favicon.ico':      # special case
                 request.fs = find_ours('favicon.ico')
             else:
                 raise Response(404)
