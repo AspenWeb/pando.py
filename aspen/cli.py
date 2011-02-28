@@ -17,8 +17,7 @@ def main(argv=None):
         configuration = Configuration(argv)
         configuration.app = app = Application()
         website = Website(configuration)
-        for hook in configuration.hooks.startup:
-            website = hook(website) or website
+        website = configuration.hooks.run('startup', website)
 
         # change current working directory
         os.chdir(configuration.root)
@@ -47,6 +46,5 @@ def main(argv=None):
         app.run()
 
     except KeyboardInterrupt, SystemExit:
-        for hook in configuration.hooks.shutdown:
-            website = hook(website) or website
+        configuration.hooks.run('shutdown', website)
 

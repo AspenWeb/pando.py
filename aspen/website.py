@@ -34,9 +34,9 @@ class Website(object):
                 request.configuration = self.configuration
                 request.conf = self.configuration.conf
                 request.root = self.configuration.root
+                request = self.hooks.run('inbound_early', request)
                 request.fs = self.translate(request)
-                for hook in self.hooks.inbound:
-                    request = hook(request) or request
+                request = self.hooks.run('inbound_late', request)
                 simplates.handle(request)
             except:
                 try:            # nice error messages
@@ -49,8 +49,7 @@ class Website(object):
                         else:
                             response = Response(500)
                     response.request = request
-                    for hook in self.hooks.outbound:
-                        response = hook(response) or response
+                    self.hooks.run('outbound_early', response)
                     if response.code == 200:
                         raise
                     self.nice_error(request, response)
@@ -68,6 +67,7 @@ class Website(object):
                 raise Response(500)
 
         except Response, response:
+            self.hooks.run('outbound_late', response)
             response.headers.set('Content-Length', len(response.body))
             self.log_access(request, response) # TODO this at the right level?
             return response._to_diesel(diesel_request)

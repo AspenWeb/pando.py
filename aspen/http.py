@@ -136,6 +136,10 @@ class Request(object):
         self.root = '' # set by Website
         self.fs = '' # set by Website
 
+    def __str__(self):
+        return "<%s %s>" % (self.method, self.path)
+    __repr__ = __str__
+
 
     def rebuild_url(self):
         """Return a full URL for this request, per PEP 333:

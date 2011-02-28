@@ -20,22 +20,35 @@ def HooksConf(*filenames):
         my.second.hooks:outbound
 
     """
-    class Hooks(list): # sure, kind of weird, but makes testing and API nice 
-        @property
-        def startup(self):
-            return self[0]
-        @property
-        def inbound(self):
-            return self[1]
-        @property
-        def outbound(self):
-            return self[2]
-        @property
-        def shutdown(self):
-            return self[3]
+    SECTIONS = [ 'startup'
+               , 'inbound_early'    # _ instead of . to harmonize w/ docs,
+               , 'inbound_late'     # where we talk in terms of a function
+               , 'outbound_early'   # named thus.
+               , 'outbound_late'
+               , 'shutdown'
+                ]
 
+    class Hooks(list):
 
+        def __init__(self, spec):
+            """Takes a list of 2-tuples, (name, Section).
+            """
+            list.__init__(self)
+            self._by_name = dict()
+            for name, section in spec:
+                self.append(section)
+                self._by_name[name] = section
+
+        def run(self, name, thing):
+            """Takes a section name an request/response/website.
+            """
+            section = self._by_name[name]
+            for hook in section:
+                thing = hook(thing) or thing
+            return thing
+    
     class Section(list):
+
         def append_if(self, line, path, i):
             line = line.split('#', 1)[0].strip()
             if line: 
@@ -47,14 +60,10 @@ def HooksConf(*filenames):
                                         )
                 self.append(obj)
 
-    startup = Section()
-    inbound = Section()
-    outbound = Section()
-    shutdown = Section()
-    hooks = Hooks([startup, inbound, outbound, shutdown])
+    hooks = Hooks([(name, Section()) for name in SECTIONS])
 
     for path in filenames:
-        current = startup 
+        current = hooks[0] 
         if not os.path.isfile(path):
             continue
         i = 0
@@ -63,14 +72,9 @@ def HooksConf(*filenames):
             if FORM_FEED in line:
                 before, after = line.split(FORM_FEED)
                 current.append_if(before, path, i)
-                if startup is current:
-                    current = inbound 
-                elif inbound is current:
-                    current = outbound 
-                elif outbound is current:
-                    current = shutdown 
-                elif shutdown is current:
+                if current is hooks[-1]:
                     break # ignore rest of file
+                current = hooks[hooks.index(current) + 1]
                 current.append_if(after, path, i)
             else:
                 current.append_if(line, path, i)
