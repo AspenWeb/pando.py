@@ -1,3 +1,8 @@
+if request.conf.aspen.no('show_tracebacks'):
+    err = response.body
+else:
+    err = ''
+
 <html>
     <head>
         <title>500 Internal Server Error</title>
@@ -17,6 +22,6 @@
     </head>
     <body>
         Sorry, program!
-        <pre>{{ response.body }}</pre>
+        <pre>{{ err }}</pre>
     </body>
 </html>

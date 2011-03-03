@@ -17,6 +17,7 @@ def main(argv=None):
         configuration = Configuration(argv)
         configuration.app = app = Application()
         website = Website(configuration)
+        configuration.website = website # to support re-handling, especially
         website = configuration.hooks.run('startup', website)
 
         # change current working directory

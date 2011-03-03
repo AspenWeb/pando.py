@@ -26,14 +26,21 @@ class Website(object):
         self.show_tracebacks = self.opts.no('show_tracebacks')
 
     def __call__(self, diesel_request):
-        """Main diesel handler.
+        """Given a Diesel request, return a Diesel response.
+        """
+        request = Request.from_diesel(diesel_request) # too big to fail :-/
+        response = self.handle(request)
+        return response._to_diesel(diesel_request)
+
+    def handle(self, request):
+        """Given an Aspen request, return an Aspen response.
         """
         try:
-            request = Request(diesel_request) # too big to fail :-/
             try:
                 request.configuration = self.configuration
                 request.conf = self.configuration.conf
                 request.root = self.configuration.root
+                request.website = self
                 request = self.hooks.run('inbound_early', request)
                 request.fs = self.translate(request)
                 request = self.hooks.run('inbound_late', request)
@@ -44,10 +51,7 @@ class Website(object):
                     response = sys.exc_info()[1]
                     if not isinstance(response, Response):
                         log.error(tb_1)
-                        if self.show_tracebacks:
-                            response = Response(500, tb_1)
-                        else:
-                            response = Response(500)
+                        response = Response(500, tb_1)
                     response.request = request
                     self.hooks.run('outbound_early', response)
                     if response.code == 200:
@@ -64,14 +68,14 @@ class Website(object):
                     else:
                         raise Response(500)
             else:
-                raise Response(500)
+                raise Response(500, )
 
         except Response, response:
             self.hooks.run('outbound_late', response)
             response.headers.set('Content-Length', len(response.body))
             self.log_access(request, response) # TODO this at the right level?
        
-        return response._to_diesel(diesel_request)
+        return response
 
     def find_ours(self, filename):
         """Given a filename, return a filepath.

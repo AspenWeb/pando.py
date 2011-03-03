@@ -14,9 +14,11 @@ class Headers(object):
     """Represent the headers in an HTTP Request message.
     """
 
-    def __init__(self, diesel_headers):
-        """Takes a diesel HttpHeaders object.
+    def __init__(self, headers):
+        """Takes headers as a string.
         """
+        diesel_headers = DieselHeaders()
+        diesel_headers.parse(headers)
         self._headers = diesel_headers 
 
     def all(self, name, default=None):
@@ -37,8 +39,11 @@ class Headers(object):
         return name in self._headers
 
     def add(self, name, value):
-        """Given a header name and value, set the header. Pass None to remove.
+        """Given a header name and value, add another header entry.
         """
+        if name not in self._headers:
+            # work around https://github.com/jamwt/diesel/issues#issue/6
+            self._headers.set(name, value)
         self._headers.add(name, value)
 
     def set(self, name, value):
@@ -86,6 +91,35 @@ class WwwForm(object):
         """
         return name in self._form
 
+    def yes(self, name):
+        """Given a key name, return a boolean.
+        
+        The value for the key must be in the set {0,1,yes,no,true,false},
+        case-insensistive. If the key is not in this section, we return True.
+
+        """
+        return self._yes_no(name, True)
+
+    def no(self, name):
+        """Given a key name, return a boolean.
+        
+        The value for the key must be in the set {0,1,yes,no,true,false},
+        case-insensistive. If the key is not in this section, we return False.
+
+        """
+        return self._yes_no(name, False)
+
+    def _yes_no(self, name, default):
+        if name not in self._form:
+            return default 
+        val = self._form[name].lower()
+        if val not in YES_NO:
+            raise ConfigurationError( "%s should be 'yes' or 'no', not %s" 
+                                    % (name, self._form[name])
+                                     )
+        return val in YES 
+
+
 
 class Request(object):
     """Represent an HTTP Request message. Attributes:
@@ -103,38 +137,45 @@ class Request(object):
         version         HTTP version as string
 
     """
-    
-    def __init__(self, req):
-        """Takes a diesel request.
+   
+    def hydrate(self):
+        """Populate a number of attributes on self based on primitives.
         """
-        self._diesel_request = req
-        self.method = req.method
-        self.version = req.version
-        self.headers = Headers(req.headers)
-        self.body = WwwForm(req.body and req.body or '')
-        self.remote_addr = req.remote_addr
-        
-        if self.body is None:
-            self.body = ""
-        if self.remote_addr is None:
-            self.remote_addr = ""
-
-        self.urlparts = urlparse.urlparse(req.url)
-        self.path = self.urlparts[2]
-        self.querystring = self.urlparts[4]
-        self.qs = WwwForm(self.querystring)
-        self.url = self.rebuild_url() # needs things above
-        self.urlparts = urlparse.urlparse(self.url) # redo
+        self.body = WwwForm(self.raw_body)
+        self.headers = Headers(self.raw_headers)
         self.cookie = SimpleCookie()
         try:
             self.cookie.load(self.headers.get('Cookie', ''))
         except CookieError:
             pass
 
+        urlparts = urlparse.urlparse(self.raw_url)
+        self.path = urlparts[2]
+        self.raw_querystring = urlparts[4]
+        self.qs = WwwForm(self.raw_querystring)
+        self.url = self.rebuild_url() # needs things above
+        self.urlparts = urlparse.urlparse(self.url)
+
         self.transport = None # set by Website for *.sock files
         self.session_id = None # set by Website for *.sock files
         self.root = '' # set by Website
         self.fs = '' # set by Website
+
+    @classmethod
+    def from_diesel(cls, request):
+        """Set primitives from a diesel request.
+        """
+        self = cls()
+        self._diesel_request = request
+        self.method = request.method
+        self.version = request.version
+        self.raw_headers = request.headers.format()
+        self.raw_body = request.body and request.body or ''
+        self.remote_addr = request.remote_addr and request.remote_addr or ''
+        self.raw_url = request.url
+
+        self.hydrate()
+        return self
 
     def __str__(self):
         return "<%s %s>" % (self.method, self.path)
@@ -163,8 +204,8 @@ class Request(object):
 
         url += urllib.quote(self.path)
         # screw params, fragment?
-        if self.querystring:
-            url += '?' + self.querystring
+        if self.raw_querystring:
+            url += '?' + self.raw_querystring
         return url
 
 class Response(Exception):
@@ -195,7 +236,7 @@ class Response(Exception):
         Exception.__init__(self)
         self.code = code
         self.body = body
-        self.headers = Headers(DieselHeaders())
+        self.headers = Headers('')
         if headers:
             if isinstance(headers, dict):
                 headers = headers.items()
