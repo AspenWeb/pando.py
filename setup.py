@@ -27,10 +27,9 @@ setup( author = 'Chad Whitacre'
                                         , 'aspen.socket_io.*'      # prime time
                                         , 'aspen.tests'
                                         , 'aspen.tests.*'
-                                         ]) 
+                                         ])
      , url = 'http://aspen.io/'
      , version = '~~VERSION~~'
-     , install_requires = ['diesel == 1.9.7b'] # waiting for public release
      , zip_safe = False
      , package_data = {'aspen': ['www/*']}
       )
