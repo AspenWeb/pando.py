@@ -1,3 +1,0 @@
-Running `make html` in ../tex/ places files in here. The only permanent file
-is the __ directory, which is here to set the port to serve the docs on, and
-receive daemonization artifacts.
