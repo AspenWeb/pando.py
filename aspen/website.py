@@ -13,6 +13,7 @@ from aspen.http import Request, Response
 
 log = logging.getLogger('aspen.website')
 
+
 class Website(object):
     """Represent a website.
     """
@@ -30,7 +31,7 @@ class Website(object):
         """
         request = Request.from_diesel(diesel_request) # too big to fail :-/
         response = self.handle(request)
-        return response._to_diesel(diesel_request)
+        return response._to_diesel(diesel_request) # sends bits, returns bool
 
     def handle(self, request):
         """Given an Aspen request, return an Aspen response.
@@ -46,41 +47,51 @@ class Website(object):
                 request = self.hooks.run('inbound_late', request)
                 response = simplates.handle(request)
             except:
-                try:            # nice error messages
-                    tb_1 = traceback.format_exc()
-                    response = sys.exc_info()[1]
-                    if not isinstance(response, Response):
-                        log.error(tb_1)
-                        response = Response(500, tb_1)
-                    response.request = request
-                    self.hooks.run('outbound_early', response)
-                    self.nice_error(request, response)
-                except Response, response:
-                    raise
-                except:         # last chance for a traceback in the browser
-                    tb_2 = traceback.format_exc().strip()
-                    tbs = '\n\n'.join([tb_2, "... while handling ...", tb_1])
-                    log.error(tbs)
-                    if self.show_tracebacks:
-                        raise Response(500, tbs)
-                    else:
-                        raise Response(500)
-            else:
-                raise Response(500, )
-
+                self.handle_error(request, response)
         except Response, response:
             # Grab the response object in the case where it was raised.  In the
             # case where it was returned from simplates.handle, response is set
             # in a try block above.
             pass
         else:
-
+            # If the response object is coming from handle_error via except 
+            # Response, then it already has request on it and the early hooks
+            # have already been run. If it fell off the edge un-exceptionally,
+            # we need to take care of those two things.
+            response.request = request
             self.hooks.run('outbound_early', response)
 
         self.hooks.run('outbound_late', response)
         response.headers.set('Content-Length', len(response.body))
         self.log_access(request, response) # TODO is this at the right level?
         return response
+
+    def handle_error(self, request):
+        """Try to provide some nice error handling.
+        """
+        try:                        # nice error messages
+            tb_1 = traceback.format_exc()
+            response = sys.exc_info()[1]
+            if not isinstance(response, Response):
+                log.error(tb_1)
+                response = Response(500, tb_1)
+            response.request = request
+            self.hooks.run('outbound_early', response)
+            fs = self.ours_or_theirs(str(response.code) + '.html')
+            if fs is None:
+                raise
+            request.fs = fs
+            simplates.handle(request, response)
+        except Response, response:  # no nice error template available
+            raise       
+        except:                     # last chance for tracebacks in the browser
+            tb_2 = traceback.format_exc().strip()
+            tbs = '\n\n'.join([tb_2, "... while handling ...", tb_1])
+            log.error(tbs)
+            if self.show_tracebacks:
+                raise Response(500, tbs)
+            else:
+                raise Response(500)
 
     def find_ours(self, filename):
         """Given a filename, return a filepath.
@@ -99,13 +110,6 @@ class Website(object):
         else:
             out = None
         return out
-
-    def nice_error(self, request, response):
-        fs = self.ours_or_theirs(str(response.code) + '.html')
-        if fs is None:
-            raise
-        request.fs = fs
-        simplates.handle(request, response)
 
     def translate(self, request):
         """Given a Request, return a filesystem path, or raise Response.
@@ -197,7 +201,7 @@ class Website(object):
 
         tb = sys.exc_info()[2]
         if tb is None:
-            log.info("%33s" % '<%s>' % response
+            log.info("%33s" % '<%s>' % response)
         else:
             while tb.tb_next is not None:
                 tb = tb.tb_next
