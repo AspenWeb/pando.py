@@ -1,10 +1,8 @@
-import commands
 import os
 import re
-import signal
+from os.path import dirname, isdir, isfile, join, realpath
 
 import aspen
-from aspen import restarter
 from aspen.tests import reset_log_filter, reset_log_format
 from nose.tools import with_setup
 
@@ -14,12 +12,10 @@ def convert_path(path):
     """
     return os.sep.join(path.split('/'))
 
-
 def convert_paths(paths):
     """Given a tuple of Unix paths, convert them for the current platform.
     """
     return tuple([convert_path(p) for p in paths])
-
 
 def mk(*treedef, **kw):
     """Given a treedef, build a filesystem fixture in ./fsfix.
@@ -34,7 +30,7 @@ def mk(*treedef, **kw):
 
     """
     configure = kw.get('configure', False)
-    root = os.path.realpath('fsfix')
+    root = realpath('fsfix')
     os.mkdir(root)
     for item in treedef:
         if isinstance(item, basestring):
@@ -45,56 +41,24 @@ def mk(*treedef, **kw):
             filepath, contents = item
             path = convert_path(filepath.lstrip('/'))
             path = os.sep.join([root, path])
-            parent = os.path.dirname(path)
-            if not os.path.isdir(parent):
+            parent = dirname(path)
+            if not isdir(parent):
                 os.makedirs(parent)
             file(path, 'w').write(contents)
     if configure is True:
         aspen.configure(['--root', root])
 
-
-pid_re = re.compile('^\s*(\d*) .*$')
-def kill_aspen_test():
-    """Kill any lingering test processes (this doesn't work on, um, Windows).
-
-    I thought of extending this to also kill aspen processes (for 
-    test_tutorial) but then what happens if you run this on a production box? 
-    So kill those yourself.
-
-    We sort the pids for test_ipc_daemon. I think what happens is if you kill
-    the child first and reap it ourselves, then the parent never completes? Or 
-    something? Can't get to the bottom of it now. :^(
-
-    """
-    cmd = "ps xww | grep 'fsfix/aspen-test' | grep -v 'grep'" # portable?!
-    raw = commands.getoutput(cmd).splitlines()
-    pids = []
-    for line in raw:
-        match = pid_re.match(line)
-        if match is not None:
-            pid = int(match.group(1))
-            pids.append(pid)
-    pids.sort() # kill parent before child, but why?
-    for pid in pids:
-        try:
-            os.kill(pid, signal.SIGTERM)
-            os.wait()
-        except OSError:
-            pass # if parent is terminated first, killing child lands here
-
-
 def rm():
     """Remove the filesystem fixture at fsfix/.
     """
-    root = os.path.realpath('fsfix')
-    if os.path.isdir(root):
+    root = realpath('fsfix')
+    if isdir(root):
         for root, dirs, files in os.walk(root, topdown=False):
             for name in dirs:
-                os.rmdir(os.path.join(root, name))
+                os.rmdir(join(root, name))
             for name in files:
-                os.remove(os.path.join(root, name))
+                os.remove(join(root, name))
         os.rmdir(root)
-
 
 def teardown():
     """Standard teardown function.
@@ -102,14 +66,10 @@ def teardown():
     rm()
     reset_log_filter()
     reset_log_format()
-    #if restarter.MONITORING:
-    #    restarter.stop_monitoring()
-    #else:
-    #    restarter._initialize() # recreate _monitor thread in case it was used
-    open('log', 'r+').truncate(0)
+    if isfile('log'):
+        os.remove('log')
 
 teardown() # start clean
-
 
 def attach_teardown(context, prefix='test_'):
     """Given a namespace and a routine prefix, attach the teardown function.
@@ -122,8 +82,7 @@ def torndown(func):
     func.teardown = teardown
     return func
 
-
 def path(*parts):
     """Given relative path parts, convert to absolute path on the filesystem.
     """
-    return os.path.realpath(os.path.join(*parts))
+    return realpath(join(*parts))

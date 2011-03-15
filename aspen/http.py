@@ -10,86 +10,92 @@ from diesel.protocols.http import ( http_response as DieselResponse
                                    )
 
 
-class Headers(object):
-    """Represent the headers in an HTTP Request message.
+class Mapping(object):
+    """Base class for HTTP mappings.
+
+    HTTP forms and headers may have a single item or a list of items as the
+    value. So while Python dictionary semantics work for almost everything, it
+    is better (IMO) for the API to force you to be explicit about whether you
+    are expecting a single item or list of items. We do that here by providing
+    'one' and 'all' methods, rather than item access and a 'get' method.
+    Furthermore, this class supports iteration over keys, but not iteration
+    over values. Iterate over keys, and then use one or all.
+
+    All API here operates on a self._dict dictionary. Set that in subclass
+    constructors.
+
     """
 
-    def __init__(self, headers):
-        """Takes headers as a string.
-        """
-        diesel_headers = DieselHeaders()
-        diesel_headers.parse(headers)
-        self._headers = diesel_headers 
+    def __init__(self, **kw):
+        self._dict = defaultdict(list)
+        self.link()
+        for k, v in kw.iteritems():
+            self.set(k, v)
 
-    def all(self, name, default=None):
-        """Given a header name, return a list of values.
-        """
-        if default is None:
-            default = []
-        return self._headers.get(name, default)
-       
-    def get(self, name, default=None):
-        """Given a header name, return the first known value.
-        """
-        return self._headers.get_one(name, default)
+    def add(self, k, v):
+        self._dict[k.lower()].append(str(v).strip())
 
-    def has(self, name):
-        """Given a header name, return True if it is known in the form.
+    def __contains__(self, k):
+        return k.lower() in self._dict
+
+    def one(self, k, d=None):
+        return self.get(k, [d])[0]
+
+    def set(self, k, v):
+        if v is None:
+            del self._dict[k]
+        self._dict[k.lower()] = [str(v).strip()]
+
+    def __iter__(self):
+        return self._dict
+
+
+
+
+    def __in__(self, name):
+        """Given a key name, return True if it is known in the form.
         """
-        return name in self._headers
+        return name in self._dict
+
+    def __iter__(self):
+        return self._dict.__iter__()
 
     def add(self, name, value):
-        """Given a header name and value, add another header entry.
+        """Given a key name and value, add another header entry.
         """
-        if name not in self._headers:
+        if name not in self._dict:
             # work around https://github.com/jamwt/diesel/issues#issue/6
-            self._headers.set(name, value)
-        self._headers.add(name, value)
-
-    def set(self, name, value):
-        """Given a header name and value, set the header. Pass None to remove.
-        """
-        if value is None:
-            self._headers.remove(name)
-        else:
-            self._headers.set(name, value)
-
-    def to_http(self):
-        """Return the headers as a string, formatted for an HTTP message.
-        """
-        return self._headers.format()
-
-
-class WwwForm(object):
-    """Represent a WWW form.
-    """
-
-    def __init__(self, s):
-        """Takes a string of type application/x-www-form-urlencoded.
-        """
-        self._form = cgi.parse_qs( s
-                                 , keep_blank_values = True
-                                 , strict_parsing = False
-                                  )
+            self._dict.set(name, value)
+        self._dict.add(name, value)
 
     def all(self, name, default=None):
-        """Given a field name, return a list of values.
+        """Given a key name, return a list of values.
         """
         if default is None:
             default = []
-        return self._form.get(name, default)
+        return self._dict.get(name, default)
        
-    def get(self, name, default=None):
-        """Given a field name, return the first known value.
+    def keys(self):
+        """Return a list of keys.
         """
-        if name in self._form:
-            return self._form[name][0]
-        return default
+        return self._dict.keys()
 
-    def has(self, name):
-        """Given a field name, return True if it is known in the form.
+    def one(self, name, default=None):
+        """Given a key name, return the first known value.
         """
-        return name in self._form
+        return self._dict.all(name, default)[0]
+
+    def set(self, name, value):
+        """Given a key name and value, set the header. Pass None to remove.
+        """
+        if value is None:
+            self._dict.remove(name)
+        else:
+            self._dict.set(name, value)
+
+
+    # Convenience methods for coercing to bool.
+    # =========================================
 
     def yes(self, name):
         """Given a key name, return a boolean.
@@ -110,31 +116,74 @@ class WwwForm(object):
         return self._yes_no(name, False)
 
     def _yes_no(self, name, default):
-        if name not in self._form:
+        if name not in self._dict:
             return default 
-        val = self._form[name].lower()
+        val = self._dict[name].lower()
         if val not in YES_NO:
             raise ConfigurationError( "%s should be 'yes' or 'no', not %s" 
-                                    % (name, self._form[name])
+                                    % (name, self._dict[name])
                                      )
         return val in YES 
 
+class Headers(Mapping):
+    """Represent the headers in an HTTP Request message.
+    """
+
+    def __init__(self, headers):
+        """Takes headers as a string.
+        """
+        diesel_headers = DieselHeaders()
+        diesel_headers.parse(headers)
+        self._diesel_headers = diesel_headers
+        self._dict = diesel_headers._headers
+
+    def from_http(self, raw):
+        self._diesel_headers.parse(raw)
+        self._dict = self._diesel_headers._headers
+
+    def to_http(self):
+        """Return the headers as a string, formatted for an HTTP message.
+        """
+        return self._diesel_headers.format()
+
+class WwwForm(Mapping):
+    """Represent a WWW form.
+    """
+
+    def __init__(self, s):
+        """Takes a string of type application/x-www-form-urlencoded.
+        """
+        self._dict = cgi.parse_qs( s
+                                 , keep_blank_values = True
+                                 , strict_parsing = False
+                                  )
 
 
 class Request(object):
     """Represent an HTTP Request message. Attributes:
 
-        body            WwwForm object
-        cookie          a Cookie.SimpleCookie object
-        headers         Headers object
-        method          string
-        path            string
-        qs              WwwForm object
-        remote_addr     string 
-        transport       Socket.IO transport as string, or None
-        url             string
-        urlparts        urlparse.urlparse output
-        version         HTTP version as string
+    request.url = urlparse.urlparse()
+    request.url.base = "http://localhost"
+    request.url.full = "http://localhost/foo/bar.html?baz=1"
+    request.url.path = {"foo": "foo", "bar": "bar", 0: "foo", 1: "bar"}
+    request.url.path.raw = "/foo/bar.html"
+    request.url.qs = WwwForm()
+    request.url.qs.raw = "baz=1"
+    request.url.raw = "/foo/bar.html?baz=1"
+    request.url.scheme = ? # SSL header? conf? port?
+
+    request.method = "POST"
+    request.version = (1, 1)
+    request.version.raw = "HTTP/1.1"
+
+    request.headers = Headers()
+    request.headers.host = "localhost" # harmonized from Host, X-Host, conf
+    request.headers.cookie = Cookie()
+    request.headers.cookie.raw = "Set-Cookie: blah\r\nSet-Cookie: blah\r\n"
+    request.headers.raw = "X-Foo: Bar\r\nAccept: gzip\r\n\r\n"
+
+    request.body = WwwForm()
+    request.body.raw = ""
 
     """
    

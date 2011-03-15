@@ -44,7 +44,7 @@ class Website(object):
                 request = self.hooks.run('inbound_early', request)
                 request.fs = self.translate(request)
                 request = self.hooks.run('inbound_late', request)
-                simplates.handle(request)
+                response = simplates.handle(request)
             except:
                 try:            # nice error messages
                     tb_1 = traceback.format_exc()
@@ -54,8 +54,6 @@ class Website(object):
                         response = Response(500, tb_1)
                     response.request = request
                     self.hooks.run('outbound_early', response)
-                    if response.code == 200:
-                        raise
                     self.nice_error(request, response)
                 except Response, response:
                     raise
@@ -71,10 +69,17 @@ class Website(object):
                 raise Response(500, )
 
         except Response, response:
-            self.hooks.run('outbound_late', response)
-            response.headers.set('Content-Length', len(response.body))
-            self.log_access(request, response) # TODO this at the right level?
-       
+            # Grab the response object in the case where it was raised.  In the
+            # case where it was returned from simplates.handle, response is set
+            # in a try block above.
+            pass
+        else:
+
+            self.hooks.run('outbound_early', response)
+
+        self.hooks.run('outbound_late', response)
+        response.headers.set('Content-Length', len(response.body))
+        self.log_access(request, response) # TODO is this at the right level?
         return response
 
     def find_ours(self, filename):
@@ -191,15 +196,17 @@ class Website(object):
         # ===============================
 
         tb = sys.exc_info()[2]
-        while tb.tb_next is not None:
-            tb = tb.tb_next
-        frame = tb.tb_frame
-        co = tb.tb_frame.f_code
-        filename = tb.tb_frame.f_code.co_filename
-        if filename.startswith(self.root):
-            filename = '.'+filename[len(self.root):]
-        log.info("%33s  %s:%d" % ( '<%s>' % response
-                                 , filename
-                                 , frame.f_lineno
-                                  ))
-
+        if tb is None:
+            log.info("%33s" % '<%s>' % response
+        else:
+            while tb.tb_next is not None:
+                tb = tb.tb_next
+            frame = tb.tb_frame
+            co = tb.tb_frame.f_code
+            filename = tb.tb_frame.f_code.co_filename
+            if filename.startswith(self.root):
+                filename = '.'+filename[len(self.root):]
+            log.info("%33s  %s:%d" % ( '<%s>' % response
+                                     , filename
+                                     , frame.f_lineno
+                                      ))

@@ -27,19 +27,19 @@ def load(*also):
 # ===================
 
 def test_no_aspen_directory():
-    expected = [[], [], [], []]
+    expected = [[], [], [], [], [], []]
     actual = load()
     assert actual == expected, actual
 
 def test_no_file():
     mk('.aspen/etc')
-    expected = [[], [], [], []]
+    expected = [[], [], [], [], [], []]
     actual = load()
     assert actual == expected, actual
 
 def test_empty_file():
     mk('.aspen/etc', ('.aspen/etc/hooks.conf', ''))
-    expected = [[], [], [], []]
+    expected = [[], [], [], [], [], []]
     actual = load()
     assert actual == expected, actual
 
@@ -49,19 +49,19 @@ def test_empty_file():
 
 def test_something():
     mk('.aspen/etc', ('.aspen/etc/hooks.conf', 'random:choice'))
-    expected = [[random.choice], [], [], []]
+    expected = [[random.choice], [], [], [], [], []]
     actual = load()
     assert actual == expected, actual
 
 def test_must_be_callable():
     mk('.aspen/etc', ('.aspen/etc/hooks.conf', 'string:digits'))
     err = assert_raises(ConfFileError, load)
-    assert err.msg == ("On line 1 of fsfix/.aspen/etc/hooks.conf, "
-                       "'string:digits' is not callable."), err.msg
+    assert err.msg == ("'string:digits' is not callable. [fsfix/.aspen/etc"
+                       "/hooks.conf, line 1]"), err.msg
 
 def test_order():
     mk('.aspen/etc', ('.aspen/etc/hooks.conf', 'random:choice\nrandom:seed'))
-    expected = [[random.choice, random.seed], [], [], []]
+    expected = [[random.choice, random.seed], [], [], [], [], []]
     actual = load()
     assert actual == expected, actual
 
@@ -71,7 +71,7 @@ def test_order():
 
 def test_blank_lines_skipped():
     mk('.aspen/etc', ('.aspen/etc/hooks.conf', '\n\nrandom:choice\n\n'))
-    expected = [[random.choice], [], [], []]
+    expected = [[random.choice], [], [], [], [], []]
     actual = load()
     assert actual == expected, actual
 
@@ -83,7 +83,7 @@ def test_comments_ignored():
         random:sample # comments
 
         """))
-    expected = [[random.choice, random.sample], [], [], []]
+    expected = [[random.choice, random.sample], [], [], [], [], []]
     actual = load()
     assert actual == expected, actual
 
@@ -105,7 +105,13 @@ def test_outbound_section():
 
 
         """))
-    expected = [[], [random.choice, random.sample], [random.randint], []]
+    expected = [ []
+               , [random.choice, random.sample]
+               , [random.randint]
+               , []
+               , []
+               , []
+                ]
     actual = load()
     assert actual == expected, actual
 
@@ -135,15 +141,43 @@ def test_layering():
                , [random.choice, random.sample, random.random, random.gauss]
                , [random.randint, random.choice, random.shuffle]
                , []
+               , []
+               , []
                 ]
     actual = load('fsfix/first.conf', 'fsfix/second.conf')
     assert actual == expected, actual
 
 
-# All Four Sections
+# All Six Sections
 # =================
 
-def test_all_four():
+def test_form_feeds_on_same_line():
+    mk(('foo.conf', """
+
+        random:choice
+        random:sample 
+        random:randint
+        
+        random:random
+        random:choice
+
+        random:gauss   random:shuffle  
+
+        Ignored!
+
+        """) )
+    expected = [ [random.choice, random.sample]
+               , [random.randint]
+               , [random.random]
+               , [random.choice]
+               , [random.gauss]
+               , [random.shuffle]
+                ]
+    actual = load('fsfix/foo.conf')
+    assert actual == expected, actual
+
+
+def test_all_six():
     mk(('foo.conf', """
 
         random:choice
@@ -155,7 +189,7 @@ def test_all_four():
         random:choice
         random:shuffle
 
-        
+        
 
         Ignored!
 
@@ -164,6 +198,8 @@ def test_all_four():
                , [random.randint]
                , [random.random, random.gauss]
                , [random.choice, random.shuffle]
+               , []
+               , []
                 ]
     actual = load('fsfix/foo.conf')
     assert actual == expected, actual

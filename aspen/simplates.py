@@ -203,7 +203,7 @@ def load(request):
 # ==============
 
 def handle(request, response=None):
-    """Given a Request, raise a Response.
+    """Given a Request, return or raise a Response.
     """
     if response is None:
         response = Response()
@@ -225,12 +225,9 @@ def handle(request, response=None):
         # ================
     
         if script:
-            try:
-                exec script in namespace
-            except SystemExit, exc:
-                if len(exc.args) > 0:
-                    response = exc.args[0]
-    
+            exec script in namespace
+            response = namespace['response']
+
 
         # Process the template.
         # =====================
@@ -253,4 +250,4 @@ def handle(request, response=None):
     # Send it on back up the line.
     # ============================
 
-    raise response
+    return response

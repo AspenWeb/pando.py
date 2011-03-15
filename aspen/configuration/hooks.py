@@ -8,6 +8,41 @@ from aspen.configuration.exceptions import ConfFileError
 FORM_FEED = chr(12)
 
 
+class Hooks(list):
+
+    def __init__(self, spec):
+        """Takes a list of 2-tuples, (name, Section).
+        """
+        list.__init__(self)
+        self._by_name = dict()
+        for name, section in spec:
+            self.append(section)
+            self._by_name[name] = section
+
+    def run(self, name, thing):
+        """Takes a section name and request/response/website.
+        """
+        section = self._by_name[name]
+        for hook in section:
+            thing = hook(thing) or thing
+        return thing
+
+class Section(list):
+
+    def append_if(self, line, path, i):
+        line = line.split('#', 1)[0].strip()
+        if line: 
+            obj = colonize(line, path, i)
+            if not isinstance(obj, Callable):
+                raise ConfFileError( "'%s' is not callable." % line
+                                   , i
+                                   , path
+                                    )
+            self.append(obj)
+
+class Done(Exception):
+    pass    
+
 def HooksConf(*filenames):
     """Given a list of filenames, return six lists.
 
@@ -29,38 +64,6 @@ def HooksConf(*filenames):
                , 'shutdown'
                 ]
 
-    class Hooks(list):
-
-        def __init__(self, spec):
-            """Takes a list of 2-tuples, (name, Section).
-            """
-            list.__init__(self)
-            self._by_name = dict()
-            for name, section in spec:
-                self.append(section)
-                self._by_name[name] = section
-
-        def run(self, name, thing):
-            """Takes a section name an request/response/website.
-            """
-            section = self._by_name[name]
-            for hook in section:
-                thing = hook(thing) or thing
-            return thing
-    
-    class Section(list):
-
-        def append_if(self, line, path, i):
-            line = line.split('#', 1)[0].strip()
-            if line: 
-                obj = colonize(line, path, i)
-                if not isinstance(obj, Callable):
-                    raise ConfFileError( "'%s' is not callable." % line
-                                       , path
-                                       , i
-                                        )
-                self.append(obj)
-
     hooks = Hooks([(name, Section()) for name in SECTIONS])
 
     for path in filenames:
@@ -68,16 +71,17 @@ def HooksConf(*filenames):
         if not os.path.isfile(path):
             continue
         i = 0
-        for line in open(path):
-            i += 1
-            if FORM_FEED in line:
-                before, after = line.split(FORM_FEED)
-                current.append_if(before, path, i)
-                if current is hooks[-1]:
-                    break # ignore rest of file
-                current = hooks[hooks.index(current) + 1]
-                current.append_if(after, path, i)
-            else:
+        try:
+            for line in open(path):
+                i += 1
+                while FORM_FEED in line:
+                    before, line = line.split(FORM_FEED, 1)
+                    current.append_if(before, path, i)
+                    if current is hooks[-1]:
+                        raise Done # ignore rest of file
+                    current = hooks[hooks.index(current) + 1]
                 current.append_if(line, path, i)
+        except Done:
+            pass
 
     return hooks
