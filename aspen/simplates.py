@@ -152,7 +152,7 @@ def load_uncached(request):
 # =============
 
 def load(request):
-    """Given Request object, return four objects (with caching).
+    """Given a Request object, return four objects (with caching).
     """
 
     # Get a cache Entry object.
@@ -241,7 +241,7 @@ def handle(request, response=None):
     # =================
     # Note that we guess based on the filesystem path, not the URL path.
     
-    if response.headers.get('Content-Type') is None:
+    if response.headers.one('Content-Type') is None:
         if mimetype.startswith('text/'):
             mimetype += "; charset=" + ENCODING
         response.headers.set('Content-Type', mimetype)

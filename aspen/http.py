@@ -27,71 +27,55 @@ class Mapping(object):
     """
 
     def __init__(self, **kw):
-        self._dict = defaultdict(list)
-        self.link()
-        for k, v in kw.iteritems():
-            self.set(k, v)
+        self._dict = {}
+        for name, value in kw.iteritems():
+            self.set(name, value)
 
-    def add(self, k, v):
-        self._dict[k.lower()].append(str(v).strip())
+    def add(self, name, value):
+        """Given a name and value, add another entry.
+        """
+        if name not in self._dict:
+            self._dict[name] = value
+        self._dict[name].append(value)
 
-    def __contains__(self, k):
-        return k.lower() in self._dict
+    def __contains__(self, name):
+        return name.lower() in self._dict
 
-    def one(self, k, d=None):
-        return self.get(k, [d])[0]
-
-    def set(self, k, v):
-        if v is None:
-            del self._dict[k]
-        self._dict[k.lower()] = [str(v).strip()]
+    def all(self, name, default=None):
+        """Given a name, return a list of values.
+        """
+        if default is None:
+            default = []
+        return self._dict.get(name, default)
+       
+    def one(self, name, default=None):
+        return self._dict.get(name.lower(), [default])[0]
 
     def __iter__(self):
         return self._dict
 
-
-
-
     def __in__(self, name):
-        """Given a key name, return True if it is known in the form.
+        """Given a name, return True if it is known in the mapping.
         """
         return name in self._dict
 
     def __iter__(self):
         return self._dict.__iter__()
 
-    def add(self, name, value):
-        """Given a key name and value, add another header entry.
-        """
-        if name not in self._dict:
-            # work around https://github.com/jamwt/diesel/issues#issue/6
-            self._dict.set(name, value)
-        self._dict.add(name, value)
-
-    def all(self, name, default=None):
-        """Given a key name, return a list of values.
-        """
-        if default is None:
-            default = []
-        return self._dict.get(name, default)
-       
     def keys(self):
-        """Return a list of keys.
+        """Return a list of names.
         """
         return self._dict.keys()
 
-    def one(self, name, default=None):
-        """Given a key name, return the first known value.
-        """
-        return self._dict.all(name, default)[0]
-
     def set(self, name, value):
-        """Given a key name and value, set the header. Pass None to remove.
+        """Given a name and value, set the value, clearing all others.
+        
+        Pass None to remove.
+
         """
         if value is None:
-            self._dict.remove(name)
-        else:
-            self._dict.set(name, value)
+            del self._dict[name]
+        self._dict[name.lower()] = [str(value).strip()] # TODO unicode?
 
 
     # Convenience methods for coercing to bool.
@@ -118,12 +102,12 @@ class Mapping(object):
     def _yes_no(self, name, default):
         if name not in self._dict:
             return default 
-        val = self._dict[name].lower()
-        if val not in YES_NO:
+        value = self._dict[name].lower()
+        if value not in YES_NO:
             raise ConfigurationError( "%s should be 'yes' or 'no', not %s" 
                                     % (name, self._dict[name])
                                      )
-        return val in YES 
+        return value in YES 
 
 class Headers(Mapping):
     """Represent the headers in an HTTP Request message.
@@ -135,16 +119,16 @@ class Headers(Mapping):
         diesel_headers = DieselHeaders()
         diesel_headers.parse(headers)
         self._diesel_headers = diesel_headers
-        self._dict = diesel_headers._headers
-
-    def from_http(self, raw):
-        self._diesel_headers.parse(raw)
-        self._dict = self._diesel_headers._headers
+        Mapping.__init__(self, **diesel_headers._headers)
 
     def to_http(self):
         """Return the headers as a string, formatted for an HTTP message.
         """
-        return self._diesel_headers.format()
+        out = []
+        for header, values in self._dict.iteritems():
+            for value in values:
+                out.append('%s: %s' % (header.title(), value))
+        return '\r\n'.join(out)
 
 class WwwForm(Mapping):
     """Represent a WWW form.
@@ -194,7 +178,7 @@ class Request(object):
         self.headers = Headers(self.raw_headers)
         self.cookie = SimpleCookie()
         try:
-            self.cookie.load(self.headers.get('Cookie', ''))
+            self.cookie.load(self.headers.one('Cookie', ''))
         except CookieError:
             pass
 
@@ -218,7 +202,7 @@ class Request(object):
         self._diesel_request = request
         self.method = request.method
         self.version = request.version
-        self.raw_headers = request.headers.format()
+        self.raw_headers = request.headers and request.headers.format() or ''
         self.raw_body = request.body and request.body or ''
         self.remote_addr = request.remote_addr and request.remote_addr or ''
         self.raw_url = request.url
@@ -240,16 +224,17 @@ class Request(object):
 
         """
         # http://docs.python.org/library/wsgiref.html#wsgiref.util.guess_scheme
-        scheme = self.headers.get('HTTPS') and 'https' or 'http'
+        scheme = self.headers.one('HTTPS') and 'https' or 'http'
         url = scheme
         url += '://'
 
-        if self.headers.has('X-Forwarded-Host'):
-            url += self.headers.get('X-Forwarded-Host')
-        elif self.headers.has('Host'):
-            url += self.headers.get('Host')
+        if 'X-Forwarded-Host' in self.headers:
+            url += self.headers.one('X-Forwarded-Host')
+        elif 'Host' in self.headers:
+            url += self.headers.one('Host')
         else:
-            raise Response(500) # naive :-/
+            # per spec, return 400 if no Host header given
+            raise Response(400)
 
         url += urllib.quote(self.path)
         # screw params, fragment?
@@ -293,7 +278,7 @@ class Response(Exception):
                 self.headers.add(k, v)
         self.cookie = SimpleCookie()
         try:
-            self.cookie.load(self.headers.get('Cookie', ''))
+            self.cookie.load(self.headers.one('Cookie', ''))
         except CookieError:
             pass
 
@@ -308,19 +293,22 @@ class Response(Exception):
         return status_strings.get(self.code, ('???','Unknown HTTP status'))
 
     def _to_diesel(self, _diesel_request):
+        """This actually sends bits over the wire(!).
+        """
         for morsel in self.cookie.values():
             self.headers.add('Set-Cookie', morsel.OutputString())
+        self.headers._diesel_headers._headers = self.headers._dict
         return DieselResponse( _diesel_request
                              , self.code
-                             , self.headers._headers
+                             , self.headers._diesel_headers
                              , self.body
                               )
 
     def _to_http(self, version):
-        status_line = "HTTP/%s %s" % (self, version)
+        status_line = "HTTP/%s" % version
         headers = self.headers.to_http()
         body = self.body
-        if self.headers.get('Content-Type', '').startswith('text/'):
+        if self.headers.one('Content-Type', '').startswith('text/'):
             body = body.replace('\n', '\r\n')
             body = body.replace('\r\r', '\r')
         return '\r\n'.join([status_line, headers, '', body])

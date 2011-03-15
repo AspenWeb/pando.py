@@ -1,2 +1,2 @@
 #!/bin/sh
-exec ./env/bin/aspen --address=:80 doc
+exec ./thrash ./env/bin/aspen --address=:80 --log-level=DEBUG doc
