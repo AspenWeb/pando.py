@@ -1,0 +1,34 @@
+<html>
+    <head>
+        <title>Aspen: Python Web Server with Simplates</title>
+        <style>
+            @import url("/_lib/aspen.1.css");
+            @import url("/_lib/syntaxhighlighter_3.0.83/styles/shCore.css");
+            @import url("/_lib/shTheme.css");
+        </style>
+        <script src="/_lib/jquery-1.5.min.js"></script>
+        <script src="/_lib/syntaxhighlighter_3.0.83/scripts/shCore.js"></script>
+        <script src="/_lib/syntaxhighlighter_3.0.83/scripts/shBrushPython.js"></script>
+        <script>
+            $(document).ready(function() {
+                SyntaxHighlighter.all();
+            });
+        </script>
+    </head>
+    <body>
+        <div id="body">
+            <div id="definition">
+
+                <h1><a href="/">Aspen</a></h1> is a Python web server.<br />
+                <i><a href="/simplates/">Simplates</a></i> are 
+                        the main attraction.
+
+            </div>
+            {% block content %}{% end %}
+            <div id="footer">
+                &copy;2006&ndash;2011 Chad Whitacre and contributors. MIT-licensed.
+            </div>
+        </div>
+    </body>
+</html>
+

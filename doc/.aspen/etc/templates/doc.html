@@ -1,0 +1,22 @@
+{% extends base.html %}
+{% block content %}
+<div class="doc">
+
+    <h2 class="first">{{ doc_title }}</h2>
+
+    {% block doc %}{% end %}
+
+    {% if doc_next %}
+    <a href="/" class="button home">Home</a>
+    <a href="{{ doc_next[1] }}" 
+        class="button continue">{{ doc_next[0] }}</a>
+    {% else %}
+    <a href="/" class="button continue">Home</a>
+    {% end %}
+
+    <div class="clear"></div>
+
+</div>
+{% block other %}{% end %}
+{% end %}
+
