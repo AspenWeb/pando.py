@@ -1,0 +1,53 @@
+doc_title = "Request"
+doc_next = ('Response', '/response/')
+
+{% extends doc.html %}
+{% block doc %}
+
+<p>Inside of the second <a href="/simplates/">simplates</a> section, you have a
+request object called <code>request</code>. Here&rsquo;s what you get:</p>
+
+<table>
+    <tr><th>body</th><td><a href="#not-a-dict">WwwForm</a> object</td></tr>
+    <tr><th>cookie</th><td>a <a href="http://docs.python.org/library/cookie.html#Cookie.SimpleCookie">Cookie.SimpleCookie</a> object</td></tr>
+    <tr><th>headers</th><td><a href="#not-a-dict">Headers</a> object</td></tr>
+    <tr><th>method</th><td>string</td></tr>
+    <tr><th>path</th><td>string</td></tr>
+    <tr><th>qs</th><td><a href="#not-a-dict">WwwForm</a> object</td></tr>
+    <tr><th>url</th><td>string</td></tr>
+    <tr><th>urlparts</th><td><a href="http://docs.python.org/library/urlparse.html">urlparse.urlparse</a> output</td></tr>
+</table>
+
+<p>You can extend and override this API using an <a href="/hooks/">inbound
+    hook</a>.</p>
+
+<a name="not-a-dict"></a>
+<h3>Headers and WwwForm Objects</h3>
+
+<p>The <code>Headers</code> and <code>WwwForm</code> objects both have the same
+API. I decided not to make them overly dictionary-ish. Sorry. You always need
+to deal with the "either list or value" problem, so I&rsquo;m making you deal
+with that explicitly up front. I like that these are all three letters.</p>
+
+<pre>def all(self, name, default=None):
+    """Given a name, return a list of values.
+    """
+   
+def get(self, name, default=None):
+    """Given a name, return the first known value.
+    """
+
+def has(self, name):
+    """Given a name, return True if it is known in the form/headers.
+    """</pre>
+
+
+<p><code>Headers</code> objects actually have an additional method:</p>
+
+<pre>def set(self, name, value):
+    """Given a header name and value, set the header. Pass None to remove.
+    """</pre>
+
+
+{% end %}
+

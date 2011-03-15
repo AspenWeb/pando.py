@@ -1,0 +1,66 @@
+doc_title="Command Line Interface"
+doc_next = ''
+
+{% extends doc.html %}
+{% block doc %}
+
+<style>
+    DT { font-family: monospace; }
+    DD { padding-bottom: 1em; }
+</style>
+
+<p>If given no arguments or options, <code>aspen</code> will start serving a
+website from the current directory on port 8080, based on configuration files
+in <code>./.aspen/etc/</code>, logging to <code>stdout</code>.</p>
+
+<h3>Usage</h3>
+
+<p><code>aspen [options] [root]</code></p>
+
+
+<h3>Options</h3>
+
+<dl>
+    <dt>--version</dt>
+    <dd>show program's version number and exit</dd>
+
+    <dt>-h, --help</dt>
+    <dd>show this help message and exit</dd>
+</dl>
+
+
+<h4>Basics</h4>
+
+<p>Configure network location.</p>
+
+<dl>
+    <dt>-a ADDRESS, --address=ADDRESS</dt>
+    <dd>the IP or Unix address to bind to [:8080]</dd>
+</dl>
+
+
+<h4>Logging</h4>
+
+<p>Basic configuration of Python's logging library; for more complex needs use
+a logging.conf file</p>
+
+<dl>
+
+    <dt>-o FILE, --log-file=FILE</dt>
+    <dd>the file to which messages will be logged; if specified, it will be
+    rotated nightly for 7 days [stdout]</dd>
+
+    <dt>-i FILTER, --log-filter=FILTER</dt>
+    <dd>the subsystem outside of which messages will not be logged []</dd>
+
+    <dt>-t FORMAT, --log-format=FORMAT</dt>
+    <dd>the log message format per the Formatter class in the Python standard
+    library's logging module [%(message)s]</dd>
+
+    <dt>-v LEVEL, --log-level=LEVEL</dt>
+    <dd>the importance level at or above which to log a message; options are
+    NIRVANA, CRITICAL, ERROR, WARNING, INFO, DEBUG, NOTSET [WARNING]</dd>
+
+</dl>
+
+{% end %}

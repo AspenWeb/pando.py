@@ -1,0 +1,35 @@
+doc_title = "Response"
+doc_next = ('Hooks', '/hooks/')
+
+{% extends doc.html %}
+{% block doc %}
+
+<p>Aspen <code>Response</code> objects are subclasses of
+<code>Exception</code>. Yeah, seriously. All HTTP <a
+href="/request/">requests</a> in Aspen end with <code>raise Response</code>.
+The idea is that if you&rsquo;re using Aspen as designed, then any
+<code>Response</code> you raise yourself is going to be a non-200 response. If
+you want a 200 response, then you should just let the Aspen <a
+href="">simplates</a> machinery run its course. One nice benefit is that we can
+pinpoint exactly where in your code each request ended. Set <a
+href="/cli/"><code>-vDEBUG</code></a> to see this info.</p>
+
+<p>Here&rsquo;s the signature for the Response constructor:</p>
+
+<pre>def __init__(self, code=200, body='', headers=None):
+    """Takes an int, a string, and a dict (or list of tuples).
+
+        - code        an HTTP response code, e.g., 404
+        - body        the message body as a string
+        - headers     a Headers instance
+
+    Code is first because when you're raising your own Responses, they're
+    usually error conditions. Body is second because one more often wants
+    to specify a body without headers, than a header without a body.
+
+    """</pre>
+
+<p>The <a href="/request/">Headers</a> object is the same as on
+<code>Request</code> objects.</p>
+
+{% end %}

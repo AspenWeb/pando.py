@@ -1,0 +1,49 @@
+doc_title = "MongoDB"
+doc_next = ('Command Line Interface', '/cli/')
+
+{% extends doc.html %}
+{% block doc %}
+
+<p>Aspen uses <a href="http://dieselweb.org/">diesel</a> for its socket engine.
+This means you&rsquo;ve got a few different strategies for doing <a
+    href="/concurrency/">concurrency</a>. One option is to use the non-blocking
+drivers that diesel bundles for <a
+    href="https://github.com/jamwt/diesel/tree/master/diesel/protocols">MongoDB,
+    PostgreSQL, and other protocols</a>. Here&rsquo;s an example:</p>
+
+<pre>from diesel.protocols.mongodb import MongoClient
+from diesel.util.pool import ConnectionPool
+
+pool = ConnectionPool(
+    lambda: MongoClient('localhost', 27017),
+    lambda conn: conn.close(),
+    pool_size=10,
+)
+
+
+#===============================================================^L
+
+docs = []
+with pool.connection as mongo:
+    with mongo.mydb.mycollection.find() as cursor:
+        while not cursor.finished:
+            docs.extend(cursor.more())
+
+
+#===============================================================^L
+
+The pool has {&#123; len(pool.connections) }} connections.
+
+&lt;table&gt;
+{&#37;for doc in docs&#37;}
+    &lt;tr&gt;
+        &lt;td&gt;{&#123; doc['_id'] }}&lt;/td&gt;
+        &lt;td&gt;{&#123; doc['something'] }}&lt;/td&gt;
+    &lt;/tr&gt;
+{&#37;end&#37;}
+&lt;/table&gt;</pre>
+
+<p>Props to <a href="http://www.dowski.com/">dowski</a>, who wrote MongoClient,
+as well as this example.</p>
+
+{% end %}

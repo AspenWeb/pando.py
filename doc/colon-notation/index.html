@@ -1,0 +1,19 @@
+doc_title = "Colon Notation"
+doc_next = ''
+
+{% extends doc.html %}
+{% block doc %}
+
+<p>Aspen&rsquo;s <code><a href="/hooks/">hooks.conf</a></code> file uses colon
+notation to specify Python objects.</p>
+
+<pre>mypackage.sub.another:blah</pre>
+
+<p>becomes</p>
+
+<pre>from mypackage.sub import another</pre>
+
+<p>The <code>blah</code> attribute of <code>another</code> would then be
+used.</p>
+
+{% end %}

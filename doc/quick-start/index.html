@@ -1,0 +1,38 @@
+doc_title = 'Quick Start'
+doc_next = ('Simplates', '/simplates/')
+
+{% extends doc.html %}
+{% block doc %}
+
+<p>Step 1: Given <a
+href="http://en.wikipedia.org/wiki/POSIX#POSIX-oriented_operating_systems">POSIX</a>
+and <a href="http://pypi.python.org/pypi/virtualenv">virtualenv</a>, make a
+sandbox:</p>
+
+<pre>$ mkdir foo
+$ cd foo</pre>
+
+<p>Step 2: Create and activate a virtualenv in <code>.aspen</code>:</p>
+
+<pre>$ virtualenv --prompt="[foo] " .aspen
+$ source .aspen/bin/activate</pre>
+
+<p>Step 3: Install <a href="https://github.com/jamwt/diesel">diesel</a> and <a
+href="https://github.com/whit537/aspen">aspen from github</a>:</p>
+
+<pre>[foo] $ pip install https://github.com/jamwt/diesel/tarball/master
+[foo] $ pip install https://github.com/whit537/aspen/tarball/master</pre>
+
+<p>Step 4: Create a web page, and start aspen:</p>
+
+<pre>[foo] $ echo Greetings, program! > index.html
+[foo] $ aspen
+Greetings, program! Welcome to port 8080.</pre>
+
+<p>Step 5: Check <a href="http://localhost:8080/">localhost</a> for
+your new page!</p>
+
+<a title="Click for full size" href="greetings-program.png"
+    class="screencap"><img src="greetings-program.small.png" /></a>
+
+{% end %}
