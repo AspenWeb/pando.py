@@ -42,26 +42,26 @@ dist: distclean
 	mkdir dist
 	mkdir dist/aspen-${VERSION}
 	cp -r README \
-	      lib \
-	      setup.py \
-	      dist/aspen-${VERSION}
+		  lib \
+		  setup.py \
+		  dist/aspen-${VERSION}
 
 	make -C doc/tex all clean
 	mkdir dist/aspen-${VERSION}/doc
 	cp -r doc/html \
-	      doc/aspen-${VERSION}.pdf \
-	      doc/HISTORY \
-	      doc/CONTRIBUTORS \
-	      dist/aspen-${VERSION}/doc
+		  doc/aspen-${VERSION}.pdf \
+		  doc/HISTORY \
+		  doc/CONTRIBUTORS \
+		  dist/aspen-${VERSION}/doc
 
 	mkdir dist/aspen-${VERSION}/bin
 	cp -r bin/aspen \
-	      bin/aspen.mod_wsgi \
-	      dist/aspen-${VERSION}/bin
+		  bin/aspen.mod_wsgi \
+		  dist/aspen-${VERSION}/bin
 
 	mkdir dist/aspen-${VERSION}/etc
 	cp -r etc/aspen_bash_completion \
-	      dist/aspen-${VERSION}/etc
+		  dist/aspen-${VERSION}/etc
 
 	tar --directory dist -zcf dist/aspen-${VERSION}.tgz aspen-${VERSION}
 	tar --directory dist -jcf dist/aspen-${VERSION}.tbz aspen-${VERSION}
@@ -70,3 +70,17 @@ dist: distclean
 	svneol clean -w dist/aspen-${VERSION}
 	cd dist && zip -9rq aspen-${VERSION}.zip aspen-${VERSION}
 #	rm -rf dist/aspen-${VERSION}
+
+
+env:	
+	./virtualenv-1.5.2.py --no-site-packages \
+					      --unzip-setuptools \
+				          --prompt="[aspen] " \
+				          --python=python2.7 \
+				          env
+
+dev:
+	./env/bin/pip install vendor/greenlet-0.3.1/
+	./env/bin/pip install vendor/pyOpenSSL-0.11/
+	./env/bin/pip install vendor/diesel-2.0.0/
+	./env/bin/python setup.py develop
