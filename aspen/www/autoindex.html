@@ -48,7 +48,7 @@ def _get_time(stats):
 # Support the case where we are in the directory where this file actually
 # lives!
 
-fspath = request.headers.get('X-Aspen-AutoIndexDir', os.path.dirname(__file__))
+fspath = request.headers.one('X-Aspen-AutoIndexDir', os.path.dirname(__file__))
 assert os.path.isdir(fspath) # sanity check
 
 urlpath = fspath[len(request.root):] + os.sep
