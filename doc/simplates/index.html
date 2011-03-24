@@ -27,18 +27,25 @@ Greetings, program!{&#123; extra_excitement &#125;}</pre>
 <h3>Gotcha #1</h3>
 
 <p>If you copy and paste the above, you need to replace the ^Ls with actual
-<code>^L</code>s (you feel me?). If you don&rsquo;t, you&rsquo;ll get this:</p>
+<code>^L</code>s (you feel me?). If you don&rsquo;t, you&rsquo;ll get this in
+your browser:</p>
 
-<a title="Click for full size" href="extra-excitement-not-defined.png"
-    class="screencap"><img src="extra-excitement-not-defined.small.png"
+<a title="Click for full size" href="sorry-program.png"
+    class="screencap"><img src="sorry-program.small.png"
     /></a>
+
+<p>And you&rsquo;ll get a template error and traceback in your console, ending
+with this:</p>
+
+<pre>NameError: global name 'extra_excitement' is not defined</pre>
 
 <p>That&rsquo;s because the template section is looking for
 <code>extra_excitement</code>, but this was never defined, because the second
 Python section was never executed. Think about that sentence for a minute,
 because once you understand it, you&rsquo;ve grokked simplates.</p>
 
-<p>Here&rsquo;s <a href="/form-feed/">how to type a <code>^L</code></a>.</p>
+<p>Here&rsquo;s <a href="/form-feed/">how to type a <code>^L</code></a> (hint:
+it&rsquo;s ctrl-L).</p>
 
 <h3>Gotcha #2</h3>
 

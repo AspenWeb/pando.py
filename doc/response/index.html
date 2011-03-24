@@ -4,6 +4,9 @@ doc_next = ('Hooks', '/hooks/')
 {% extends doc.html %}
 {% block doc %}
 
+<p class="warning"><b>Warning:</b> This API is guaranteed to change before Aspen
+1.0.</p>
+
 <p>Aspen <code>Response</code> objects are subclasses of
 <code>Exception</code>. Yeah, seriously. All HTTP <a
 href="/request/">requests</a> in Aspen end with <code>raise Response</code>.

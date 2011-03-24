@@ -4,11 +4,19 @@ doc_next = ('Command Line Interface', '/cli/')
 {% extends doc.html %}
 {% block doc %}
 
+<p class="warning"><b>Warning:</b> Concurrency is a big topic. Aspen currently
+assumes a high level of comfort with asynchronous programming for production
+use.</p>
+
 <p>Aspen uses <a href="http://dieselweb.org/">diesel</a> for its socket engine.
-This means you&rsquo;ve got a few different strategies for doing <a
-    href="/concurrency/">concurrency</a>. One option is to use the non-blocking
-drivers that diesel bundles for <a
-    href="https://github.com/jamwt/diesel/tree/master/diesel/protocols">MongoDB,
+This means you&rsquo;ve got a couple options for doing <a
+    href="/concurrency/">concurrency</a>. One option is to run multiple Aspen
+processes behind a load-balancer such as <a
+    href="http://haproxy.1wt.eu/">HAProxy</a>, <a
+    href="http://nginx.org/en/">nginx</a>, or <a
+    href="http://www.apsis.ch/pound/">Pound</a>.  Another is to use the
+non-blocking drivers that diesel bundles for <a
+    href="https://github.com/jamwt/diesel/tree/experimental/diesel/protocols">MongoDB,
     PostgreSQL, and other protocols</a>. Here&rsquo;s an example:</p>
 
 <pre>from diesel.protocols.mongodb import MongoClient
