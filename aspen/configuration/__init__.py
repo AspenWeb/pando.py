@@ -40,7 +40,7 @@ class Configuration(object):
 
 
     def __init__(self, argv):
-        """Takes an argv list, gives it straight to optparser.parse_args.
+        """Takes an argv list, and gives it straight to optparser.parse_args.
         """
 
         # Initialize parsers.
@@ -137,7 +137,7 @@ class Configuration(object):
                 logging_configured = True
 
         if not logging_configured:          # logging.conf
-            logging_conf = os.path.join(root, '__', 'etc', 'logging.conf')
+            logging_conf = os.path.join(root, '.aspen', 'etc', 'logging.conf')
             if os.path.exists(logging_conf):
                 logging.config.fileConfig(logging_conf) 
                 log.info("logging configured from logging.conf")
