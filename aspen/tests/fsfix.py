@@ -4,6 +4,7 @@ from os.path import dirname, isdir, isfile, join, realpath
 
 import aspen
 from aspen.tests import reset_log_filter, reset_log_format
+from aspen import simplates
 from nose.tools import with_setup
 
 
@@ -66,6 +67,7 @@ def teardown():
     rm()
     reset_log_filter()
     reset_log_format()
+    simplates.__cache = dict() # The simplate cache is process global. Hrm ...
     if isfile('log'):
         os.remove('log')
 
