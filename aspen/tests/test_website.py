@@ -49,5 +49,13 @@ def test_nice_error_response_is_returned():
     actual = response.code
     assert actual == expected, actual
 
+def test_autoindex_response_is_returned():
+    mk(('README', "Greetings, program!"))
+    website = Website(Configuration(['fsfix']))
+    response = website.handle(Request.from_diesel(DieselReq()))
+    expected = True
+    actual = 'README' in response.body
+    assert actual == expected, actual
+
 
 attach_teardown(globals())
