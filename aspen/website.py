@@ -123,7 +123,7 @@ class Website(object):
 
         parts = [self.root] + request.path.lstrip('/').split('/')
         request.fs = os.sep.join(parts).rstrip(os.sep)
-        log.debug('Psht. They want %s. Waddya think?' % request.fs)
+        log.debug("got request for " + request.fs)
 
 
         # Gauntlet
