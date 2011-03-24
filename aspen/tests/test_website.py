@@ -33,5 +33,21 @@ Greetings, program!
     actual = response._to_http('1.1')
     assert actual == expected, actual
 
+def test_fatal_error_response_is_returned():
+    mk(('index.html', "raise heck"))
+    website = Website(Configuration(['fsfix']))
+    response = website.handle(Request.from_diesel(DieselReq()))
+    expected = 500
+    actual = response.code
+    assert actual == expected, actual
+
+def test_nice_error_response_is_returned():
+    mk(('index.html', "from aspen import Responseraise Response(500)"))
+    website = Website(Configuration(['fsfix']))
+    response = website.handle(Request.from_diesel(DieselReq()))
+    expected = 500
+    actual = response.code
+    assert actual == expected, actual
+
 
 attach_teardown(globals())

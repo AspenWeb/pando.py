@@ -47,7 +47,7 @@ class Website(object):
                 request = self.hooks.run('inbound_late', request)
                 response = simplates.handle(request)
             except:
-                self.handle_error(request, response)
+                response = self.handle_error_nicely(request)
         except Response, response:
             # Grab the response object in the case where it was raised.  In the
             # case where it was returned from simplates.handle, response is set
@@ -66,7 +66,7 @@ class Website(object):
         self.log_access(request, response) # TODO is this at the right level?
         return response
 
-    def handle_error(self, request):
+    def handle_error_nicely(self, request):
         """Try to provide some nice error handling.
         """
         try:                        # nice error messages
@@ -81,7 +81,7 @@ class Website(object):
             if fs is None:
                 raise
             request.fs = fs
-            simplates.handle(request, response)
+            response = simplates.handle(request, response)
         except Response, response:  # no nice error template available
             raise       
         except:                     # last chance for tracebacks in the browser
@@ -92,6 +92,7 @@ class Website(object):
                 raise Response(500, tbs)
             else:
                 raise Response(500)
+        return response
 
     def find_ours(self, filename):
         """Given a filename, return a filepath.
