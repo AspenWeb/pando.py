@@ -31,5 +31,6 @@ setup( author = 'Chad Whitacre'
      , url = 'http://aspen.io/'
      , version = '~~VERSION~~'
      , zip_safe = False
+     , install_requires = ['diesel == 2.0.0']
      , package_data = {'aspen': ['www/*']}
       )
