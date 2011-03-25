@@ -5,9 +5,9 @@ import re
 import sys
 import traceback
 import urlparse
-from os.path import join, isfile, isdir, dirname, exists
+from os.path import join, isfile
 
-from aspen import simplates
+from aspen import gauntlet, simplates
 from aspen.http.request import Request
 from aspen.http.response import Response
 
@@ -123,75 +123,29 @@ class Website(object):
         # filepath remains under the website root. Also, we don't want 
         # trailing slashes for directories in fs.
 
-        parts = [self.root] + request.path.lstrip('/').split('/')
-        request.fs = os.sep.join(parts).rstrip(os.sep)
+        parts = gauntlet.translate(request, self.root)
         log.debug("got request for " + request.fs)
 
 
-        # Gauntlet
-        # ========
-        # We keep request.fs up to date for logging purposes.
+        # The Gauntlet
+        # ============
+        # We keep request.fs up to date for logging purposes. It is used in
+        # log_access, below, which could be triggered by any of the raises
+        # herein. Each of these sets request.fs, and returns None or raises.
 
-        if not request.fs.startswith(request.root): # sanity check
-            raise response(404)
+        gauntlet.check_sanity(request)
+        gauntlet.hidden_files(request)
+        gauntlet.virtual_paths(request, parts)
+        gauntlet.trailing_slash(request)
+        gauntlet.index(request)
+        gauntlet.autoindex( request
+                          , self.opts.no('autoindex')
+                          , self.ours_or_theirs('autoindex.html')
+                           )
+        gauntlet.socket_files(request)
+        gauntlet.not_found(request, self.find_ours('favicon.ico'))
 
-        if '/.' in request.fs[len(request.root):]:  # hidden files
-            raise Response(404)
-
-        if not exists(request.fs):                  # virtual paths
-            vpath = self.root
-            for part in parts[1:]:
-                ppath = join(vpath, part)
-                regex = re.compile(r'%.+')
-                if exists(ppath):
-                    vpath = ppath
-                else:
-                    for entry in os.listdir(vpath):
-                        if regex.match(entry):
-                            vpath = join(vpath, entry)
-                            request.namespace[entry[1:]] = part
-            request.fs = vpath
-
-        if isdir(request.fs):                       # trailing slash
-            if not request.path.endswith('/'):
-                parts = list(request.urlparts)
-                parts[2] += '/'
-                location = urlparse.urlunparse(parts)
-                raise Response(301, headers={'Location': location})
-
-        if isdir(request.fs):                       # index 
-            index = join(request.fs, 'index.html')
-            if isfile(index):
-                request.fs = index
-
-        if isdir(request.fs):                       # auto index
-            if self.opts.no('autoindex'):
-                request.headers.set('X-Aspen-AutoIndexDir', request.fs)
-                request.fs = self.ours_or_theirs('autoindex.html') 
-                assert request.fs is not None # sanity check
-            else:                                   # or not
-                raise Response(404)
-
-        if '.sock/' in request.fs:                  # socket files -- some day
-            parts = request.fs.split('.sock/')
-            assert len(parts) == 2
-            request.fs = parts[0] + '.sock'
-            sockinfo = parts[1].split('/')
-            ninfo = len(sockinfo)
-            if ninfo >= 1:
-                request.transport = sockinfo[0]
-            if ninfo >= 2:
-                request.session_id = sockinfo[1]
-            if ninfo >= 3:
-                pass # what is this?
-
-        if not isfile(request.fs):                  # genuinely not found
-            if request.path == '/favicon.ico':      # special case
-                request.fs = self.find_ours('favicon.ico')
-            else:
-                raise Response(404)
-
-
+        
         # Now you are one of us.
         # ======================
 
