@@ -5,7 +5,7 @@ import re
 import sys
 import traceback
 import urlparse
-from os.path import join, isfile, isdir, dirname
+from os.path import join, isfile, isdir, dirname, exists
 
 from aspen import simplates
 from aspen.http.request import Request
@@ -137,6 +137,20 @@ class Website(object):
 
         if '/.' in request.fs[len(request.root):]:  # hidden files
             raise Response(404)
+
+        if not exists(request.fs):                  # virtual paths
+            vpath = self.root
+            for part in parts[1:]:
+                ppath = join(vpath, part)
+                regex = re.compile(r'%.+')
+                if exists(ppath):
+                    vpath = ppath
+                else:
+                    for entry in os.listdir(vpath):
+                        if regex.match(entry):
+                            vpath = join(vpath, entry)
+                            request.namespace[entry[1:]] = part
+            request.fs = vpath
 
         if isdir(request.fs):                       # trailing slash
             if not request.path.endswith('/'):
