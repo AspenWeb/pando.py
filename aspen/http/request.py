@@ -35,6 +35,7 @@ class Request(object):
         self.session_id = None # set by Website for *.sock files
         self.root = '' # set by Website
         self.fs = '' # set by Website
+        self.namespace = {} # populated by Website
 
     @classmethod
     def from_diesel(cls, request):

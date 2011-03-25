@@ -23,8 +23,9 @@ class Mapping(object):
         """Given a name and value, add another entry.
         """
         if name not in self._dict:
-            self._dict[name] = value
-        self._dict[name].append(value)
+            self.set(name, value)
+        else:
+            self._dict[name].append(value)
 
     def __contains__(self, name):
         return name.lower() in self._dict

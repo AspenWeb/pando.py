@@ -218,6 +218,7 @@ def handle(request, response=None):
         # Populate namespace.
         # ===================
     
+        namespace.update(request.namespace)
         namespace['request'] = request
         namespace['response'] = response
    
