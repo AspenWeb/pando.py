@@ -6,6 +6,12 @@ from aspen.http.headers import Headers
 from aspen.http.wwwform import WwwForm
 
 
+class Path(dict):
+    def __init__(self, bytes):
+        self.raw = bytes
+        dict.__init__(self)
+
+
 class Request(object):
     """Represent an HTTP Request message. Attributes:
 
@@ -25,7 +31,7 @@ class Request(object):
             pass
 
         urlparts = urlparse.urlparse(self.raw_url)
-        self.path = urlparts[2]
+        self.path = Path(urlparts[2]) # populated by Website
         self.raw_querystring = urlparts[4]
         self.qs = WwwForm(self.raw_querystring)
         self.url = self.rebuild_url() # needs things above
@@ -79,7 +85,7 @@ class Request(object):
             # per spec, return 400 if no Host header given
             raise Response(400)
 
-        url += urllib.quote(self.path)
+        url += urllib.quote(self.path.raw)
         # screw params, fragment?
         if self.raw_querystring:
             url += '?' + self.raw_querystring

@@ -11,6 +11,7 @@ class StubRequest(object):
         """
         self.root = join('.', 'fsfix')
         self.fs = join('.', 'fsfix', fs)
+        self.namespace = {}
         class Foo:
             pass
         self.conf = Foo()
