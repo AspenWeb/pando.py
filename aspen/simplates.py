@@ -29,6 +29,7 @@ log = logging.getLogger('aspen.simplate')
 # relax some mimetypes
 for ext in ('py', 'sh'):
     mimetypes.add_type('text/plain', '.'+ext)
+mimetypes.add_type('image/x-icon', '.ico') # this is for Python < 2.7
 
 
 class LoadError(StandardError):
