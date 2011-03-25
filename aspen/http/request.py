@@ -9,28 +9,7 @@ from aspen.http.wwwform import WwwForm
 class Request(object):
     """Represent an HTTP Request message. Attributes:
 
-    request.url = urlparse.urlparse()
-    request.url.base = "http://localhost"
-    request.url.full = "http://localhost/foo/bar.html?baz=1"
-    request.url.path = {"foo": "foo", "bar": "bar", 0: "foo", 1: "bar"}
-    request.url.path.raw = "/foo/bar.html"
-    request.url.qs = WwwForm()
-    request.url.qs.raw = "baz=1"
-    request.url.raw = "/foo/bar.html?baz=1"
-    request.url.scheme = ? # SSL header? conf? port?
-
-    request.method = "POST"
-    request.version = (1, 1)
-    request.version.raw = "HTTP/1.1"
-
-    request.headers = Headers()
-    request.headers.host = "localhost" # harmonized from Host, X-Host, conf
-    request.headers.cookie = Cookie()
-    request.headers.cookie.raw = "Set-Cookie: blah\r\nSet-Cookie: blah\r\n"
-    request.headers.raw = "X-Foo: Bar\r\nAccept: gzip\r\n\r\n"
-
-    request.body = WwwForm()
-    request.body.raw = ""
+    http://sync.in/aspen-request
 
     """
    
