@@ -1,7 +1,7 @@
 import os
 
 from aspen.configuration import Configuration
-from aspen.http import Request
+from aspen.http.request import Request
 from aspen.tests.fsfix import attach_teardown, mk
 from aspen.website import Website
 from diesel.protocols.http import HttpHeaders, HttpRequest
