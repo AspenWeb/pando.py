@@ -1,4 +1,5 @@
-from aspen.http import Mapping, Request
+from aspen.http.mapping import Mapping
+from aspen.http.request import Request
 from aspen.tests import assert_raises
 from diesel.protocols.http import HttpHeaders, HttpRequest
 

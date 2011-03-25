@@ -8,7 +8,8 @@ import urlparse
 from os.path import join, isfile, isdir, dirname
 
 from aspen import simplates
-from aspen.http import Request, Response
+from aspen.http.request import Request
+from aspen.http.response import Response
 
 
 log = logging.getLogger('aspen.website')
