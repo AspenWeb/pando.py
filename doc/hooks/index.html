@@ -37,6 +37,8 @@ translated to the filesystem, with the result at <code>request.fs</code>.</p>
 <p>In between the outbound_early and outbound_late hooks, <a
     href="/nice-errors/">nice error messages</a> happen.</p>
 
+<p>Hooks are global, meaning every hook touches every request/response.</p>
+
 
 <h3>hooks.conf</h3>
 

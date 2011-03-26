@@ -10,6 +10,8 @@ class Path(dict):
     def __init__(self, bytes):
         self.raw = bytes
         dict.__init__(self)
+    def __str__(self):
+        return self.raw
 
 
 class Request(object):
@@ -41,7 +43,7 @@ class Request(object):
         self.session_id = None # set by Website for *.sock files
         self.root = '' # set by Website
         self.fs = '' # set by Website
-        self.namespace = {} # populated by Website
+        self.namespace = {} # populated by user in inbound hooks
 
     @classmethod
     def from_diesel(cls, request):
