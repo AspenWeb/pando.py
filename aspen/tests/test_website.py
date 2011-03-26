@@ -2,15 +2,10 @@ import os
 
 from aspen.configuration import Configuration
 from aspen.http.request import Request
+from aspen.tests import DieselReq
 from aspen.tests.fsfix import attach_teardown, mk
 from aspen.website import Website
 from diesel.protocols.http import HttpHeaders, HttpRequest
-
-
-def DieselReq():
-    diesel_request = HttpRequest('GET', '/', 'HTTP/1.1')
-    diesel_request.headers = HttpHeaders(Host='localhost') # else 400 in hydrate
-    return diesel_request
 
 
 def test_basic():

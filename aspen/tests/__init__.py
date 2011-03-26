@@ -5,6 +5,22 @@ import sys
 import time
 import urllib
 
+from aspen.configuration import Configuration
+from aspen.http.request import Request
+from aspen.website import Website
+from diesel.protocols.http import HttpHeaders, HttpRequest
+
+
+def DieselReq(path='/'):
+    diesel_request = HttpRequest('GET', path, 'HTTP/1.1')
+    diesel_request.headers = HttpHeaders(Host='localhost') # else 400 in hydrate
+    return diesel_request
+
+def handle(path):
+    website = Website(Configuration(['fsfix']))
+    return website.handle(Request.from_diesel(DieselReq(path)))
+
+
 
 # Logging
 # =======

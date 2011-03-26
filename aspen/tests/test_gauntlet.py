@@ -2,7 +2,7 @@ import os
 from os.path import join, realpath
 
 from aspen import gauntlet, Response
-from aspen.tests import assert_raises
+from aspen.tests import assert_raises, handle
 from aspen.tests.fsfix import attach_teardown, mk
 from aspen.http.request import Path
 
@@ -76,10 +76,10 @@ def test_virtual_path_raises_on_bad_typecast():
     mk(('%year.int/foo.html', "Greetings, program!"))
     assert_raises(Response, check, '/I am not a year./foo.html')
 
-def test_virtual_path_raises_400_on_bad_typecast():
+def test_virtual_path_raises_404_on_bad_typecast():
     mk(('%year.int/foo.html', "Greetings, program!"))
     response = assert_raises(Response, check, '/I am not a year./foo.html')
-    expected = 400
+    expected = 404
     actual = response.code
     assert actual == expected, actual
 
@@ -104,6 +104,41 @@ def test_virtual_path_directory():
     mk(('%first/index.html', "Greetings, program!"))
     expected = expect('%first')
     actual = check('/foo/').fs
+    assert actual == expected, actual
+
+def test_virtual_path_docs_1():
+    mk(('%name/index.html', "Greetings, {{ request.path['name'] }}!"))
+    response = handle('/aspen/')
+    expected = "Greetings, aspen!"
+    actual = response.body
+    assert actual == expected, actual
+
+def test_virtual_path_docs_2():
+    mk(('%name/index.html', "Greetings, {{ request.path['name'] }}!"))
+    response = handle('/python/')
+    expected = "Greetings, python!"
+    actual = response.body
+    assert actual == expected, actual
+
+def test_virtual_path_docs_3():
+    mk( ('%name/index.html', "Greetings, {{ request.path['name'] }}!")
+      , ( '%year.int/index.html'
+        , "Tonight we're going to party like it's {{ request.path['year'] }}!"
+         )
+       )
+    response = handle('/1999/')
+    expected = "Greetings, 1999!"
+    actual = response.body
+    assert actual == expected, actual
+
+def test_virtual_path_docs_4():
+    mk( ( '%year.int/index.html'
+        , "Tonight we're going to party like it's {{ request.path['year'] }}!"
+         )
+       )
+    response = handle('/1999/')
+    expected = "Tonight we're going to party like it's 1999!"
+    actual = response.body
     assert actual == expected, actual
 
 

@@ -80,6 +80,8 @@ class Website(object):
             self.hooks.run('outbound_early', response)
             fs = self.ours_or_theirs(str(response.code) + '.html')
             if fs is None:
+                fs = self.ours_or_theirs('error.html')
+            if fs is None:
                 raise
             request.fs = fs
             response = simplates.handle(request, response)

@@ -61,7 +61,7 @@ def virtual_paths(request, parts):
                             try:
                                 part = int(part)
                             except ValueError:
-                                raise Response(400)
+                                raise Response(404)
                         else:                       # otherwise it's ASCII
                             try:
                                 part = part.decode('ASCII')
