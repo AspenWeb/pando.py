@@ -119,17 +119,15 @@ class Website(object):
        
         # First step.
         # ===========
-        # We specifically avoid removing symlinks in the path so that the
-        # filepath remains under the website root. Also, we don't want 
-        # trailing slashes for directories in fs.
+        # Set request.fs initially, return a list of fspath parts.
 
-        parts = gauntlet.translate(request, self.root)
+        parts = gauntlet.translate(request)
         log.debug("got request for " + request.fs)
 
 
         # The Gauntlet
         # ============
-        # We keep request.fs up to date for logging purposes. It is used in
+        # Keep request.fs up to date for logging purposes. It is used in
         # log_access, below, which could be triggered by any of the raises
         # herein. Each of these sets request.fs, and returns None or raises.
 
@@ -163,7 +161,7 @@ class Website(object):
             fs = '.'+fs
         else:
             fs = request.fs
-        log.info("%s => %s" % (request.path, fs))
+        log.info("%s => %s" % (request.path.raw, fs))
 
 
         # Where was response raised from?
