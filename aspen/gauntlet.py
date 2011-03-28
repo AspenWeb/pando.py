@@ -46,14 +46,15 @@ def virtual_paths(request, parts):
     if '/%' in request.fs[len(request.root):]:  # disallow direct access
         raise Response(404)
     if not exists(request.fs):
-        found = request.root
+        candidate = request.root
         for part in parts[1:]:
-            next = join(found, part)
+            next = join(candidate, part)
             if exists(next):    # this URL part names an actual directory
-                found = next
+                candidate = next
             else:               # this part is missing; do we have a %subdir?
                 key = None
-                for subdir in sorted(os.listdir(found), key=lambda x: x.lower()):
+                subdirs = sorted(os.listdir(candidate), key=lambda x: x.lower())
+                for subdir in subdirs:
                     if subdir.startswith('%'):
                         key = subdir[1:]
                         if key.endswith('.int'):    # you can typecast to int
@@ -67,12 +68,13 @@ def virtual_paths(request, parts):
                                 part = part.decode('ASCII')
                             except UnicodeDecodeError:
                                 raise Response(400)
-                        found = join(found, subdir)
+                        candidate = join(candidate, subdir)
                         request.path[key] = part
                         break   # only use first %subdir per dir
                 if key is None:
-                    raise Response(404)
-        request.fs = found.rstrip(os.sep)
+                    break # not candidate
+        if candidate != request.root:
+            request.fs = candidate.rstrip(os.sep)
 
 def trailing_slash(request):
     if isdir(request.fs):
