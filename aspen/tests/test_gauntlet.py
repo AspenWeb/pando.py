@@ -15,7 +15,7 @@ class StubRequest:
         self.path = Path(path)
         self.root = os.path.realpath('fsfix')
 
-def check(path, fs=True):
+def check(path):
     """Given an urlpath, return a filesystem path per gauntlet.virtual_paths.
     """
     request = StubRequest(path)
@@ -43,15 +43,11 @@ def test_virtual_path_can_passthrough():
     actual = check('foo.html').fs
     assert actual == expected, actual
 
-def test_unfound_virtual_path_raises_Response():
+def test_unfound_virtual_path_passes_through():
     mk(('foo.html', "Greetings, program!"))
-    assert_raises(Response, check, '/blah/foo.html')
-
-def test_unfound_virtual_path_raises_404():
-    mk(('foo.html', "Greetings, program!"))
-    response = assert_raises(Response, check, '/blah/foo.html')
-    expected = 404
-    actual = response.code
+    request = check('/blah/foo.html')
+    expected = expect('/blah/foo.html')
+    actual = request.fs
     assert actual == expected, actual
 
 def test_virtual_path_is_virtual():
