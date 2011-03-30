@@ -2,6 +2,7 @@ import urllib
 import urlparse
 from Cookie import CookieError, SimpleCookie
 
+from aspen import Response
 from aspen.http.headers import Headers
 from aspen.http.wwwform import WwwForm
 
@@ -65,6 +66,12 @@ class Request(object):
         return "<%s %s>" % (self.method, self.path)
     __repr__ = __str__
 
+    def allow(self, *methods):
+        """Given a list of methods, raise 405 if we don't meet the requirement.
+        """
+        methods = [x.upper() for x in methods]
+        if self.method not in methods:
+            raise Response(405, headers={'Allow': ', '.join(methods)})
 
     def rebuild_url(self):
         """Return a full URL for this request, per PEP 333:
