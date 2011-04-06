@@ -56,11 +56,16 @@ class Configuration(object):
         if args:
             root = args[0]
         else:
-            # Under supervisord, the following raises 
-            #   OSError: [Errno 2] No such file or directory
-            # So be sure to pass a directory in on the command line, or cwd
-            # using supervisord's own facility for that.
-            root = os.getcwd()
+            try:
+                # Under supervisord, the following raises 
+                #   OSError: [Errno 2] No such file or directory
+                # So be sure to pass a directory in on the command line, or cwd
+                # using supervisord's own facility for that.
+                root = os.getcwd()
+            except OSError:
+                raise ConfigurationError("Could not get a current working "
+                                         "directory. You can specify the site "
+                                         "root on the command line.")
         root = os.path.realpath(root)
         if not os.path.isdir(root):
             msg = "%s does not point to a directory" % root
