@@ -106,7 +106,7 @@ class Website(object):
         """Given a filename, return a filepath or None.
         """
         ours = self.find_ours(filename)
-        theirs = join(self.root, '.aspen', 'etc', 'templates', filename)
+        theirs = join(self.root, '.aspen', filename)
         if isfile(theirs):
             out = theirs
         elif isfile(ours):

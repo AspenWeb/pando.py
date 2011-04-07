@@ -19,12 +19,14 @@ extra_excitement = "!" * n
 Greetings, program!{&#123; extra_excitement &#125;}</pre>
 
 <p>The <code>^L</code> is an <a href="/form-feed/">ASCII form feed
-    character</a>.</p>
+    character</a>. It&rsquo;s also known as an ASCII page break, and so a
+simplate is a file with three pages.</p>
 
 <p>Assuming you&rsquo;ve gone through the <a href="/quick-start/">Quick
-    Start</a>, edit index.html with that content, then refresh. BUT ...</p>
+    Start</a>, edit index.html with the above content, then refresh. BUT
+...</p>
 
-<h3>Gotcha #1</h3>
+<h3>Gotcha</h3>
 
 <p>If you copy and paste the above, you need to replace the ^Ls with actual
 <code>^L</code>s (you feel me?). If you don&rsquo;t, you&rsquo;ll get this in
@@ -39,19 +41,16 @@ with this:</p>
 
 <pre>NameError: global name 'extra_excitement' is not defined</pre>
 
-<p>That&rsquo;s because the template section is looking for
+<p>That&rsquo;s because the template page is looking for
 <code>extra_excitement</code>, but this was never defined, because the second
-Python section was never executed. Think about that sentence for a minute,
+Python page was never executed. Think about that sentence for a minute,
 because once you understand it, you&rsquo;ve grokked simplates.</p>
 
 <p>Here&rsquo;s <a href="/form-feed/">how to type a <code>^L</code></a> (hint:
 it&rsquo;s ctrl-L).</p>
 
-<h3>Gotcha #2</h3>
-
-<p>While we&rsquo;re at it, I should mention that besides learning a weird
-character, the other niggle with simplates is that you have to get used to
-switching filetypes to get the right syntax highlighting.</p>
+<p>In general the current tool support for page breaks is weak. For example,
+you currently need to switch syntax highlighting manually:</p>
 
 <table>
     <tr>
@@ -60,9 +59,9 @@ switching filetypes to get the right syntax highlighting.</p>
     </tr>
 </table>
 
-<p>Of course, if someone were to write a plugin for your editor that
-highlighted the first two sections as Python, and the third according to the
-filename extension, that would solve the problem. Just sayin&rsquo;.</p>
+<p>It would be great if editors could be configured to highlight pages
+differently within a file. For Aspen simplates, we would want the first two
+pages as Python, and the third according to the filename extension.</p>
 
 
 <h3>Anyway</h3>
@@ -75,18 +74,18 @@ should look like:</p>
    
 <p>You&rsquo;re off and running!</p>
 
-<p>Give it a shot: Anything you define in the first two (Python) sections is
-available in the third (template) section.</p>
+<p>Give it a shot: Anything you define in the first two (Python) pages is
+available in the third (template) page.</p>
 
-<p>Can you guess what the difference is between the first two Python sections?
+<p>Can you guess what the difference is between the first two Python pages?
 The first one is run once, on startup. It&rsquo;s designed for imports and
 constants. The second is run once for each request.</p>
 
-<p>The templating section uses <a
+<p>The template page uses <a
     href="http://www.tornadoweb.org/documentation#templates">the template
     language from Tornado</a>. It&rsquo;s nice.</p>
 
-<p>All three sections are cached in a compiled state. This cache is invalidated
+<p>All three pages are cached in a compiled state. This cache is invalidated
 whenever the underlying file changes, so simplate changes are always
 immediately available. When you change Python libraries or configuration files,
 aspen can restart automatically. But even this extra second or so is a drag
@@ -98,7 +97,7 @@ available immediately, without restarting the server.</p>
 
 <p>Well, I like to think that simplates bring code and presentation as close
 together as possible <i>without</i> mixing them. There are no arbitrary Python
-blocks inside of the template section, &agrave; la PHP/ASP.</p>
+blocks inside of the template page, &agrave; la PHP/ASP.</p>
 
 <p>Simplates are more like MVC, but with controllers, views, and templates
 together in the same file instead of in separate files. Your models live in a

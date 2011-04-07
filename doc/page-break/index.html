@@ -1,0 +1,104 @@
+doc_title = "<code>^L</code>, the ASCII Page Break" 
+doc_next = ''
+
+{% extends doc.html %}
+{% block doc %}
+
+<p>The <code>^L</code> character is an <a
+    href="http://en.wikipedia.org/wiki/Page_break#Form_feed">ASCII page 
+    break</a>, also called:</p>
+
+<ul>
+    <li>form feed</li>
+    <li>\f</li>
+    <li>12</li>
+    <li>0xC</li>
+</ul>
+
+<p>Aspen uses the ASCII page break to split <a href="/simplates/">simplates</a>
+into pages.</p>
+
+
+<h3>Rationale</h3>
+
+<p>Yes, you have to learn a new control character to use Aspen simplates. This
+is a design tradeoff. The page break is a perfect fit semantically (a simplate
+is one file with several &ldquo;pages&rdquo;), and it is easy to type. However,
+the current tool support is weak.</p>
+
+
+<h4>Tool Support</h4>
+
+<p>Emacs has good support for page breaks. It actually provides for <a
+    href="http://www.gnu.org/software/emacs/manual/html_node/emacs/Pages.html">navigating
+    through a file based on the page breaks</a> (this is how I learned of them,
+actually: Barry Warsaw uses them in the email package in the standard library).
+UltraEdit has the nicest presentation of them I&rsquo;ve seen, but you have to
+configure your key mappings to use Ctrl-L for it. Page breaks work fine in Vim,
+though there&rsquo;s no special treatment. Other editors are less friendly.
+Notepad is pretty hopeless.</p>
+
+<p>Ideally, one would be able to configure an editor to use different syntax
+highlighting for different pages in a file. For Aspen simplates, we would want
+the first two (optional) pages in a file to be Python, and the third to vary by
+file extension.</p>
+
+<p>Web browsers don&rsquo;s render page breaks, so any time you want to put a
+simplate code snippet on a website you have two options:</p>
+
+<ul>
+
+    <li>Use an actual page break, which will be confusingly invisible on the
+    website, but will work if copied and pasted</li>
+
+    <li>Change the page break to "^" "L", which will show in the browser, but
+    will confusingly break when copied and pasted into an editor</li>
+
+</ul>
+
+
+<h4>Alternatives</h4>
+
+<p>I did have a version of simplates at one point that used a goofy comment
+string to delimit pages, something like:</p>
+
+<pre>#&lt;!-- BREAK --&gt;</pre>
+
+<p>This is maybe easier for newbies to understand, but it&rsquo;s ugly and
+harder to type. You could make it easier to type with a macro, but then
+you&rsquo;ve made it harder for newbies again, and it&rsquo;s still ugly. The
+page break is so cute: <img src="/favicon.ico" /></p>
+
+<p>If you like simplates but dislike the page break, then you have until Aspen
+1.0 to come up with something that works perfectly with existing tools
+<i>and</i> isn&rsquo;t ugly.</p>
+
+
+<h3>Working with Page Breaks</h3>
+
+<p>Here is how to type <code>^L</code> in various editors:</p>
+
+<table>
+    <tr>
+        <th>Vim</th>
+        <td>Ctrl-L (in insert mode)</td>
+    </tr>
+    <tr>
+        <th>Emacs</th>
+        <td>C-q C-l</td>
+    </tr>
+    <tr>
+        <th>UltraEdit</th>
+        <td>There is a "Page Break" option on the "Insert"
+            menu. You can remap Ctrl-L to that.</td>
+    </tr>
+    <tr>
+        <th>TextMate, etc.</th>
+        <td>???</td>
+    </tr>
+</table>
+
+<p>Please <a href="mailto:chad@zetaweb.com">email me</a> if you have any
+additions to that list or if you need help figuring it out for your editor.</p>
+
+{% end  %}

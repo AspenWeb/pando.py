@@ -20,7 +20,7 @@ class Paths:
     pass
 
 def load(*also):
-    return HooksConf('fsfix/.aspen/etc/hooks.conf', *also)
+    return HooksConf('fsfix/.aspen/hooks.conf', *also)
 
 
 # No hooks configured
@@ -32,13 +32,13 @@ def test_no_aspen_directory():
     assert actual == expected, actual
 
 def test_no_file():
-    mk('.aspen/etc')
+    mk('.aspen')
     expected = [[], [], [], [], [], []]
     actual = load()
     assert actual == expected, actual
 
 def test_empty_file():
-    mk('.aspen/etc', ('.aspen/etc/hooks.conf', ''))
+    mk('.aspen', ('.aspen/hooks.conf', ''))
     expected = [[], [], [], [], [], []]
     actual = load()
     assert actual == expected, actual
@@ -48,19 +48,19 @@ def test_empty_file():
 # ================
 
 def test_something():
-    mk('.aspen/etc', ('.aspen/etc/hooks.conf', 'random:choice'))
+    mk('.aspen', ('.aspen/hooks.conf', 'random:choice'))
     expected = [[random.choice], [], [], [], [], []]
     actual = load()
     assert actual == expected, actual
 
 def test_must_be_callable():
-    mk('.aspen/etc', ('.aspen/etc/hooks.conf', 'string:digits'))
+    mk('.aspen', ('.aspen/hooks.conf', 'string:digits'))
     err = assert_raises(ConfFileError, load)
-    assert err.msg == ("'string:digits' is not callable. [fsfix/.aspen/etc"
+    assert err.msg == ("'string:digits' is not callable. [fsfix/.aspen"
                        "/hooks.conf, line 1]"), err.msg
 
 def test_order():
-    mk('.aspen/etc', ('.aspen/etc/hooks.conf', 'random:choice\nrandom:seed'))
+    mk('.aspen', ('.aspen/hooks.conf', 'random:choice\nrandom:seed'))
     expected = [[random.choice, random.seed], [], [], [], [], []]
     actual = load()
     assert actual == expected, actual
@@ -70,13 +70,13 @@ def test_order():
 # ======
 
 def test_blank_lines_skipped():
-    mk('.aspen/etc', ('.aspen/etc/hooks.conf', '\n\nrandom:choice\n\n'))
+    mk('.aspen', ('.aspen/hooks.conf', '\n\nrandom:choice\n\n'))
     expected = [[random.choice], [], [], [], [], []]
     actual = load()
     assert actual == expected, actual
 
 def test_comments_ignored():
-    mk('.aspen/etc', ('.aspen/etc/hooks.conf', """
+    mk('.aspen', ('.aspen/hooks.conf', """
 
         #comment
         random:choice#comment
@@ -92,7 +92,7 @@ def test_comments_ignored():
 # ========
 
 def test_outbound_section():
-    mk('.aspen/etc', ('.aspen/etc/hooks.conf', """
+    mk('.aspen', ('.aspen/hooks.conf', """
 
         
 
