@@ -21,7 +21,9 @@ setup( author = 'Chad Whitacre'
      , classifiers = classifiers
      , description = ('Aspen is a Python web server. '
                       'Simplates are the main attraction.')
-     , entry_points = { 'console_scripts': ['aspen = aspen.cli:main'] }
+     , entry_points = { 'console_scripts': [ 'aspen = aspen.cli:main'
+                                           , 'thrash = aspen.cli:thrash'
+                                            ] }
      , name = 'aspen'
      , packages = find_packages(exclude=[ 'aspen.socket_io'     # not ready for
                                         , 'aspen.socket_io.*'      # prime time
