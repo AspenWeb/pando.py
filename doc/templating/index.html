@@ -59,7 +59,8 @@ def url_escape(value):
 
 <p>Put base templates in the <code>.aspen</code> hidden directory in your
 website root. You can use subdirectories (see <code>include</code> for an
-example).</p>
+example). See <a href="/thrash/">thrash</a> for how aspen supports base
+template reloading.</p>
 
 <pre>{&#37; extends "foo.html" %}
 {&#37; block bar %}
@@ -83,7 +84,9 @@ example).</p>
 <p>Put include files in the <code>.aspen</code> hidden directory in your
 website root. As shown here, you can use subdirectories of your choosing. Note
 though that directory separators are not automatically translated across
-operating systems, so the following would break on Windows.</p>
+operating systems, so the following would break on Windows. See <a
+    href="/thrash/">thrash</a> for how aspen supports include file
+reloading.</p>
 
 <pre>{&#37; include "bar/foo.html" %}</pre>
 
