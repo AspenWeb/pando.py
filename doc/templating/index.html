@@ -1,0 +1,108 @@
+doc_title = "Templating"
+doc_next = ('Virtual Paths', '/virtual-paths/')
+
+
+class Foo:
+    def __str__(self):
+        return "Blam."
+expression = str(Foo())
+
+{% extends doc.html %}
+{% block doc %}
+
+<p>The template page of a <a href="/simplates/">simplate</a> file uses the
+templating language from the <a href="http://www.tornadoweb.org/">Tornado</a>
+framework (under the Apache license). It&rsquo;s a Django-like syntax, but with
+arbitrary Python expressions allowed, and only a single <code>{&#37; end
+    %}</code> tag instead of separate tags for <code>{&#37; endif %}</code>,
+etc.</p>
+
+<h3>Expressions</h3>
+
+<p>You can evaluate Python expression inline like so:</p>
+
+<pre>{&#123; expression }}</pre>
+
+<p>Any objects imported or defined in the first two Python pages of the
+simplate are available here. This includes the <a href="/request/">request</a>
+and <a href="/response/">response</a> objects.  Additionally, the following
+four helper functions are available:</p>
+
+<pre>def escape(value):
+    """This is an alias for xhtml_escape."""
+
+def xhtml_escape(value):
+    """Escapes a string so it is valid within XML or XHTML."""
+
+def json_encode(value):
+    """JSON-encodes the given Python object."""
+
+def squeeze(value):
+    """Replace all sequences of whitespace chars with a single space."""
+
+def url_escape(value):
+    """Returns a valid URL-encoded version of the given value."""</pre>
+
+
+<h3>Operators</h3>
+
+<p>Here are the operators you get:<p>
+
+<h4>For</h4>
+
+<pre>{&#37; for foo in bar %}
+    ...
+{&#37; end %}</pre>
+
+
+<h4>Extends/Block</h4>
+
+<p>Put base templates in the <code>.aspen</code> hidden directory in your
+website root. You can use subdirectories (see <code>include</code> for an
+example).</p>
+
+<pre>{&#37; extends "foo.html" %}
+{&#37; block bar %}
+    ...
+{&#37; end %}</pre>
+
+
+<h4>If/Elif/Else</h4>
+
+<pre>{&#37; if foo %}
+    ...
+{&#37; elif %}
+    ...
+{&#37; else %}
+    ...
+{&#37; end %}</pre>
+
+
+<h4>Include</h4>
+
+<p>Put include files in the <code>.aspen</code> hidden directory in your
+website root. As shown here, you can use subdirectories of your choosing. Note
+though that directory separators are not automatically translated across
+operating systems, so the following would break on Windows.</p>
+
+<pre>{&#37; include "bar/foo.html" %}</pre>
+
+
+<h4>Try/Except/Finally</h4>
+
+<pre>{&#37; try %}
+    ...
+{&#37; except %}
+    ...
+{&#37; finally %}
+    ...
+{&#37; end %}</pre>
+
+
+<h4>While</h4>
+
+<pre>{&#37; while foo %}
+    ...
+{&#37; end %}</pre>
+
+{% end %}

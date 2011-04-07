@@ -133,8 +133,6 @@ def load_uncached(request):
     if template.strip():
         loader = Loader(os.path.join( request.root
                                     , '.aspen'
-                                    , 'etc'
-                                    , 'templates'
                                      ))
         template = Template( template
                            , name = request.fs

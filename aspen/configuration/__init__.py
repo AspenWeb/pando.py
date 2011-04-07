@@ -74,7 +74,7 @@ class Configuration(object):
 
         conf = AspenConf( '/etc/aspen/aspen.conf'
                         , os.path.expanduser('~/.aspen/aspen.conf') 
-                        , os.path.join(root, '.aspen', 'etc', 'aspen.conf')
+                        , os.path.join(root, '.aspen', 'aspen.conf')
                          ) # later overrides earlier
         
         self.root = root
@@ -89,7 +89,7 @@ class Configuration(object):
 
         self.hooks = HooksConf( '/etc/aspen/hooks.conf'
                               , os.path.expanduser('~/.aspen/hooks.conf')
-                              , os.path.join(root,'.aspen','etc','hooks.conf')
+                              , os.path.join(root,'.aspen', 'hooks.conf')
                                ) # later comes after earlier, per section
 
 
@@ -147,7 +147,7 @@ class Configuration(object):
                 logging_configured = True
 
         if not logging_configured:          # logging.conf
-            logging_conf = os.path.join(root, '.aspen', 'etc', 'logging.conf')
+            logging_conf = os.path.join(root, '.aspen', 'logging.conf')
             if os.path.exists(logging_conf):
                 logging.config.fileConfig(logging_conf) 
                 log.info("logging configured from logging.conf")

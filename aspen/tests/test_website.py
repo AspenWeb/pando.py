@@ -53,7 +53,7 @@ def test_autoindex_response_is_404_by_default():
     assert actual == expected, actual
 
 def test_autoindex_response_is_returned():
-    mk(('.aspen/etc/aspen.conf', '[aspen]\nautoindex: 1')
+    mk(('.aspen/aspen.conf', '[aspen]\nautoindex: 1')
        , ('README', "Greetings, program!"))
     website = Website(Configuration(['fsfix']))
     response = website.handle(Request.from_diesel(DieselReq()))
