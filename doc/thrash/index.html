@@ -1,0 +1,35 @@
+doc_title = "Thrash"
+doc_next = []
+
+{% extends doc.html %}
+{% block doc %}
+
+<p>Aspen comes with a utility called <code>thrash</code> that restarts a
+process whenever it dies. It is installed along with the <code>aspen</code>
+executable, via setuptools.</p>
+
+<p>You can configure <code>aspen</code> to die whenever module files or files
+under a <code>.aspen</code> hidden directory in your website root change. That
+hidden directory is where you put template bases and includes, etc. To set this
+up, create an <code>aspen.conf</code> file with this content:</p>
+
+<pre>[aspen]
+changes_kill = yes</pre>
+
+<p>Aspen reads <code>aspen.conf</code> from the following locations. Later
+files override earlier.</p>
+
+<ul>
+    <li><code>/etc/aspen/aspen.conf</code></li>
+    <li><code>~/aspen/aspen.conf</code></li>
+    <li><code>./.aspen/aspen.conf</code></li>
+</ul>
+
+<p>This is how Aspen supports the common case of restarting a server in
+development when files change. In production you should use something like <a
+    href="http:/cr.yp.to/daemontools.html">daemontools</a> or <a
+    href="http://www.supervisord.org">supervisord</a>. Note that <a
+    href="/simplates/">simplate</a> files are automatically reloaded without a
+server restart whenever they change, both in development and production.</p>
+
+{% end %}
