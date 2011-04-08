@@ -9,6 +9,7 @@ class StubRequest(object):
     def __init__(self, fs):
         """Takes a path under ./fsfix to a simplate.
         """
+        self.page_break = chr(12)
         self.root = join('.', 'fsfix')
         self.fs = join('.', 'fsfix', fs)
         self.namespace = {}

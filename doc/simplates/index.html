@@ -18,12 +18,14 @@ extra_excitement = "!" * n
 ^L
 Greetings, program!{&#123; extra_excitement &#125;}</pre>
 
-<p>The <code>^L</code> is an <a href="/page-break/">ASCII page break 
-    character</a>. A simplate is a file with three pages.</p>
+<p>A simplate is a file with three pages. By default, Aspen uses the <a
+    href="/page-break/">ASCII page break character</a> to delimit pages.
+That&rsquo;s what the ^L&rsquo;s are above.</p>
 
 <p>Assuming you&rsquo;ve gone through the <a href="/quick-start/">Quick
     Start</a>, edit index.html with the above content, then refresh. BUT
 ...</p>
+
 
 <h3>Gotcha</h3>
 
@@ -44,6 +46,10 @@ with this:</p>
 <code>extra_excitement</code>, but this was never defined, because the second
 Python page was never executed. Think about that sentence for a minute, because
 once you understand it, you&rsquo;ve grokked simplates.</p>
+
+<p>As an alternative, you can configure aspen to use another string to delimit
+pages in simplates by setting <a href="/aspen.conf/"><code>page_break</code> in
+    <code>aspen.conf</code></a>.</p>
 
 
 <h3>Anyway</h3>

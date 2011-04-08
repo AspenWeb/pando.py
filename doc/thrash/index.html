@@ -11,19 +11,11 @@ executable, via setuptools.</p>
 <p>You can configure <code>aspen</code> to die whenever module files or files
 under a <code>.aspen</code> hidden directory in your website root change. That
 hidden directory is where you put template bases and includes, etc. To set this
-up, create an <code>aspen.conf</code> file with this content:</p>
+up, create an <a href="/aspen.conf/"><code>aspen.conf</code></a> file with this
+content:</p>
 
 <pre>[aspen]
 changes_kill = yes</pre>
-
-<p>Aspen reads <code>aspen.conf</code> from the following locations. Later
-files override earlier.</p>
-
-<ul>
-    <li><code>/etc/aspen/aspen.conf</code></li>
-    <li><code>~/aspen/aspen.conf</code></li>
-    <li><code>./.aspen/aspen.conf</code></li>
-</ul>
 
 <p>This is how Aspen supports the common case of restarting a server in
 development when files change. In production you should use something like <a

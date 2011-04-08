@@ -22,7 +22,6 @@ from aspen.http import Response
 from _tornado.template import Loader, Template
 
 
-FORM_FEED = chr(12) # == '\x0c', ^L, ASCII page break
 ENCODING = 'UTF-8'
 log = logging.getLogger('aspen.simplate')
 
@@ -85,7 +84,7 @@ def load_uncached(request):
     if not mimetype.startswith('text/'):
         s = lambda s: simplate.startswith(s)
         if not (s('#!') or s('"""') or s('import') or s('from')):
-            # I tried checking for 1 or 2 FORM_FEEDs, but found a binary file
+            # I tried checking for 1 or 2 form feeds, but found a binary file
             # in the wild that indeed had exactly two. Let's sniff the first
             # few bytes.
             return (mimetype, None, None, simplate) # static file; exit early
@@ -93,15 +92,15 @@ def load_uncached(request):
     simplate = simplate.decode(ENCODING)
 
 
-    nform_feeds = simplate.count(FORM_FEED)
+    nform_feeds = simplate.count(request.page_break)
     if nform_feeds == 0:
         script = imports = ""
         template = simplate
     elif nform_feeds == 1:
         imports = ""
-        script, template = simplate.split(FORM_FEED)
+        script, template = simplate.split(request.page_break)
     elif nform_feeds == 2:
-        imports, script, template = simplate.split(FORM_FEED)
+        imports, script, template = simplate.split(request.page_break)
     else:
         raise SyntaxError( "Simplate <%s> may have at most two " % request.fs
                          + "form feeds; it has %d." % nform_feeds

@@ -16,13 +16,14 @@ doc_next = ''
 </ul>
 
 <p>Aspen uses the ASCII page break to split <a href="/simplates/">simplates</a>
-into pages.</p>
-
+into pages. To use a different string to indicate page breaks, set <a
+    href="/aspen.conf/"><code>page_break</code> in <code>aspen.conf</code></a>.
 
 <h3>How to Type a Page Break</h3>
 
-<p>If you&rsquo;re not comfortable working with page breaks, then Aspen is not
-for you. That said, here are some notes on various editors:</p>
+<p>Page breaks are directly supported in Emacs and Vim. For other editors, you
+may need to change your key bindings to use Ctlr-L. Here&rsquo;s how to type a
+page break in various editors:</p>
 
 <table>
     <tr>
@@ -44,11 +45,9 @@ for you. That said, here are some notes on various editors:</p>
     </tr>
 </table>
 
-<p>Wikipedia has a list of <a
+<p>Additionally, Wikipedia has a list of <a
     href="http://en.wikipedia.org/wiki/Comparison_of_text_editors#Key_bindings">editors
-    with dynamic keybinding support</a>. If you don&rsquo;t want to use an
-editor with native support for page breaks, then you&rsquo;ll at least want one
-that you can remap Ctrl-L in.</p>
+    with dynamic keybinding support</a>.</p>
 
 <!--
 
@@ -63,10 +62,11 @@ for you. That said, I&rsquo;ve put up a community-edited page to <a
 
 <h3>Rationale</h3>
 
-<p>Yes, Aspen uses a control character that may be new to you. This is a design
-tradeoff. The page break is a perfect fit semantically (a simplate is one file
-with several &ldquo;pages&rdquo;), and it is easy to type. However, the current
-tool support is weak in the long tail.</p>
+<p>Aspen uses the page break character to delimit <a
+    href="/simplates/">simplate</a> pages by default because it is a perfect
+fit semantically (a simplate is one file with several pages), and it is easy to
+type in the standard editors, Emacs and Vim. However, the current tool support
+is weak in the long tail.</p>
 
 
 <h4>Tool Support</h4>
@@ -107,13 +107,14 @@ string to delimit pages, something like:</p>
 <pre>#&lt;!-- BREAK --&gt;</pre>
 
 <p>This is maybe easier for newbies to understand, but it&rsquo;s ugly and
-harder to type. You could make it easier to type with a macro, but then
-you&rsquo;ve made it harder for newbies again, and it&rsquo;s still ugly. The
-page break is so cute: <img src="/favicon.ico" /></p>
+harder to type in Emacs and Vim. You could make it easier to type with a macro,
+but then you&rsquo;ve made it harder for newbies again, and it&rsquo;s still
+ugly. The page break is so cute: <img src="/favicon.ico" />. Using caret-L
+rather than a true page break is another idea, but then you&rsquo;re just
+pretending.</p>
 
-<p>If you like simplates but dislike the page break, then you have until Aspen
-1.0 to suggest something that works perfectly with existing tools <i>and</i>
-isn&rsquo;t ugly.</p>
-
+<p>If you or your team would like to use an alternate string, this is easy to
+configure with a <a href="/aspen.conf/"><code>.aspen/aspen.conf</code></a> file
+in your website root.</p>
 
 {% end  %}
