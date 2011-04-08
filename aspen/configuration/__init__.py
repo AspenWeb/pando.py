@@ -83,11 +83,19 @@ class Configuration(object):
         self.optparser = optparser
         self.opts = opts
 
+        
+        # page break
+        # ==========
+        # Default is the ASCII page break control character.
+
+        self.page_break = conf.aspen.get('page_break', chr(12)) 
+
 
         # hooks
         # =====
 
-        self.hooks = HooksConf( '/etc/aspen/hooks.conf'
+        self.hooks = HooksConf( self.page_break
+                              , '/etc/aspen/hooks.conf'
                               , os.path.expanduser('~/.aspen/hooks.conf')
                               , os.path.join(root,'.aspen', 'hooks.conf')
                                ) # later comes after earlier, per section

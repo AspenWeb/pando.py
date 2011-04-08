@@ -20,7 +20,7 @@ class Paths:
     pass
 
 def load(*also):
-    return HooksConf('fsfix/.aspen/hooks.conf', *also)
+    return HooksConf(chr(12), 'fsfix/.aspen/hooks.conf', *also)
 
 
 # No hooks configured

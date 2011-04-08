@@ -5,9 +5,6 @@ from aspen.configuration.colon import colonize
 from aspen.configuration.exceptions import ConfFileError
 
 
-FORM_FEED = chr(12)
-
-
 class Hooks(list):
 
     def __init__(self, spec):
@@ -43,8 +40,8 @@ class Section(list):
 class Done(Exception):
     pass    
 
-def HooksConf(*filenames):
-    """Given a list of filenames, return six lists.
+def HooksConf(page_break, *filenames):
+    """Given a page_break character and a list of filenames, return six lists.
 
     The file format for hooks.conf is a ^L-separated list of hooks, like so:
       
@@ -74,8 +71,8 @@ def HooksConf(*filenames):
         try:
             for line in open(path):
                 i += 1
-                while FORM_FEED in line:
-                    before, line = line.split(FORM_FEED, 1)
+                while page_break in line:
+                    before, line = line.split(page_break, 1)
                     current.append_if(before, path, i)
                     if current is hooks[-1]:
                         raise Done # ignore rest of file

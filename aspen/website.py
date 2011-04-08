@@ -40,6 +40,7 @@ class Website(object):
         try:
             try:
                 request.configuration = self.configuration
+                request.page_break = request.configuration.page_break
                 request.conf = self.configuration.conf
                 request.root = self.configuration.root
                 request.website = self
@@ -139,7 +140,7 @@ class Website(object):
         gauntlet.trailing_slash(request)
         gauntlet.index(request)
         gauntlet.autoindex( request
-                          , self.opts.no('autoindex')
+                          , self.opts.no('list_directories')
                           , self.ours_or_theirs('autoindex.html')
                            )
         gauntlet.socket_files(request)
