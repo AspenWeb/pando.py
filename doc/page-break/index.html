@@ -19,12 +19,18 @@ doc_next = ''
 into pages.</p>
 
 
+<h3>How to Type a Page Break</h3>
+
+<p>If you need hand-holding on how to type a page break, then Aspen isn&rsquo;t
+for you.</p>
+
+
 <h3>Rationale</h3>
 
-<p>Yes, you have to learn a new control character to use Aspen simplates. This
-is a design tradeoff. The page break is a perfect fit semantically (a simplate
-is one file with several &ldquo;pages&rdquo;), and it is easy to type. However,
-the current tool support is weak.</p>
+<p>Yes, Aspen uses a control character that may be new to you. This is a design
+tradeoff. The page break is a perfect fit semantically (a simplate is one file
+with several &ldquo;pages&rdquo;), and it is easy to type. However, the current
+tool support is weak in the long tail.</p>
 
 
 <h4>Tool Support</h4>
@@ -33,17 +39,17 @@ the current tool support is weak.</p>
     href="http://www.gnu.org/software/emacs/manual/html_node/emacs/Pages.html">navigating
     through a file based on the page breaks</a> (this is how I learned of them,
 actually: <a href="http://barry.warsaw.us/">Barry Warsaw</a> uses them in the
-email package in the standard library).  UltraEdit has the nicest presentation
+email package in the standard library). UltraEdit has the nicest presentation
 of them I&rsquo;ve seen, but you have to configure your key mappings to use
 Ctrl-L for it. Page breaks work fine in Vim, though there&rsquo;s no special
-treatment. Other editors are less friendly.  Notepad is pretty hopeless.</p>
+treatment. Other editors are less friendly. Notepad is pretty hopeless.</p>
 
 <p>Ideally, one would be able to configure an editor to use different syntax
 highlighting for different pages in a file. For Aspen simplates, we would want
 the first two (optional) pages in a file to be Python, and the third to vary by
 file extension.</p>
 
-<p>Web browsers don&rsquo;s render page breaks, so any time you want to put a
+<p>Web browsers don&rsquo;t render page breaks, so any time you want to put a
 simplate code snippet on a website you have two options:</p>
 
 <ul>
@@ -70,35 +76,8 @@ you&rsquo;ve made it harder for newbies again, and it&rsquo;s still ugly. The
 page break is so cute: <img src="/favicon.ico" /></p>
 
 <p>If you like simplates but dislike the page break, then you have until Aspen
-1.0 to come up with something that works perfectly with existing tools
-<i>and</i> isn&rsquo;t ugly.</p>
+1.0 to suggest something that works perfectly with existing tools <i>and</i>
+isn&rsquo;t ugly.</p>
 
-
-<h3>Working with Page Breaks</h3>
-
-<p>Here is how to type <code>^L</code> in various editors:</p>
-
-<table>
-    <tr>
-        <th>Vim</th>
-        <td>Ctrl-L (in insert mode)</td>
-    </tr>
-    <tr>
-        <th>Emacs</th>
-        <td>C-q C-l</td>
-    </tr>
-    <tr>
-        <th>UltraEdit</th>
-        <td>There is a "Page Break" option on the "Insert"
-            menu. You can remap Ctrl-L to that.</td>
-    </tr>
-    <tr>
-        <th>TextMate, etc.</th>
-        <td>???</td>
-    </tr>
-</table>
-
-<p>Please <a href="mailto:chad@zetaweb.com">email me</a> if you have any
-additions to that list or if you need help figuring it out for your editor.</p>
 
 {% end  %}
