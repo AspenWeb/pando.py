@@ -1,0 +1,176 @@
+"""This page is a list of editors and their support of the page break.
+"""
+import cgi
+import re
+import urllib
+
+from aspen import Response
+from diesel.protocols.mongodb import MongoClient
+from diesel.protocols.http import HttpClient, HttpHeaders
+from diesel.util.pool import ConnectionPool
+
+mongo = ConnectionPool(
+    lambda: MongoClient('localhost', 27017),
+    lambda conn: conn.close(),
+    pool_size=10,
+)
+google = ConnectionPool(
+    lambda: HttpClient('www.google.com', 80),
+    lambda conn: conn.close(),
+    pool_size=10,
+)
+
+
+name_re = re.compile(r'[A-Za-z]+')
+
+
+PRIVATE_KEY = request.conf.recaptcha['private_key']
+PUBLIC_KEY = request.conf.recaptcha['public_key']
+errors = []
+
+if request.method == 'POST':
+    data = { 'privatekey': PRIVATE_KEY
+           , 'remoteip': request.remote_addr
+           , 'challenge': request.body.one('recaptcha_challenge_field')
+           , 'response': request.body.one('recaptcha_response_field')
+            }
+    data = urllib.urlencode(data)
+
+    with google.connection as conn:
+        heads = HttpHeaders()
+        # http://groups.google.com/group/recaptcha/browse_thread/thread/b37f4442bddc179b
+        heads.set('Content-type', 'application/x-www-form-urlencoded')
+        res = conn.request('POST', '/recaptcha/api/verify', heads, data)
+        if res[0] != 200:
+            errors.append("Sorry, recaptcha verification failed.")
+
+        if not errors:
+            body = res[2]
+            success, message = body.split('\n')
+            if success == 'false':
+                errors.append('Recaptcha failure: ' + message)
+            else:
+                assert success == 'true'
+
+    if not errors:
+        name = request.body.one('name')
+        if name_re.match(name) is None:
+            errors.append("Editor name must match '[A-Za-z]+'.")
+
+    if not errors:
+        _id = name.lower()
+        details = request.body.one('details')
+        details = cgi.escape(details)
+        details = details.strip()
+
+    if not errors:
+        with mongo.connection as conn:
+            spec = {'_id': _id}
+            if details:
+                with conn.aspen_io.editors.find(spec) as cur:
+                    doc = cur.one()
+                    if doc is None:
+                        doc = spec
+                    doc['name'] = name
+                    doc['details'] = details
+                conn.aspen_io.editors.update(spec, doc, upsert=True)
+            else:
+                conn.aspen_io.editors.delete(spec)
+
+    if not errors:
+        # Send them back to GET.
+        raise Response(302, headers={'Location': '/page-break/editors/'}) 
+
+if errors:
+    response.code = 400
+
+editors = []
+with mongo.connection as conn:
+    with conn.aspen_io.editors.find({}) as cur:
+        cur.sort('_id', 1)
+        editors = cur.all()
+
+{% extends "base.html" %}
+{% block head %}
+<style>
+    .editors P {
+        margin: 0 0 1em;
+        padding: 0;
+        text-indent: 0;
+    }
+    .editors TEXTAREA {
+        width: 100%;
+        height: 100px;
+    }
+    .editors .errors {
+        color: red;
+        margin: 0;
+        padding: 1em 0 1em;
+    }
+</style>
+<script>
+    $(document).ready(function()
+    {
+        $('A.edit').click(function(e)
+        {
+            e.preventDefault();
+            var div = $(this).parent();
+            var name = $('H4', div).text();
+            var details = $('P', div).text();
+            console.log(name, details);
+            $('input[name=name]').val(name);
+            $('textarea').text(details);
+            $(document).scrollTop($(document).height());
+            $('.add-an-editor').text('Modify an Editor');
+        });
+    });
+</script>
+
+{% end %}
+{% block content %}
+<div id="index" class="editors">
+
+    <h2 class="first">Editor Support for Page Breaks</h2>
+
+    <p>This is a community-managed page detailing page break support in various
+    editors.</p>
+
+
+    {% for editor in editors %}
+    <div class="editor">
+        <a name="{{ editor['name'] }}"></a>
+        <h4>{{ editor['name'] }}</h4>
+        <p>{{ editor['details'] }}</p>
+        <a class="edit" href="">edit</a>
+    </div>
+    {% end %}
+
+    <h2 class="add-an-editor">Add an Editor</h2>
+
+    <form method="POST" action="./">
+        {% if errors %}
+        <p class="errors">
+        {% for error in errors %}
+        {{ error }}<br />
+        {% end %}
+        </p>
+        {% end %}
+        Name: <input type="text" name="name" /><br />
+        <textarea name="details" rows="20"></textarea>
+        <script type="text/javascript"
+          src="http://www.google.com/recaptcha/api/challenge?k={{ PUBLIC_KEY }}">
+          </script>
+          <noscript>
+             <iframe src="http://www.google.com/recaptcha/api/noscript?k={{ PUBLIC_KEY }}"
+                 height="300" width="600" frameborder="0"></iframe><br>
+             <textarea name="recaptcha_challenge_field" rows="3" cols="40">
+             </textarea>
+             <input type="hidden" name="recaptcha_response_field"
+                 value="manual_challenge">
+          </noscript> 
+        <input type="submit" />
+
+    </form>
+
+</div>
+{% end %}
