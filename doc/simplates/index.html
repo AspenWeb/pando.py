@@ -18,9 +18,8 @@ extra_excitement = "!" * n
 ^L
 Greetings, program!{&#123; extra_excitement &#125;}</pre>
 
-<p>The <code>^L</code> is an <a href="/form-feed/">ASCII form feed
-    character</a>. It&rsquo;s also known as an ASCII page break, and so a
-simplate is a file with three pages.</p>
+<p>The <code>^L</code> is an <a href="/page-break/">ASCII page break 
+    character</a>. A simplate is a file with three pages.</p>
 
 <p>Assuming you&rsquo;ve gone through the <a href="/quick-start/">Quick
     Start</a>, edit index.html with the above content, then refresh. BUT
@@ -46,22 +45,8 @@ with this:</p>
 Python page was never executed. Think about that sentence for a minute,
 because once you understand it, you&rsquo;ve grokked simplates.</p>
 
-<p>Here&rsquo;s <a href="/form-feed/">how to type a <code>^L</code></a> (hint:
-it&rsquo;s ctrl-L).</p>
-
-<p>In general the current tool support for page breaks is weak. For example,
-you currently need to switch syntax highlighting manually:</p>
-
-<table>
-    <tr>
-        <th>Vim</th>
-        <td>:set filetype={python,html,etc.}</td>
-    </tr>
-</table>
-
-<p>It would be great if editors could be configured to highlight pages
-differently within a file. For Aspen simplates, we would want the first two
-pages as Python, and the third according to the filename extension.</p>
+<p>I&rsquo;m finding that Aspen&rsquo;s use of page breaks is a significant
+barrier to entry for some people.</p>
 
 
 <h3>Anyway</h3>
