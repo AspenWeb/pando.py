@@ -21,7 +21,8 @@ google = ConnectionPool(
 )
 
 
-name_re = re.compile(r'[A-Za-z]+')
+name_pat = r'^[A-Za-z+]+$'
+name_re = re.compile(name_pat)
 
 
 PRIVATE_KEY = request.conf.recaptcha['private_key']
@@ -53,9 +54,9 @@ if request.method == 'POST':
                 assert success == 'true'
 
     if not errors:
-        name = request.body.one('name')
+        name = request.body.one('name').strip()
         if name_re.match(name) is None:
-            errors.append("Editor name must match '[A-Za-z]+'.")
+            errors.append("Editor name must match %s." % name_pat)
 
     if not errors:
         _id = name.lower()
@@ -132,8 +133,8 @@ with mongo.connection as conn:
 
     <h2 class="first">Editor Support for Page Breaks</h2>
 
-    <p>This is a community-managed page detailing page break support in various
-    editors.</p>
+    <p>This is a community-managed page detailing <a href="/page-break/">page
+    break</a> support in various editors.</p>
 
 
     {% for editor in editors %}
