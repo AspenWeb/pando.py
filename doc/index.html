@@ -3,14 +3,13 @@
 <style>
     #story {
         width: 600px;
-        padding: 0 0 1em;
-        border-bottom: 2px solid #B1502C;
-        margin: 1em 0 2em;
+        padding: 0;
+        margin: 0 0 2em;
     } 
     #story TD {
         width: 33%;
         margin: 0;
-        padding: 0 0 2em;
+        padding: 0;
     }
     #story B {
         font: normal 18pt/24px Arial, sans-serif;
@@ -25,20 +24,24 @@
     }
     #story I {
         font-style: normal;
-        color: #00A359;
+        background: #FFFE98;
     }
     #story .future B,
     #story .future P {
         color: #DDD;
+    }
+    .press {
+        text-align: right;
+        font: normal 9pt/12pt Arial, sans-serif;
+        border-bottom: 2px solid #B1502C;
+        margin: 1em 0 2em;
+        padding: 0 0 0.5em;
     }
 </style>
 {% end %}
 {% block content %}
 
 <div id="index">
-
-    <p>As seen on <a href="http://news.ycombinator.com/item?id=2410221">Hacker
-        News</a> and <a href="http://www.reddit.com/r/Python/comments/glhvi/aspen_the_webserver_for_adults/">Reddit</a>.</p>
 
     <table id="story">
         <tr>
@@ -57,6 +60,14 @@
         </tr>
     </table>
     
+    <div class="press">
+
+    As seen on <a href="http://news.ycombinator.com/item?id=2410221">Hacker
+        News</a> and <a
+        href="http://www.reddit.com/r/Python/comments/glhvi/">Reddit</a>.
+
+    </div>
+
     <p><a href="/colon-notation/">Colon Notation</a>&mdash;Some aspen
     configuration files look for Python objects based on this notation.</p>
 
