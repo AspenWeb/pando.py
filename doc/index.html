@@ -1,4 +1,38 @@
 {% extends base.html %}
+{% block head %}
+<style>
+    #story {
+        width: 600px;
+        padding: 0 0 1em;
+        border-bottom: 2px solid #B1502C;
+        margin: 1em 0 2em;
+    } 
+    #story TD {
+        width: 33%;
+        margin: 0;
+        padding: 0 0 2em;
+    }
+    #story B {
+        font: normal 18pt/24px Arial, sans-serif;
+        color: black;
+    }
+    #story P {
+        font: normal 10px/12px "Lucida Sans", Monaco, monospace;
+        margin: 0;
+        padding: 3px;
+        text-indent: 0;
+        color: #999;
+    }
+    #story I {
+        font-style: normal;
+        color: #00A359;
+    }
+    #story .future B,
+    #story .future P {
+        color: #DDD;
+    }
+</style>
+{% end %}
 {% block content %}
 
 <div id="index">
@@ -6,23 +40,22 @@
     <p>As seen on <a href="http://news.ycombinator.com/item?id=2410221">Hacker
         News</a> and <a href="http://www.reddit.com/r/Python/comments/glhvi/aspen_the_webserver_for_adults/">Reddit</a>.</p>
 
-    <div class="warning">
-
-        <b>Caveat Emptor</b><br/>
-            <br />
-        Thanks for showing up! Can I let you know where things stand?
-
-        <ul>
-            <li>Aspen is under active development towards a stable <b>1.0</b>
-            release.</li>
-            <li>Releases in the <b>0.9.x</b> line should be considered development
-            snapshots.</li>
-            <li>The <b>0.8</b> line is in need of a maintainer.</li>
-        </ul>
-
-        Ok, <a href="/quick-start/">proceed</a>!<br /><br />
-
-    </div>
+    <table id="story">
+        <tr>
+            <td class="past">
+                <b>0.8</b>
+                <p>A noble past.<br />Needs a maintainer.</p>
+            </td>
+            <td class="present">
+                <b>0.9.x</b>
+                <p>Development snapshots.<br /><i>You are here.</i></p>
+            </td>
+            <td class="future">
+                <b>1.0</b>
+                <p>A glorious,<br />stable future.</p>
+            </td>
+        </tr>
+    </table>
     
     <p><a href="/colon-notation/">Colon Notation</a>&mdash;Some aspen
     configuration files look for Python objects based on this notation.</p>
