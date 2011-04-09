@@ -1,2 +1,2 @@
 include ez_setup.py
-include version.py
+include version.txt
