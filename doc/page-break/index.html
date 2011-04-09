@@ -1,12 +1,12 @@
-doc_title = "<code>^L</code>, the ASCII Page Break" 
+doc_title = "<code>&#94;L</code>, the ASCII Page Break" 
 doc_next = ''
 
 {% extends doc.html %}
 {% block doc %}
 
-<p>The <code>^L</code> character is an <a
-    href="http://en.wikipedia.org/wiki/Page_break#Form_feed">ASCII page 
-    break</a>, also called:</p>
+<p>The <code>&#94;L</code> character is an <a
+    href="http://en.wikipedia.org/wiki/Page_break">ASCII page break</a>, also
+called:</p>
 
 <ul>
     <li>form feed</li>
@@ -16,105 +16,67 @@ doc_next = ''
 </ul>
 
 <p>Aspen uses the ASCII page break to split <a href="/simplates/">simplates</a>
-into pages. To use a different string to indicate page breaks, set <a
-    href="/aspen.conf/"><code>page_break</code> in <code>aspen.conf</code></a>.
+and <a href="/hooks/"><code>hooks.conf</code></a> into pages. The page break
+character is a perfect fit semantically, and it is easy to type in Emacs and
+Vim.</p>
 
-<h3>How to Type a Page Break</h3>
+
+<h4>Caret-L</h4>
+
+<p>Since tool support is weak outside of Emacs and Vim, you can also use the
+two characters "^" (caret) and "L" (uppercase ell).  Aspen will convert
+caret-Ls to true page breaks when loading your simplates and
+<code>hooks.conf</code>.  You can mix them interchangeably in the same
+file.</p>
+
+<p>To include a caret-L in the template portion of an HTML simplate, you can
+use the escape sequence <code>&amp;#94;L</code>. That&rsquo;s how the caret-Ls
+are included on this page, for example.</p>
+
+
+<h3>Tool Support for True Page Breaks</h3>
 
 <p>Page breaks are directly supported in Emacs and Vim. For other editors, you
-may need to change your key bindings to use Ctlr-L. Here&rsquo;s how to type a
-page break in various editors:</p>
-
-<table>
-    <tr>
-        <th>Vim</th>
-        <td>Ctrl-L (in insert mode)</td>
-    </tr>
-    <tr>
-        <th>Emacs</th>
-        <td>C-q C-l</td>
-    </tr>
-    <tr>
-        <th>UltraEdit</th>
-        <td>There is a "Page Break" option on the "Insert"
-            menu. You should remap Ctrl-L to that.</td>
-    </tr>
-    <tr>
-        <th>TextMate, etc.</th>
-        <td>???</td>
-    </tr>
-</table>
-
-<p>Additionally, Wikipedia has a list of <a
+may need to change your key bindings to use Ctrl-L for page breaks. Check
+Wikipedia for a list of <a
     href="http://en.wikipedia.org/wiki/Comparison_of_text_editors#Key_bindings">editors
     with dynamic keybinding support</a>.</p>
 
-<!--
-
-Need mongo first ...
-
-<p>If you&rsquo;re not comfortable working with page breaks, then Aspen is not
-for you. That said, I&rsquo;ve put up a community-edited page to <a
-    href="/page-break/editors/">track editor support</a> for page breaks.</p>
-
--->
-
-
-<h3>Rationale</h3>
-
-<p>Aspen uses the page break character to delimit <a
-    href="/simplates/">simplate</a> pages by default because it is a perfect
-fit semantically (a simplate is one file with several pages), and it is easy to
-type in the standard editors, Emacs and Vim. However, the current tool support
-is weak in the long tail.</p>
-
-
-<h4>Tool Support</h4>
-
-<p>Emacs has good support for page breaks. It actually provides for <a
-    href="http://www.gnu.org/software/emacs/manual/html_node/emacs/Pages.html">navigating
-    through a file based on the page breaks</a> (this is how I learned of them,
-actually: <a href="http://barry.warsaw.us/">Barry Warsaw</a> uses them in the
-email package in the standard library). UltraEdit has the nicest presentation
-of them I&rsquo;ve seen, but you have to configure your key mappings to use
-Ctrl-L for it. Page breaks work fine in Vim, though there&rsquo;s no special
-treatment. Other editors may be less friendly. Notepad is pretty hopeless.</p>
 
 <p>Ideally, one would be able to configure an editor to use different syntax
 highlighting for different pages in a file. For Aspen simplates, one would want
 the first two (optional) pages in a file to be Python, and the third to vary by
-file extension.</p>
+file extension. I don&rsquo;t know of any editor that currently supports
+this.</p>
 
-<p>Web browsers don&rsquo;t render page breaks, so any time you want to put a
-simplate code snippet on a website you have two options:</p>
+<p>Web browsers don&rsquo;t render page breaks, so it is better to use caret-L
+any time you want to put a simplate code snippet on a website.</p>
 
-<ul>
-
-    <li>Use an actual page break, which will be confusingly invisible on the
-    website, but will work if copied and pasted</li>
-
-    <li>Change the page break to "^" "L", which will show in the browser, but
-    will confusingly break when copied and pasted into an editor</li>
-
-</ul>
+<p>Below are some notes for specific editors.</p>
 
 
-<h4>Alternatives</h4>
+<h4>Emacs</h4>
 
-<p>I did have a version of simplates at one point that used a goofy comment
-string to delimit pages, something like:</p>
+<p>To enter a page break in Emacs, type <code>C-q C-l</code>. It renders as &#94;L.</p>
 
-<pre>#&lt;!-- BREAK --&gt;</pre>
+<p>Emacs actually provides for <a
+    href="http://www.gnu.org/software/emacs/manual/html_node/emacs/Pages.html">navigating
+    through a file based on page breaks</a>. I first discovered the page break
+character in the email package in the standard library, which was written by
+Barry Warsaw, an <a href="http://barry.warsaw.us/elisp/">Emacs user</a>.</p>
 
-<p>This is maybe easier for newbies to understand, but it&rsquo;s ugly and
-harder to type in Emacs and Vim. You could make it easier to type with a macro,
-but then you&rsquo;ve made it harder for newbies again, and it&rsquo;s still
-ugly. The page break is so cute: <img src="/favicon.ico" />. Using caret-L
-rather than a true page break is another idea, but then you&rsquo;re just
-pretending.</p>
 
-<p>If you or your team would like to use an alternate string, this is easy to
-configure with a <a href="/aspen.conf/"><code>.aspen/aspen.conf</code></a> file
-in your website root.</p>
+<h4>UltraEdit</h4>
+
+<p>There is a &ldquo;Page Break&rdquo; option on the &ldquo;Insert&rdquo; menu.
+You should remap Ctrl-L to that. By default, UltraEdit renders page breaks as a
+nice thin line, though there is an option to render it as an ugly box.</p>
+
+
+<h4>Vim</h4>
+
+<p>Page breaks show up in Vim as &#94;L. You can enter one in insert mode
+simply by typing <code>Ctrl-L</code>.</p>
+
 
 {% end  %}

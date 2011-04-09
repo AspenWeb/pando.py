@@ -116,6 +116,31 @@ def test_outbound_section():
     assert actual == expected, actual
 
 
+def test_caret_L_converted_to_page_break():
+    mk('.aspen', ('.aspen/hooks.conf', """
+
+        ^L 
+
+        random:choice
+        random:sample
+
+        ^L
+
+        random:randint
+
+
+        """))
+    expected = [ []
+               , [random.choice, random.sample]
+               , [random.randint]
+               , []
+               , []
+               , []
+                ]
+    actual = load()
+    assert actual == expected, actual
+
+
 # Layering
 # ========
 
