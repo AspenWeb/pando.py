@@ -13,7 +13,7 @@ confirm () {
 
 confirm "Tag version $1 and upload to PyPI?"
 if [ $? -eq 0 ]; then
-    echo $1 > version.py
+    echo -n $1 > version.txt
     git commit --all -m"Version bump for release."
     git tag $1
 
@@ -22,7 +22,7 @@ if [ $? -eq 0 ]; then
 
     python setup.py sdist --formats=zip,gztar,bztar upload
 
-    echo '+' >> version.py
+    echo -n '+' >> version.txt
     git commit --all -m"Version bump post-release."
     git push
 fi

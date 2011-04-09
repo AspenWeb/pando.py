@@ -2,10 +2,7 @@ from ez_setup import use_setuptools
 use_setuptools()
 
 from setuptools import find_packages, setup
-try:
-    from version import version
-except ImportError:
-    version = 'devel'
+version = open('version.txt').read()
 
 
 classifiers = [ 'Development Status :: 4 - Beta'
@@ -39,5 +36,4 @@ setup( author = 'Chad Whitacre'
      , zip_safe = False
      , install_requires = ['diesel == 2.0.0']
      , package_data = {'aspen': ['www/*']}
-     , data_files:e MA:
       )
