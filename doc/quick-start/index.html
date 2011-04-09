@@ -4,28 +4,31 @@ doc_next = ('Simplates', '/simplates/')
 {% extends doc.html %}
 {% block doc %}
 
-<p>Step 1: Given <a
-href="http://en.wikipedia.org/wiki/POSIX#POSIX-oriented_operating_systems">POSIX</a>
-and <a href="http://pypi.python.org/pypi/virtualenv">virtualenv</a>, make a
+<p>Given: <a
+    href="http://en.wikipedia.org/wiki/POSIX#POSIX-oriented_operating_systems">POSIX</a>
+and <a href="http://pypi.python.org/pypi/virtualenv">virtualenv</a>
+
+<p>Step 1: Make a
 sandbox:</p>
 
-<pre>$ mkdir foo
-$ cd foo</pre>
+<pre>$ virtualenv foo
+$ cd foo
+$ . bin/activate</pre>
 
-<p>Step 2: Create and activate a virtualenv in <code>.aspen</code>:</p>
+<p>Step 3: Install <a href="http://pypi.python.org/pypi/aspen">aspen from
+    PyPI</a>:</p>
 
-<pre>$ virtualenv --prompt="[foo] " .aspen
-$ source .aspen/bin/activate</pre>
+<pre>(foo)$ pip install aspen</pre>
 
-<p>Step 3: Install <a href="https://github.com/whit537/aspen">aspen from
-    github</a>:</p>
+<p>Step 2: Create a website root:</p>
 
-<pre>[foo] $ pip install https://github.com/whit537/aspen/zipball/0.9.17</pre>
+<pre>$ mkdir www
+$ cd www</pre>
 
-<p>Step 4: Create a web page, and start aspen:</p>
+<p>Step 4: Create a web page, and start aspen inside it:</p>
 
-<pre>[foo] $ echo Greetings, program! > index.html
-[foo] $ aspen
+<pre>(foo)$ echo Greetings, program! > index.html
+(foo)$ aspen
 Greetings, program! Welcome to port 8080.</pre>
 
 <p>Step 5: Check <a href="http://localhost:8080/">localhost</a> for
