@@ -40,7 +40,6 @@ class Website(object):
         try:
             try:
                 request.configuration = self.configuration
-                request.page_break = request.configuration.page_break
                 request.conf = self.configuration.conf
                 request.root = self.configuration.root
                 request.website = self

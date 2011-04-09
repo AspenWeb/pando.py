@@ -22,6 +22,7 @@ from aspen.http import Response
 from _tornado.template import Loader, Template
 
 
+PAGE_BREAK = chr(12)
 ENCODING = 'UTF-8'
 log = logging.getLogger('aspen.simplate')
 
@@ -90,19 +91,19 @@ def load_uncached(request):
             return (mimetype, None, None, simplate) # static file; exit early
 
     simplate = simplate.decode(ENCODING)
+    simplate = simplate.replace("^L", PAGE_BREAK)
 
-
-    nform_feeds = simplate.count(request.page_break)
+    nform_feeds = simplate.count(PAGE_BREAK)
     if nform_feeds == 0:
         script = imports = ""
         template = simplate
     elif nform_feeds == 1:
         imports = ""
-        script, template = simplate.split(request.page_break)
+        script, template = simplate.split(PAGE_BREAK)
     elif nform_feeds == 2:
-        imports, script, template = simplate.split(request.page_break)
+        imports, script, template = simplate.split(PAGE_BREAK)
     else:
-        raise SyntaxError( "Simplate <%s> may have at most two " % request.fs
+        raise SyntaxError( "Simplate %s may have at most two " % request.fs
                          + "form feeds; it has %d." % nform_feeds
                           )
 

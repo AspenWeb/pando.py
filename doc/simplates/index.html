@@ -11,51 +11,21 @@ looks like:</p>
 """
 import random
 
-^L
+&#94;L
 n = random.choice(range(10))
 extra_excitement = "!" * n
 
-^L
+&#94;L
 Greetings, program!{&#123; extra_excitement &#125;}</pre>
 
-<p>A simplate is a file with three pages. By default, Aspen uses the <a
+<p>A simplate is a file with three pages. Aspen uses the <a
     href="/page-break/">ASCII page break character</a> to delimit pages.
-That&rsquo;s what the ^L&rsquo;s are above.</p>
+That&rsquo;s what the &#94;L&rsquo;s are above. You can either use real page
+breaks, or the two characters caret and L.</p>
 
 <p>Assuming you&rsquo;ve gone through the <a href="/quick-start/">Quick
-    Start</a>, edit index.html with the above content, then refresh. BUT
-...</p>
+    Start</a>, edit index.html with the above content, then refresh.</p>
 
-
-<h3>Gotcha</h3>
-
-<p>If you copy and paste the above, you need to replace the ^Ls with actual
-<code>^L</code>s (you feel me?). If you don&rsquo;t, you&rsquo;ll get this in
-your browser:</p>
-
-<a title="Click for full size" href="sorry-program.png"
-    class="screencap"><img src="sorry-program.small.png"
-    /></a>
-
-<p>And you&rsquo;ll get a template error and traceback in your console, ending
-with this:</p>
-
-<pre>NameError: global name 'extra_excitement' is not defined</pre>
-
-<p>That&rsquo;s because the template page is looking for
-<code>extra_excitement</code>, but this was never defined, because the second
-Python page was never executed. Think about that sentence for a minute, because
-once you understand it, you&rsquo;ve grokked simplates.</p>
-
-<p>As an alternative, you can configure aspen to use another string to delimit
-pages in simplates by setting <a href="/aspen.conf/"><code>page_break</code> in
-    <code>aspen.conf</code></a>.</p>
-
-
-<h3>Anyway</h3>
-
-<p>Once you&rsquo;ve got the simplate right, refresh. Here&rsquo;s what it
-should look like:</p>
 
 <a title="Click for full size" href="extra-excitement.png"
     class="screencap"><img src="extra-excitement.small.png" /></a>

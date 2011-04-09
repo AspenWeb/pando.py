@@ -9,7 +9,6 @@ class StubRequest(object):
     def __init__(self, fs):
         """Takes a path under ./fsfix to a simplate.
         """
-        self.page_break = chr(12)
         self.root = join('.', 'fsfix')
         self.fs = join('.', 'fsfix', fs)
         self.namespace = {}
@@ -20,6 +19,17 @@ class StubRequest(object):
 
 def Simplate(fs):
     return load_uncached(StubRequest(fs))
+
+def check(content):
+    mk(('index.html', content))
+    request = StubRequest('index.html')
+    response = Response()
+    handle(request, response)
+    return response.body
+
+
+# Tests
+# =====
 
 def test_barely_working():
     mk(('index.html', "Greetings, program!"))
@@ -35,6 +45,16 @@ def test_handle_barely_working():
     handle(request, response)
     actual = response.body
     expected = "Greetings, program!"
+    assert actual == expected, actual
+
+def test_simplate_pages_work():
+    actual = check("foo = 'bar'Greetings, {{ foo }}!")
+    expected = "Greetings, bar!"
+    assert actual == expected, actual
+
+def test_simplate_pages_work_with_caret_L():
+    actual = check("foo = 'bar'^LGreetings, {{ foo }}!")
+    expected = "Greetings, bar!"
     assert actual == expected, actual
 
 attach_teardown(globals())
