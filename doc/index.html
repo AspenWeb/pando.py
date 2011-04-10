@@ -1,3 +1,6 @@
+version = open('../version.txt').read().strip('+')
+
+
 {% extends base.html %}
 {% block head %}
 <style>
@@ -13,7 +16,13 @@
     }
     #story B {
         font: normal 18pt/24px Arial, sans-serif;
+    }
+    #story B A {
         color: black;
+        text-decoration: none;
+    }
+    #story B A:hover {
+        text-decoration: underline;
     }
     #story P {
         font: normal 10px/12px "Lucida Sans", Monaco, monospace;
@@ -46,11 +55,11 @@
     <table id="story">
         <tr>
             <td class="past">
-                <b>0.8</b>
+                <b><a href="http://www.zetadev.com/software/aspen/">0.8</a></b>
                 <p>A noble past.<br />Needs a maintainer.</p>
             </td>
             <td class="present">
-                <b>0.9.x</b>
+                <b><a href="http://pypi.python.org/packages/source/a/aspen/aspen-{{ version }}.tar.bz2">{{ version }}</a></b>
                 <p>Development snapshots.<br /><i>You are here.</i></p>
             </td>
             <td class="future">
@@ -59,14 +68,8 @@
             </td>
         </tr>
     </table>
-    
-    <div class="press">
 
-    As seen on <a href="http://news.ycombinator.com/item?id=2410221">Hacker
-        News</a> and <a
-        href="http://www.reddit.com/r/Python/comments/glhvi/">Reddit</a>.
-
-    </div>
+    <div class="press"></div>
 
     <p><a href="/aspen.conf/">aspen.conf</a>&mdash;Aspen can be configured
     via an aspen.conf file.</p>
