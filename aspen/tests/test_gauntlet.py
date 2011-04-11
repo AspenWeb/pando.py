@@ -44,9 +44,9 @@ def test_virtual_path_can_passthrough():
     assert actual == expected, actual
 
 def test_unfound_virtual_path_passes_through():
-    mk(('foo.html', "Greetings, program!"))
-    request = check('/blah/foo.html')
-    expected = expect('/blah/foo.html')
+    mk(('%bar/foo.html', "Greetings, program!"))
+    request = check('/blah/flah.html')
+    expected = expect('/blah/flah.html')
     actual = request.fs
     assert actual == expected, actual
 

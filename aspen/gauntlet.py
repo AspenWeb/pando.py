@@ -40,7 +40,7 @@ def virtual_paths(request, parts):
 
     Path parts will end up in request.path, a dict subclass. There can only be 
     one variable per path part. If a directory has more than one subdirectory
-    starting with '%' then only the first as sorted by os.listdir is used.
+    starting with '%' then only the 'first' is used.
 
     """
     if '/%' in request.fs[len(request.root):]:  # disallow direct access
@@ -72,6 +72,7 @@ def virtual_paths(request, parts):
                         request.path[key] = part
                         break   # only use first %subdir per dir
                 if key is None:
+                    candidate = request.root
                     break # not candidate
         if candidate != request.root:
             request.fs = candidate.rstrip(os.sep)
