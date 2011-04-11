@@ -121,7 +121,7 @@ def inbound(request):
         if match is not None:
             request.original_path = path
             if mapping.path == '':              # redirect to trailing slash
-                raise Response(301, headers={'Location', path+'/'}) #TODO qs
+                raise Response(301, headers={'Location': path+'/'}) #TODO qs
             else:                               # serve with explicit path
                 request.path = mapping.path
             groups = match.groups()
