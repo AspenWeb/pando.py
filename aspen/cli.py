@@ -25,9 +25,8 @@ def main(argv=None):
         # change current working directory
         os.chdir(configuration.root)
 
-        if configuration.conf.aspen.yes('changes_kill'):
+        if configuration.conf.aspen.no('changes_kill'):
             # restart for template files too;
-            # TODO generalize this to all of .aspen?
             # TODO can't we just invalidate the simplate cache for these?
             dot_aspen = join(configuration.root, '.aspen')
             for root, dirs, files in os.walk(dot_aspen):
