@@ -102,6 +102,46 @@ def test_virtual_path_directory():
     actual = check('/foo/').fs
     assert actual == expected, actual
 
+def test_virtual_path_file():
+    mk(('foo/%bar.html', "Greetings, program!"))
+    expected = expect('foo/%bar.html')
+    actual = check('/foo/blah.html').fs
+    assert actual == expected, actual
+
+def test_virtual_path_file_only_last_part():
+    mk(('foo/%bar.html', "Greetings, program!"))
+    expected = expect('foo/blah.html/baz')
+    actual = check('/foo/blah.html/baz').fs
+    assert actual == expected, actual
+
+def test_virtual_path_file_only_last_part____no_really():
+    mk(('foo/%bar.html', "Greetings, program!"))
+    expected = expect('foo/blah.html/')
+    actual = check('/foo/blah.html/').fs
+    assert actual == expected, actual
+
+def test_virtual_path_file_key_val_set():
+    mk(('foo/%bar.html', "Greetings, program!"))
+    expected = {'bar': u'blah'}
+    actual = check('/foo/blah.html').path
+    assert actual == expected, actual
+
+def test_virtual_path_file_key_val_not_cast():
+    mk(('foo/%bar.html', "Greetings, program!"))
+    expected = {'bar': u'537'}
+    actual = check('/foo/537.html').path
+    assert actual == expected, actual
+
+def test_virtual_path_file_key_val_cast():
+    mk(('foo/%bar.int.html', "Greetings, program!"))
+    expected = {'bar': 537}
+    actual = check('/foo/537.html').path
+    assert actual == expected, actual
+
+
+# Docs
+# ====
+
 def test_virtual_path_docs_1():
     mk(('%name/index.html', "Greetings, {{ request.path['name'] }}!"))
     response = handle('/aspen/')
@@ -118,6 +158,25 @@ def test_virtual_path_docs_2():
 
 def test_virtual_path_docs_3():
     mk( ('%name/index.html', "Greetings, {{ request.path['name'] }}!")
+      , ('%name/%cheese.txt', "{{ request.path['name'].title() }} likes {{ request.path['cheese'] }} cheese.")
+       )
+    response = handle('/chad/cheddar.txt')
+    expected = "Chad likes cheddar cheese."
+    actual = response.body
+    assert actual == expected, actual
+
+def test_virtual_path_docs_4():
+    mk( ('%name/index.html', "Greetings, {{ request.path['name'] }}!")
+      , ('%name/%cheese.txt', "{{ request.path['name'].title() }} likes {{ request.path['cheese'] }} cheese.")
+       )
+    response = handle('/chad/cheddar.txt/')
+    expected = 404 
+    actual = response.code
+    assert actual == expected, actual
+
+def test_virtual_path_docs_5():
+    mk( ('%name/index.html', "Greetings, {{ request.path['name'] }}!")
+      , ('%name/%cheese.txt', "{{ request.path['name'].title() }} likes {{ request.path['cheese'] }} cheese.")
       , ( '%year.int/index.html'
         , "Tonight we're going to party like it's {{ request.path['year'] }}!"
          )
@@ -127,7 +186,7 @@ def test_virtual_path_docs_3():
     actual = response.body
     assert actual == expected, actual
 
-def test_virtual_path_docs_4():
+def test_virtual_path_docs_6():
     mk( ( '%year.int/index.html'
         , "Tonight we're going to party like it's {{ request.path['year'] }}!"
          )
