@@ -5,8 +5,12 @@ doc_next = ('Hooks', '/hooks/')
 {% block doc %}
 
 <p>Aspen supports dynamic URLs using virtual paths, which are specially-named
-directories on your filesystem. Make a directory on your filesystem called
-<code>%name</code>.</p>
+directories and files on your filesystem.</p>
+
+
+<h3>Directories</h3>
+
+<p>Make a directory on your filesystem called <code>%name</code>.</p>
 
 <pre>$ mkdir %name</pre>
 
@@ -15,15 +19,12 @@ there with this content:</p>
 
 <pre>Greetings, {&#123; request.path['name'] }}!</pre>
 
-
-
 <p>Now hit <a
     href="http://localhost:8080/aspen/">http://localhost:8080/aspen/</a>. You
 should see this:</p>
 
 <a title="Click for full size" href="aspen.png" class="screencap"><img
     src="aspen.small.png" /></a>
-
 
 <p>Now hit <a
     href="http://localhost:8080/python/">http://localhost:8080/python/</a>. You
@@ -32,15 +33,38 @@ should see:</p>
 <a title="Click for full size" href="python.png" class="screencap"><img
     src="python.small.png" /></a>
 
-
 <p>Get it?</p>
+
+
+<h3>Files</h3>
+
+<p>Aspen will also match files that start with a percent sign (<code>%</code>).
+Make a simplate in <code>%name</code> named <code>%cheese.txt</code>, with this
+content:</p>
+
+<pre>
+{&#123; request.path['name'].title() }} likes {&#123; request.path['cheese'] }} cheese.
+</pre>
+
+<p>Now <a href="http://localhost:8080/chad/cheddar.txt">test it out</a>:</p>
+
+<a title="Click for full size" href="cheese.png" class="screencap"><img
+    src="cheese.small.png" /></a>
+
+<p>Virtual path files only work for the last URL path part, so if you hit <a
+    href="http://localhost:8080/chad/cheddar.txt/">/chad/cheddar.txt/</a> (with
+a trailing slash), you&rsquo;ll get a 404:</p>
+
+<a title="Click for full size" href="no-cheese.png" class="screencap"><img
+    src="no-cheese.small.png" /></a>
 
 
 <h3>Typecasting</h3>
 
 <p>By default, path parts are decoded to Python unicode objects using ASCII.
 You can also typecast path parts to integers. Make a directory called <code
-    style="white-space: nowrap">%year.int</code>.</p>
+    style="white-space: nowrap">%year.int</code> (for files, put the cast
+before the file extension, like <code>%month.int.html</code>).</p>
 
 <pre>$ mkdir "%year.int"</pre>
 
@@ -72,10 +96,6 @@ one, the case-insensitive alphabetically first is used. Get it?</p>
 <a title="Click for full size" href="1999.png" class="screencap"><img
     src="1999.small.png" /></a>
 
-
-
 <p>That&rsquo;s better. Yay filesystem!</p>
 
 {% end %}
-
-
