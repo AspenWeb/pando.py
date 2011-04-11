@@ -54,12 +54,15 @@ def url_escape(value):
     ...
 {&#37; end %}</pre>
 
+<p>To implement loop counters, use <a href="#set">set</a>.</p>
 
+
+<a name="extends"></a>
 <h4>Extends/Block</h4>
 
 <p>Put base templates in the <code>.aspen</code> hidden directory in your
-website root. You can use subdirectories (see <code>include</code> for an
-example). See <a href="/thrash/">thrash</a> for how aspen supports base
+website root. You can use subdirectories (see <a href="#include">include</a>
+for an example). See <a href="/thrash/">thrash</a> for how aspen supports base
 template reloading.</p>
 
 <pre>{&#37; extends "foo.html" %}
@@ -68,6 +71,7 @@ template reloading.</p>
 {&#37; end %}</pre>
 
 
+<a name="if"></a>
 <h4>If/Elif/Else</h4>
 
 <pre>{&#37; if foo %}
@@ -79,6 +83,7 @@ template reloading.</p>
 {&#37; end %}</pre>
 
 
+<a name="include"></a>
 <h4>Include</h4>
 
 <p>Put include files in the <code>.aspen</code> hidden directory in your
@@ -91,6 +96,29 @@ reloading.</p>
 <pre>{&#37; include "bar/foo.html" %}</pre>
 
 
+<a name="set"></a>
+<h4>Set</h4>
+
+<pre>{&#37; set foo = "bar" %}</pre>
+
+<p>You can implement your own loop counters with this. For example, this:</p>
+
+<pre>{&#37; set i = 0 %}
+{&#37; set foo = [1,2,3,4] %}
+{&#37; set nfoo = len(foo) %}
+{&#37; for e in foo %}{&#37; set i += 1 %}{&#123; e }}{&#37; if i < nfoo %}, {&#37; end %}{&#37; end %}
+</pre>
+
+<p>Gives this output:</p>
+
+<pre>{% set i = 0 %}
+{% set foo = [1,2,3,4] %}
+{% set nfoo = len(foo) %}
+{% for e in foo %}{% set i += 1 %}{{ e }}{% if i < nfoo %}, {% end %}{% end %}
+</pre>
+
+
+<a name="try"></a>
 <h4>Try/Except/Finally</h4>
 
 <pre>{&#37; try %}
@@ -102,10 +130,13 @@ reloading.</p>
 {&#37; end %}</pre>
 
 
+<a name="while"></a>
 <h4>While</h4>
 
 <pre>{&#37; while foo %}
     ...
 {&#37; end %}</pre>
+
+<p>To implement loop counters, use <a href="#set">set</a>.</p>
 
 {% end %}
