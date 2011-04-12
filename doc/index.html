@@ -1,4 +1,6 @@
 version = open('../version.txt').read().strip('+')
+base = "http://pypi.python.org/packages/source/a/aspen/aspen-"
+extensions = (('.tar.bz2', 'tbz'), ('.tar.gz', 'tgz'), ('.zip', 'zip'))
 
 
 {% extends base.html %}
@@ -16,13 +18,7 @@ version = open('../version.txt').read().strip('+')
     }
     #story B {
         font: normal 18pt/24px Arial, sans-serif;
-    }
-    #story B A {
         color: black;
-        text-decoration: none;
-    }
-    #story B A:hover {
-        text-decoration: underline;
     }
     #story P {
         font: normal 10px/12px "Lucida Sans", Monaco, monospace;
@@ -31,8 +27,7 @@ version = open('../version.txt').read().strip('+')
         text-indent: 0;
         color: #999;
     }
-    #story I {
-        font-style: normal;
+    #story .present A {
         background: #FFFE98;
     }
     #story .future B,
@@ -55,12 +50,20 @@ version = open('../version.txt').read().strip('+')
     <table id="story">
         <tr>
             <td class="past">
-                <b><a href="http://www.zetadev.com/software/aspen/">0.8</a></b>
-                <p>A noble past.<br />Needs a maintainer.</p>
+                <b>0.8</b>
+                <p>A noble <a href="http://www.zetadev.com/software/aspen/">past</a>.
+                <br />Needs a maintainer.</p>
             </td>
             <td class="present">
-                <b><a href="http://pypi.python.org/packages/source/a/aspen/aspen-{{ version }}.tar.bz2">{{ version }}</a></b>
-                <p>Development snapshots.<br /><i>You are here.</i></p>
+                <b>{{ version }}</b>
+                <p>
+                Development snapshot.<br />
+                {% set i = 0 %}{% for extension in extensions %}{% set i += 1 %}
+                    <a href="{{ base }}{{ version }}{{ extension[0] }}"
+                        >{{ extension[1] }}</a>{% if i < len(extensions) %}, {% end %}
+                    
+                    {% end %}
+                </p>
             </td>
             <td class="future">
                 <b>1.0</b>
