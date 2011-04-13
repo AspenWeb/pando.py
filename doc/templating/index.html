@@ -6,14 +6,21 @@ class Foo:
     def __str__(self):
         return "Blam."
 expression = str(Foo())
+
+# for Set documentation
+foo = [1, 2, 3, 4]
+nfoo = len(foo)
+
 
 {% extends doc.html %}
 {% block doc %}
 
 <p>The template page of a <a href="/simplates/">simplate</a> file uses the
 templating language from the <a href="http://www.tornadoweb.org/">Tornado</a>
-framework (under the Apache license). It&rsquo;s a Django-like syntax, but with
-arbitrary Python expressions allowed, and only a single <code>{&#37; end
+framework (under the Apache license). It&rsquo;s a <a
+    href="http://docs.djangoproject.com/en/dev/topics/templates/">Django-like</a>
+syntax, but with arbitrary Python expressions allowed, and only a single
+<code>{&#37; end
     %}</code> tag instead of separate tags for <code>{&#37; endif %}</code>,
 etc.</p>
 
@@ -103,19 +110,32 @@ reloading.</p>
 
 <p>You can implement your own loop counters with this. For example, this:</p>
 
-<pre>{&#37; set i = 0 %}
-{&#37; set foo = [1,2,3,4] %}
-{&#37; set nfoo = len(foo) %}
-{&#37; for e in foo %}{&#37; set i += 1 %}{&#123; e }}{&#37; if i < nfoo %}, {&#37; end %}{&#37; end %}
+<pre>foo = [1,2,3,4]
+nfoo = len(foo)
+# -------------------------------- &#94;L
+{&#37; set i = 0 %}
+{&#37; for x in foo %}{&#37; set i += 1 %}{&#123; x }}{&#37; if i < nfoo %}, {&#37; end %}{&#37; end %}
 </pre>
 
 <p>Gives this output:</p>
 
 <pre>{% set i = 0 %}
-{% set foo = [1,2,3,4] %}
-{% set nfoo = len(foo) %}
 {% for e in foo %}{% set i += 1 %}{{ e }}{% if i < nfoo %}, {% end %}{% end %}
 </pre>
+
+<p>This will break, however:</p>
+
+<pre>foo = [1,2,3,4]
+nfoo = len(foo)
+i = 0
+# -------------------------------- &#94;L
+{&#37; for x in foo %}{&#37; set i += 1 %}{&#123; x }}{&#37; if i < nfoo %}, {&#37; end %}{&#37; end %}
+</pre>
+
+<p>You can&rsquo;t initially define <code>i</code> in the Python page of the
+simplate, you have to define it in the template page. Set variables are in
+their own namespace that is only accessible within the template page of the
+simplate.</p>
 
 
 <a name="try"></a>
