@@ -4,7 +4,8 @@
             margin: 0;
             padding: 0;
         }
-        BODY A { /* BODY so we don't also match woopra logo */
+        A.center { /* .center so we don't also match woopra logo (BODY didn't 
+                        work) */
             display: block;
             position: absolute;
             top: 50%;
@@ -15,6 +16,6 @@
             border: none;
         }
     </style>
-    <body><a href="/"><img src="god.jpg" /></a></body>
+    <body><a href="/" class="center"><img src="god.jpg" /></a></body>
     {% include "ga.html" %}
 </html>
