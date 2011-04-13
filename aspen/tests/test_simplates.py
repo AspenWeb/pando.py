@@ -57,4 +57,16 @@ def test_simplate_pages_work_with_caret_L():
     expected = "Greetings, bar!"
     assert actual == expected, actual
 
+def test_simplate_templating_set():
+    actual = check("""
+foo = [1,2,3,4]
+nfoo = len(foo)
+
+
+{% set i = 0 %}
+{% for x in foo %}{% set i += 1 %}{{ x }}{% if i < nfoo %}, {% end %}{% end %}
+    """).strip()
+    expected = "1, 2, 3, 4"
+    assert actual == expected, actual
+
 attach_teardown(globals())
