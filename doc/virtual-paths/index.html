@@ -23,15 +23,13 @@ there with this content:</p>
     href="http://localhost:8080/aspen/">http://localhost:8080/aspen/</a>. You
 should see this:</p>
 
-<a title="Click for full size" href="aspen.png" class="screencap"><img
-    src="aspen.small.png" /></a>
+{{ screenshot("aspen") }}
 
 <p>Now hit <a
     href="http://localhost:8080/python/">http://localhost:8080/python/</a>. You
 should see:</p>
 
-<a title="Click for full size" href="python.png" class="screencap"><img
-    src="python.small.png" /></a>
+{{ screenshot("python") }}
 
 <p>Get it?</p>
 
@@ -48,16 +46,13 @@ content:</p>
 
 <p>Now <a href="http://localhost:8080/chad/cheddar.txt">test it out</a>:</p>
 
-<a title="Click for full size" href="cheese.png" class="screencap"><img
-    src="cheese.small.png" /></a>
+{{ screenshot("cheese") }}
 
 <p>Virtual path files only work for the last URL path part, so if you hit <a
     href="http://localhost:8080/chad/cheddar.txt/">/chad/cheddar.txt/</a> (with
 a trailing slash), you&rsquo;ll get a 404:</p>
 
-<a title="Click for full size" href="no-cheese.png" class="screencap"><img
-    src="no-cheese.small.png" /></a>
-
+{{ screenshot("no-cheese") }}
 
 <h3>Typecasting</h3>
 
@@ -76,8 +71,7 @@ before the file extension, like <code>%month.int.html</code>).</p>
     href="http://localhost:8080/1999/">http://localhost:8080/1999/</a>.  What
 do you get?</p>
 
-<a title="Click for full size" href="oops.png" class="screencap"><img
-    src="oops.small.png" /></a>
+{{ screenshot("oops") }}
 
 <p>Wait ... where's the party?</p>
 
@@ -93,8 +87,7 @@ one, the case-insensitive alphabetically first is used. Get it?</p>
 
 <p>Now refresh, and you should see:</p>
 
-<a title="Click for full size" href="1999.png" class="screencap"><img
-    src="1999.small.png" /></a>
+{{ screenshot("1999") }}
 
 <p>That&rsquo;s better. Yay filesystem!</p>
 
