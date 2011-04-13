@@ -19,6 +19,21 @@ class Hooks(list):
             self.append(section)
             self._by_name[name] = section
 
+    def index(self, section):
+        """Override list.index to test for identity and not just equality.
+
+        If we just take the default list.index implementation, then
+        non-identical sections will be conflated. This can happen easily, as
+        empty sections will evaluate equal.
+
+        https://github.com/whit537/aspen/issues/9
+
+        """
+        for i in range(len(self)):
+            if self[i] is section:
+                return i
+        return -1
+
     def run(self, name, thing):
         """Takes a section name and request/response/website.
         """
@@ -55,7 +70,8 @@ def HooksConf(*filenames):
         ^L
         my.second.hooks:outbound
 
-    If literal ^ and L are used, they are converted to page breaks.
+    If literal ^ and L are used, they are converted to page breaks and
+    processed accordingly.
 
     """
     SECTIONS = [ 'startup'
@@ -75,7 +91,8 @@ def HooksConf(*filenames):
         i = 0
         try:
             for line in open(path):
-                line = line.replace('^L', PAGE_BREAK)
+                while '^L' in line:
+                    line = line.replace('^L', PAGE_BREAK)
                 i += 1
                 while PAGE_BREAK in line:
                     before, line = line.split(PAGE_BREAK, 1)

@@ -230,6 +230,27 @@ def test_all_six():
     assert actual == expected, actual
 
 
+def test_equal_sections_dont_screw_up_parsing():
+    # https://github.com/whit537/aspen/issues/9
+    mk(('hooks.conf', """
+        ^L
+        # inbound_early
+        
+        ^L
+        # inbound_late
+        
+        ^L
+        # outbound_early
+        
+        ^L
+        # outbound_late
+        random:shuffle 
+        """))
+    expected = [[],[],[],[],[random.shuffle],[]]
+    actual = load('fsfix/hooks.conf')
+    assert actual == expected, actual
+
+
 # Remove the filesystem fixture after each test.
 # ==============================================
 
