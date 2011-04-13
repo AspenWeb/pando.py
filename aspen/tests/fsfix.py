@@ -1,5 +1,6 @@
 import os
 import re
+import sys
 from os.path import dirname, isdir, isfile, join, realpath
 
 import aspen
@@ -70,6 +71,8 @@ def teardown():
     simplates.__cache = dict() # The simplate cache is process global. Hrm ...
     if isfile('log'):
         os.remove('log')
+    if '.aspen' in sys.path[0]:
+        sys.path = sys.path[1:]
 
 teardown() # start clean
 
