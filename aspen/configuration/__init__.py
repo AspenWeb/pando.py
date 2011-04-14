@@ -85,6 +85,7 @@ class Configuration(object):
         # ==========
 
         conf = AspenConf( '/etc/aspen/aspen.conf'
+                        , '/usr/local/etc/aspen/aspen.conf'
                         , expanduser('~/.aspen/aspen.conf') 
                         , join(dotaspen, 'aspen.conf')
                          ) # later overrides earlier
@@ -100,6 +101,7 @@ class Configuration(object):
         # =====
 
         self.hooks = HooksConf( '/etc/aspen/hooks.conf'
+                              , '/usr/local/etc/aspen/hooks.conf'
                               , expanduser('~/.aspen/hooks.conf')
                               , join(dotaspen, 'hooks.conf')
                                ) # later comes after earlier, per section
@@ -159,6 +161,8 @@ class Configuration(object):
                 logging_configured = True
 
         if not logging_configured:          # logging.conf
+            # TODO /etc/aspen/logging.conf
+            # TODO /usr/local/etc/aspen/logging.conf
             logging_conf = join(root, '.aspen', 'logging.conf')
             if exists(logging_conf):
                 logging.config.fileConfig(logging_conf) 
