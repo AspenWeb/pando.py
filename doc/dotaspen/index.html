@@ -14,8 +14,8 @@ virtualenv with a UNIX-y userland layout. So conf files were under
 <code>etc/templates/</code>. For reasons of versioning and deployment (most of
 which were first put into my head by <a
     href="http://mail.python.org/pipermail/web-sig/2007-March/002526.html">Jim
-    Fulton</a>), it turns out to be better for <code>.aspen</code> to be flat,
-and any sandboxing to happen above and outside of your website root.</p>
+    Fulton</a>), it turns out to be better for <code>.aspen</code> to be
+flat.</p>
 
 <h4>configuration files</h4>
 
@@ -31,12 +31,16 @@ startup, so you can place Python modules directly inside of this directory and
 they will be available to your <a href="/hooks/">hooks</a> and <a
     href="/simplates/">simplates</a>.</p>
 
-<p>This is most helpful for pure-Python modules. C extension modules would need
-to be recompiled on different platforms. My preference there is to include the
-source code in <code>.aspen</code>, and build/install those into a short-lived
-virtualenv as part of deployment. You could also use the Python packaging
-tools, of course, either with the system Python or with a long-lived
-virtualenv.</p>
+<p>This means that the <code>.aspen</code> directory is a lightweight sandbox.
+It is sufficient as such if Aspen itself is globally installed, and your site
+doesn&rsquo;t need more than pure-Python modules. If you don&rsquo;t want to
+install Aspen globally (and I don&rsquo;t blame you), or you have other Python
+dependencies that have C extension modules, console scripts, or other things
+that need to be run through distutils before being made accessible to you, then
+you should use a full <a
+    href="http://pypi.python.org/pypi/virtualenv">virtualenv</a>. In this case
+I&rsquo;ve had success using <code>.aspen</code> itself as a virtualenv, though
+you could also locate your virtualenv outside of your site tree.</p>
 
 
 <h4>Template bases and includes</h4>
