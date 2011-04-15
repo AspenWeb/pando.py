@@ -26,10 +26,15 @@ from _tornado.template import Loader, Template
 PAGE_BREAK = chr(12)
 log = logging.getLogger('aspen.simplate')
 
-# relax some mimetypes
+
+# Ensure some mimetypes.
+# ======================
+# The mimetypes module uses a number of system-dependent resources to compute
+# its guesses. Aspen wants to guarantee the following, apparently.
+
 for ext in ('py', 'sh'):
     mimetypes.add_type('text/plain', '.'+ext)
-mimetypes.add_type('image/x-icon', '.ico') # this is for Python < 2.7
+mimetypes.add_type('image/x-icon', '.ico')
 
 
 class LoadError(StandardError):
@@ -119,12 +124,13 @@ def load_uncached(request):
     script = script.replace('\r\n', '\n')
 
 
-    # Pad the beginning of the script and template sections.
-    # ======================================================
-    # This is so we get accurate tracebacks.
+    # Pad the beginning of the second page.
+    # =====================================
+    # This is so we get accurate tracebacks. We used to do this for the
+    # template page too, but Tornado templates have some weird error handling
+    # that we haven't exposed yet.
 
     script = ''.join(['\n' for n in range(imports.count('\n'))]) + script
-    template = ''.join(['\n' for n in range(script.count('\n'))]) + template
 
 
     # Prep our cachable objects and return.
