@@ -7,6 +7,7 @@ import socket
 import sys
 from logging import StreamHandler
 from logging.handlers import TimedRotatingFileHandler
+from os.path import dirname, exists, expanduser, isdir, join, realpath
 
 import aspen
 from aspen.configuration.aspenconf import AspenConf 
@@ -53,18 +54,40 @@ class Configuration(object):
         # ====
         # This can only be passed on the command line.
 
-        root = os.getcwd()
         if args:
             root = args[0]
-        root = os.path.realpath(root)
-        if not os.path.isdir(root):
+        else:
+            try:
+                # Under supervisord, the following raises 
+                #   OSError: [Errno 2] No such file or directory
+                # So be sure to pass a directory in on the command line, or cwd
+                # using supervisord's own facility for that.
+                root = os.getcwd()
+            except OSError:
+                raise ConfigurationError("Could not get a current working "
+                                         "directory. You can specify the site "
+                                         "root on the command line.")
+        root = realpath(root)
+        if not isdir(root):
             msg = "%s does not point to a directory" % root
             raise ConfigurationError(msg)
 
 
+        # sys.path
+        # ========
+
+        dotaspen = join(root, '.aspen')
+        if isdir(dotaspen):
+            sys.path.insert(0, dotaspen)
+
+
+        # aspen.conf
+        # ==========
+
         conf = AspenConf( '/etc/aspen/aspen.conf'
-                        , os.path.expanduser('~/.aspen/aspen.conf') 
-                        , os.path.join(root, '.aspen', 'etc', 'aspen.conf')
+                        , '/usr/local/etc/aspen/aspen.conf'
+                        , expanduser('~/.aspen/aspen.conf') 
+                        , join(dotaspen, 'aspen.conf')
                          ) # later overrides earlier
         
         self.root = root
@@ -73,13 +96,14 @@ class Configuration(object):
         self.optparser = optparser
         self.opts = opts
 
-
+       
         # hooks
         # =====
 
         self.hooks = HooksConf( '/etc/aspen/hooks.conf'
-                              , os.path.expanduser('~/.aspen/hooks.conf')
-                              , os.path.join(root,'.aspen','etc','hooks.conf')
+                              , '/usr/local/etc/aspen/hooks.conf'
+                              , expanduser('~/.aspen/hooks.conf')
+                              , join(dotaspen, 'hooks.conf')
                                ) # later comes after earlier, per section
 
 
@@ -137,8 +161,10 @@ class Configuration(object):
                 logging_configured = True
 
         if not logging_configured:          # logging.conf
-            logging_conf = os.path.join(root, '.aspen', 'etc', 'logging.conf')
-            if os.path.exists(logging_conf):
+            # TODO /etc/aspen/logging.conf
+            # TODO /usr/local/etc/aspen/logging.conf
+            logging_conf = join(root, '.aspen', 'logging.conf')
+            if exists(logging_conf):
                 logging.config.fileConfig(logging_conf) 
                 log.info("logging configured from logging.conf")
                 logging_configured = True
@@ -176,10 +202,10 @@ class Configuration(object):
             #  http://sluggo.scrapping.cc/python/unipath/Unipath-current/unipath/abstractpath.py
             #  http://docs.python.org/library/os.path.html#os.path.splitunc
             if not filename.startswith('/'):
-                filename = os.path.join(self.paths.root, filename)
-                filename = os.path.realpath(filename)
-            logdir = os.path.dirname(filename)
-            if not os.path.isdir(logdir):
+                filename = join(self.paths.root, filename)
+                filename = realpath(filename)
+            logdir = dirname(filename)
+            if not isdir(logdir):
                 os.makedirs(logdir, 0755)
             handler = TimedRotatingFileHandler( filename=filename
                                               , when='midnight'

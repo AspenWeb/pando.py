@@ -1,0 +1,21 @@
+<html>
+    <style>
+        BODY {
+            margin: 0;
+            padding: 0;
+        }
+        A.center { /* .center so we don't also match woopra logo (BODY didn't 
+                        work) */
+            display: block;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            margin: -300px 0 0 -350px;
+        }
+        A IMG {
+            border: none;
+        }
+    </style>
+    <body><a href="/" class="center">{{ img("god.jpg") }}</a></body>
+    {% include "ga.html" %}
+</html>

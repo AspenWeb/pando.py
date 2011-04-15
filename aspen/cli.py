@@ -1,5 +1,7 @@
 import os
 import logging
+import sys
+import time
 from os.path import isdir, join
 
 from aspen import restarter
@@ -23,20 +25,13 @@ def main(argv=None):
         # change current working directory
         os.chdir(configuration.root)
 
-        if configuration.conf.aspen.yes('changes_kill'):
+        if configuration.conf.aspen.no('changes_kill'):
             # restart for template files too;
-            # TODO generalize this to all of etc?
             # TODO can't we just invalidate the simplate cache for these?
-            conffiles = join(configuration.root, '.aspen', 'etc')
-            if isdir(conffiles):
-                for filename in os.listdir(conffiles):
-                    if filename.endswith('.conf'):
-                        restarter.add(join(conffiles, filename))
-
-            templates = join(configuration.root, '.aspen', 'etc', 'templates')
-            if isdir(templates):
-                for filename in os.listdir(templates):
-                    restarter.add(join(templates, filename))
+            dot_aspen = join(configuration.root, '.aspen')
+            for root, dirs, files in os.walk(dot_aspen):
+                for filename in files:
+                    restarter.add(join(root, filename))
 
             app.add_loop(Loop(restarter.loop))
         
@@ -49,3 +44,17 @@ def main(argv=None):
     except KeyboardInterrupt, SystemExit:
         configuration.hooks.run('shutdown', website)
 
+
+def thrash():
+    """This is a very simple tool to restart a process when it dies.
+
+    It's designed to restart aspen in development when it dies because files
+    have changed and you set changes_kill in the [aspen] section of aspen.conf.
+
+    """
+    try:
+        while 1:
+            os.system(' '.join(sys.argv[1:]))
+            time.sleep(1)
+    except KeyboardInterrupt:
+        pass

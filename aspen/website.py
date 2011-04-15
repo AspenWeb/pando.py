@@ -80,6 +80,8 @@ class Website(object):
             self.hooks.run('outbound_early', response)
             fs = self.ours_or_theirs(str(response.code) + '.html')
             if fs is None:
+                fs = self.ours_or_theirs('error.html')
+            if fs is None:
                 raise
             request.fs = fs
             response = simplates.handle(request, response)
@@ -104,7 +106,7 @@ class Website(object):
         """Given a filename, return a filepath or None.
         """
         ours = self.find_ours(filename)
-        theirs = join(self.root, '.aspen', 'etc', 'templates', filename)
+        theirs = join(self.root, '.aspen', filename)
         if isfile(theirs):
             out = theirs
         elif isfile(ours):
@@ -119,17 +121,15 @@ class Website(object):
        
         # First step.
         # ===========
-        # We specifically avoid removing symlinks in the path so that the
-        # filepath remains under the website root. Also, we don't want 
-        # trailing slashes for directories in fs.
+        # Set request.fs initially, return a list of fspath parts.
 
-        parts = gauntlet.translate(request, self.root)
+        parts = gauntlet.translate(request)
         log.debug("got request for " + request.fs)
 
 
         # The Gauntlet
         # ============
-        # We keep request.fs up to date for logging purposes. It is used in
+        # Keep request.fs up to date for logging purposes. It is used in
         # log_access, below, which could be triggered by any of the raises
         # herein. Each of these sets request.fs, and returns None or raises.
 
@@ -139,7 +139,7 @@ class Website(object):
         gauntlet.trailing_slash(request)
         gauntlet.index(request)
         gauntlet.autoindex( request
-                          , self.opts.no('autoindex')
+                          , self.opts.no('list_directories')
                           , self.ours_or_theirs('autoindex.html')
                            )
         gauntlet.socket_files(request)
@@ -163,7 +163,7 @@ class Website(object):
             fs = '.'+fs
         else:
             fs = request.fs
-        log.info("%s => %s" % (request.path, fs))
+        log.info("%s => %s" % (request.path.raw, fs))
 
 
         # Where was response raised from?

@@ -2,6 +2,7 @@ from ez_setup import use_setuptools
 use_setuptools()
 
 from setuptools import find_packages, setup
+version = open('version.txt').read()
 
 
 classifiers = [ 'Development Status :: 4 - Beta'
@@ -21,7 +22,9 @@ setup( author = 'Chad Whitacre'
      , classifiers = classifiers
      , description = ('Aspen is a Python web server. '
                       'Simplates are the main attraction.')
-     , entry_points = { 'console_scripts': ['aspen = aspen.cli:main'] }
+     , entry_points = { 'console_scripts': [ 'aspen = aspen.cli:main'
+                                           , 'thrash = aspen.cli:thrash'
+                                            ] }
      , name = 'aspen'
      , packages = find_packages(exclude=[ 'aspen.socket_io'     # not ready for
                                         , 'aspen.socket_io.*'      # prime time
@@ -29,7 +32,7 @@ setup( author = 'Chad Whitacre'
                                         , 'aspen.tests.*'
                                          ])
      , url = 'http://aspen.io/'
-     , version = '~~VERSION~~'
+     , version = version
      , zip_safe = False
      , install_requires = ['diesel == 2.0.0']
      , package_data = {'aspen': ['www/*']}

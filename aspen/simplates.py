@@ -22,7 +22,7 @@ from aspen.http import Response
 from _tornado.template import Loader, Template
 
 
-FORM_FEED = chr(12) # == '\x0c', ^L, ASCII page break
+PAGE_BREAK = chr(12)
 ENCODING = 'UTF-8'
 log = logging.getLogger('aspen.simplate')
 
@@ -85,25 +85,25 @@ def load_uncached(request):
     if not mimetype.startswith('text/'):
         s = lambda s: simplate.startswith(s)
         if not (s('#!') or s('"""') or s('import') or s('from')):
-            # I tried checking for 1 or 2 FORM_FEEDs, but found a binary file
+            # I tried checking for 1 or 2 form feeds, but found a binary file
             # in the wild that indeed had exactly two. Let's sniff the first
             # few bytes.
             return (mimetype, None, None, simplate) # static file; exit early
 
     simplate = simplate.decode(ENCODING)
+    simplate = simplate.replace("^L", PAGE_BREAK)
 
-
-    nform_feeds = simplate.count(FORM_FEED)
+    nform_feeds = simplate.count(PAGE_BREAK)
     if nform_feeds == 0:
         script = imports = ""
         template = simplate
     elif nform_feeds == 1:
         imports = ""
-        script, template = simplate.split(FORM_FEED)
+        script, template = simplate.split(PAGE_BREAK)
     elif nform_feeds == 2:
-        imports, script, template = simplate.split(FORM_FEED)
+        imports, script, template = simplate.split(PAGE_BREAK)
     else:
-        raise SyntaxError( "Simplate <%s> may have at most two " % request.fs
+        raise SyntaxError( "Simplate %s may have at most two " % request.fs
                          + "form feeds; it has %d." % nform_feeds
                           )
 
@@ -133,8 +133,6 @@ def load_uncached(request):
     if template.strip():
         loader = Loader(os.path.join( request.root
                                     , '.aspen'
-                                    , 'etc'
-                                    , 'templates'
                                      ))
         template = Template( template
                            , name = request.fs
@@ -219,7 +217,6 @@ def handle(request, response=None):
         # ===================
     
         namespace.update(request.namespace)
-        del request.namespace
         namespace['request'] = request
         namespace['response'] = response
    

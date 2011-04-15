@@ -1,0 +1,171 @@
+/*
+http://colorschemedesigner.com/#3221Tw0tBw0w0
+*/
+BODY {
+    background: #FFF;
+    color: #999;
+    margin: 0;
+    padding: 20px;
+    font: normal 12pt/14pt Arial, sans-serif;
+    text-align: center;
+}
+#body {
+    width: 600px;
+    position: relative;
+    margin: 0 auto;
+    text-align: left;
+}
+
+A               { color: #B1502C; }
+A:visited       { color: #552311; }
+A:hover         { color: #F5936E; }
+A:visited:hover {}
+A IMG           { border: none; }
+
+H1 A, 
+#definition I A {
+    text-decoration: none;
+    color: #00A359;
+}
+H1 A:visited, #definition I A:visited { color: #00A359; }
+H1 A:hover, #definition I A:hover { color: #00A359; }
+H1 A:visited, #definition I A:visited { color: #00A359; }
+H1, #definition I {
+    display: inline;
+    color: #00A359;
+    font-style: normal;
+}
+H1, #definition {
+    font: normal 20pt/24pt Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+.screencap {
+    display: block;
+    margin: 1em 0;
+    padding: 1em 20px;
+    border: 2px solid #00A359;
+    border-style: solid none;
+}
+#topnav {
+    position: absolute;
+    top: 5px;
+    right: 0;
+    font: normal 10pt/14pt Arial, sans-serif;
+}
+H2 {
+    font: bold 16pt/18pt Arial, sans-serif;
+    color: #B1502C;
+    margin: 2em 0 0.5em;
+    padding: 0;
+}
+H3 {
+    font: normal 14pt/16pt Arial, sans-serif;
+    color: #B1502C;
+    margin: 2em 0 0.5em;
+    padding: 0;
+}
+H4 {
+    font: normal 10pt/12pt Arial, sans-serif;
+    color: #B1502C;
+    text-transform: uppercase;
+    margin: 2em 0 0.5em;
+    padding: 0;
+}
+.doc {
+    position: relative;
+    background: #EFEFEF;
+    color: #666;
+    border: 2px solid #B1502C;
+    border-style: solid none;
+    margin: 20px 0;
+    padding: 20px 20px 80px;
+}
+.doc H2.first {
+    margin-top: 0;
+}
+PRE {
+    font: normal 12px/14px "Lucida Console", Monaco, monospace;
+    margin: 1em 0 3em 20px;
+    color: black;
+}
+A.button {
+    display: block;
+    position: absolute;
+    bottom: 20px;
+    color: white;
+    background: #F5936E;
+    background: #B1502C;
+    padding: 5px 10px;
+    text-decoration: none;
+    border-radius: 5px;
+    -moz-border-radius: 5px;
+}
+A.button:hover {
+    color: #F5936E;
+}
+A.home {
+    left: 20px;
+}
+A.continue {
+    right: 20px;
+}
+TABLE {
+    margin: 1em 1em 3em;
+    padding: 0;
+    font: normal 12px/14px "Lucida Console", Monaco, monospace;
+    color: #666;
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+TH {
+    font-weight: normal;
+    text-align: left;
+    width: 120px;
+    vertical-align: top;
+    padding: 1em 0 0;
+}
+TD {
+    vertical-align: top;
+    padding: 0.75em 0 0;
+}
+DL {
+    margin: 0;
+    padding: 0;
+}
+DT {
+    margin: 1.5em 0 0;
+    padding: 0;
+}
+DD {
+    margin: 0;
+    padding: 0 0 0 1.5em;
+}
+.warning {
+    background: #FABCA8 url("exclamation.png") 10px 10px no-repeat;
+    padding: 10px 10px 10px 30px;
+    margin: 20px 0 30px;
+    box-shadow: 5px 5px 5px #666;
+    color: #481A10;
+}
+#index .warning {
+    margin-top: 0;
+}
+.highlighted {
+    background: #FFFE98;
+}
+#index {
+    margin: 20px 0;
+    border: 2px solid #B1502C;
+    border-style: solid none;
+    padding: 20px 0;
+}
+#index P {
+    margin: 0;
+    padding: 0 0 0.6em 1.5em;
+    text-indent: -1.5em;
+    line-height: 130%;
+}
+#footer {
+    font-size: smaller;
+}

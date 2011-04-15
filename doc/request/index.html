@@ -7,21 +7,23 @@ doc_next = ('Response', '/response/')
 <p class="warning"><b>Warning:</b> This API is guaranteed to change before Aspen
 1.0.</p>
 
-<p>Inside of the second <a href="/simplates/">simplates</a> section, you have a
-request object called <code>request</code>. Here&rsquo;s what you get:</p>
+<p>Inside of the second and third pages of a <a
+    href="/simplates/">simplate</a>, you have a request object called
+<code>request</code>. Here&rsquo;s what you get:</p>
 
 <table>
+    <tr><th>allow</th><td>given HTTP methods as positional args, return None or raise 405</td></tr>
     <tr><th>body</th><td><a href="#not-a-dict">WwwForm</a> object</td></tr>
     <tr><th>cookie</th><td>a <a href="http://docs.python.org/library/cookie.html#Cookie.SimpleCookie">Cookie.SimpleCookie</a> object</td></tr>
     <tr><th>headers</th><td><a href="#not-a-dict">Headers</a> object</td></tr>
     <tr><th>method</th><td>string</td></tr>
-    <tr><th>path</th><td>string</td></tr>
+    <tr><th>path</th><td><a href="/virtual-paths/">dict</a></td></tr>
     <tr><th>qs</th><td><a href="#not-a-dict">WwwForm</a> object</td></tr>
     <tr><th>url</th><td>string</td></tr>
     <tr><th>urlparts</th><td><a href="http://docs.python.org/library/urlparse.html">urlparse.urlparse</a> output</td></tr>
 </table>
 
-<p>You can extend and override this API using an <a href="/hooks/">inbound
+<p>You can alter this API globally using an <a href="/hooks/">inbound
     hook</a>.</p>
 
 <a name="not-a-dict"></a>

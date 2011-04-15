@@ -1,49 +1,4 @@
-doc_title = "<code>^L</code>, the ASCII Form Feed" 
-doc_next = ''
+from aspen import Response
 
-{% extends doc.html %}
-{% block doc %}
-
-<p>The <code>^L</code> character is an <a
-    href="http://en.wikipedia.org/wiki/Page_break#Form_feed">ASCII form
-    feed</a>, also called:</p>
-
-<ul>
-    <li>page break</li>
-    <li>\f</li>
-    <li>12</li>
-    <li>0xC</li>
-</ul>
-
-<p>Aspen uses <code>^L</code> to split <a href="/simplates/">simplates</a> and
-the <a href="/hooks/">hooks.conf</a> file into sections. If memory serves, I
-first saw it in Barry Warsaw's email package in the standard library. I think
-this means Barry uses Emacs, though I could be wrong.</p>
-
-<p>Here is how to type <code>^L</code> in various editors:</p>
-
-<table>
-    <tr>
-        <th>Vim</th>
-        <td>Ctrl-L (in insert mode)</td>
-    </tr>
-    <tr>
-        <th>Emacs</th>
-        <td>C-q C-l</td>
-    </tr>
-    <tr>
-        <th>UltraEdit</th>
-        <td>If I remember right, there is a "Page Break" option on the "Insert"
-            menu. You&rsquo;d probably want to remap that in the long
-            term.</td>
-    </tr>
-    <tr>
-        <th>TextMate, etc.</th>
-        <td>???</td>
-    </tr>
-</table>
-
-<p>Please <a href="mailto:chad@zetaweb.com">email me</a> if you have any
-additions to that list or if you need help figuring it out for your editor.</p>
-
-{% end  %}
+raise Response(301, headers={'Location': '/page-break/'})
+
