@@ -37,14 +37,16 @@ translated to the filesystem, with the result at <code>request.fs</code>.</p>
 <p>In between the outbound_early and outbound_late hooks, <a
     href="/nice-errors/">nice error messages</a> happen.</p>
 
+<p>Hooks are global, meaning every hook touches every request/response.</p>
+
 
 <h3>hooks.conf</h3>
 
-<p>Hooks are specified in colon notation in a <code>hooks.conf</code> file,
-with <a href="/form-feed/">ASCII form feeds</a> to delineate sections. There is
-one section for each kind of hook. You can use <code>#</code> for comments.
-Also, any additional sections beyond the sixth are ignored, so you could put
-documentation in there too as needed.</p>
+<p>Hooks are specified in <a href="/colon-notation">colon notation</a> in a
+<code>hooks.conf</code> file, with <a href="/page-break/">ASCII page breaks</a>
+(or caret-Ls) to delineate pages. There is one page for each kind of hook. You
+can use <code>#</code> for comments.  Also, any additional page beyond the
+sixth are ignored, so you could put documentation in there too as needed.</p>
 
 
 <h4>Example</h4>
@@ -53,7 +55,7 @@ documentation in there too as needed.</p>
 
 <pre># I don't have anything to run on startup.
 
-^L
+&#94;L
 
 # do authentication; adds a 'user' attribute to request
 mypackage.auth:inbound
@@ -69,8 +71,9 @@ mypackage.sub.another:blah
 
 <ol>
     <li><code>/etc/aspen/hooks.conf</code></li>
+    <li><code>/usr/local/etc/aspen/hooks.conf</code></li>
     <li><code>~/.aspen/hooks.conf</code></li>
-    <li><code>./.aspen/etc/hooks.conf</code></li>
+    <li><code>./.aspen/hooks.conf</code></li>
 </ol>
 
 <p>Hooks are run top to bottom in each file, in the order given above. So, for
@@ -78,8 +81,6 @@ example, the last inbound_late hook defined in
 <code>./.aspen/etc/hooks.conf</code> is your last chance to touch the request
 object. The first outbound_early hook in <code>/etc/aspen/hooks.conf</code> is
 your first chance to touch the response object.</p>
-
-
 
 
 {% end %}

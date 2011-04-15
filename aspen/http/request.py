@@ -2,6 +2,7 @@ import urllib
 import urlparse
 from Cookie import CookieError, SimpleCookie
 
+from aspen import Response
 from aspen.http.headers import Headers
 from aspen.http.wwwform import WwwForm
 
@@ -10,6 +11,8 @@ class Path(dict):
     def __init__(self, bytes):
         self.raw = bytes
         dict.__init__(self)
+    def __str__(self):
+        return self.raw
 
 
 class Request(object):
@@ -41,7 +44,7 @@ class Request(object):
         self.session_id = None # set by Website for *.sock files
         self.root = '' # set by Website
         self.fs = '' # set by Website
-        self.namespace = {} # populated by Website
+        self.namespace = {} # populated by user in inbound hooks
 
     @classmethod
     def from_diesel(cls, request):
@@ -63,6 +66,12 @@ class Request(object):
         return "<%s %s>" % (self.method, self.path)
     __repr__ = __str__
 
+    def allow(self, *methods):
+        """Given a list of methods, raise 405 if we don't meet the requirement.
+        """
+        methods = [x.upper() for x in methods]
+        if self.method not in methods:
+            raise Response(405, headers={'Allow': ', '.join(methods)})
 
     def rebuild_url(self):
         """Return a full URL for this request, per PEP 333:

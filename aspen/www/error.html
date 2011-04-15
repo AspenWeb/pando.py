@@ -1,3 +1,7 @@
+from diesel.protocols.http import status_strings
+
+msg = status_strings.get(response.code, 'Sorry')
+msg = msg[0].upper() + msg[1:].lower()
 if request.conf.aspen.no('show_tracebacks'):
     err = response.body
 else:
@@ -5,7 +9,7 @@ else:
 
 <html>
     <head>
-        <title>500 Internal Server Error</title>
+        <title>{{ response.code }} {{ msg.title() }}</title>
         <style>
             BODY {
                 margin: 0;
@@ -21,7 +25,7 @@ else:
         </style>
     </head>
     <body>
-        Sorry, program!
+        {{ msg }}, program!
         <pre>{{ err }}</pre>
     </body>
 </html>

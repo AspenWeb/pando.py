@@ -1,34 +1,93 @@
+version = open('../version.txt').read().strip('+')
+base = "http://pypi.python.org/packages/source/a/aspen/aspen-"
+extensions = (('.tar.bz2', 'tbz'), ('.tar.gz', 'tgz'), ('.zip', 'zip'))
+
+
 {% extends base.html %}
+{% block head %}
+<style>
+    #story {
+        width: 600px;
+        padding: 0;
+        margin: 0 0 2em;
+    } 
+    #story TD {
+        width: 33%;
+        margin: 0;
+        padding: 0;
+    }
+    #story B {
+        font: normal 18pt/24px Arial, sans-serif;
+        color: black;
+    }
+    #story P {
+        font: normal 10px/12px "Lucida Sans", Monaco, monospace;
+        margin: 0;
+        padding: 3px;
+        text-indent: 0;
+        color: #999;
+    }
+    #story .present A {
+        background: #FFFE98;
+    }
+    #story .future B,
+    #story .future P {
+        color: #DDD;
+    }
+    .press {
+        text-align: right;
+        font: normal 9pt/12pt Arial, sans-serif;
+        border-bottom: 2px solid #B1502C;
+        margin: 1em 0 2em;
+        padding: 0 0 0.5em;
+    }
+</style>
+{% end %}
 {% block content %}
 
 <div id="index">
 
-    <div class="warning">
+    <table id="story">
+        <tr>
+            <td class="past">
+                <b>0.8</b>
+                <p>A noble <a href="http://www.zetadev.com/software/aspen/">past</a>.
+                <br />Needs a maintainer.</p>
+            </td>
+            <td class="present">
+                <b>{{ version }}</b>
+                <p>
+                Development snapshot.<br />
+                {% set i = 0 %}{% for extension in extensions %}{% set i += 1 %}
+                    <a href="{{ base }}{{ version }}{{ extension[0] }}"
+                        >{{ extension[1] }}</a>{% if i < len(extensions) %}, {% end %}
+                    
+                    {% end %}
+                </p>
+            </td>
+            <td class="future">
+                <b>1.0</b>
+                <p>A glorious,<br />stable future.</p>
+            </td>
+        </tr>
+    </table>
 
-        <b>Caveat Emptor</b><br/>
-            <br />
-        Thanks for showing up! Can I let you know where things stand?
+    <div class="press"></div>
 
-        <ul>
-            <li>Aspen is under active development towards a stable <b>1.0</b>
-            release.</li>
-            <li>Releases in the <b>0.9.x</b> line should be considered development
-            snapshots.</li>
-            <li>The <b>0.8</b> line is in need of a maintainer.</li>
-        </ul>
+    <p><a href="/dotaspen/">.aspen</a>&mdash;The <code>.aspen</code> hidden
+    directory in your website root is your site&rsquo;s junk drawer.</p>
 
-        Ok, <a href="/quick-start/">proceed</a>!<br /><br />
+    <p><a href="/aspen.conf/">aspen.conf</a>&mdash;Aspen can be configured
+    via an aspen.conf file.</p>
 
-    </div>
-    
     <p><a href="/colon-notation/">Colon Notation</a>&mdash;Some aspen
     configuration files look for Python objects based on this notation.</p>
 
+    <p><a href="/concurrency/">Concurrency</a>&mdash;Aspen supports both
+    blocking and non-blocking concurrency models.</p>
+
     <p><a href="/cli/">Command Line Interface</a>&mdash;Learn how to drive the 
     <code>aspen</code> console program.</p>
-
-    <p><a href="/form-feed/">Form Feed</a>&mdash;Aspen uses the ASCII form feed
-    character to great effect.</p>
 
     <p><a href="https://github.com/whit537/aspen">Github</a>&mdash;Aspen
     development is hosted on Github.</p>
@@ -36,14 +95,25 @@
     <p><a href="/hooks/">Hooks</a>&mdash;Influence program execution on server
     startup and shutdown, and inbound and outbound HTTP.</p>
 
-    <p><a href="irc://irc.freenode.net/#aspen">IRC</a>&mdash;The IRC channel is
-    on Freenode.</a>
+    <p><a href="irc://irc.freenode.net/#aspen">IRC</a>&mdash;The #aspen IRC
+    channel is on Freenode. Here&rsquo;s a <a
+        href="http://webchat.freenode.net/">web client</a> and <a
+        href="http://irclogs.dieselweb.org/channel/aspen">logs</a>.</p>
 
     <p><a href="http://groups.google.com/group/aspen-users">Mailing
-        List</a>&mdash;The mailing list is on Google Groups.</a>
+        List</a>&mdash;The mailing list is on Google Groups.</p>
+
+    <p><a href="/marketing/">Marketing</a>&mdash;Here is a collection of
+    promotional materials for Aspen.</p>
 
     <p><a href="/mongodb/">MongoDB</a>&mdash;This HOWTO demonstrates connecting
     to databases inside simplates.</p>
+
+    <p><a href="/page-break/">Page Break</a>&mdash;Aspen uses the ASCII page
+    break character to great effect.</p>
+
+    <p><a href="http://pypi.python.org/pypi/aspen">PyPI</a>&mdash;Aspen has an 
+    entry in the Python Package Index.</p>
 
     <p><a href="/quick-start/" class="highlighted">Quick
         Start</a>&mdash;Install Aspen and start serving a basic website.
@@ -57,6 +127,17 @@
 
     <p><a href="/simplates/">Simplates</a>&mdash;Simplates are Aspen's main
     attraction. Learn what they are and the basics of working with them.</p>
+
+    <p><a href="/templating/">Templating</a>&mdash;Aspen uses Tornado templates
+    for the template page of a simplate.</p>
+
+    <p><a href="/thrash/">Thrash</a>&mdash;For development, Aspen can be
+    configured to die when important files change. Thrash is a utility to
+    restart it.</p>
+
+    <p><a href="/virtual-paths/">Virtual Paths</a>&mdash;Aspen translates URL
+    paths like <code>/wawa/foo.html</code> to filesystem paths like
+    <code>./%name/foo.html</code>.</p>
 
 </div>
 

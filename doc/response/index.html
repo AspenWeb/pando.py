@@ -1,5 +1,5 @@
 doc_title = "Response"
-doc_next = ('Hooks', '/hooks/')
+doc_next = ('Templating', '/templating/')
 
 {% extends doc.html %}
 {% block doc %}
@@ -7,17 +7,8 @@ doc_next = ('Hooks', '/hooks/')
 <p class="warning"><b>Warning:</b> This API is guaranteed to change before Aspen
 1.0.</p>
 
-<p>Aspen <code>Response</code> objects are subclasses of
-<code>Exception</code>. Yeah, seriously. All HTTP <a
-href="/request/">requests</a> in Aspen end with <code>raise Response</code>.
-The idea is that if you&rsquo;re using Aspen as designed, then any
-<code>Response</code> you raise yourself is going to be a non-200 response. If
-you want a 200 response, then you should just let the Aspen <a
-href="">simplates</a> machinery run its course. One nice benefit is that we can
-pinpoint exactly where in your code each request ended. Set <a
-href="/cli/"><code>-vDEBUG</code></a> to see this info.</p>
-
-<p>Here&rsquo;s the signature for the Response constructor:</p>
+<p>There is a <code>response</code> object in the second and third <a
+    href="/simplates">simplate</a> pages with this constructor:</p>
 
 <pre>def __init__(self, code=200, body='', headers=None):
     """Takes an int, a string, and a dict (or list of tuples).
@@ -34,5 +25,18 @@ href="/cli/"><code>-vDEBUG</code></a> to see this info.</p>
 
 <p>The <a href="/request/">Headers</a> object is the same as on
 <code>Request</code> objects.</p>
+
+<p>You can import the <code>Response</code> object from the <code>aspen</code>
+package:</p>
+
+<pre>from aspen import Response</pre>
+
+<p>If you like, you can instantiate a new response object in the second
+simplates page rather than using the one provided. Whatever is named
+&ldquo;response&rdquo; at the end of that page will be what Aspen attempts to
+send back out to the client. Additionally, <code>aspen.Response</code> objects
+are subclasses of <code>Exception</code>, so you can also end the request at
+any time with <code>raise Response</code>.</p>
+
 
 {% end %}
