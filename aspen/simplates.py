@@ -234,7 +234,7 @@ def handle(request, response=None):
         # If template is None that means that that section was empty.
     
         if template is not None:
-            response.body = template.generate(**namespace).encode(ENCODING)
+            response.body = template.generate(**namespace).encode(ENCODING).lstrip()
 
 
     # Set the mimetype.
