@@ -10,7 +10,6 @@ expression = str(Foo())
 # for Set documentation
 foo = [1, 2, 3, 4]
 nfoo = len(foo)
-
 
 {% extends doc.html %}
 {% block doc %}
@@ -49,6 +48,20 @@ def squeeze(value):
 
 def url_escape(value):
     """Returns a valid URL-encoded version of the given value."""</pre>
+
+
+<h4>Unicode</h4>
+
+<p>Template expressions that evaluate to unicode objects are automatically
+encoded to bytestrings using UTF-8. This is also the default charset for the
+Content-Type header for text files. To alter the former, manually encode your
+unicode objects before expressing them. To alter the latter, set the header
+manually on the response object in page 2. Here&rsquo;s an example:</p>
+
+<pre>latinate = ""
+response.headers.set('Content-Type', 'text/plain; charset=latin1')
+&#94;L
+{&#123; latinate.encode('latin1') }}</pre>
 
 
 <h3>Operators</h3>
