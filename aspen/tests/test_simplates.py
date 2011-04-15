@@ -113,8 +113,8 @@ def test_simplates_dont_leak_whitespace():
     assert actual == expected, repr(actual)
 
 
-# Example in the /templating/ doc.
-# ================================
+# Unicode example in the /templating/ doc.
+# ========================================
 # See also: https://github.com/whit537/aspen/issues/10
 
 eg = """\
