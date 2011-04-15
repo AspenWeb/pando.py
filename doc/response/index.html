@@ -7,8 +7,7 @@ doc_next = ('Templating', '/templating/')
 <p class="warning"><b>Warning:</b> This API will probably change slightly
 before Aspen 1.0.</p>
 
-<p>There is a <code>response</code> object in the second and third <a
-    href="/simplates">simplate</a> pages with this constructor:</p>
+<p>The <code>aspen.Response</code> class has this constructor:</p>
 
 <pre>def __init__(self, code=200, body='', headers=None):
     """Takes an int, a string, and a dict (or list of tuples).
@@ -23,56 +22,69 @@ before Aspen 1.0.</p>
 
     """</pre>
 
-<p>The <a href="/request/">Headers</a> object is the same as on
-<code>Request</code> objects.</p>
 
-<p>If you like, you can instantiate a new response object in the second
-simplates page rather than using the one provided (though if you define a
-response object in the first page, it will be ignored). Whatever is named
-&ldquo;response&rdquo; at the end of page two will be what Aspen uses to
-capture the template output and respond to the client.</p>
+<h4>The Default Response Object</h4>
 
-<p>Make a simplate named <code>gone.html</code> with this content:</p>
+<p>A <code>Response</code> object is automatically instantiated for all
+requests.  This object is automatically available in the second and third pages
+of your <a href="/simplates/">simplates</a>, where it is named
+<code>response</code>. Likewise, it is passed as the only argument to your
+outbound <a href="/hooks/">hooks</a>.</p>
 
-<pre>from aspen import Response
+<p>One common thing to do with the <code>response</code> object is to set a
+header. The <code>response.headers</code> attribute is the same as on <a
+    href="/request/"><code>Request</code> objects</a>, so here&rsquo;s how you
+would set a header in a simplate:</p>
+
+<pre>response.headers.set('X-My-Header', 'Greetings, program!')
 &#94;L
-response = Response(404)
-&#94;L
-Nothing to see here.</pre>
+Check your headers.</pre>
 
-<p>Here&rsquo;s what you should see:</p>
 
-{{ screenshot("gone") }}
+<h4>Raising Responses</h4>
 
-<p>You can also raise <code>Response</code> objects, because they are
-subclasses of <code>Exception</code>. This works in <a href="/hooks/">hooks</a>
-as well as in page two of a simplate. If raised from a simplate, the template
-page of the simplate is skipped.</p>
+<p>You can also raise <code>Response</code> instances, because
+<code>Response</code> is a subclass of Python's built-in <code>Exception</code>
+class. This works in <a href="/hooks/">hooks</a>, and in <a
+    href="/simplates/">simplates</a>, page two.</p>
 
-<p>Now make a simplate named <code>fishing.html</code> with this content:</p>
-
-<pre>from aspen import Response
-&#94;L
-raise Response(404)
-&#94;L
-I am ignored.</pre>
-
-<p>And here&rsquo;s what you should see:</p>
-
-{{ screenshot("fishing") }}
-
-<p>When you raise a Response instance, it is always handled as an error,
-regardless of the HTTP code. Change the HTTP code to 200 in
-<code>fishing.html</code>:</p>
+<p>Make a simplate named <code>fishing.html</code> with this content:</p>
 
 <pre>from aspen import Response
 &#94;L
 raise Response(200)
 &#94;L
-I am ignored.</pre>
+Let's go fishing!</pre>
+
+{{ screenshot("fishing.200") }}
+
+<p>Did you expect to see &ldquo;Let's go fishing!&rdquo; instead? The reason
+you didn&rsquo;t is that when you <code>raise Response()</code> from a
+simplate, the template page of the simplate is skipped. This is because the
+feature is really designed for <i>exceptions</i>, things like 404, etc.</p>
+
+<p>So change the HTTP code in <code>fishing.html</code>:</p>
+
+<pre>from aspen import Response
+&#94;L
+raise Response(404)
+&#94;L
+Let's go fishing!</pre>
 
 <p>You will get this:</p>
 
-{{ screenshot("fishing.ok") }}
+{{ screenshot("fishing.404") }}
+
+
+<h4>Custom Response Objects</h4>
+
+<p>For advanced use cases, you can define your own <code>Response</code> class
+and instantiate it inside of your simplates. Whatever is named
+&ldquo;response&rdquo; at the end of page two of a simplate will be what Aspen
+uses to capture the template output and respond to the client. That is, the
+variable named &ldquo;response&rdquo; should be your <code>Response</code>
+instance. It will be used as a response, and&mdash;unless you raise
+it&mdash;its body attribute will be replaced with the output of the template
+page.</p>
 
 {% end %}
