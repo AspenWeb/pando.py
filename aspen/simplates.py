@@ -17,13 +17,13 @@ import os
 import stat
 import sys
 import traceback
+from os.path import join
 
 from aspen.http import Response
 from _tornado.template import Loader, Template
 
 
 PAGE_BREAK = chr(12)
-ENCODING = 'UTF-8'
 log = logging.getLogger('aspen.simplate')
 
 # relax some mimetypes
@@ -79,6 +79,10 @@ def load_uncached(request):
 
     simplate = open(request.fs).read()
     
+    # We work with simplate exclusively as a bytestring. Any unicode objects
+    # passed in by the user as {{ expressions }} will be encoded with UTF-8 by
+    # Tornado.
+    
     mimetype = mimetypes.guess_type(request.fs, 'text/plain')[0]
     if mimetype is None:
         mimetype = request.conf.aspen.get('default_mimetype', 'text/plain')
@@ -86,25 +90,24 @@ def load_uncached(request):
         s = lambda s: simplate.startswith(s)
         if not (s('#!') or s('"""') or s('import') or s('from')):
             # I tried checking for 1 or 2 form feeds, but found a binary file
-            # in the wild that indeed had exactly two. Let's sniff the first
-            # few bytes.
+            # in the wild that indeed had exactly two. And now we may have
+            # caret-L instead, anyway. Let's try sniffing the first few bytes.
             return (mimetype, None, None, simplate) # static file; exit early
 
-    simplate = simplate.decode(ENCODING)
     simplate = simplate.replace("^L", PAGE_BREAK)
 
-    nform_feeds = simplate.count(PAGE_BREAK)
-    if nform_feeds == 0:
+    npage_breaks = simplate.count(PAGE_BREAK)
+    if npage_breaks == 0:
         script = imports = ""
         template = simplate
-    elif nform_feeds == 1:
+    elif npage_breaks == 1:
         imports = ""
         script, template = simplate.split(PAGE_BREAK)
-    elif nform_feeds == 2:
+    elif npage_breaks == 2:
         imports, script, template = simplate.split(PAGE_BREAK)
     else:
         raise SyntaxError( "Simplate %s may have at most two " % request.fs
-                         + "form feeds; it has %d." % nform_feeds
+                         + "page breaks; it has %d." % npage_breaks
                           )
 
 
@@ -131,9 +134,7 @@ def load_uncached(request):
     namespace['__file__'] = request.fs
     script = compile(script, request.fs, 'exec')
     if template.strip():
-        loader = Loader(os.path.join( request.root
-                                    , '.aspen'
-                                     ))
+        loader = Loader(join(request.root, '.aspen'))
         template = Template( template
                            , name = request.fs
                            , loader = loader
@@ -234,7 +235,7 @@ def handle(request, response=None):
         # If template is None that means that that section was empty.
     
         if template is not None:
-            response.body = template.generate(**namespace).encode(ENCODING)
+            response.body = template.generate(**namespace)
 
 
     # Set the mimetype.
@@ -243,7 +244,7 @@ def handle(request, response=None):
     
     if response.headers.one('Content-Type') is None:
         if mimetype.startswith('text/'):
-            mimetype += "; charset=" + ENCODING
+            mimetype += "; charset=UTF-8" 
         response.headers.set('Content-Type', mimetype)
 
 
