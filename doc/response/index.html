@@ -4,8 +4,8 @@ doc_next = ('Templating', '/templating/')
 {% extends doc.html %}
 {% block doc %}
 
-<p class="warning"><b>Warning:</b> This API is guaranteed to change before Aspen
-1.0.</p>
+<p class="warning"><b>Warning:</b> This API will probably change slightly
+before Aspen 1.0.</p>
 
 <p>There is a <code>response</code> object in the second and third <a
     href="/simplates">simplate</a> pages with this constructor:</p>
@@ -26,17 +26,53 @@ doc_next = ('Templating', '/templating/')
 <p>The <a href="/request/">Headers</a> object is the same as on
 <code>Request</code> objects.</p>
 
-<p>You can import the <code>Response</code> object from the <code>aspen</code>
-package:</p>
-
-<pre>from aspen import Response</pre>
-
 <p>If you like, you can instantiate a new response object in the second
-simplates page rather than using the one provided. Whatever is named
-&ldquo;response&rdquo; at the end of that page will be what Aspen attempts to
-send back out to the client. Additionally, <code>aspen.Response</code> objects
-are subclasses of <code>Exception</code>, so you can also end the request at
-any time with <code>raise Response</code>.</p>
+simplates page rather than using the one provided (though if you define a
+response object in the first page, it will be ignored). Whatever is named
+&ldquo;response&rdquo; at the end of page two will be what Aspen uses to
+capture the template output and respond to the client.</p>
 
+<p>Make a simplate named <code>gone.html</code> with this content:</p>
+
+<pre>from aspen import Response
+&#94;L
+response = Response(404)
+&#94;L
+Nothing to see here.</pre>
+
+<p>Here&rsquo;s what you should see:</p>
+
+{{ screenshot("gone") }}
+
+<p>You can also raise <code>Response</code> objects, because they are
+subclasses of <code>Exception</code>. This works in <a href="/hooks/">hooks</a>
+as well as in page two of a simplate. If raised from a simplate, the template
+page of the simplate is skipped.</p>
+
+<p>Now make a simplate named <code>fishing.html</code> with this content:</p>
+
+<pre>from aspen import Response
+&#94;L
+raise Response(404)
+&#94;L
+I am ignored.</pre>
+
+<p>And here&rsquo;s what you should see:</p>
+
+{{ screenshot("fishing") }}
+
+<p>When you raise a Response instance, it is always handled as an error,
+regardless of the HTTP code. Change the HTTP code to 200 in
+<code>fishing.html</code>:</p>
+
+<pre>from aspen import Response
+&#94;L
+raise Response(200)
+&#94;L
+I am ignored.</pre>
+
+<p>You will get this:</p>
+
+{{ screenshot("fishing.ok") }}
 
 {% end %}
