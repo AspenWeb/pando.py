@@ -1,4 +1,5 @@
 from os.path import join
+from textwrap import dedent
 
 from aspen.http import Response
 from aspen.simplates import handle, load_uncached 
@@ -66,14 +67,14 @@ def test_simplate_pages_work_with_caret_L():
 
 def test_simplate_templating_set():
     expected = "1, 2, 3, 4"
-    actual = check("""
-foo = [1,2,3,4]
-nfoo = len(foo)
+    actual = check(dedent("""
+        foo = [1,2,3,4]
+        nfoo = len(foo)
 
-
-{% set i = 0 %}
-{% for x in foo %}{% set i += 1 %}{{ x }}{% if i < nfoo %}, {% end %}{% end %}
-    """).strip()
+        
+        {% set i = 0 %}
+        {% for x in foo %}{% set i += 1 %}{{ x }}{% if i < nfoo %}, {% end %}{% end %}
+            """)).strip()
     assert actual == expected, actual
 
 def test_tornado_utf8_works_without_whitespace():
@@ -96,9 +97,25 @@ text = unichr(1758)
     """).strip()
     assert actual == expected, actual
 
+def test_simplates_dont_leak_whitespace():
+    """This aims to resolve https://github.com/whit537/aspen/issues/8.
+
+    It is especially weird with JSON output, which we test below. When
+    you return [1,2,3,4] that's what you want in the HTTP response
+    body.
+
+    """
+    actual = check(dedent("""
+        
+        json_list = [1,2,3,4]
+        {{repr(json_list)}}"""))
+    expected = "[1, 2, 3, 4]"
+    assert actual == expected, repr(actual)
+
 
 # Example in the /templating/ doc.
 # ================================
+# See also: https://github.com/whit537/aspen/issues/10
 
 eg = """\
 latinate = chr(181).decode('latin1')
