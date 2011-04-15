@@ -59,9 +59,9 @@ Let's go fishing!</pre>
 {{ screenshot("fishing.200") }}
 
 <p>Did you expect to see &ldquo;Let's go fishing!&rdquo; instead? The reason
-you didn&rsquo;t is that when you <code>raise Response()</code> from a
-simplate, the template page of the simplate is skipped. This is because the
-feature is really designed for <i>exceptions</i>, things like 404, etc.</p>
+you don&rsquo;t is that when you <code>raise Response()</code> from a simplate,
+the template page of the simplate is skipped. This is because the feature is
+really designed for <i>exceptions</i>, things like 404, etc.</p>
 
 <p>So change the HTTP code in <code>fishing.html</code>:</p>
 
