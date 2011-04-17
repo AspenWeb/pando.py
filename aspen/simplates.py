@@ -6,9 +6,11 @@ Problems with tornado.template:
     - Loader cache doesn't account for modtime
     - Is this a bug?
 
-    {{ foo }}
-    {% for foo in [1,2,3] %}
-    {% end %}
+        {{ foo }}
+        {% for foo in [1,2,3] %}
+        {% end %}
+
+    - no loop counters, eh? must do it manually with {% set %}
 
 """
 import logging
@@ -30,7 +32,8 @@ log = logging.getLogger('aspen.simplate')
 # Ensure some mimetypes.
 # ======================
 # The mimetypes module uses a number of system-dependent resources to compute
-# its guesses. Aspen wants to guarantee the following, apparently.
+# its guesses. Aspen wants to guarantee the following, apparently. See
+# https://github.com/whit537/aspen/issues/1
 
 for ext in ('py', 'sh'):
     mimetypes.add_type('text/plain', '.'+ext)
