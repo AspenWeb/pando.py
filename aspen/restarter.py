@@ -12,7 +12,6 @@ mtimes = {}
 def add(filename):
     extras.append(filename)
 
-
 def check_one(filename):
     """Given a filename, return None or exit.
     """
@@ -38,17 +37,16 @@ def check_one(filename):
     if mtime > mtimes[filename]:
         sys.exit(1) # trigger restart
 
-
 def check_all():
     """See if any of our available modules have changed on the filesystem.
     """
     for name, module in sorted(sys.modules.items()):    # module files
         filepath = getattr(module, '__file__', None)
         if filepath is None:
-            # we land here when a module is an attribute of another module
+            # We land here when a module is an attribute of another module
             # i.e., it exists twice in the sys.modules table, once as its
             # canonical representation, and again having been imported
-            # within another module
+            # within another module.
             continue
         filepath = filepath.endswith(".pyc") and filepath[:-1] or filepath
         check_one(filepath)
@@ -57,7 +55,22 @@ def check_all():
         check_one(filepath)
 
 
-def loop():
-    while True:
-        check_all()
-        diesel.sleep(0.5)
+# Startup
+# =======
+
+def startup(website):
+    # This is not ideal. See http://sync.in/aspen-reloading
+
+    if not website.configuration.conf.aspen.no('changes_kill'):
+        return 
+
+    dotaspen = join(configuration.root, '.aspen')
+    for root, dirs, files in os.walk(dotaspen):
+        for filename in files:
+            add(join(root, filename))
+
+    def loop():
+        while True:
+            check_all()
+            diesel.sleep(0.5)
+    website.configuration.app.add_loop(diesel.Loop(loop))

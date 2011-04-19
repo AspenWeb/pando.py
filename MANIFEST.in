@@ -1,3 +1,4 @@
 include ez_setup.py
 include version.txt
+include aspen/configuration/hooks.conf
 graft aspen/www

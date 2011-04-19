@@ -5,7 +5,7 @@ from aspen.http import Response
 from aspen.simplates import handle, load_uncached 
 from aspen.tests import assert_raises
 from aspen.tests.fsfix import attach_teardown, mk
-from aspen._tornado.template import Template
+from aspen._tornado.template import Template, Loader
 
 
 class StubRequest(object):
@@ -19,6 +19,8 @@ class StubRequest(object):
             pass
         self.conf = Foo()
         self.conf.aspen = {}
+        self.website = Foo()
+        self.website.loader = Loader(join('fsfix', '.aspen'))
 
 def Simplate(fs):
     return load_uncached(StubRequest(fs))

@@ -1,5 +1,7 @@
 import os
+from os.path import join
 
+from aspen._tornado.template import Loader
 from aspen.configuration import Configuration
 from aspen.http.request import Request
 from aspen.tests import DieselReq
@@ -13,6 +15,7 @@ from diesel.protocols.http import HttpHeaders, HttpRequest
 
 def check():
     website = Website(Configuration(['fsfix']))
+    website.loader = Loader(join('fsfix', '.aspen'))
     response = website.handle(Request.from_diesel(DieselReq()))
     return response
 

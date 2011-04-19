@@ -4,11 +4,13 @@ import os
 import sys
 import time
 import urllib
+from os.path import join
 
 from aspen.configuration import Configuration
 from aspen.http.request import Request
 from aspen.website import Website
 from diesel.protocols.http import HttpHeaders, HttpRequest
+from aspen._tornado.template import Loader
 
 
 def DieselReq(path='/'):
@@ -18,7 +20,10 @@ def DieselReq(path='/'):
 
 def handle(path):
     website = Website(Configuration(['fsfix']))
-    return website.handle(Request.from_diesel(DieselReq(path)))
+    request = Request.from_diesel(DieselReq(path))
+    request.website = website
+    request.website.loader = Loader(join('fsfix', '.aspen'))
+    return website.handle(request)
 
 
 
