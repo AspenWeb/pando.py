@@ -73,6 +73,8 @@ def teardown():
         os.remove('log')
     if '.aspen' in sys.path[0]:
         sys.path = sys.path[1:]
+    if 'foo' in sys.modules:
+        del sys.modules['foo']
 
 teardown() # start clean
 

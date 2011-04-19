@@ -53,6 +53,12 @@ def test_nice_error_response_is_returned():
     actual = check().code
     assert actual == expected, actual
 
+def test_nice_error_response_is_returned_for_404():
+    mk(('index.html', "from aspen import Responseraise Response(404)"))
+    expected = 404 
+    actual = check().code
+    assert actual == expected, actual
+
 def test_autoindex_response_is_404_by_default():
     mk(('README', "Greetings, program!"))
     expected = 404
@@ -73,6 +79,31 @@ def test_simplates_can_import_from_dot_aspen():
        )
     expected = "Greetings, baz!"
     actual = check().body
+    assert actual == expected, actual
+
+
+
+
+def test_double_failure_still_sets_response_dot_request():
+    mk( '.aspen'
+      , ('.aspen/foo.py', """
+def bar(response):
+    response.request
+""")
+      , ('.aspen/hooks.conf', 'foo:bar')
+      , ('index.html', "raise heck")
+       )
+
+    website = Website(Configuration(['fsfix']))
+    website.loader = Loader(join('fsfix', '.aspen'))
+
+    # Intentionally break the website object so as to trigger a double failure.
+    del website.loader
+
+    response = website.handle(Request.from_diesel(DieselReq()))
+
+    expected = 500
+    actual = response.code
     assert actual == expected, actual
 
 

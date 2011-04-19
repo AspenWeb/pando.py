@@ -35,5 +35,5 @@ setup( author = 'Chad Whitacre'
      , version = version
      , zip_safe = False
      , install_requires = ['diesel == 2.0.0']
-     , package_data = {'aspen': ['www/*']}
+     , package_data = {'aspen': ['www/*', 'configuration/hooks.conf']}
       )

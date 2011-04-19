@@ -137,4 +137,17 @@ def test_body_is_right_in_template_doc_unicode_example():
     assert actual == expected, actual
 
 
+# raise Response
+
+def test_raise_response_works():
+    expected = 404
+    response = assert_raises( Response
+                            , check
+                            , "from aspen import Response; raise Response(404)"
+                             )
+    actual = response.code
+    assert actual == expected, actual
+
+
+
 attach_teardown(globals())
