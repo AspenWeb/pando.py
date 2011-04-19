@@ -6,22 +6,57 @@ doc_next = []
 
 <p>Aspen comes with a utility called <code>thrash</code> that restarts a
 process whenever it dies. It is installed along with the <code>aspen</code>
-executable, via setuptools.</p>
+executable, via setuptools. This is how Aspen supports the common case of
+restarting a server in development when files change. In production you should
+use something like <a href="http://cr.yp.to/daemontools.html">daemontools</a>
+or <a href="http://www.supervisord.org">supervisord</a>. Note that <a
+    href="/simplates/">simplate</a> files (but not template bases and
+includes!) are automatically reloaded without a server restart whenever they
+change, both in development and production.</p>
 
-<p>You can configure <code>aspen</code> to die whenever module files or files
-under a <code>.aspen</code> hidden directory in your website root change. That
-hidden directory is where you put template bases and includes, etc. To set this
-up, create an <a href="/aspen.conf/"><code>aspen.conf</code></a> file with this
-content:</p>
+<p>To set this up, create an <a href="/aspen.conf/"><code>aspen.conf</code></a>
+file in <code>~/.aspen/</code>. It&rsquo;s good to put it in your home
+directory so that it affects all instances of <code>aspen</code> on your
+development machine, but doesn&rsquo;t accidentally end up in production. Put
+this content in <code>~/.aspen/aspen.conf</code>:</p>
 
 <pre>[aspen]
 changes_kill = yes</pre>
 
-<p>This is how Aspen supports the common case of restarting a server in
-development when files change. In production you should use something like <a
-    href="http://cr.yp.to/daemontools.html">daemontools</a> or <a
-    href="http://www.supervisord.org">supervisord</a>. Note that <a
-    href="/simplates/">simplate</a> files are automatically reloaded without a
-server restart whenever they change, both in development and production.</p>
+<p>Then run <code>aspen</code> under <code>thrash</code>:</p>
+
+<pre>$ thrash aspen
+Greetings, program! Welcome to port 8080.</pre>
+
+<p>Now whenever you change any Python module files or any files in <a
+    href="/dotaspen/"><code>.aspen</code></a>, you should see
+<code>aspen</code> die, and <code>thrash</code> restart it:</p>
+
+<pre>[Mon Apr 18 07:18:24 2011] {warn} -- SystemExit raised.. exiting main loop --
+Greetings, program! Welcome to port 8080.</pre>
+
+<p>You do need to bounce the server manually in order to pick up <i>new</i>
+modules and files.
+
+
+<h4>SIGINT</h4>
+
+<p>If you hit <code>^C</code> at the console, <code>aspen</code> will catch the
+<code>SIGINT</code>, it will die, and <code>thrash</code> will restart it.</p>
+
+<pre>^C[Mon Apr 18 07:35:39 2011] {warn} -- KeyboardInterrupt raised.. exiting 
+main loop --
+Greetings, program! Welcome to port 8080.</pre>
+
+<p>This is how you bounce <code>aspen</code> manually to pick up new files.</p>
+
+<p>If you want to kill the server entirely, hit <code>^C</code> twice in quick
+succession. <code>aspen</code> will catch the first <code>SIGINT</code>, and
+<code>thrash</code> will catch the second. Then you&rsquo;ll have your prompt
+back.</p>
+
+<pre>^C[Mon Apr 18 07:38:03 2011] {warn} -- KeyboardInterrupt raised.. exiting 
+main loop --
+^C$ </pre>
 
 {% end %}

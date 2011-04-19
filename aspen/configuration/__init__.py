@@ -100,7 +100,8 @@ class Configuration(object):
         # hooks
         # =====
 
-        self.hooks = HooksConf( '/etc/aspen/hooks.conf'
+        self.hooks = HooksConf( join(dirname(__file__), 'hooks.conf')
+                              , '/etc/aspen/hooks.conf'
                               , '/usr/local/etc/aspen/hooks.conf'
                               , expanduser('~/.aspen/hooks.conf')
                               , join(dotaspen, 'hooks.conf')

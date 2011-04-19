@@ -21,6 +21,7 @@ import sys
 import traceback
 from os.path import join
 
+import diesel
 from aspen.http import Response
 from _tornado.template import Loader, Template
 
@@ -48,7 +49,7 @@ class LoadError(StandardError):
 # Cache helpers
 # =============
 
-__cache = dict()        # cache
+__cache = dict()        # cache, keyed to filesystem path
 
 class Entry:
     """An entry in the global simplate cache.
@@ -65,6 +66,13 @@ class Entry:
         self.quadruple = ()
 
 
+# Tornado Loader
+# ==============
+
+def startup(website):
+    website.loader = Loader(join(website.root, '.aspen'))
+
+
 # Core loader
 # ===========
 
@@ -72,9 +80,9 @@ def load_uncached(request):
     """Given a Request object, return three objects (uncached).
 
     A simplate is a template with two optional Python components at the head of
-    the file, delimited by '^L'. The first Python section is exec'd when the
+    the file, delimited by '^L'. The first Python page is exec'd when the
     simplate is first called, and the namespace it populates is saved for all
-    subsequent runs. The second Python section is exec'd within the template
+    subsequent runs. The second Python page is exec'd within the template
     namespace each time the template is rendered.
 
     If the mimetype does not start with 'text/', then it is only a simplate if
@@ -94,7 +102,12 @@ def load_uncached(request):
     mimetype = mimetypes.guess_type(request.fs, 'text/plain')[0]
     if mimetype is None:
         mimetype = request.conf.aspen.get('default_mimetype', 'text/plain')
-    if not mimetype.startswith('text/'):
+   
+    
+    if mimetype.startswith('text/'):
+        pass #TODO exit early if there are no ^L, , {% or {{ chars.
+             # But make sure that's actually faster. I have to think it is.
+    else:
         s = lambda s: simplate.startswith(s)
         if not (s('#!') or s('"""') or s('import') or s('from')):
             # I tried checking for 1 or 2 form feeds, but found a binary file
@@ -143,10 +156,9 @@ def load_uncached(request):
     namespace['__file__'] = request.fs
     script = compile(script, request.fs, 'exec')
     if template.strip():
-        loader = Loader(join(request.root, '.aspen'))
         template = Template( template
                            , name = request.fs
-                           , loader = loader
+                           , loader = request.website.loader
                            , compress_whitespace = False
                             )
     else:
@@ -195,7 +207,7 @@ def load(request):
 
         entry.modtime = modtime
         if entry.exc is not None:
-            raise entry.exc[0]
+            raise entry.exc[0] # TODO Why [0] here, and not above?
 
 
     # Return
@@ -241,7 +253,7 @@ def handle(request, response=None):
 
         # Process the template.
         # =====================
-        # If template is None that means that that section was empty.
+        # If template is None that means that that page was empty.
     
         if template is not None:
             response.body = template.generate(**namespace)

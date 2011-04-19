@@ -25,16 +25,6 @@ def main(argv=None):
         # change current working directory
         os.chdir(configuration.root)
 
-        if configuration.conf.aspen.no('changes_kill'):
-            # restart for template files too;
-            # TODO can't we just invalidate the simplate cache for these?
-            dot_aspen = join(configuration.root, '.aspen')
-            for root, dirs, files in os.walk(dot_aspen):
-                for filename in files:
-                    restarter.add(join(root, filename))
-
-            app.add_loop(Loop(restarter.loop))
-        
         port = configuration.address[1]
         app.add_service(Service(http.HttpServer(website), port))
 
@@ -43,7 +33,6 @@ def main(argv=None):
 
     except KeyboardInterrupt, SystemExit:
         configuration.hooks.run('shutdown', website)
-
 
 def thrash():
     """This is a very simple tool to restart a process when it dies.
