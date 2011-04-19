@@ -1,6 +1,6 @@
 import os
 import sys
-from os.path import isfile
+from os.path import join, isfile
 
 import diesel
 
@@ -64,7 +64,7 @@ def startup(website):
     if not website.configuration.conf.aspen.no('changes_kill'):
         return 
 
-    dotaspen = join(configuration.root, '.aspen')
+    dotaspen = join(website.configuration.root, '.aspen')
     for root, dirs, files in os.walk(dotaspen):
         for filename in files:
             add(join(root, filename))
