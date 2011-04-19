@@ -147,6 +147,7 @@ def load_uncached(request):
 
     namespace = dict()
     namespace['__file__'] = request.fs
+    namespace['website'] = request.website
     script = compile(script, request.fs, 'exec')
     if template.strip():
         template = Template( template
