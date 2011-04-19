@@ -17,6 +17,7 @@ from aspen.configuration.optparser import ( optparser
                                           , validate_address
                                           , validate_log_level
                                            )
+from aspen._tornado.template import Template
 
 
 log = logging.getLogger('aspen') # configured below; not used until then
@@ -95,6 +96,12 @@ class Configuration(object):
         self.conf = conf
         self.optparser = optparser
         self.opts = opts
+
+
+        # Loader
+        # ======
+
+        #self.loader = Loader(dotaspen)
 
        
         # hooks

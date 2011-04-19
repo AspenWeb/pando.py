@@ -25,6 +25,7 @@ class Website(object):
         self.opts = self.conf.aspen
         self.root = configuration.root
         self.hooks = configuration.hooks
+        #self.loader = configuration.loader
         self.show_tracebacks = self.opts.no('show_tracebacks')
 
     def __call__(self, diesel_request):
@@ -85,17 +86,19 @@ class Website(object):
                 raise
             request.fs = fs
             response = simplates.handle(request, response)
+            return response
         except Response, response:  # no nice error template available
-            raise       
+            raise
         except:                     # last chance for tracebacks in the browser
             tb_2 = traceback.format_exc().strip()
             tbs = '\n\n'.join([tb_2, "... while handling ...", tb_1])
             log.error(tbs)
             if self.show_tracebacks:
-                raise Response(500, tbs)
+                response = Response(500, tbs)
             else:
-                raise Response(500)
-        return response
+                response = Response(500)
+            response.request = request
+            raise response
 
     def find_ours(self, filename):
         """Given a filename, return a filepath.
