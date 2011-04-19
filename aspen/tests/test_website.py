@@ -15,7 +15,6 @@ from diesel.protocols.http import HttpHeaders, HttpRequest
 
 def check():
     website = Website(Configuration(['fsfix']))
-    website.loader = Loader(join('fsfix', '.aspen'))
     response = website.handle(Request.from_diesel(DieselReq()))
     return response
 
@@ -94,10 +93,8 @@ def bar(response):
       , ('index.html', "raise heck")
        )
 
-    website = Website(Configuration(['fsfix']))
-    website.loader = Loader(join('fsfix', '.aspen'))
-
     # Intentionally break the website object so as to trigger a double failure.
+    website = Website(Configuration(['fsfix']))
     del website.loader
 
     response = website.handle(Request.from_diesel(DieselReq()))

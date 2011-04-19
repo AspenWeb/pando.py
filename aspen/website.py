@@ -25,7 +25,7 @@ class Website(object):
         self.opts = self.conf.aspen
         self.root = configuration.root
         self.hooks = configuration.hooks
-        #self.loader = configuration.loader
+        self.loader = configuration.loader
         self.show_tracebacks = self.opts.no('show_tracebacks')
 
     def __call__(self, diesel_request):
