@@ -6,6 +6,8 @@ from aspen.simplates import handle, load_uncached
 from aspen.tests import assert_raises
 from aspen.tests.fsfix import attach_teardown, mk
 from aspen._tornado.template import Template, Loader
+from aspen.website import Website
+from aspen.configuration import Configuration
 
 
 class StubRequest(object):
@@ -15,12 +17,7 @@ class StubRequest(object):
         self.root = join('.', 'fsfix')
         self.fs = join('.', 'fsfix', fs)
         self.namespace = {}
-        class Foo:
-            pass
-        self.conf = Foo()
-        self.conf.aspen = {}
-        self.website = Foo()
-        self.website.loader = Loader(join('fsfix', '.aspen'))
+        self.website = Website(Configuration(['fsfix']))
 
 def Simplate(fs):
     return load_uncached(StubRequest(fs))
@@ -138,6 +135,7 @@ def test_body_is_right_in_template_doc_unicode_example():
 
 
 # raise Response
+# ==============
 
 def test_raise_response_works():
     expected = 404
@@ -148,6 +146,16 @@ def test_raise_response_works():
     actual = response.code
     assert actual == expected, actual
 
+
+def test_website_is_in_namespace():
+    expected = "\nIt worked."
+    actual = check("""\
+from aspen.website import Website
+assert isinstance(website, Website), website
+
+
+It worked.""")
+    assert actual == expected, actual
 
 
 attach_teardown(globals())
