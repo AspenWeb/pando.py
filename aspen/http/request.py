@@ -73,6 +73,11 @@ class Request(object):
         if self.method not in methods:
             raise Response(405, headers={'Allow': ', '.join(methods)})
 
+    @property
+    def is_xhr(self):
+        val = self.headers.one('X-Requested-With', '')
+        return val.lower() == 'xmlhttprequest'
+
     def rebuild_url(self):
         """Return a full URL for this request, per PEP 333:
 

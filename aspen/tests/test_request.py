@@ -52,3 +52,17 @@ def test_allow_can_handle_lowercase():
     actual = assert_raises(Response, request.allow, 'post').code
     assert actual == expected, actual
     
+def test_is_xhr_false():
+    request = make_request()
+    assert not request.is_xhr
+    
+def test_is_xhr_true():
+    request = make_request()
+    request.headers.set('X-Requested-With', 'XmlHttpRequest')
+    assert request.is_xhr
+    
+def test_is_xhr_is_case_insensitive():
+    request = make_request()
+    request.headers.set('X-Requested-With', 'xMLhTTPrEQUEST')
+    assert request.is_xhr
+    
