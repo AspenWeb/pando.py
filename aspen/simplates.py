@@ -66,13 +66,6 @@ class Entry:
         self.quadruple = ()
 
 
-# Tornado Loader
-# ==============
-
-def startup(website):
-    website.loader = Loader(join(website.root, '.aspen'))
-
-
 # Core loader
 # ===========
 

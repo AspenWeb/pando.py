@@ -22,7 +22,6 @@ def handle(path):
     website = Website(Configuration(['fsfix']))
     request = Request.from_diesel(DieselReq(path))
     request.website = website
-    request.website.loader = Loader(join('fsfix', '.aspen'))
     return website.handle(request)
 
 
