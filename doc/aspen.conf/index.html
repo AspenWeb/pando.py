@@ -61,6 +61,23 @@ default_filenames: index.html, default.html, README</pre>
 
     </dd>
 
+    <dt><code>json_content_type</code></dt>
+    <dd>
+    
+        <p>Aspen has special support for <a href="/simplates/json/">JSON
+            simplates</a>. Use this key to preserve special JSON simplate
+        handling but set a different <code>Content-Type</code> header.</p>
+
+        <b>Valid values:</b> any string<br />
+        <b>Default:</b> <code>application/json</code>
+        <b>Example:</b>
+
+        <pre>[aspen]
+json_content_type: text/plain</pre>
+
+
+    </dd>
+
     <dt><code>list_directories</code></dt>
     <dd>
     
@@ -73,7 +90,6 @@ default_filenames: index.html, default.html, README</pre>
         <b>Default:</b> no
 
     </dd>
-
 
     <dt><code>show_tracebacks</code></dt>
     <dd>
