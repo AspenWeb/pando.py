@@ -1,4 +1,12 @@
 #!/bin/sh
+
+# Exit on first error.
+set -e
+
+# Go to a known location: the directory where we ourselves live.
+cd "`dirname $0`"
+
+# Confirmation helper.
 confirm () {
     proceed=""
     while [ "$proceed" != "y" ]; do
@@ -11,6 +19,7 @@ confirm () {
     return 0
 }
 
+# Real work.
 confirm "Tag version $1 and upload to PyPI?"
 if [ $? -eq 0 ]; then
     printf "$1" > version.txt
@@ -25,4 +34,6 @@ if [ $? -eq 0 ]; then
     printf "+" >> version.txt
     git commit --all -m"Version bump post-release."
     git push
+
+    rm -rf dist
 fi
