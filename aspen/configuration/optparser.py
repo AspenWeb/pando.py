@@ -1,6 +1,7 @@
 import logging
 import optparse
 import socket
+import sys
 
 import aspen
 from aspen.configuration.exceptions import ConfigurationError

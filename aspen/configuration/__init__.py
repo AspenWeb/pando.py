@@ -2,6 +2,7 @@
 """
 import logging
 import logging.config
+import mimetypes
 import os
 import socket
 import sys
@@ -103,6 +104,33 @@ class Configuration(object):
 
         self.loader = Loader(dotaspen)
 
+
+        # mimetypes
+        # =========
+        
+        mimetypes.knownfiles = [ join(dirname(__file__), 'mime.types')
+                               , '/etc/mime.types'
+                               , '/usr/local/etc/mime.types'
+                               , join(dotaspen, 'mime.types')
+                                ]
+        mimetypes.init()
+
+        self.default_mimetype = conf.aspen.get( 'default_mimetype'
+                                              , 'text/plain'
+                                               )
+
+        # index.html
+        # ==========
+
+        default_filenames = conf.aspen.get('default_filenames', 'index.html')
+        default_filenames = default_filenames.split()
+        default_filenames = [x.strip(',') for x in default_filenames]
+        default_filenames = [x for x in default_filenames if x]
+        default_filenames = [x.split(',') for x in default_filenames]
+        self.default_filenames = []
+        for nested in default_filenames:
+            self.default_filenames.extend(nested)
+
        
         # hooks
         # =====
@@ -198,7 +226,7 @@ class Configuration(object):
     def configure_logging(self, filename, filter, format, level):
         """Used for configuring logging from the command line or aspen.conf.
         """
-    
+   
         # Handler
         # =======
         # sys.stdout or rotated file

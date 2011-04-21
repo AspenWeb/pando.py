@@ -118,9 +118,11 @@ def trailing_slash(request):
 
 def index(request):
     if isdir(request.fs):
-        index = join(request.fs, 'index.html')
-        if isfile(index):
-            request.fs = index
+        for filename in request.configuration.default_filenames:
+            index = join(request.fs, filename)
+            if isfile(index):
+                request.fs = index
+                break
 
 def autoindex(request, want_autoindex, autoindex):
     if isdir(request.fs):

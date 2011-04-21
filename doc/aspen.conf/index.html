@@ -32,6 +32,22 @@ section:</p>
 
     </dd>
 
+    <dt><code>default_filenames</code></dt>
+    <dd>
+    
+        <p>When given a request for a directory, Aspen will look for the files
+        named here to serve the request. The first one found will be used.</p> 
+
+        <b>Valid values:</b> comma- and/or space-separated list of 
+        strings<br />
+        <b>Default:</b> <code>index.html</code><br />
+        <b>Example:</b>
+
+        <pre>[aspen]
+default_filenames: index.html, default.html, README</pre>
+
+    </dd>
+
     <dt><code>default_mimetype</code></dt>
     <dd>
     
@@ -48,9 +64,10 @@ section:</p>
     <dt><code>list_directories</code></dt>
     <dd>
     
-        <p>If set to yes, Aspen will show a directory listing when there is no
-        index.html in a given directory. If set to no, requests for such
-        directories will result in a 404.</p>
+        <p>If set to yes, Aspen will show a directory listing when none of the
+        files named by <code>default_filenames</code> exist in a given
+        directory. If set to no, requests for such directories will result in a
+        404.</p>
 
         <b>Valid values:</b> yes/no/true/false/0/1<br />
         <b>Default:</b> no
