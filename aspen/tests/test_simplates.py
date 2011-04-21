@@ -18,13 +18,14 @@ class StubRequest(object):
         self.fs = join('.', 'fsfix', fs)
         self.namespace = {}
         self.website = Website(Configuration(['fsfix']))
+        self.configuration = self.website.configuration
 
 def Simplate(fs):
     return load_uncached(StubRequest(fs))
 
-def check(content, body=True):
-    mk(('index.html', content))
-    request = StubRequest('index.html')
+def check(content, filename="index.html", body=True, aspenconf=""):
+    mk(('.aspen/aspen.conf', aspenconf), (filename, content))
+    request = StubRequest(filename)
     response = Response()
     handle(request, response)
     if body:
@@ -157,5 +158,47 @@ assert isinstance(website, Website), website
 It worked.""")
     assert actual == expected, actual
 
+def test_json_basically_works():
+    expected = '{"Greetings": "program!"}'
+    actual = check( "response.body = {'Greetings': 'program!'}"
+                  , filename="foo.json"
+                   )
+    assert actual == expected, actual
+
+def test_json_defaults_to_application_json():
+    expected = 'application/json'
+    actual = check( "response.body = {'Greetings': 'program!'}"
+                  , filename="foo.json"
+                  , body=False
+                   ).headers.one('Content-Type')
+    assert actual == expected, actual
+
+def test_json_content_type_is_configurable():
+    aspenconf = '[aspen]\njson_content_type: floober/blah'
+    expected = 'floober/blah'
+    actual = check( "response.body = {'Greetings': 'program!'}"
+                  , filename="foo.json"
+                  , body=False
+                  , aspenconf=aspenconf
+                   ).headers.one('Content-Type')
+    assert actual == expected, actual
+
+def test_json_handles_unicode():
+    expected = '{"Greetings": "\u00b5"}'
+    actual = check( "response.body = {'Greetings': unichr(181)}"
+                  , filename="foo.json"
+                   )
+    assert actual == expected, actual
+
+def test_json_doesnt_handle_non_ascii_bytestrings():
+    assert_raises( UnicodeDecodeError
+                 , check
+                 , "response.body = {'Greetings': chr(181)}"
+                 , filename="foo.json"
+                  )
+
+
+# Teardown
+# ========
 
 attach_teardown(globals())

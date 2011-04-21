@@ -1,0 +1,61 @@
+doc_title = "JSON Simplates"
+doc_next = []
+
+{% extends doc.html %}
+{% block doc %}
+
+<p>Aspen has special support for using <a href="/simplates/">simplates</a> to
+generate JSON resources. Files with an extension of <code>.json</code> will be
+specially processed as a JSON simplate.  A JSON simplate only has one or two
+pages. It only has imports and runtime pages; it has no template page. For JSON
+simplates, if you set <code>response.body</code> to something besides a
+<code>str</code> or <code>unicode</code>, then Aspen will automatically call
+<code>json.dumps</code> on <code>response.body</code> for you (or
+<code>simplejson.dumps</code> if <code>simplejson</code> is available but
+<code>json</code> is not). The result will be used as the new
+<code>response.body</code>.</p>
+
+<h4>Example</h4>
+
+<p>Make a <code>greetings.json</code> file with this content:</p>
+
+<pre>import random
+&#94;L
+n = random.choice(range(10))
+extra_excitement = "!" * n 
+response.body = {'Greetings': 'program!' + extra_excitement}</pre>
+
+
+<p>Notice that there is no third page. Now <a
+    href="http://localhost:8080/greetings.json">hit this</a> in your
+browser:</p>
+
+{{ screenshot("json") }}
+
+
+<h3>Configuring Content-Type</h3>
+
+<p>By default Aspen sets <code>Content-Type</code> to
+<code>application/json</code> for JSON simplates. If you would like to use
+something else while preserving special JSON simplate handling, don&rsquo;t use
+the normal <a href="/mime.types/"><code>mime.types</code></a> configuration
+file. Aspen uses the <code>mime.types</code> mapping to determine that a
+simplate is a JSON simplate (actually, anything that you configure to have a
+mimetype of <code>application/json</code> will be treated as a JSON simplate).
+Instead, you should set the <code>json_content_type</code> key in <code><a
+        href="/aspen.conf/">aspen.conf</a></code>, like so:</p>
+
+<pre>[aspen]
+json_content_type: application/javascript</pre>
+
+<p>If you need to bypass special JSON simplate handling altogether, you can use
+<a href="/mime.types/"><code>mime.types</code></a> to set the <code>json</code>
+extension to something besides <code>application/json</code> that browsers will
+still process as JSON:</p>
+
+<pre>application/javascript     json</pre>
+
+
+
+{% end %}
+

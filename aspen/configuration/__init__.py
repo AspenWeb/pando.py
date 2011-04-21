@@ -131,6 +131,14 @@ class Configuration(object):
         for nested in default_filenames:
             self.default_filenames.extend(nested)
 
+
+        # json
+        # ====
+
+        self.json_content_type = conf.aspen.get( 'json_content_type'
+                                               , 'application/json'
+                                                )
+
        
         # hooks
         # =====

@@ -22,6 +22,7 @@ import traceback
 from os.path import join
 
 import diesel
+from aspen import json
 from aspen.http import Response
 from _tornado.template import Loader, Template
 
@@ -85,7 +86,7 @@ def load_uncached(request):
     if mimetype is None:
         mimetype = request.configuration.default_mimetype
    
-    if mimetype.startswith('text/'):
+    if mimetype.startswith('text/') or mimetype == 'application/json':
         pass # TODO Consider exiting early if there are no ^L, , {% or {{ 
              # characters. Is this actually faster?
              # https://github.com/whit537/aspen/issues/1
@@ -98,20 +99,33 @@ def load_uncached(request):
             return (mimetype, None, None, simplate) # static file; exit early
 
     simplate = simplate.replace("^L", PAGE_BREAK)
-
     npage_breaks = simplate.count(PAGE_BREAK)
-    if npage_breaks == 0:
-        script = imports = ""
-        template = simplate
-    elif npage_breaks == 1:
-        imports = ""
-        script, template = simplate.split(PAGE_BREAK)
-    elif npage_breaks == 2:
-        imports, script, template = simplate.split(PAGE_BREAK)
+
+    if mimetype == 'application/json': # special case
+        template = None
+        if npage_breaks == 0:
+            imports = ""
+            script = simplate
+        elif npage_breaks == 1:
+            imports, script = simplate.split(PAGE_BREAK)
+        else:
+            raise SyntaxError( "JSON simplate %s may have at " % request.fs
+                             + "most one page breaks; it has "
+                             , "%d." % npage_breaks
+                              )
     else:
-        raise SyntaxError( "Simplate %s may have at most two " % request.fs
-                         + "page breaks; it has %d." % npage_breaks
-                          )
+        if npage_breaks == 0:
+            script = imports = ""
+            template = simplate
+        elif npage_breaks == 1:
+            imports = ""
+            script, template = simplate.split(PAGE_BREAK)
+        elif npage_breaks == 2:
+            imports, script, template = simplate.split(PAGE_BREAK)
+        else:
+            raise SyntaxError( "Simplate %s may have at most two " % request.fs
+                             + "page breaks; it has %d." % npage_breaks
+                              )
 
 
     # Standardize newlines.
@@ -138,7 +152,7 @@ def load_uncached(request):
     namespace['__file__'] = request.fs
     namespace['website'] = request.website
     script = compile(script, request.fs, 'exec')
-    if template.strip():
+    if template is not None and template.strip():
         template = Template( template
                            , name = request.fs
                            , loader = request.website.loader
@@ -241,10 +255,18 @@ def handle(request, response=None):
         if template is not None:
             response.body = template.generate(**namespace)
 
-
+    
     # Set the mimetype.
     # =================
-    # Note that we guess based on the filesystem path, not the URL path.
+    # We guess based on the filesystem path, not the URL path. Also, we 
+    # special case JSON.
+   
+    if mimetype == 'application/json':
+        if not isinstance(response.body, basestring):
+            response.body = json.dumps(response.body)
+            response.headers.set( 'Content-Type'
+                                , request.configuration.json_content_type
+                                 )
     
     if response.headers.one('Content-Type') is None:
         if mimetype.startswith('text/'):
