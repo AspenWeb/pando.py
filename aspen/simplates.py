@@ -86,8 +86,9 @@ def load_uncached(request):
         mimetype = request.configuration.default_mimetype
    
     if mimetype.startswith('text/'):
-        pass #TODO exit early if there are no ^L, , {% or {{ chars.
-             # But make sure that's actually faster. I have to think it is.
+        pass # TODO Consider exiting early if there are no ^L, , {% or {{ 
+             # characters. Is this actually faster?
+             # https://github.com/whit537/aspen/issues/1
     else:
         s = lambda s: simplate.startswith(s)
         if not (s('#!') or s('"""') or s('import') or s('from')):
