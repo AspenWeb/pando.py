@@ -30,17 +30,6 @@ PAGE_BREAK = chr(12)
 log = logging.getLogger('aspen.simplate')
 
 
-# Ensure some mimetypes.
-# ======================
-# The mimetypes module uses a number of system-dependent resources to compute
-# its guesses. Aspen wants to guarantee the following, apparently. See
-# https://github.com/whit537/aspen/issues/1
-
-for ext in ('py', 'sh'):
-    mimetypes.add_type('text/plain', '.'+ext)
-mimetypes.add_type('image/x-icon', '.ico')
-
-
 class LoadError(StandardError):
     """Represent a problem parsing a simplate.
     """
@@ -92,11 +81,10 @@ def load_uncached(request):
     # passed in by the user as {{ expressions }} will be encoded with UTF-8 by
     # Tornado.
     
-    mimetype = mimetypes.guess_type(request.fs, 'text/plain')[0]
+    mimetype = mimetypes.guess_type(request.fs, strict=False)[0]
     if mimetype is None:
-        mimetype = request.conf.aspen.get('default_mimetype', 'text/plain')
+        mimetype = request.configuration.default_mimetype
    
-    
     if mimetype.startswith('text/'):
         pass #TODO exit early if there are no ^L, , {% or {{ chars.
              # But make sure that's actually faster. I have to think it is.
