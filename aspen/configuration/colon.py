@@ -41,7 +41,7 @@ class ColonizeBadObjectError(ColonizeError): pass
 class ColonizeBadModuleError(ColonizeError): pass
 
 
-def colonize(name, filename, lineno):
+def colonize(name, filename='n/a', lineno=-1):
     """Given a name in colon notation and some error helpers, return an object.
 
     The format of name is a subset of setuptools entry_point format: a

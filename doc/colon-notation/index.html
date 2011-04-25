@@ -16,4 +16,22 @@ notation to specify Python objects.</p>
 <p>The <code>blah</code> attribute of <code>another</code> would then be
 used.</p>
 
+
+<h4>API</h4>
+
+<p>To use colon notation in your own application, import the
+<code>colonize</code> function from <code>aspen.colon</code>. Here is
+it&rsquo;s signature:</p>
+
+<pre>def colonize(name, filename='n/a', lineno=-1):
+    """Given a name in colon notation and some error helpers, return an object.
+    """</pre>
+
+<p>And here&rsquo;s a contrived example of how to use it:</p>
+
+<pre>from aspen.configuration import colon
+
+objdef = "aspen.configuration.colon:colonize"
+colonize = colon.colonize(objdef)</pre>
+
 {% end %}
