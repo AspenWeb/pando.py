@@ -1,5 +1,12 @@
 doc_title = "Colon Notation"
 doc_next = ''
+
+from aspen.configuration import colon
+
+objdef = "aspen.configuration.colon:colonize"
+colonize = colon.colonize(objdef)
+assert colonize == colon.colonize
+
 
 {% extends doc.html %}
 {% block doc %}
@@ -21,7 +28,7 @@ used.</p>
 
 <p>To use colon notation in your own application, import the
 <code>colonize</code> function from <code>aspen.colon</code>. Here is
-it&rsquo;s signature:</p>
+its signature:</p>
 
 <pre>def colonize(name, filename='n/a', lineno=-1):
     """Given a name in colon notation and some error helpers, return an object.
@@ -32,6 +39,8 @@ it&rsquo;s signature:</p>
 <pre>from aspen.configuration import colon
 
 objdef = "aspen.configuration.colon:colonize"
-colonize = colon.colonize(objdef)</pre>
+colonize = colon.colonize(objdef)
+
+assert colonize == colon.colonize</pre>
 
 {% end %}
