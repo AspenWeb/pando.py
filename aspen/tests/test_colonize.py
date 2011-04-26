@@ -1,5 +1,6 @@
 from aspen.configuration.colon import *
 from aspen.tests import assert_raises as _assert_raises
+from aspen.tests.fsfix import attach_teardown
 
 
 def assert_raises(name, Err):
@@ -61,3 +62,6 @@ def test_nested_object_not_there():
     actual = assert_raises('string:digits.duggems', AttributeError).args[0]
     expected = "'str' object has no attribute 'duggems' [filename, line 0]"
     assert actual == expected, actual
+
+
+attach_teardown(globals())

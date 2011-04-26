@@ -2,7 +2,9 @@ from aspen import Response
 from aspen.http.mapping import Mapping
 from aspen.http.request import Request
 from aspen.tests import assert_raises
+from aspen.tests.fsfix import attach_teardown
 from diesel.protocols.http import HttpHeaders, HttpRequest
+
 
 def DieselReq():
     diesel_request = HttpRequest('GET', '/', 'HTTP/1.1')
@@ -65,4 +67,6 @@ def test_is_xhr_is_case_insensitive():
     request = make_request()
     request.headers.set('X-Requested-With', 'xMLhTTPrEQUEST')
     assert request.is_xhr
-    
+
+
+attach_teardown(globals())

@@ -21,7 +21,6 @@ import sys
 import traceback
 from os.path import join
 
-import diesel
 from aspen import json
 from aspen.http import Response
 from _tornado.template import Loader, Template
@@ -155,7 +154,7 @@ def load_uncached(request):
     if template is not None and template.strip():
         template = Template( template
                            , name = request.fs
-                           , loader = request.website.loader
+                           , loader = request.website.template_loader
                            , compress_whitespace = False
                             )
     else:
@@ -264,9 +263,7 @@ def handle(request, response=None):
     if mimetype == 'application/json':
         if not isinstance(response.body, basestring):
             response.body = json.dumps(response.body)
-            response.headers.set( 'Content-Type'
-                                , request.configuration.json_content_type
-                                 )
+            response.headers.set('Content-Type', request.json_content_type)
     
     if response.headers.one('Content-Type') is None:
         if mimetype.startswith('text/'):

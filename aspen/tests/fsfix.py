@@ -1,10 +1,11 @@
+import logging
 import os
 import re
 import sys
 from os.path import dirname, isdir, isfile, join, realpath
 
 import aspen
-from aspen.tests import reset_log_filter, reset_log_format
+import diesel.runtime
 from aspen import simplates
 from nose.tools import with_setup
 
@@ -65,16 +66,15 @@ def rm():
 def teardown():
     """Standard teardown function.
     """
+    os.chdir(dirname(__file__))
     rm()
-    reset_log_filter()
-    reset_log_format()
     simplates.__cache = dict() # The simplate cache is process global. Hrm ...
-    if isfile('log'):
-        os.remove('log')
     if '.aspen' in sys.path[0]:
         sys.path = sys.path[1:]
     if 'foo' in sys.modules:
         del sys.modules['foo']
+    logging.getLogger().handlers = []
+    diesel.runtime.current_app = None
 
 teardown() # start clean
 
