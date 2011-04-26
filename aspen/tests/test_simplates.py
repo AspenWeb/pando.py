@@ -1,24 +1,24 @@
 from os.path import join
 from textwrap import dedent
 
+import dingus
+from aspen.configuration import Configurable
 from aspen.http import Response
 from aspen.simplates import handle, load_uncached 
 from aspen.tests import assert_raises
 from aspen.tests.fsfix import attach_teardown, mk
 from aspen._tornado.template import Template, Loader
-from aspen.website import Website
-from aspen.configuration import Configuration
 
 
 class StubRequest(object):
     def __init__(self, fs):
         """Takes a path under ./fsfix to a simplate.
         """
-        self.root = join('.', 'fsfix')
-        self.fs = join('.', 'fsfix', fs)
+        self.fs = fs
+        self.website = dingus.Dingus()
+        c = Configurable.from_argv(['fsfix'])
+        c.copy_configuration_to(self)
         self.namespace = {}
-        self.website = Website(Configuration(['fsfix']))
-        self.configuration = self.website.configuration
 
 def Simplate(fs):
     return load_uncached(StubRequest(fs))
@@ -151,8 +151,8 @@ def test_raise_response_works():
 def test_website_is_in_namespace():
     expected = "\nIt worked."
     actual = check("""\
-from aspen.website import Website
-assert isinstance(website, Website), website
+from dingus import Dingus
+assert isinstance(website, Dingus), website
 
 
 It worked.""")

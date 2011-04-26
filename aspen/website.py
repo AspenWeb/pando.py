@@ -7,26 +7,42 @@ import traceback
 import urlparse
 from os.path import join, isfile
 
-from aspen import gauntlet, simplates
+from aspen import http, gauntlet, simplates
 from aspen.http.request import Request
 from aspen.http.response import Response
+from aspen.configuration import Configurable
+from diesel import Application, Loop, Service
 
 
 log = logging.getLogger('aspen.website')
 
 
-class Website(object):
+class Website(Application, Configurable):
     """Represent a website.
     """
 
-    def __init__(self, configuration):
-        self.configuration = configuration
-        self.conf = configuration.conf
-        self.opts = self.conf.aspen
-        self.root = configuration.root
-        self.hooks = configuration.hooks
-        self.loader = configuration.loader
-        self.show_tracebacks = self.opts.no('show_tracebacks')
+    def __init__(self, argv=None):
+        """Takes an argv list.
+        """
+        self.configure(argv)
+        Application.__init__(self)
+        self.run_hook('startup')
+    
+    def run(self):
+        """Extend diesel to lazily initialize the Application.
+        """
+        self.add_service(Service(http.HttpServer(self), self.port))
+        Application.run(self)
+
+    def run_hook(self, name):
+        self.hooks.run(name, self)
+
+    def add_loop(self, loop):
+        """Extend diesel to take non-Loops.
+        """
+        if not isinstance(loop, Loop):
+            loop = Loop(loop)
+        Application.add_loop(self, loop)
 
     def __call__(self, diesel_request):
         """Given a Diesel request, return a Diesel response.
@@ -40,13 +56,11 @@ class Website(object):
         """
         try:
             try:
-                request.configuration = self.configuration
-                request.conf = self.configuration.conf
-                request.root = self.configuration.root
+                self.copy_configuration_to(request)
                 request.website = self
-                request = self.hooks.run('inbound_early', request)
+                self.hooks.run('inbound_early', request)
                 request.fs = self.translate(request)
-                request = self.hooks.run('inbound_late', request)
+                self.hooks.run('inbound_late', request)
                 response = simplates.handle(request)
             except:
                 response = self.handle_error_nicely(request)
@@ -142,7 +156,7 @@ class Website(object):
         gauntlet.trailing_slash(request)
         gauntlet.index(request)
         gauntlet.autoindex( request
-                          , self.opts.no('list_directories')
+                          , self.conf.aspen.no('list_directories')
                           , self.ours_or_theirs('autoindex.html')
                            )
         gauntlet.socket_files(request)

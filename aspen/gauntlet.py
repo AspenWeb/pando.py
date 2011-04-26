@@ -118,7 +118,7 @@ def trailing_slash(request):
 
 def index(request):
     if isdir(request.fs):
-        for filename in request.configuration.default_filenames:
+        for filename in request.default_filenames:
             index = join(request.fs, filename)
             if isfile(index):
                 request.fs = index

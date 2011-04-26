@@ -1,12 +1,11 @@
 import errno
-import logging
 import os
 import sys
 import time
 import urllib
 from os.path import join
 
-from aspen.configuration import Configuration
+import diesel.runtime
 from aspen.http.request import Request
 from aspen.website import Website
 from diesel.protocols.http import HttpHeaders, HttpRequest
@@ -18,80 +17,12 @@ def DieselReq(path='/'):
     diesel_request.headers = HttpHeaders(Host='localhost') # else 400 in hydrate
     return diesel_request
 
-def handle(path):
-    website = Website(Configuration(['fsfix']))
+def handle(path='/'):
+    website = Website(['fsfix'])
     request = Request.from_diesel(DieselReq(path))
     request.website = website
-    return website.handle(request)
-
-
-
-# Logging
-# =======
-# We keep one root log handler around during testing, it logs unbuffered to 
-# stdout. By default for all tests it only outputs messages filtered with 
-# 'aspen.tests'; you can use the `log' logger for that.
-#
-# If your test needs to check log output from another subsystem, call the 
-# filter() method during setup. All logging is reset on teardown.
-
-TEST_SUBSYSTEM = 'aspen.tests'
-LOG = os.path.realpath('log')
-
-def set_log_filter(filter):
-    """Change the logging subsystem filter.
-    """
-    root = logging.getLogger()
-    handler = root.handlers[0]
-    filter = logging.Filter(filter)
-    handler.filters = [filter]
-
-def reset_log_filter():
-    root = logging.getLogger()
-    handler = root.handlers[0]
-    for filter in handler.filters:
-        handler.removeFilter(filter)
-    set_log_filter(TEST_SUBSYSTEM)
-
-
-def set_log_format(format):
-    """Change the logging format.
-    """
-    root = logging.getLogger()
-    handler = root.handlers[0]
-    formatter = logging.Formatter(format)
-    handler.setFormatter(formatter)
-
-def reset_log_format():
-    set_log_format("%(message)s")
-
-
-log = logging.getLogger(TEST_SUBSYSTEM)
-
-
-class FlushingStreamHandler(logging.StreamHandler):
-    def emit(self, record):
-        logging.StreamHandler.emit(self, record)
-        self.flush()
-
-def configure_logging():
-    """Using the logging subsystem, send messages from 'aspen.tests' to ./log.
-    """
-#    logging.raiseExceptions = False
-#    logging.shutdown() # @@: triggers
-#    logging.raiseExceptions = True 
-
-    fp = open(LOG, 'a') # log is truncated in teardown func in fsfix.py
-    handler = FlushingStreamHandler(fp)
-    handler.setLevel(0)     # everything
-
-    root = logging.getLogger()
-    root.setLevel(0) # everything, still
-    root.handlers = [handler]
-
-    set_log_filter(TEST_SUBSYSTEM)
-
-configure_logging()
+    response = website.handle(request)
+    return response
 
 
 # Asserters

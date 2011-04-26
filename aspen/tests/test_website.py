@@ -1,29 +1,20 @@
 import os
 from os.path import join
 
+import diesel.runtime
 from aspen._tornado.template import Loader
-from aspen.configuration import Configuration
 from aspen.http.request import Request
-from aspen.tests import DieselReq
+from aspen.tests import handle, DieselReq
 from aspen.tests.fsfix import attach_teardown, mk
 from aspen.website import Website
 from diesel.protocols.http import HttpHeaders, HttpRequest
-
-
-# Fixture
-# =======
-
-def check():
-    website = Website(Configuration(['fsfix']))
-    response = website.handle(Request.from_diesel(DieselReq()))
-    return response
 
 
 # Tests
 # =====
 
 def test_basic():
-    website = Website(Configuration([]))
+    website = Website([])
     expected = os.getcwd()
     actual = website.root
     assert actual == expected, actual
@@ -37,38 +28,38 @@ Content-Type: text/html; charset=UTF-8
 
 Greetings, program!
 """.splitlines())
-    actual = check()._to_http('1.1')
+    actual = handle()._to_http('1.1')
     assert actual == expected, actual
 
 def test_fatal_error_response_is_returned():
     mk(('index.html', "raise heck"))
     expected = 500
-    actual = check().code
+    actual = handle().code
     assert actual == expected, actual
 
 def test_nice_error_response_is_returned():
     mk(('index.html', "from aspen import Responseraise Response(500)"))
     expected = 500
-    actual = check().code
+    actual = handle().code
     assert actual == expected, actual
 
 def test_nice_error_response_is_returned_for_404():
     mk(('index.html', "from aspen import Responseraise Response(404)"))
     expected = 404 
-    actual = check().code
+    actual = handle().code
     assert actual == expected, actual
 
 def test_autoindex_response_is_404_by_default():
     mk(('README', "Greetings, program!"))
     expected = 404
-    actual = check().code
+    actual = handle().code
     assert actual == expected, actual
 
 def test_autoindex_response_is_returned():
     mk(('.aspen/aspen.conf', '[aspen]\nlist_directories: 1')
        , ('README', "Greetings, program!"))
     expected = True
-    actual = 'README' in check().body
+    actual = 'README' in handle().body
     assert actual == expected, actual
 
 def test_simplates_can_import_from_dot_aspen():
@@ -77,7 +68,7 @@ def test_simplates_can_import_from_dot_aspen():
       , ('index.html', "import fooGreetings, {{ foo.bar }}!")
        )
     expected = "Greetings, baz!"
-    actual = check().body
+    actual = handle().body
     assert actual == expected, actual
 
 
@@ -94,8 +85,8 @@ def bar(response):
        )
 
     # Intentionally break the website object so as to trigger a double failure.
-    website = Website(Configuration(['fsfix']))
-    del website.loader
+    website = Website(['fsfix'])
+    del website.template_loader
 
     response = website.handle(Request.from_diesel(DieselReq()))
 

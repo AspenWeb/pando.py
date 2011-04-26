@@ -1,11 +1,11 @@
 import os
-from os.path import join, realpath
+from os.path import dirname, join, realpath
 
 from aspen import gauntlet, Response
 from aspen.tests import assert_raises, handle
 from aspen.tests.fsfix import attach_teardown, mk
 from aspen.http.request import Path
-from aspen.configuration import Configuration
+from aspen.configuration import Configurable
 
 
 # Helpers 
@@ -14,8 +14,8 @@ from aspen.configuration import Configuration
 class StubRequest:
     def __init__(self, path):
         self.path = Path(path)
-        self.configuration = Configuration(['fsfix'])
-        self.root = self.configuration.root
+        c = Configurable.from_argv(['fsfix'])
+        c.copy_configuration_to(self)
 
 def expect(path):
     """Given a relative path, return an absolute path.
@@ -24,7 +24,7 @@ def expect(path):
     native form, with symlinks removed.
 
     """
-    path = os.sep.join(['fsfix'] + path.split('/'))
+    path = os.sep.join([dirname(__file__), 'fsfix'] + path.split('/'))
     return realpath(path)
 
 

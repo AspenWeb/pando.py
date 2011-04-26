@@ -61,11 +61,10 @@ def check_all():
 def startup(website):
     # This is not ideal. See http://sync.in/aspen-reloading
 
-    if not website.configuration.conf.aspen.no('changes_kill'):
+    if not website.changes_kill:
         return 
 
-    dotaspen = join(website.configuration.root, '.aspen')
-    for root, dirs, files in os.walk(dotaspen):
+    for root, dirs, files in os.walk(website.dotaspen):
         for filename in files:
             add(join(root, filename))
 
@@ -73,4 +72,4 @@ def startup(website):
         while True:
             check_all()
             diesel.sleep(0.5)
-    website.configuration.app.add_loop(diesel.Loop(loop))
+    website.add_loop(loop)
