@@ -22,7 +22,7 @@ class Website(Application, Configurable):
     """
 
     def __init__(self, argv=None):
-        """Takes an argv list.
+        """Takes an argv list, without the initial executable name.
         """
         self.configure(argv)
         Application.__init__(self)

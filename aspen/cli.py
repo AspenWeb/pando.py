@@ -15,7 +15,7 @@ def main(argv=None):
     """
     try:
         if argv is None:
-            argv = sys.argv
+            argv = sys.argv[1:]
         website = Website(argv)
         log.warn("Greetings, program! Welcome to port %d." % website.port)
         website.run()

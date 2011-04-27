@@ -51,6 +51,16 @@ def mk(*treedef, **kw):
     if configure is True:
         aspen.configure(['--root', root])
 
+def expect(path=''):
+    """Given a relative path, return an absolute path.
+
+    The incoming path is in UNIX form (/foo/bar.html). The outgoing path is in 
+    native form, with symlinks removed.
+
+    """
+    path = os.sep.join([dirname(__file__), 'fsfix'] + path.split('/'))
+    return realpath(path)
+
 def rm():
     """Remove the filesystem fixture at fsfix/.
     """
