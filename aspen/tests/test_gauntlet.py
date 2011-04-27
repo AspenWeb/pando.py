@@ -3,7 +3,7 @@ from os.path import dirname, join, realpath
 
 from aspen import gauntlet, Response
 from aspen.tests import assert_raises, handle
-from aspen.tests.fsfix import attach_teardown, mk
+from aspen.tests.fsfix import attach_teardown, expect, mk
 from aspen.http.request import Path
 from aspen.configuration import Configurable
 
@@ -16,16 +16,6 @@ class StubRequest:
         self.path = Path(path)
         c = Configurable.from_argv(['fsfix'])
         c.copy_configuration_to(self)
-
-def expect(path):
-    """Given a relative path, return an absolute path.
-
-    The incoming path is in UNIX form (/foo/bar.html). The outgoing path is in 
-    native form, with symlinks removed.
-
-    """
-    path = os.sep.join([dirname(__file__), 'fsfix'] + path.split('/'))
-    return realpath(path)
 
 
 # Indices

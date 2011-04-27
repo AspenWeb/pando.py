@@ -21,6 +21,9 @@ class Configurable(object):
 
     def configure(self, argv):
         """Takes an argv list, and gives it straight to optparser.parse_args.
+
+        The argv list should not include the executable name.
+
         """
 
         self.__names = [] # keep track of what configuration we configure
@@ -84,6 +87,8 @@ class Configurable(object):
         return o
 
     def copy_configuration_to(self, other):
+        """Given another object, shallow copy attributes to it.
+        """
         for name in self.__names:
             setattr(other, name, getattr(self, name))
 
