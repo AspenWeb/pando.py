@@ -77,30 +77,60 @@ def load_uncached(request):
 
     simplate = open(request.fs).read()
     
-    # We work with simplate exclusively as a bytestring. Any unicode objects
+    # We work with simplates exclusively as a bytestring. Any unicode objects
     # passed in by the user as {{ expressions }} will be encoded with UTF-8 by
     # Tornado.
     
     mimetype = mimetypes.guess_type(request.fs, strict=False)[0]
     if mimetype is None:
         mimetype = request.configuration.default_mimetype
-   
+  
+
+    # Try to exit early.
+    # ==================
+    # For non-simplates we want to return None for the first two pages, to
+    # avoid those execs during request handling (this is an optimization).
+
+    is_simplate = True # guilty until proven innocent
+
     if mimetype.startswith('text/') or mimetype == 'application/json':
-        pass # TODO Consider exiting early if there are no ^L, , {% or {{ 
-             # characters. Is this actually faster?
-             # https://github.com/whit537/aspen/issues/1
+
+        # For text formats we can perform a highly accurate test for
+        # simplitude.
+
+        c = lambda s: s in simplate
+        is_simplate = c("") or c("^L") or c("{%") or c("{{")
+
     else:
+
+        # For binary formats we must rely on a less-accurate test. This is
+        # because a binary file can have s in it without being a simplate--
+        # and I've actually seen, in the wild, a file with exactly two s. So
+        # we sniff the first few bytes.
+
         s = lambda s: simplate.startswith(s)
-        if not (s('#!') or s('"""') or s('import') or s('from')):
-            # I tried checking for 1 or 2 form feeds, but found a binary file
-            # in the wild that indeed had exactly two. And now we may have
-            # caret-L instead, anyway. Let's try sniffing the first few bytes.
-            return (mimetype, None, None, simplate) # static file; exit early
+        is_simplate = s('"""') or s('import') or s('from')
+           
+
+    if not is_simplate:
+        # Static files have no Python pages.
+        return (mimetype, None, None, simplate) 
+    
+
+    # Parse as a simplate.
+    # ====================
 
     simplate = simplate.replace("^L", PAGE_BREAK)
     npage_breaks = simplate.count(PAGE_BREAK)
 
-    if mimetype == 'application/json': # special case
+    if mimetype == 'application/json': # see: http://aspen.io/simplates/json/
+        if json is None:
+            raise LoadError("Neither json nor simplejson was found. Try "
+                            "installing simplejson to use dynamic JSON "
+                            "simplates. See "
+                            "http://aspen.io/simplates/json/#libraries for "
+                            "more information.")
+
         template = None
         if npage_breaks == 0:
             imports = ""
@@ -110,7 +140,7 @@ def load_uncached(request):
         else:
             raise SyntaxError( "JSON simplate %s may have at " % request.fs
                              + "most one page breaks; it has "
-                             , "%d." % npage_breaks
+                             + "%d." % npage_breaks
                               )
     else:
         if npage_breaks == 0:
@@ -261,9 +291,13 @@ def handle(request, response=None):
     # special case JSON.
    
     if mimetype == 'application/json':
-        if not isinstance(response.body, basestring):
-            response.body = json.dumps(response.body)
-            response.headers.set('Content-Type', request.json_content_type)
+        if template is None:                # dynamic
+            if not isinstance(response.body, basestring):
+                # json.dumps is guaranteed to exist here.
+                response.body = json.dumps(response.body)
+        else:                               # static
+            pass
+        response.headers.set('Content-Type', request.json_content_type)
     
     if response.headers.one('Content-Type') is None:
         if mimetype.startswith('text/'):

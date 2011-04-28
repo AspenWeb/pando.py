@@ -5,15 +5,33 @@ doc_next = []
 {% block doc %}
 
 <p>Aspen has special support for using <a href="/simplates/">simplates</a> to
-generate JSON resources. Files with an extension of <code>.json</code> will be
-specially processed as a JSON simplate.  A JSON simplate only has one or two
-pages. It only has imports and runtime pages; it has no template page. For JSON
-simplates, if you set <code>response.body</code> to something besides a
-<code>str</code> or <code>unicode</code>, then Aspen will automatically call
-<code>json.dumps</code> on <code>response.body</code> for you (or
-<code>simplejson.dumps</code> if <code>simplejson</code> is available but
-<code>json</code> is not). The result will be used as the new
+serve JSON resources. Files with an extension of <code>.json</code> will be
+specially processed as a JSON simplate. While normal simplates can have up to
+three pages, a JSON simplate only has one or two pages (you&rsquo;ll get a
+<code>LoadError</code> if there is more than one <a href="/page-break/">page
+    break</a> in a JSON simplate).<p>
+
+
+<h3>Static</h3>
+
+<p>A <b>static</b> JSON simplate has only one page (i.e., it has no page breaks
+at all). It is served as a static file, and it&rsquo;s up to you to make sure
+that it is <a href="http://json.org/">valid JSON</a> (only double quotes,
+etc.).</p>
+
+
+<h3>Dynamic</h3>
+
+<p>A <b>dynamic</b> JSON simplate has two pages (one page break). The first is
+a startup Python page, and the second is a request-time Python page. There is
+never a template page for a JSON simplate.</p>
+
+<p>For dynamic JSON simplates, if you set <code>response.body</code> in the
+second page to something besides a <code>str</code> or <code>unicode</code>,
+then Aspen will automatically call <code>json.dumps</code> on
+<code>response.body</code> for you. The result will be used as the new
 <code>response.body</code>.</p>
+
 
 <h4>Example</h4>
 
@@ -40,9 +58,10 @@ browser:</p>
 something else while preserving special JSON simplate handling, don&rsquo;t use
 the normal <a href="/mime.types/"><code>mime.types</code></a> configuration
 file. Aspen uses the <code>mime.types</code> mapping to determine that a
-simplate is a JSON simplate (actually, anything that you configure to have a
-mimetype of <code>application/json</code> will be treated as a JSON simplate).
-Instead, you should set the <code>json_content_type</code> key in <code><a
+simplate is a JSON simplate (actually, any file with an extension that you
+configure to have a mimetype of <code>application/json</code> will be treated
+as a JSON simplate).  Instead, you should set the
+<code>json_content_type</code> key in <code><a
         href="/aspen.conf/">aspen.conf</a></code>, like so:</p>
 
 <pre>[aspen]
@@ -55,6 +74,20 @@ still process as JSON:</p>
 
 <pre>application/javascript     json</pre>
 
+<p>This behavior holds true for both static and dynamic JSON simplates.</p>
+
+
+<a name="libraries"></a>
+<h3>Supported JSON Libraries</h3>
+
+<p>Aspen will try to use <code>simplejson</code> if <code>json</code> is
+unavailable. <a
+    href="http://docs.python.org/library/json.html"><code>json</code></a> was
+added to the standard library in Python 2.6, so if you are using an older
+Python than that, you need to manually install <a
+    href="http://pypi.python.org/pypi/simplejson/"><code>simplejson</code></a>
+in order to take advantage of dynamic JSON simplates. Static JSON simplates
+will still work without a JSON library.</p>
 
 
 {% end %}
