@@ -32,6 +32,22 @@ then Aspen will automatically call <code>json.dumps</code> on
 <code>response.body</code> for you. The result will be used as the new
 <code>response.body</code>.</p>
 
+<p>Aspen will serialize instances of the following types.  Instances of any
+other type will raise <code>TypeError</code>, so be sure to pre-process your
+output if it contains anything else.</p>
+
+<ul>
+    <li><code>bool</code></li>
+    <li><code>complex</code> (serialized to two floats, [real, imaginary])</li>
+    <li><code>datetime.datetime</code> (serialized to <a href="http://en.wikipedia.org/wiki/ISO_8601">ISO 8601</a>)</li>
+    <li><code>float</code></li>
+    <li><code>int</code></li>
+    <li><code>long</code></li>
+    <li><code>None</code></li>
+    <li><code>str</code></li>
+    <li><code>unicode</code></li>
+</ul>
+
 
 <h4>Example</h4>
 

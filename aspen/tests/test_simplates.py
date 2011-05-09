@@ -218,6 +218,30 @@ def test_json_doesnt_handle_non_ascii_bytestrings():
                  , filename="foo.json"
                   )
 
+def test_json_handles_datetime():
+    expected = '{"timestamp": "2011-05-09T00:00:00"}'
+    actual = check( "import datetime"
+                  + ""
+                  + "response.body = { 'timestamp'"
+                  + "                : datetime.datetime(2011, 5, 9, 0, 0)}"
+                  , filename="foo.json"
+                   )
+    assert actual == expected, actual
+
+def test_json_handles_complex():
+    expected = '{"complex": [1.0, 2.0]}'
+    actual = check( "response.body = {'complex': complex(1,2)}"
+                  , filename="foo.json"
+                   )
+    assert actual == expected, actual
+
+def test_json_raises_TypeError_on_unknown_types():
+    assert_raises( TypeError
+                 , check
+                 , "class Foo: passresponse.body = Foo()"
+                 , filename="foo.json"
+                  )
+
 
 # Teardown
 # ========
