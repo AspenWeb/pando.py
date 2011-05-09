@@ -13,6 +13,7 @@ Problems with tornado.template:
     - no loop counters, eh? must do it manually with {% set %}
 
 """
+import datetime
 import logging
 import mimetypes
 import os
@@ -33,6 +34,21 @@ log = logging.getLogger('aspen.simplate')
 class LoadError(StandardError):
     """Represent a problem parsing a simplate.
     """
+
+class FriendlyEncoder(json.JSONEncoder):
+    """Add support for additional types to the default JSON encoder.
+    """
+
+    def default(self, obj):
+        if isinstance(obj, complex):
+            # http://docs.python.org/library/json.html
+            out = [obj.real, obj.imag]
+        elif isinstance(obj, datetime.datetime):
+            # http://stackoverflow.com/questions/455580/
+            out = obj.isoformat()
+        else:
+            out = json.JSONEncoder.default(self, obj)
+        return out
 
 
 # Cache helpers
@@ -294,7 +310,9 @@ def handle(request, response=None):
         if template is None:                # dynamic
             if not isinstance(response.body, basestring):
                 # json.dumps is guaranteed to exist here.
-                response.body = json.dumps(response.body)
+                response.body = json.dumps( response.body
+                                          , cls=FriendlyEncoder
+                                           )
         else:                               # static
             pass
         response.headers.set('Content-Type', request.json_content_type)
