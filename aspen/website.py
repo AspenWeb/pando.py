@@ -12,16 +12,9 @@ from aspen.http.request import Request
 from aspen.http.response import Response
 from aspen.configuration import Configurable
 
-import eventlet
-import eventlet.wsgi
-
 
 log = logging.getLogger('aspen.website')
 
-
-class DevNull:
-    def write(self, msg):
-        pass
 
 class Website(Configurable):
     """Represent a website.
@@ -31,6 +24,7 @@ class Website(Configurable):
         """Takes an argv list, without the initial executable name.
         """
         self.configure(argv)
+        log.warn("Aspen website loaded from %s." % self.root)
         self.run_hook('startup')
     
     def __call__(self, environ, start_response):
@@ -40,15 +34,8 @@ class Website(Configurable):
         response = self.handle(request)
         return response(environ, start_response)
 
-    def serve(self):
-        """Serve this website forever.
-        """
-        self.sock = eventlet.listen(('', self.port))
-        log.warn("Greetings, program! Welcome to port %d." % self.port)
-        eventlet.wsgi.server(self.sock, self, log=DevNull())
-
     def shutdown(self):
-        log.warn("Shutting down website.")
+        log.warn("Shutting down Aspen website.")
         self.run_hook('shutdown')
 
     def run_hook(self, name):

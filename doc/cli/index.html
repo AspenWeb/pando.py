@@ -9,9 +9,14 @@ doc_next = ''
     DD { padding-bottom: 1em; }
 </style>
 
-<p>If given no arguments or options, <code>aspen</code> will start serving a
-website from the current directory on port 8080, based on configuration files
-in <code>./.aspen/</code>, logging to <code>stdout</code>.</p>
+<p>You can serve Aspen websites with <a href="/servers/">any WSGI server</a>,
+and Aspen also bundles a production-quality server of its own. It&rsquo;s
+called ... <code>aspen</code>! If given no arguments or options,
+<code>aspen</code> will start serving a website from the current directory on
+port 8080, based on configuration files in <code>./.aspen/</code>, logging to
+<code>stdout</code>.  If you don&rsquo;t have the <a
+    href="http://eventlet.net/">Eventlet</a> library, you will be prompted to
+install it when you first run <code>aspen</code>.</p>
 
 <h3>Usage</h3>
 

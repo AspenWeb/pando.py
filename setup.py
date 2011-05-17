@@ -20,10 +20,10 @@ classifiers = [ 'Development Status :: 4 - Beta'
 setup( author = 'Chad Whitacre'
      , author_email = 'chad@zetaweb.com'
      , classifiers = classifiers
-     , description = ('Aspen is a Python web server. '
+     , description = ('Aspen is a Python web framework. '
                       'Simplates are the main attraction.')
-     , entry_points = { 'console_scripts': [ 'aspen = aspen.cli:main'
-                                           , 'thrash = aspen.cli:thrash'
+     , entry_points = { 'console_scripts': [ 'aspen = aspen.server:main'
+                                           , 'thrash = aspen:thrash'
                                             ] }
      , name = 'aspen'
      , packages = find_packages(exclude=[ 'aspen.socket_io'     # not ready for
@@ -34,7 +34,6 @@ setup( author = 'Chad Whitacre'
      , url = 'http://aspen.io/'
      , version = version
      , zip_safe = False
-     #, install_requires = ['diesel == 2.0.0']
      , package_data = {'aspen': [ 'www/*'
                                 , 'configuration/hooks.conf'
                                 , 'configuration/mime.types'

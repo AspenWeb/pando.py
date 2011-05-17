@@ -63,12 +63,13 @@ class Configurable(object):
         self.__names.extend(['default_mimetype', 'default_filenames', 
             'json_content_type'])
 
-        self.changes_kill = self.conf.aspen.no('changes_kill')
-        self.show_tracebacks = self.conf.aspen.no('show_tracebacks')
-        self.__names.extend(['changes_kill', 'show_tracebacks'])
-
         self.hooks = load_hooks(expanduser, dotaspen)
         self.__names.append('hooks')
+
+        cli_conf = self.conf['aspen.cli']
+        self.changes_kill = cli_conf.no('changes_kill')
+        self.show_tracebacks = cli_conf.no('show_tracebacks')
+        self.__names.extend(['changes_kill', 'show_tracebacks'])
 
         self.address, self.sockfam = load_address_sockfam(opts, self.conf)
         self.port = load_port(self.address, self.sockfam)
@@ -161,8 +162,8 @@ def load_address_sockfam(opts, conf):
     if getattr(opts, 'have_address', False):        # first check CLI
         address = opts.address
         sockfam = opts.sockfam
-    elif 'address' in conf.main:                    # then check conf
-        address, sockfam = validate_address(conf.main['address'])
+    elif 'address' in conf['aspen.cli']:            # then check conf
+        address, sockfam = validate_address(conf['aspen.cli']['address'])
     else:                                           # default from optparse
         address = opts.address
         sockfam = socket.AF_INET
