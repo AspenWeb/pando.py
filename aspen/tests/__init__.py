@@ -5,21 +5,54 @@ import time
 import urllib
 from os.path import join
 
-import diesel.runtime
+from aspen.configuration import Configurable
 from aspen.http.request import Request
 from aspen.website import Website
-from diesel.protocols.http import HttpHeaders, HttpRequest
 from aspen._tornado.template import Loader
 
 
-def DieselReq(path='/'):
-    diesel_request = HttpRequest('GET', path, 'HTTP/1.1')
-    diesel_request.headers = HttpHeaders(Host='localhost') # else 400 in hydrate
-    return diesel_request
+class Stub:
+    pass
+
+class StubBody:
+    def read(self):
+        return ''
+
+def StubWSGIRequest(path='/'):
+    environ = {}
+    environ['PATH_INFO'] = path
+    environ['REMOTE_ADDR'] = '0.0.0.0'
+    environ['REQUEST_METHOD'] = 'GET'
+    environ['SERVER_PROTOCOL'] = 'HTTP/1.1'
+    environ['HTTP_HOST'] = 'localhost'
+    environ['wsgi.input'] = StubBody()
+    return environ
+
+class StubRequest:
+    
+    def __call__(cls, path='/'):
+        return Request.from_wsgi(StubWSGIRequest(path))
+
+    @classmethod
+    def from_fs(cls, fs):
+        """Takes a path under ./fsfix using / as the path separator.
+        """
+        fs = os.sep.join(fs.split('/'))
+        request = Request.from_wsgi(StubWSGIRequest(fs))
+        c = Configurable.from_argv(['fsfix'])
+        c.copy_configuration_to(request)
+        request.fs = fs
+        request.namespace = {}
+        request.website = Stub()
+        request.website.template_loader = Stub()
+        return request
+
+StubRequest = StubRequest()
+
 
 def handle(path='/'):
     website = Website(['fsfix'])
-    request = Request.from_diesel(DieselReq(path))
+    request = StubRequest(path)
     request.website = website
     response = website.handle(request)
     return response

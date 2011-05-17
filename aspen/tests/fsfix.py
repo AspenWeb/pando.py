@@ -5,7 +5,6 @@ import sys
 from os.path import dirname, isdir, isfile, join, realpath
 
 import aspen
-import diesel.runtime
 from aspen import simplates
 from nose.tools import with_setup
 
@@ -84,7 +83,6 @@ def teardown():
     if 'foo' in sys.modules:
         del sys.modules['foo']
     logging.getLogger().handlers = []
-    diesel.runtime.current_app = None
 
 teardown() # start clean
 
