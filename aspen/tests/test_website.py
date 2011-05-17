@@ -1,13 +1,11 @@
 import os
 from os.path import join
 
-import diesel.runtime
 from aspen._tornado.template import Loader
 from aspen.http.request import Request
-from aspen.tests import handle, DieselReq
+from aspen.tests import handle, StubRequest
 from aspen.tests.fsfix import attach_teardown, mk
 from aspen.website import Website
-from diesel.protocols.http import HttpHeaders, HttpRequest
 
 
 # Tests
@@ -88,7 +86,7 @@ def bar(response):
     website = Website(['fsfix'])
     del website.template_loader
 
-    response = website.handle(Request.from_diesel(DieselReq()))
+    response = website.handle(StubRequest())
 
     expected = 500
     actual = response.code

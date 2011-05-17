@@ -1,31 +1,20 @@
 from os.path import join
 from textwrap import dedent
 
-import dingus
+from aspen import Response
 from aspen.configuration import Configurable
-from aspen.http import Response
 from aspen.simplates import handle, load_uncached, LoadError
-from aspen.tests import assert_raises
+from aspen.tests import assert_raises, StubRequest
 from aspen.tests.fsfix import attach_teardown, mk
 from aspen._tornado.template import Template, Loader
 
 
-class StubRequest(object):
-    def __init__(self, fs):
-        """Takes a path under ./fsfix to a simplate.
-        """
-        self.fs = fs
-        self.website = dingus.Dingus()
-        c = Configurable.from_argv(['fsfix'])
-        c.copy_configuration_to(self)
-        self.namespace = {}
-
 def Simplate(fs):
-    return load_uncached(StubRequest(fs))
+    return load_uncached(StubRequest.from_fs(fs))
 
 def check(content, filename="index.html", body=True, aspenconf=""):
     mk(('.aspen/aspen.conf', aspenconf), (filename, content))
-    request = StubRequest(filename)
+    request = StubRequest.from_fs(filename)
     response = Response()
     handle(request, response)
     if body:
@@ -47,7 +36,7 @@ def test_barely_working():
 
 def test_handle_barely_working():
     mk(('index.html', "Greetings, program!"))
-    request = StubRequest('index.html')
+    request = StubRequest.from_fs('index.html')
     response = Response()
     handle(request, response)
     
@@ -151,8 +140,7 @@ def test_raise_response_works():
 def test_website_is_in_namespace():
     expected = "\nIt worked."
     actual = check("""\
-from dingus import Dingus
-assert isinstance(website, Dingus), website
+assert website.__class__.__name__ == 'Stub', website
 
 
 It worked.""")

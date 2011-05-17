@@ -46,6 +46,8 @@ class Response(Exception):
 
     def __call__(self, environ, start_response):
         wsgi_status = str(self)
+        for morsel in self.cookie.values():
+            self.headers.add('Set-Cookie', morsel.OutputString())
         wsgi_headers = []
         for k, vals in self.headers._dict.items():
             for v in vals:
@@ -62,14 +64,9 @@ class Response(Exception):
     def _status(self):
         return status_strings.get(self.code, 'Unknown HTTP status')
 
-    def _to_wsgi(self):
-        """WSGI
-        """
-        for morsel in self.cookie.values():
-            self.headers.add('Set-Cookie', morsel.OutputString())
-        self.headers._diesel_headers._headers = self.headers._dict
-
     def _to_http(self, version):
+        """Given a version string like 1.1, return an HTTP message, a string.
+        """
         status_line = "HTTP/%s" % version
         headers = self.headers.to_http()
         body = self.body

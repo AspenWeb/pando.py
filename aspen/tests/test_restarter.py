@@ -1,10 +1,12 @@
-import dingus
 from aspen import restarter
 from aspen.tests.fsfix import attach_teardown
 
+class Foo:
+    pass
 
 def test_startup_basically_works():
-    website = dingus.Dingus()
+    website = Foo()
+    website.changes_kill = True
     website.dotaspen = 'bar'
     website.root = 'foo'
     restarter.startup(website)

@@ -68,22 +68,6 @@ class Request(object):
         self.hydrate()
         return self
 
-    @classmethod
-    def from_diesel(cls, request):
-        """Set primitives from a diesel request.
-        """
-        self = cls()
-        self._diesel_request = request
-        self.method = request.method
-        self.version = request.version
-        self.raw_headers = request.headers and request.headers.format() or ''
-        self.raw_body = request.body and request.body or ''
-        self.remote_addr = request.remote_addr and request.remote_addr or ''
-        self.raw_url = request.url
-
-        self.hydrate()
-        return self
-
     def __str__(self):
         return "<%s %s>" % (self.method, self.path)
     __repr__ = __str__
