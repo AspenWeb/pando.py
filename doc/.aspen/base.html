@@ -2,9 +2,9 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"> 
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
     <head>
-        <title>Aspen: Python Web Server with Simplates</title>
+        <title>Aspen: Python Web Framework with Simplates</title>
         <style>
-            @import url("/_lib/aspen.4.css");
+            @import url("/_lib/aspen.5.css");
             @import url("/_lib/syntaxhighlighter_3.0.83/styles/shCore.css");
             @import url("/_lib/shTheme.css");
         </style>
@@ -22,7 +22,7 @@
         <div id="body">
             <div id="definition">
 
-                <h1><a href="/">Aspen</a></h1> is a Python web server.<br />
+                <h1><a href="/">Aspen</a></h1> is a Python web framework.<br />
                 <i><a href="/simplates/">Simplates</a></i> are 
                         the main attraction.
 
@@ -32,7 +32,9 @@
                 &copy;2006&ndash;2011 Chad Whitacre and contributors. MIT-licensed.
             </div>
         </div>
+{% if request.conf.aspen_io.yes('show_ga') %}
 {% include "ga.html" %}
+{% end %}
     </body>
 </html>
 
