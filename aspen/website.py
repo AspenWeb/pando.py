@@ -11,13 +11,19 @@ from aspen import http, gauntlet, simplates
 from aspen.http.request import Request
 from aspen.http.response import Response
 from aspen.configuration import Configurable
-from diesel import Application, Loop, Service
+
+import eventlet
+import eventlet.wsgi
 
 
 log = logging.getLogger('aspen.website')
 
 
-class Website(Application, Configurable):
+class DevNull:
+    def write(self, msg):
+        pass
+
+class Website(Configurable):
     """Represent a website.
     """
 
@@ -25,31 +31,28 @@ class Website(Application, Configurable):
         """Takes an argv list, without the initial executable name.
         """
         self.configure(argv)
-        Application.__init__(self)
         self.run_hook('startup')
     
-    def run(self):
-        """Extend diesel to lazily initialize the Application.
+    def __call__(self, environ, start_response):
+        """WSGI interface.
         """
-        self.add_service(Service(http.HttpServer(self), self.port))
-        Application.run(self)
+        request = Request.from_wsgi(environ) # too big to fail :-/
+        response = self.handle(request)
+        return response(environ, start_response)
+
+    def serve(self):
+        """Serve this website forever.
+        """
+        self.sock = eventlet.listen(('', self.port))
+        log.warn("Greetings, program! Welcome to port %d." % self.port)
+        eventlet.wsgi.server(self.sock, self, log=DevNull())
+
+    def shutdown(self):
+        log.warn("Shutting down website.")
+        self.run_hook('shutdown')
 
     def run_hook(self, name):
         self.hooks.run(name, self)
-
-    def add_loop(self, loop):
-        """Extend diesel to take non-Loops.
-        """
-        if not isinstance(loop, Loop):
-            loop = Loop(loop)
-        Application.add_loop(self, loop)
-
-    def __call__(self, diesel_request):
-        """Given a Diesel request, return a Diesel response.
-        """
-        request = Request.from_diesel(diesel_request) # too big to fail :-/
-        response = self.handle(request)
-        return response._to_diesel(diesel_request) # sends bits, returns bool
 
     def handle(self, request):
         """Given an Aspen request, return an Aspen response.

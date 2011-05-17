@@ -47,6 +47,28 @@ class Request(object):
         self.namespace = {} # populated by user in inbound hooks
 
     @classmethod
+    def from_wsgi(cls, environ):
+        """Set primitives from a WSGI environ.
+        """
+        self = cls()
+        self.method = environ['REQUEST_METHOD']
+        self.version = environ['SERVER_PROTOCOL']
+
+        raw_headers = []
+        for k, v in environ.items():
+            if k.startswith('HTTP_'):
+                k = k[len('HTTP_'):]
+                raw_headers.append(': '.join([k, v]))
+        raw_headers = '\r\n'.join(raw_headers)
+        self.raw_headers = raw_headers
+        self.raw_body = environ['wsgi.input'].read()
+        self.remote_addr = environ['REMOTE_ADDR']
+        self.raw_url = environ['PATH_INFO']
+
+        self.hydrate()
+        return self
+
+    @classmethod
     def from_diesel(cls, request):
         """Set primitives from a diesel request.
         """
@@ -96,7 +118,7 @@ class Request(object):
         elif 'Host' in self.headers:
             url += self.headers.one('Host')
         else:
-            # per spec, return 400 if no Host header given
+            # per spec, respond with 400 if no Host header given
             raise Response(400)
 
         url += urllib.quote(self.path.raw)
@@ -104,5 +126,3 @@ class Request(object):
         if self.raw_querystring:
             url += '?' + self.raw_querystring
         return url
-
-

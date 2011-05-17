@@ -1,4 +1,4 @@
-from aspen.http import Response
+from aspen.http.response import Response
 
 try:                # Python 2.6+
     import json

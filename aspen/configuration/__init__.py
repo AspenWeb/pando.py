@@ -72,7 +72,8 @@ class Configurable(object):
 
         self.address, self.sockfam = load_address_sockfam(opts, self.conf)
         self.port = load_port(self.address, self.sockfam)
-        self.__names.extend(['address', 'sockfam', 'port'])
+        self.sock = None
+        self.__names.extend(['address', 'sockfam', 'port', 'sock'])
 
         r = configure_logging(opts, dotaspen, self.conf)
         self.log_filename, self.log_filter, self.log_format, self.log_level = r

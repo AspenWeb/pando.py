@@ -1,0 +1,4 @@
+# The history of this repository has been rewritten to erase the vendor/ directory
+# Below is the md5sum and size of the file that was in the original commit
+a580e211e68e200faf6780b34078fa7f
+61

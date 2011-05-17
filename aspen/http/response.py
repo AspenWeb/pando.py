@@ -1,9 +1,7 @@
 from Cookie import CookieError, SimpleCookie
 
+from aspen.http import status_strings
 from aspen.http.headers import Headers
-from diesel.protocols.http import ( http_response as DieselResponse
-                                  , status_strings
-                                   )
 
 
 class Response(Exception):
@@ -46,6 +44,14 @@ class Response(Exception):
         except CookieError:
             pass
 
+    def __call__(self, environ, start_response):
+        wsgi_status = str(self)
+        wsgi_headers = []
+        for k, vals in self.headers._dict.items():
+            for v in vals:
+                wsgi_headers.append((k, v))
+        start_response(wsgi_status, wsgi_headers)
+        return [self.body]
 
     def __repr__(self):
         return "<Response: %s>" % str(self)
@@ -54,19 +60,14 @@ class Response(Exception):
         return "%d %s" % (self.code, self._status())
 
     def _status(self):
-        return status_strings.get(self.code, ('???','Unknown HTTP status'))
+        return status_strings.get(self.code, 'Unknown HTTP status')
 
-    def _to_diesel(self, _diesel_request):
-        """This actually sends bits over the wire(!).
+    def _to_wsgi(self):
+        """WSGI
         """
         for morsel in self.cookie.values():
             self.headers.add('Set-Cookie', morsel.OutputString())
         self.headers._diesel_headers._headers = self.headers._dict
-        return DieselResponse( _diesel_request
-                             , self.code
-                             , self.headers._diesel_headers
-                             , self.body
-                              )
 
     def _to_http(self, version):
         status_line = "HTTP/%s" % version

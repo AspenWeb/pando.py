@@ -2,7 +2,7 @@ import os
 import sys
 from os.path import join, isfile
 
-import diesel
+import eventlet
 
 
 extras = []
@@ -68,8 +68,7 @@ def startup(website):
         for filename in files:
             add(join(root, filename))
 
-    def loop():
+    if 0:
         while True:
             check_all()
-            diesel.sleep(0.5)
-    website.add_loop(loop)
+            eventlet.sleep(0.5)
