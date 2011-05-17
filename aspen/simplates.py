@@ -22,8 +22,7 @@ import sys
 import traceback
 from os.path import join
 
-from aspen import json
-from aspen.http import Response
+from aspen import json, Response
 from _tornado.template import Loader, Template
 
 

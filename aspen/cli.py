@@ -17,10 +17,12 @@ def main(argv=None):
         if argv is None:
             argv = sys.argv[1:]
         website = Website(argv)
-        log.warn("Greetings, program! Welcome to port %d." % website.port)
-        website.run()
+        try:
+            website.serve()
+        finally:
+            website.shutdown()
     except KeyboardInterrupt, SystemExit:
-        website.run_hook('shutdown')
+        pass
 
 def thrash():
     """This is a very simple tool to restart a process when it dies.

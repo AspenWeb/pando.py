@@ -51,7 +51,7 @@ def configure_logging(opts, dotaspen, conf):
             if kw['level'] is None:
                 kw['level'] = LOG_LEVEL
             simple_logging(**kw)
-            log.info("logging configured from the command line")
+            log.info("Logging configured from the command line.")
             logging_configured = True
 
     if not logging_configured:          # logging.conf
@@ -77,7 +77,7 @@ def configure_logging(opts, dotaspen, conf):
         kw['level'] = log_level
 
         simple_logging(**kw)
-        log.info("logging configured from aspen.conf")
+        log.info("Logging configured from aspen.conf.")
         logging_configured = True
 
     if kw is not None:

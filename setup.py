@@ -34,7 +34,7 @@ setup( author = 'Chad Whitacre'
      , url = 'http://aspen.io/'
      , version = version
      , zip_safe = False
-     , install_requires = ['diesel == 2.0.0']
+     #, install_requires = ['diesel == 2.0.0']
      , package_data = {'aspen': [ 'www/*'
                                 , 'configuration/hooks.conf'
                                 , 'configuration/mime.types'
