@@ -16,6 +16,8 @@ def main(argv=None):
         import time
         from os.path import exists, join
 
+        from aspen.website import Website
+
         try:
             import eventlet
             import eventlet.wsgi
@@ -24,8 +26,7 @@ def main(argv=None):
                                   "run aspen.")
             sys.exit() # raise SystemExit gives me UnboundLocalError?!
 
-        from aspen.cli import restarter
-        from aspen.website import Website
+        from aspen.engines.eventlet import restarter
 
 
         log = logging.getLogger('aspen.cli')

@@ -60,16 +60,16 @@ class Configurable(object):
         self.default_mimetype = load_default_mimetype(self.conf)
         self.default_filenames = load_default_filenames(self.conf)
         self.json_content_type = load_json_content_type(self.conf)
+        self.show_tracebacks = self.conf.aspen.no('show_tracebacks')
         self.__names.extend(['default_mimetype', 'default_filenames', 
-            'json_content_type'])
+            'json_content_type', 'show_tracebacks'])
 
         self.hooks = load_hooks(expanduser, dotaspen)
         self.__names.append('hooks')
 
-        cli_conf = self.conf['aspen.cli']
-        self.changes_kill = cli_conf.no('changes_kill')
-        self.show_tracebacks = cli_conf.no('show_tracebacks')
-        self.__names.extend(['changes_kill', 'show_tracebacks'])
+        self.engine = self.conf['aspen.cli'].no('engine')
+        self.changes_kill = self.conf['aspen.cli'].no('changes_kill')
+        self.__names.extend(['engine', 'changes_kill'])
 
         self.address, self.sockfam = load_address_sockfam(opts, self.conf)
         self.port = load_port(self.address, self.sockfam)
@@ -130,6 +130,12 @@ def init_mimetypes(mimetypes, dotaspen):
                            , join(dotaspen, 'mime.types')
                             ] # later overrides earlier
     mimetypes.init()
+
+def load_engine(conf):
+    engine = conf['aspen.cli'].get('engine', 'cherrypy')
+    if engine not in ['cherrypy', 'eventlet']:
+        msg = "engine is not one of [cherrypy, eventlet]: %s" % engine
+        raise ConfigurationError(msg)
 
 def load_default_mimetype(conf):
     return conf.aspen.get('default_mimetype', 'text/plain')
