@@ -20,8 +20,8 @@ def thrash():
     """This is a very simple tool to restart a process when it dies.
 
     It's designed to restart aspen in development when it dies because files
-    have changed and you set changes_kill in the [aspen.cli] section of
-    aspen.conf.
+    have changed and you set changes_kill to 'yes' in the [aspen.cli] section
+    of aspen.conf.
 
     http://aspen.io/thrash/
 
