@@ -18,17 +18,25 @@ $ . bin/activate</pre>
 <p>Step 2: Install <a href="http://pypi.python.org/pypi/aspen">aspen from
     PyPI</a>:</p>
 
-<pre>(foo)$ pip install aspen</pre>
+<pre>(foo)$ pip install eventlet
+blah
+blah
+blah
+(foo)$ pip install aspen
+blah
+blah
+blah</pre>
 
 <p>Step 3: Create a website root:</p>
 
-<pre>$ mkdir www
-$ cd www</pre>
+<pre>(foo)$ mkdir www
+(foo)$ cd www</pre>
 
 <p>Step 4: Create a web page, and start aspen inside it:</p>
 
 <pre>(foo)$ echo Greetings, program! > index.html
 (foo)$ aspen
+Aspen website loaded from /path/to/foo
 Greetings, program! Welcome to port 8080.</pre>
 
 <p>Step 5: Check <a href="http://localhost:8080/">localhost</a> for

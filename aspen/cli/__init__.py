@@ -22,7 +22,7 @@ def main(argv=None):
         except ImportError:
             print >> sys.stderr, ("You need to install eventlet in order to "
                                   "run aspen.")
-            raise SystemExit
+            sys.exit() # raise SystemExit gives me UnboundLocalError?!
 
         from aspen.cli import restarter
         from aspen.website import Website
