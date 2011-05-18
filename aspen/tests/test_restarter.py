@@ -1,4 +1,4 @@
-from aspen import restarter
+from aspen.cli import restarter
 from aspen.tests.fsfix import attach_teardown
 
 class Foo:
@@ -9,7 +9,7 @@ def test_startup_basically_works():
     website.changes_kill = True
     website.dotaspen = 'bar'
     website.root = 'foo'
-    restarter.startup(website)
+    restarter.install(website)
     expected = []
     actual = restarter.extras
     assert actual == expected, actual
