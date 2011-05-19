@@ -1,4 +1,4 @@
-from aspen.engines.eventlet import restarter
+from aspen.server import restarter
 from aspen.tests.fsfix import attach_teardown
 
 class Foo:
@@ -9,6 +9,8 @@ def test_startup_basically_works():
     website.changes_kill = True
     website.dotaspen = 'bar'
     website.root = 'foo'
+    website.engine = Foo()
+    website.engine.start_restarter = lambda x: x
     restarter.install(website)
     expected = []
     actual = restarter.extras

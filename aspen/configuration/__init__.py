@@ -1,5 +1,6 @@
 """Define configuration objects.
 """
+import logging
 import mimetypes
 import os
 import socket
@@ -13,6 +14,7 @@ from aspen.configuration.hooks import HooksConf
 from aspen.configuration.optparser import optparser, validate_address
 from aspen._tornado.template import Loader
 from aspen.configuration.logging_ import configure_logging
+from aspen.configuration.colon import colonize
 
 
 class Configurable(object):
@@ -67,7 +69,7 @@ class Configurable(object):
         self.hooks = load_hooks(expanduser, dotaspen)
         self.__names.append('hooks')
 
-        self.engine = self.conf['aspen.cli'].no('engine')
+        self.engine = load_engine(opts, self.conf)
         self.changes_kill = self.conf['aspen.cli'].no('changes_kill')
         self.__names.extend(['engine', 'changes_kill'])
 
@@ -131,11 +133,17 @@ def init_mimetypes(mimetypes, dotaspen):
                             ] # later overrides earlier
     mimetypes.init()
 
-def load_engine(conf):
-    engine = conf['aspen.cli'].get('engine', 'cherrypy')
-    if engine not in ['cherrypy', 'eventlet']:
-        msg = "engine is not one of [cherrypy, eventlet]: %s" % engine
-        raise ConfigurationError(msg)
+def load_engine(opts, conf):
+    if opts.engine is not None:     # use command line if present
+        engine_name = opts.engine
+    else:                           # fall back to aspen.conf
+        engine_name = conf['aspen.cli'].get('engine', 'cherrypy')
+        if engine_name not in ['cherrypy', 'eventlet']:
+            msg = "engine is not one of {cherrypy,eventlet}: %s" % engine
+            raise ConfigurationError(msg)
+    exec 'from aspen.server import %s_ as engine' % engine_name
+    engine.name = engine_name
+    return engine
 
 def load_default_mimetype(conf):
     return conf.aspen.get('default_mimetype', 'text/plain')
@@ -182,3 +190,4 @@ def load_port(address, sockfam):
     else:
         port = None
     return port
+

@@ -88,6 +88,85 @@ extensions = (('.tar.bz2', 'tbz'), ('.tar.gz', 'tgz'), ('.zip', 'zip'))
         class="highlighted">Quick, start!</a></p>
 
 
+    <h2>Documentation</h2>
+
+    <h3>Programming</h3>
+
+    <p><a href="/colon-notation/">Colon Notation</a>&mdash;Some aspen
+    configuration files look for Python objects based on this notation.</p>
+
+    <p><a href="/hooks/">Hooks</a>&mdash;Influence program execution on server
+    startup and shutdown, and inbound and outbound HTTP.</p>
+
+    <p><a href="/simplates/json/">JSON</a>&mdash;Aspen provides special support
+    for JSON simplates.</p>
+
+    <p><a href="/page-break/">Page Break</a>&mdash;Aspen uses the ASCII page
+    break character to great effect.</p>
+
+    <p><a href="/quick-start/" class="highlighted">Quick
+        Start</a>&mdash;Install Aspen and start serving a basic website.
+    Greetings, program!</p>
+
+    <p><a href="/request/">Request</a>&mdash;See Aspen&rsquo;s Request object
+    API.</p>
+
+    <p><a href="/response/">Response</a>&mdash;See Aspen&rsquo;s Response object
+    API.</p>
+
+    <p><a href="/simplates/">Simplates</a>&mdash;Simplates are Aspen's main
+    attraction. Learn what they are and the basics of working with them.</p>
+
+    <p><a href="/templating/">Templating</a>&mdash;Aspen uses Tornado templates
+    for the template page of a simplate.</p>
+
+    <p><a href="/virtual-paths/">Virtual Paths</a>&mdash;Aspen translates URL
+    paths like <code>/wawa/foo.html</code> to filesystem paths like
+    <code>./%name/foo.html</code>.</p>
+
+
+    <h3>Configuration</h3>
+
+    <p><a href="/dotaspen/">.aspen</a>&mdash;The <code>.aspen</code> hidden
+    directory in your website root is your site&rsquo;s junk drawer.</p>
+
+    <p><a href="/aspen.conf/">aspen.conf</a>&mdash;Aspen can be configured
+    via an aspen.conf file.</p>
+    
+    <p><a href="/deployment/">Deployment</a>&mdash;Aspen can be used with any
+    WSGI server.</p>
+
+    <p><a href="/hooks/">Hooks</a>&mdash;Influence program execution on server
+    startup and shutdown, and inbound and outbound HTTP.</p>
+
+    <p><a href="/colon-notation/">Colon Notation</a>&mdash;Some aspen
+    configuration files look for Python objects based on this notation.</p>
+
+    <p><a href="/mime.types/">mime.types</a>&mdash;Aspen sets the Content-Type
+    header based on configuration in a mime.types file</p>
+
+
+    <h3>Executables</h3>
+
+    <p><a href="/aspen/"><code>aspen</code></a>&mdash;Aspen includes a
+    production-quality server.</p>
+
+    <p><a href="/thrash/"><code>thrash</code></a>&mdash;For development,
+    <code>aspen</code> can be configured to die when important files change.
+    <code>thrash</code> is a utility to restart it.</p>
+
+
+    <h2>Examples</h2>
+
+    <p><a
+        href="https://github.com/whit537/aspen/tree/master/doc">aspen.io</a>&mdash;This
+    website itself is an Aspen website.</p>
+
+    <p><a href="https://github.com/coopernurse/aspen-demo">STOMP
+        demo</a>&mdash;Here is a demo of Aspen communicating with a STOMP
+    server.</p>
+
+
     <h2>Downloads and Support</h2>
 
     <p><a href="https://convore.com/aspen/">Convore</a>&mdash;You can get Aspen
@@ -105,71 +184,6 @@ extensions = (('.tar.bz2', 'tbz'), ('.tar.gz', 'tgz'), ('.zip', 'zip'))
 
     <p><a href="http://pypi.python.org/pypi/aspen">PyPI</a>&mdash;Aspen has an 
     entry in the Python Package Index.</p>
-
-
-    <h2>Examples</h2>
-
-    <p><a
-        href="https://github.com/whit537/aspen/tree/master/doc">aspen.io</a>&mdash;This
-    website itself is an Aspen website.</p>
-
-    <p><a href="https://github.com/coopernurse/aspen-demo">STOMP
-        demo</a>&mdash;Here is a demo of Aspen communicating with a STOMP
-    server.</p>
-
-
-    <h2>Documentation</h2>
-
-    <p><a href="/dotaspen/">.aspen</a>&mdash;The <code>.aspen</code> hidden
-    directory in your website root is your site&rsquo;s junk drawer.</p>
-
-    <p><a href="/aspen.conf/">aspen.conf</a>&mdash;Aspen can be configured
-    via an aspen.conf file.</p>
-
-    <p><a href="/cli/">Command Line Interface</a>&mdash;Learn how to drive the 
-    <code>aspen</code> console program.</p>
-
-    <p><a href="/colon-notation/">Colon Notation</a>&mdash;Some aspen
-    configuration files look for Python objects based on this notation.</p>
-
-    <p><a href="/hooks/">Hooks</a>&mdash;Influence program execution on server
-    startup and shutdown, and inbound and outbound HTTP.</p>
-
-    <p><a href="/simplates/json/">JSON</a>&mdash;Aspen provides special support
-    for JSON simplates.</p>
-
-    <p><a href="/mime.types/">mime.types</a>&mdash;Aspen sets the Content-Type
-    header based on configuration in a mime.types file</p>
-
-    <p><a href="/page-break/">Page Break</a>&mdash;Aspen uses the ASCII page
-    break character to great effect.</p>
-
-    <p><a href="/quick-start/" class="highlighted">Quick
-        Start</a>&mdash;Install Aspen and start serving a basic website.
-    Greetings, program!</p>
-
-    <p><a href="/request/">Request</a>&mdash;See Aspen&rsquo;s Request object
-    API.</p>
-
-    <p><a href="/response/">Response</a>&mdash;See Aspen&rsquo;s Response object
-    API.</p>
-
-    <p><a href="/servers/">Servers</a>&mdash;Aspen can be used with any WSGI
-    server.</p>
-
-    <p><a href="/simplates/">Simplates</a>&mdash;Simplates are Aspen's main
-    attraction. Learn what they are and the basics of working with them.</p>
-
-    <p><a href="/templating/">Templating</a>&mdash;Aspen uses Tornado templates
-    for the template page of a simplate.</p>
-
-    <p><a href="/thrash/">Thrash</a>&mdash;For development, Aspen can be
-    configured to die when important files change. Thrash is a utility to
-    restart it.</p>
-
-    <p><a href="/virtual-paths/">Virtual Paths</a>&mdash;Aspen translates URL
-    paths like <code>/wawa/foo.html</code> to filesystem paths like
-    <code>./%name/foo.html</code>.</p>
 
 </div>
 

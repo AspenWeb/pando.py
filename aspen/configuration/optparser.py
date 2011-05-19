@@ -157,10 +157,11 @@ http://aspen.io/
 
 optparser = optparse.OptionParser(usage=usage, version=version)
 optparser.description = """\
-Aspen is a Python web server. Simplates are the main attraction. If given no
-arguments or options, it will start serving a website from the current
-directory on port 8080, based on configuration files in ./.aspen/etc/, logging
-to stdout. Full documentation is on the web at http://aspen.io/.
+Aspen is a Python web framework, and this is the server it comes with, which is
+suitable for production. If given no arguments or options, it will start
+serving a website from the current directory on port 8080, based on
+configuration files in ./.aspen/etc/, logging to stdout. Full documentation is
+on the web at http://aspen.io/.
 """
 
 
@@ -169,15 +170,25 @@ to stdout. Full documentation is on the web at http://aspen.io/.
 
 basic_group = optparse.OptionGroup( optparser
                                   , "Basics"
-                                  , "Configure network location."
+                                  , "How should we get on the network?"
                                    )
 basic_group.add_option( "-a", "--address"
                     , action="callback"
                     , callback=callback_address
                     , default=('0.0.0.0', 8080)
                     , dest="address"
-                    , help="the IP or Unix address to bind to [:8080]"
+                    , help="the IPv4 or Unix address to bind to [0.0.0.0:8080]"
                     , type='string'
+                     )
+basic_group.add_option( "-e", "--engine"
+                    , action="callback"
+                    , callback=store_raw
+                    , choices=['cherrypy', 'eventlet']
+                    , default=None
+                    , dest="engine"
+                    , help="the HTTP engine to use, one of {cherrypy,eventlet}"
+                           " [cherrypy]"
+                    , type='choice'
                      )
 
 optparser.add_option_group(basic_group)
@@ -188,9 +199,9 @@ optparser.add_option_group(basic_group)
 
 logging_group = optparse.OptionGroup( optparser
                                     , "Logging"
-                                    , "Basic configuration of Python's "\
-                                      "logging library; for more complex "\
-                                      "needs use a logging.conf file"
+                                    , "Configure the Python logging library. "
+                                      "For more complex needs use a "
+                                      "logging.conf file."
                                      )
 
 logging_group.add_option( "-o", "--log-file"

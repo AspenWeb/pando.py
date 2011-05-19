@@ -16,25 +16,11 @@ def main(argv=None):
         import time
         from os.path import exists, join
 
+        from aspen.server import restarter
         from aspen.website import Website
 
-        try:
-            import eventlet
-            import eventlet.wsgi
-        except ImportError:
-            print >> sys.stderr, ("You need to install eventlet in order to "
-                                  "run aspen.")
-            sys.exit() # raise SystemExit gives me UnboundLocalError?!
-
-        from aspen.engines.eventlet import restarter
-
-
+        
         log = logging.getLogger('aspen.cli')
-
-
-        class DevNull:
-            def write(self, msg):
-                pass
 
 
         # Actual stuff.
@@ -46,21 +32,23 @@ def main(argv=None):
         try:
             if website.sockfam == socket.AF_UNIX:
                 if exists(website.address):
-                    log.warn("Removing stale socket.")
+                    log.info("Removing stale socket.")
                     os.remove(website.address)
-            sock = eventlet.listen(website.address, website.sockfam)
             if website.port is not None:
                 welcome = "port %d" % website.port
             else:
                 welcome = website.address
-            restarter.install(website)
+            log.info("Starting %s engine." % website.engine.name)
             log.warn("Greetings, program! Welcome to %s." % welcome)
-            eventlet.wsgi.server(sock, website, log=DevNull())
+            if website.changes_kill:
+                restarter.install(website)
+            website.engine.start(website)
         finally:
             if website.sockfam == socket.AF_UNIX:
                 if exists(website.address):
                     os.remove(website.address)
             website.shutdown()
+            website.engine.stop()
     except KeyboardInterrupt, SystemExit:
         pass
 
