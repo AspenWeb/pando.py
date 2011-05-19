@@ -9,14 +9,13 @@ doc_next = ''
     DD { padding-bottom: 1em; }
 </style>
 
-<p>You can serve Aspen websites with <a href="/servers/">any WSGI server</a>,
-and Aspen also bundles a production-quality server of its own. It&rsquo;s
-called ... <code>aspen</code>! If given no arguments or options,
-<code>aspen</code> will start serving a website from the current directory on
-port 8080, based on configuration files in <code>./.aspen/</code>, logging to
-<code>stdout</code>.  If you don&rsquo;t have the <a
-    href="http://eventlet.net/">Eventlet</a> library, you will be prompted to
-manually install it when you first run <code>aspen</code>.</p>
+<p>You can serve Aspen websites with <a href="/deployment/">any WSGI
+    server</a>, and Aspen also bundles a production-quality server of its own.
+It&rsquo;s called ... <code>aspen</code>!</p>
+
+<p>If given no arguments or options, <code>aspen</code> will start serving a
+website from the current directory on port 8080, based on configuration files
+in <code>./.aspen/</code>, logging to <code>stdout</code>.</p>
 
 <h3>Usage</h3>
 
@@ -68,6 +67,57 @@ logging.conf file.</p>
     <dt>-v LEVEL, --log-level=LEVEL</dt>
     <dd>the importance level at or above which to log a message; options are
     NIRVANA, CRITICAL, ERROR, WARNING, INFO, DEBUG, NOTSET [WARNING]</dd>
+
+</dl>
+
+
+<h3>Configuration File</h3>
+
+<p><code>aspen</code> uses the following keys from the <code>[aspen.cli]</code>
+section of <a href="/aspen.conf/"><code>aspen.conf</code></a>, though
+comparable command-line options override any values set here.</p>
+
+<dl>
+    <dt><code>address</code></dt>
+    <dd>
+    
+        <p>This is the IPv4 or Unix socket to listen on.</p>
+
+        <b>Valid values:</b> AF_INET (host:port) or AF_UNIX (/path/to/my.sock)
+        socket specifier<br />
+
+        <b>Default:</b> 0.0.0.0:8080
+
+    </dd>
+
+    <dt><code>changes_kill</code></dt>
+    <dd>
+    
+        <p>If set to yes, Aspen will exit when Python module files or any files
+        under a <a href="/dotaspen/"><code>.aspen</code></a> hidden directory
+        in the website root change. Use this option with <a
+            href="/thrash/">thrash</a> to bounce aspen in development.</p>
+
+        <b>Valid values:</b> yes/no/true/false/0/1<br />
+        <b>Default:</b> no
+
+    </dd>
+
+    <dt><code>engine</code></dt>
+    <dd>
+    
+        <p>Aspen comes bundled with the prethreaded HTTP server from <a
+            href="http://www.cherrypy.org/">CherryPy</a> (under the BSD
+        license), and <code>aspen</code> will use that by default. If you
+        install the <a href="http://eventlet.net/">Eventlet</a> library, then
+        you can also use the cooperatively-scheduled HTTP server it
+        provides.</p>
+
+        <b>Valid values:</b> cherrypy, eventlet<br />
+
+        <b>Default:</b> cherrypy
+
+    </dd>
 
 </dl>
 
