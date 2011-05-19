@@ -96,38 +96,5 @@ json_content_type: text/plain</pre>
 </dl>
 
 
-<h3><code>[aspen.cli]</code></h3>
-
-<p>The <a href="/cli/"><code>aspen</code> command line program</a> uses the
-following keys from the <code>[aspen.cli]</code> section of
-<code>aspen.conf</code>.</p>
-
-<dl>
-    <dt><code>address</code></dt>
-    <dd>
-    
-        <p>This is the IPv4 or Unix socket to listen on.</p>
-
-        <b>Valid values:</b> AF_INET (host:port) or AF_UNIX (/path/to/my.sock)
-        socket specifier<br />
-
-        <b>Default:</b> 0.0.0.0:8080
-
-    </dd>
-
-    <dt><code>changes_kill</code></dt>
-    <dd>
-    
-        <p>If set to yes, Aspen will exit when Python module files or any files
-        under a <a href="/dotaspen/"><code>.aspen</code></a> hidden directory
-        in the website root change. Use this option with <a
-            href="/thrash/">thrash</a> to bounce aspen in development.</p>
-
-        <b>Valid values:</b> yes/no/true/false/0/1<br />
-        <b>Default:</b> no
-
-    </dd>
-</dl>
-
 {% end %}
 
