@@ -1,4 +1,4 @@
-doc_title="Servers"
+doc_title="Deployment"
 doc_next = ''
 
 {% extends doc.html %}
@@ -10,16 +10,12 @@ some ways to get it on the network.</p>
 
 <h4>Aspen</h4>
 
-<p>Aspen bundles <a href="/aspen/">a command-line tool called
-    <code>aspen</code></a> that uses the <a
-    href="http://eventlet.net/">Eventlet</a> library to put your website on the
-network. This is great for development, and is suitable for production,
-too.</p>
+<p>Aspen bundles its own server, called <a
+    href="/aspen/"><code>aspen</code></a>. It is suitable for production.</p>
 
 <pre>
 $ cd /path/to/my/website
 $ aspen
-Aspen website loaded from /path/to/my/website.
 Greetings, program! Welcome to port 8080.
 </pre>
 
@@ -36,7 +32,6 @@ $ gunicorn aspen.wsgi:website
 2011-05-17 17:07:53 [40170] [INFO] Listening at: http://127.0.0.1:8000 (40170)
 2011-05-17 17:07:53 [40170] [INFO] Using worker: sync
 2011-05-17 17:07:53 [40171] [INFO] Booting worker with pid: 40171
-Aspen website loaded from /path/to/my/website.
 </pre>
 
 
@@ -48,16 +43,11 @@ and/or prethreading server that supports graceful code reloading.</p>
 <pre>
 $ cd /path/to/my/website
 $ spawning aspen.wsgi.website
-Aspen website loaded from /path/to/my/website.
 (40266) *** Controller starting at Tue May 17 17:27:34 2011
 Should start 4 new children
-Aspen website loaded from /path/to/my/website.
-Aspen website loaded from /path/to/my/website.
-Aspen website loaded from /path/to/my/website.
 (40270) wsgi starting up on http://0.0.0.0:8080/
 (40267) wsgi starting up on http://0.0.0.0:8080/
 (40268) wsgi starting up on http://0.0.0.0:8080/
-Aspen website loaded from /path/to/my/website.
 (40269) wsgi starting up on http://0.0.0.0:8080/
 </pre>
 

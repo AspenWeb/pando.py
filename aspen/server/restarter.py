@@ -4,8 +4,6 @@ import time
 import threading
 from os.path import join, isfile
 
-import eventlet
-
 
 extras = []
 mtimes = {}
@@ -61,18 +59,13 @@ def check_all():
 # =====
 
 def install(website):
+    """Given a Website instance, start a loop over check_all.
+    """
     # This is not ideal. See http://sync.in/aspen-reloading
-
-    if not website.changes_kill:
-        return 
 
     if website.dotaspen is not None:
         for root, dirs, files in os.walk(website.dotaspen):
             for filename in files:
                 add(join(root, filename))
 
-    def loop():
-        while True:
-            check_all()
-            eventlet.sleep(0.5)
-    eventlet.spawn_n(loop)
+    website.engine.start_restarter(check_all)

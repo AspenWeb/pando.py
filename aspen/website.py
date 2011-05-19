@@ -24,7 +24,7 @@ class Website(Configurable):
         """Takes an argv list, without the initial executable name.
         """
         self.configure(argv)
-        log.warn("Aspen website loaded from %s." % self.root)
+        log.info("Aspen website loaded from %s." % self.root)
         self.run_hook('startup')
     
     def __call__(self, environ, start_response):
@@ -35,7 +35,7 @@ class Website(Configurable):
         return response(environ, start_response)
 
     def shutdown(self):
-        log.warn("Shutting down Aspen website.")
+        log.info("Shutting down Aspen website.")
         self.run_hook('shutdown')
 
     def run_hook(self, name):

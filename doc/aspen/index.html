@@ -1,4 +1,4 @@
-doc_title="Command Line Interface"
+doc_title="aspen"
 doc_next = ''
 
 {% extends doc.html %}
@@ -36,18 +36,21 @@ manually install it when you first run <code>aspen</code>.</p>
 
 <h4>Basics</h4>
 
-<p>Configure network location.</p>
+<p>How should we get on the network?</p>
 
 <dl>
     <dt>-a ADDRESS, --address=ADDRESS</dt>
-    <dd>the IP or Unix address to bind to [:8080]</dd>
+    <dd>the IPv4 or Unix address to bind to [0.0.0.0:8080]</dd>
+
+    <dt>-e ENGINE, --engine=ENGINE</dt>
+    <dd>the HTTP engine to use, one of {cherrypy,eventlet} [cherrypy]</dd>
 </dl>
 
 
 <h4>Logging</h4>
 
-<p>Basic configuration of Python's logging library; for more complex needs use
-a logging.conf file</p>
+<p>Configure the Python logging library. For more complex needs use a
+logging.conf file.</p>
 
 <dl>
 

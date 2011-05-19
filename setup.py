@@ -22,7 +22,7 @@ setup( author = 'Chad Whitacre'
      , classifiers = classifiers
      , description = ('Aspen is a Python web framework. '
                       'Simplates are the main attraction.')
-     , entry_points = { 'console_scripts': [ 'aspen = aspen.cli:main'
+     , entry_points = { 'console_scripts': [ 'aspen = aspen.server:main'
                                            , 'thrash = aspen:thrash'
                                             ] }
      , name = 'aspen'
