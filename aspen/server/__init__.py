@@ -30,10 +30,11 @@ def main(argv=None):
             argv = sys.argv[1:]
         website = Website(argv)
         try:
-            if website.sockfam == socket.AF_UNIX:
-                if exists(website.address):
-                    log.info("Removing stale socket.")
-                    os.remove(website.address)
+            if hasattr(socket, 'AF_UNIX'):
+                if website.sockfam == socket.AF_UNIX:
+                    if exists(website.address):
+                        log.info("Removing stale socket.")
+                        os.remove(website.address)
             if website.port is not None:
                 welcome = "port %d" % website.port
             else:
@@ -44,9 +45,10 @@ def main(argv=None):
                 restarter.install(website)
             website.engine.start(website)
         finally:
-            if website.sockfam == socket.AF_UNIX:
-                if exists(website.address):
-                    os.remove(website.address)
+            if hasattr(socket, 'AF_UNIX'):
+                if website.sockfam == socket.AF_UNIX:
+                    if exists(website.address):
+                        os.remove(website.address)
             website.shutdown()
             website.engine.stop()
     except KeyboardInterrupt, SystemExit:
