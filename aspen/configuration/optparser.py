@@ -183,10 +183,11 @@ basic_group.add_option( "-a", "--address"
 basic_group.add_option( "-e", "--engine"
                     , action="callback"
                     , callback=store_raw
-                    , choices=['cherrypy', 'eventlet']
+                    , choices=['cherrypy', 'eventlet', 'rocket']
                     , default=None
                     , dest="engine"
-                    , help="the HTTP engine to use, one of {cherrypy,eventlet}"
+                    , help="the HTTP engine to use, one of "
+                           "{cherrypy,eventlet,rocket}"
                            " [cherrypy]"
                     , type='choice'
                      )

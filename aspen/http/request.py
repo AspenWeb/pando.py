@@ -1,3 +1,4 @@
+import socket
 import urllib
 import urlparse
 from Cookie import CookieError, SimpleCookie
@@ -61,7 +62,12 @@ class Request(object):
                 raw_headers.append(': '.join([k, v]))
         raw_headers = '\r\n'.join(raw_headers)
         self.raw_headers = raw_headers
-        self.raw_body = environ['wsgi.input'].read()
+        try:
+            self.raw_body = environ['wsgi.input'].read()
+        except socket.timeout:
+            # We land here under rocket with no body. Does this break under
+            # other engines? Shouldn't ...
+            self.raw_body = ""
         self.remote_addr = environ['REMOTE_ADDR']
         self.raw_url = environ['PATH_INFO']
 

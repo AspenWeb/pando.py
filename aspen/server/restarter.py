@@ -1,3 +1,4 @@
+import logging
 import os
 import sys
 import time
@@ -5,6 +6,7 @@ import threading
 from os.path import join, isfile
 
 
+log = logging.getLogger('aspen.restarter')
 extras = []
 mtimes = {}
 
@@ -21,6 +23,7 @@ def check_one(filename):
 
     if not isfile(filename):
         if filename in mtimes:
+            log.info("file deleted: %s" % filename)
             sys.exit(1) # trigger restart
         else:
             # We haven't seen the file before. It has probably been loaded 
@@ -35,6 +38,7 @@ def check_one(filename):
     if filename not in mtimes: # first time we've seen it
         mtimes[filename] = mtime
     if mtime > mtimes[filename]:
+        log.info("file changed: %s" % filename)
         sys.exit(1) # trigger restart
 
 def check_all():
