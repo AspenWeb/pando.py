@@ -52,8 +52,15 @@ class Request(object):
         """Set primitives from a WSGI environ.
         """
         self = cls()
+
         self.method = environ['REQUEST_METHOD']
         self.version = environ['SERVER_PROTOCOL']
+        self.remote_addr = environ['REMOTE_ADDR']
+        self.raw_url = environ['PATH_INFO']
+
+
+        # Headers
+        # =======
 
         raw_headers = []
         for k, v in environ.items():
@@ -62,14 +69,50 @@ class Request(object):
                 raw_headers.append(': '.join([k, v]))
         raw_headers = '\r\n'.join(raw_headers)
         self.raw_headers = raw_headers
-        try:
+
+
+        # Body
+        # ====
+        
+        if not environ.get('SERVER_SOFTWARE', '').startswith('Rocket'):
+            # normal case
             self.raw_body = environ['wsgi.input'].read()
-        except socket.timeout:
-            # We land here under rocket with no body. Does this break under
-            # other engines? Shouldn't ...
-            self.raw_body = ""
-        self.remote_addr = environ['REMOTE_ADDR']
-        self.raw_url = environ['PATH_INFO']
+        else:
+            # rocket engine
+
+            # Email from Rocket guy: While HTTP stipulates that you shouldn't
+            # read a socket unless you are specifically expecting data to be
+            # there, WSGI allows (but doesn't require) for that
+            # (http://www.python.org/dev/peps/pep-3333/#id25).  I've started
+            # support for this (if you feel like reading the code, its in the
+            # connection class) but this feature is not yet production ready
+            # (it works but it way too slow on cPython).
+            #
+            # The hacky solution is to grab the socket from the stream and
+            # manually set the timeout to 0 and set it back when you get your
+            # data (or not).
+            # 
+            # If you're curious, those HTTP conditions are (it's better to do
+            # this anyway to avoid unnecessary and slow OS calls):
+            # - You can assume that there will be content in the body if the
+            #   request type is "POST" or "PUT"
+            # - You can figure how much to read by the "CONTENT_LENGTH" header
+            #   existence with a valid integer value
+            #   - alternatively "CONTENT_TYPE" can be set with no length and
+            #     you can read based on the body content ("content-encoding" =
+            #     "chunked" is a good example).
+            #
+            # Here's the "hacky solution":
+
+            _tmp = environ['wsgi.input']._sock.timeout
+            environ['wsgi.input']._sock.settimeout(0) # equiv. to non-blocking
+            try:
+                self.raw_body = environ['wsgi.input'].read()
+            except Exception, exc:
+                if exc.errno != 35:
+                    raise
+                self.raw_body = ""
+            environ['wsgi.input']._sock.settimeout(_tmp)
 
         self.hydrate()
         return self
