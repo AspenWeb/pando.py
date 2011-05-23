@@ -42,7 +42,8 @@ in <code>./.aspen/</code>, logging to <code>stdout</code>.</p>
     <dd>the IPv4 or Unix address to bind to [0.0.0.0:8080]</dd>
 
     <dt>-e ENGINE, --engine=ENGINE</dt>
-    <dd>the HTTP engine to use, one of {cherrypy,eventlet} [cherrypy]</dd>
+    <dd>the HTTP engine to use, one of {cherrypy,eventlet,rocket} 
+    [cherrypy]</dd>
 </dl>
 
 
@@ -108,12 +109,12 @@ comparable command-line options override any values set here.</p>
     
         <p>Aspen comes bundled with the prethreaded HTTP server from <a
             href="http://www.cherrypy.org/">CherryPy</a> (under the BSD
-        license), and <code>aspen</code> will use that by default. If you
-        install the <a href="http://eventlet.net/">Eventlet</a> library, then
-        you can also use the cooperatively-scheduled HTTP server it
-        provides.</p>
+        license), and <code>aspen</code> will use that by default. You can also
+        use <a href="http://eventlet.net/">Eventlet</a> and <a
+            href="http://packages.python.org/rocket/">Rocket</a>, if you have
+        those libraries installed.</p>
 
-        <b>Valid values:</b> cherrypy, eventlet<br />
+        <b>Valid values:</b> cherrypy, eventlet, rocket<br />
 
         <b>Default:</b> cherrypy
 
