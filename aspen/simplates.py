@@ -11,6 +11,13 @@ Problems with tornado.template:
         {% end %}
 
     - no loop counters, eh? must do it manually with {% set %}
+    - can't do this:
+
+        {% if ... %}
+            {% extends %}
+        {% else %}
+            {% extends %}
+        {% end %}
 
 """
 import datetime
