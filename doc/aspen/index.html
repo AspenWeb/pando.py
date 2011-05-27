@@ -42,8 +42,14 @@ in <code>./.aspen/</code>, logging to <code>stdout</code>.</p>
     <dd>the IPv4 or Unix address to bind to [0.0.0.0:8080]</dd>
 
     <dt>-e ENGINE, --engine=ENGINE</dt>
-    <dd>the HTTP engine to use, one of {cherrypy,eventlet,pants,rocket} 
-    [cherrypy]</dd>
+
+    <dd>the HTTP engine to use, one of {<a
+        href="http://www.cherrypy.org/">cherrypy</a>,<a
+        href="https://github.com/jamwt/diesel">diesel</a>,<a
+        href="http://eventlet.net/">eventlet</a>,<a
+        href="http://www.pantsweb.org/">pants</a>,<a
+        href="http://packages.python.org/rocket/">rocket</a>} [cherrypy]</dd>
+
 </dl>
 
 
@@ -110,12 +116,16 @@ comparable command-line options override any values set here.</p>
         <p>Aspen comes bundled with the prethreaded HTTP server from <a
             href="http://www.cherrypy.org/">CherryPy</a> (under the BSD
         license), and <code>aspen</code> will use that by default. You can also
-        use <a href="http://eventlet.net/">Eventlet</a>, <a
-            href="http://www.pantsweb.org/">Pants</a>, and <a
-            href="http://packages.python.org/rocket/">Rocket</a>, if you have
-        those libraries installed.</p>
+        use the following libraries, if you have them installed:</p>
+        
+        <ul>
+            <li><a href="https://github.com/jamwt/diesel">Diesel</a></li>
+            <li><a href="http://eventlet.net/">Eventlet</a></li>
+            <li><a href="http://www.pantsweb.org/">Pants</a></li>
+            <li><a href="http://packages.python.org/rocket/">Rocket</a></li>
+        </ul>
 
-        <b>Valid values:</b> cherrypy, eventlet, pants, rocket<br />
+        <b>Valid values:</b> cherrypy, diesel, eventlet, pants, rocket<br />
 
         <b>Default:</b> cherrypy
 
