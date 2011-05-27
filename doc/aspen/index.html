@@ -42,7 +42,7 @@ in <code>./.aspen/</code>, logging to <code>stdout</code>.</p>
     <dd>the IPv4 or Unix address to bind to [0.0.0.0:8080]</dd>
 
     <dt>-e ENGINE, --engine=ENGINE</dt>
-    <dd>the HTTP engine to use, one of {cherrypy,eventlet,rocket} 
+    <dd>the HTTP engine to use, one of {cherrypy,eventlet,pants,rocket} 
     [cherrypy]</dd>
 </dl>
 
@@ -110,11 +110,12 @@ comparable command-line options override any values set here.</p>
         <p>Aspen comes bundled with the prethreaded HTTP server from <a
             href="http://www.cherrypy.org/">CherryPy</a> (under the BSD
         license), and <code>aspen</code> will use that by default. You can also
-        use <a href="http://eventlet.net/">Eventlet</a> and <a
+        use <a href="http://eventlet.net/">Eventlet</a>, <a
+            href="http://www.pantsweb.org/">Pants</a>, and <a
             href="http://packages.python.org/rocket/">Rocket</a>, if you have
         those libraries installed.</p>
 
-        <b>Valid values:</b> cherrypy, eventlet, rocket<br />
+        <b>Valid values:</b> cherrypy, eventlet, pants, rocket<br />
 
         <b>Default:</b> cherrypy
 

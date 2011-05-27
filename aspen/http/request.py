@@ -55,7 +55,7 @@ class Request(object):
 
         self.method = environ['REQUEST_METHOD']
         self.version = environ['SERVER_PROTOCOL']
-        self.remote_addr = environ['REMOTE_ADDR']
+        self.remote_addr = environ.get('REMOTE_ADDR', None) # relaxed for Pants
         self.raw_url = environ['PATH_INFO']
 
 
