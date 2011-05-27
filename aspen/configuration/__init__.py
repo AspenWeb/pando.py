@@ -137,11 +137,23 @@ def load_engine(opts, conf):
     if opts.engine is not None:     # use command line if present
         engine_name = opts.engine
     else:                           # fall back to aspen.conf
-        engine_name = conf['aspen.cli'].get('engine', 'cherrypy')
-        if engine_name not in ['cherrypy', 'eventlet', 'pants', 'rocket']:
-            msg = "engine is not one of {cherrypy,eventlet,pants,rocket}: %s"
+        engine_name = conf['aspen.cli'].get('engine', aspen.ENGINES[0])
+        if engine_name not in aspen.ENGINES:
+            msg = "engine is not one of {%s}: %%s" % (','.join(aspen.ENGINES))
             raise ConfigurationError(msg % engine)
-    exec 'from aspen.server import %s_ as engine' % engine_name
+    try: 
+        exec 'from aspen.server import %s_ as engine' % engine_name
+    except ImportError:
+        # ANSI colors: 
+        #   http://stackoverflow.com/questions/287871/
+        #   http://en.wikipedia.org/wiki/ANSI_escape_code#CSI_codes
+        print >> sys.stderr
+        print >> sys.stderr, ( "\033[1;31mImportError loading the "
+                             + "%s engine:\033[0m" % engine_name
+                              )
+        print >> sys.stderr
+        raise
+
     engine.name = engine_name
     return engine
 

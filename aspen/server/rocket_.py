@@ -2,20 +2,17 @@ import sys
 import time
 import threading
 
-try:
-    import rocket 
-except ImportError:
-    print >> sys.stderr, ("Please install rocket in order to "
-                          "run aspen with the rocket engine.")
-    raise 
+import rocket 
 
 
 server = None
 
 
-def start(website):
+def init(website):
     global server
     server = rocket.CherryPyWSGIServer(website.address, website)
+
+def start(website):
     server.start()
 
 def stop():

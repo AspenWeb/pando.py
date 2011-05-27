@@ -7,12 +7,15 @@ from aspen._cherrypy.wsgiserver import CherryPyWSGIServer
 server = None
 
 
-def start(website):
+def init(website):
     global server
     server = CherryPyWSGIServer(website.address, website)
+
+def start(website):
     server.start()
 
 def stop():
+    print "stopping cherrypy"
     server.stop()
 
 def start_restarter(check_all):

@@ -183,12 +183,13 @@ basic_group.add_option( "-a", "--address"
 basic_group.add_option( "-e", "--engine"
                     , action="callback"
                     , callback=store_raw
-                    , choices=['cherrypy', 'eventlet', 'pants', 'rocket']
+                    , choices=aspen.ENGINES
                     , default=None
                     , dest="engine"
-                    , help="the HTTP engine to use, one of "
-                           "{cherrypy,eventlet,pants,rocket}"
-                           " [cherrypy]"
+                    , help=( "the HTTP engine to use, one of "
+                           + "{%s}" % ','.join(aspen.ENGINES)
+                           + " [%s]" % aspen.ENGINES[0]
+                            )
                     , type='choice'
                      )
 

@@ -3,17 +3,24 @@ import sys
 import time
 from aspen.http.response import Response
 
-try:                # Python 2.6+
-    import json
-except ImportError: # Python 2.5-
+
+# Find a json module.
+# ===================
+# The standard library includes simplejson as json since 2.6, but without the 
+# C speedups. So we prefer simplejson if it is available.
+
+try:
+    import simplejson as json
+except ImportError:
     try:
-        import simplejson as json
+        import json
     except ImportError:
         json = None
 
 
 __version__ = "~~VERSION~~"
 WINDOWS = sys.platform[:3] == 'win'
+ENGINES = ['cherrypy', 'diesel', 'eventlet', 'pants', 'rocket']
 
 
 def thrash():
