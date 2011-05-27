@@ -138,8 +138,8 @@ def load_engine(opts, conf):
         engine_name = opts.engine
     else:                           # fall back to aspen.conf
         engine_name = conf['aspen.cli'].get('engine', 'cherrypy')
-        if engine_name not in ['cherrypy', 'eventlet', 'rocket']:
-            msg = "engine is not one of {cherrypy,eventlet,rocket}: %s"
+        if engine_name not in ['cherrypy', 'eventlet', 'pants', 'rocket']:
+            msg = "engine is not one of {cherrypy,eventlet,pants,rocket}: %s"
             raise ConfigurationError(msg % engine)
     exec 'from aspen.server import %s_ as engine' % engine_name
     engine.name = engine_name
