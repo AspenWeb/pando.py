@@ -41,6 +41,7 @@ def main(argv=None):
                 welcome = website.address
             log.info("Starting %s engine." % website.engine.name)
             log.warn("Greetings, program! Welcome to %s." % welcome)
+            website.engine.init(website)
             if website.changes_kill:
                 restarter.install(website)
             website.engine.start(website)
