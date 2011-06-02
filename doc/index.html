@@ -34,17 +34,15 @@ extensions = (('.tar.bz2', 'tbz'), ('.tar.gz', 'tgz'), ('.zip', 'zip'))
     #story .future P {
         color: #DDD;
     }
-    .press {
-        text-align: right;
-        font: normal 9pt/12pt Arial, sans-serif;
-        border-bottom: 2px solid #B1502C;
-        margin: 1em 0 2em;
-        padding: 0 0 0.5em;
-    }
     #pitch {
-        color: black;
-        text-indent: 0 ! important;
-        padding-left: 0 ! important;
+        text-align: center;
+        background: #EFEFEF;
+        border: 2px solid #B1502C;
+        border-style: solid none;
+        padding: 1em 0;
+    }
+    #pitch IFRAME {
+        margin: 0 auto;
     }
 </style>
 {% end %}
@@ -77,23 +75,29 @@ extensions = (('.tar.bz2', 'tbz'), ('.tar.gz', 'tgz'), ('.zip', 'zip'))
         </tr>
     </table>
 
-    <div class="press"></div>
-
-    <h2>The Pitch</h2>
-
-    <p id="pitch">Aspen reduces friction at all stages of your web
-    projects&mdash;real-time and traditional&mdash;by making the most of the
-    filesystem. <a href="/quick-start/" class="highlighted">Quick,
-        start!</a></p>
-
-    <iframe
+    <div id="pitch"><iframe 
         src="https://docs.google.com/present/embed?id=ajgh2bm55jzd_33d53g88fg&size=m"
-        frameborder="0" width="555" height="451"></iframe>
+        frameborder="0" width="555" height="451"></iframe></div>
+
+
+    <h2>Examples</h2>
+
+    <p><a href="https://github.com/whit537/aspen-toy-blog"
+        class="highlighted">aspen-toy-blog</a>&mdash;This toy blog demonstrates
+    Aspen&rsquo;s core features.</p>
+
+    <p><a
+        href="https://github.com/whit537/aspen/tree/master/doc">http://aspen.io/</a>&mdash;This
+    website itself is an Aspen website.</p>
+
+    <p><a href="https://github.com/coopernurse/aspen-demo">STOMP
+        demo</a>&mdash;Here is a demo of Aspen + diesel talking to a STOMP
+    server.</p>
 
 
     <h2>Documentation</h2>
 
-    <h3>Programming</h3>
+    <h3>Tutorials / API</h3>
 
     <p><a href="/colon-notation/">Colon Notation</a>&mdash;Some aspen
     configuration files look for Python objects based on this notation.</p>
@@ -157,21 +161,6 @@ extensions = (('.tar.bz2', 'tbz'), ('.tar.gz', 'tgz'), ('.zip', 'zip'))
     <p><a href="/thrash/"><code>thrash</code></a>&mdash;For development,
     <code>aspen</code> can be configured to die when important files change.
     <code>thrash</code> is a utility to restart it.</p>
-
-
-    <h2>Examples</h2>
-
-    <p><a
-        href="https://github.com/whit537/aspen-toy-blog">aspen-toy-blog</a>&mdash;Here
-    is a toy blog implemented with Aspen, demonstrating basic features.</p>
-
-    <p><a
-        href="https://github.com/whit537/aspen/tree/master/doc">http://aspen.io/</a>&mdash;This
-    website itself is an Aspen website.</p>
-
-    <p><a href="https://github.com/coopernurse/aspen-demo">STOMP
-        demo</a>&mdash;Here is a demo of Aspen communicating with a STOMP
-    server (requires the diesel engine).</p>
 
 
     <h2>Downloads and Support</h2>
