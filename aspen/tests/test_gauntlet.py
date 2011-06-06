@@ -286,4 +286,24 @@ def test_virtual_path_docs_6():
     assert actual == expected, actual
 
 
+
+# mongs
+# =====
+# These surfaced when porting mongs from Aspen 0.8.
+
+def test_virtual_path_parts_can_be_empty():
+    return
+    mk(('foo/%bar/index.html', "Greetings, program!"))
+    expected = {'bar': ''}
+    actual = check_virtual_paths('/foo//').path
+    assert actual == expected, actual
+
+def test_file_matches_in_face_of_dir():
+    mk( ('%page/index.html', 'Nothing to see here.')
+      , ('%value.txt', "Greetings, program!")
+       )
+    expected = {'value': 'baz'}
+    actual = check_virtual_paths('/baz.html').path
+    assert actual == expected, actual
+
 attach_teardown(globals())

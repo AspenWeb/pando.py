@@ -57,38 +57,41 @@ def virtual_paths(request, parts):
                 matched = next
             else:               # this part is missing; do we have a %subdir?
                 key = None
-                names = sorted(os.listdir(matched), key=lambda x: x.lower())
-                for name in names:
-                    if name.startswith('%'):
-                        
-                        # See if we can use this item.
-                        # ============================
-                        # We want to allow file matches for the last URL path
-                        # part, and in that case we strip the file extension. 
-                        # For other matches we need them to be directories.
+                for root, dirs, files in os.walk(matched):
+                    files.sort(key=lambda x: x.lower())
+                    dirs.sort(key=lambda x: x.lower())
+                    for name in files + dirs:
+                        if name.startswith('%'):
+                            
+                            # See if we can use this item.
+                            # ============================
+                            # We want to allow file matches for the last URL
+                            # path part, and in that case we strip the file
+                            # extension.  For other matches we need them to be
+                            # directories.
 
-                        fs = join(matched, name)
-                        k = name[1:]
-                        v = part
-                        if i == (nparts - 1):
-                            if isfile(fs):
-                                k = k.rsplit('.', 1)[0]
-                                v = part.rsplit('.', 1)[0]
-                        elif not isdir(fs):
-                            continue 
+                            fs = join(matched, name)
+                            k = name[1:]
+                            v = part
+                            if i == (nparts - 1):
+                                if isfile(fs):
+                                    k = k.rsplit('.', 1)[0]
+                                    v = part.rsplit('.', 1)[0]
+                            elif not isdir(fs):
+                                continue 
 
 
-                        # We found a suitable match at the current level.
-                        # ===============================================
+                            # We found a suitable match at the current level.
+                            # ===============================================
 
-                        matched = fs 
-                        key, value = _typecast(k, v)
-                        request.path[key] = value
-                        break # Only use the first %match per level.
-
+                            matched = fs 
+                            key, value = _typecast(k, v)
+                            request.path[key] = value
+                            break # Only use the first %match per level.
+                    break # don't recurse in os.walk
                 if key is None:
                     matched = request.root
-                    break # no matched, reset
+                    break # no match, reset
         if matched != request.root:
             request.fs = matched.rstrip(os.sep)
 
