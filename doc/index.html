@@ -44,6 +44,19 @@ extensions = (('.tar.bz2', 'tbz'), ('.tar.gz', 'tgz'), ('.zip', 'zip'))
     #pitch IFRAME {
         margin: 0 auto;
     }
+    #road-show {
+        font: normal 12pt/14pt Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+    }
+    #road-show TH {
+        margin: 0;
+        padding: 0 1em 0.5em 0;
+    }
+    #road-show TD {
+        margin: 0;
+        padding: 0 0 0.5em 0;
+    }
 </style>
 {% end %}
 {% block content %}
@@ -96,6 +109,22 @@ extensions = (('.tar.bz2', 'tbz'), ('.tar.gz', 'tgz'), ('.zip', 'zip'))
     <p><a href="https://github.com/coopernurse/aspen-demo">STOMP
         demo</a>&mdash;Here is a demo of Aspen + diesel talking to a STOMP
     server.</p>
+
+    <h2>Road Show</h2>
+
+    <table id="road-show">
+
+        <tr><th>2011-06-08</th> <td><a href="http://www.seapig.org/">Seattle
+                    Python Interest Group</a>, Kevin LaTona participating in a
+                round of lightening talks on web frameworks. <a
+                    href="http://studiosola.com/seapyaspen/0.html">Slides</a>.</td></tr>
+
+        <tr><th><strike>2011-06-07</strike></th><td><a
+                    href="http://www.10gen.com/conferences/mongonyc2011">MongoNYC</a>.
+                Initial release of <a
+                    href="http://www.whit537.org/mongs/">Mongs</a>.</td></tr>
+
+    <table>
 
 
     <h2>Documentation</h2>
