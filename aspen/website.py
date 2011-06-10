@@ -25,7 +25,6 @@ class Website(Configurable):
         """
         self.configure(argv)
         log.info("Aspen website loaded from %s." % self.root)
-        self.run_hook('startup')
     
     def __call__(self, environ, start_response):
         """WSGI interface.
@@ -34,9 +33,15 @@ class Website(Configurable):
         response = self.handle(request)
         return response(environ, start_response)
 
-    def shutdown(self):
+    def start(self):
+        log.info("Starting up Aspen website.")
+        self.run_hook('startup')
+        self.engine.start()
+
+    def stop(self):
         log.info("Shutting down Aspen website.")
         self.run_hook('shutdown')
+        self.engine.stop()
 
     def run_hook(self, name):
         self.hooks.run(name, self)
