@@ -12,10 +12,10 @@ from aspen._tornado.template import Template, Loader
 def Simplate(fs):
     return load_uncached(StubRequest.from_fs(fs))
 
-def check(content, filename="index.html", body=True, aspenconf=""):
+def check(content, filename="index.html", body=True, aspenconf="", response=None):
     mk(('.aspen/aspen.conf', aspenconf), (filename, content))
     request = StubRequest.from_fs(filename)
-    response = Response()
+    response = response or Response()
     handle(request, response)
     if body:
         return response.body
@@ -237,6 +237,13 @@ def test_unknown_mimetype_yields_default_mimetype():
                      )
     expected = "text/plain; charset=UTF-8"
     actual = response.headers.one('Content-Type')
+    assert actual == expected, actual
+
+def test_templating_can_be_bypassed():
+    response = Response()
+    response.bypass_templating = True
+    expected = "{{ foo }}"
+    actual = check("{{ foo }}", response=response)
     assert actual == expected, actual
 
 

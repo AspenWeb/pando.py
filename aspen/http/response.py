@@ -43,6 +43,7 @@ class Response(Exception):
             self.cookie.load(self.headers.one('Cookie', ''))
         except CookieError:
             pass
+        self.bypass_templating = False
 
     def __call__(self, environ, start_response):
         wsgi_status = str(self)

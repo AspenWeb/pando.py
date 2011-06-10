@@ -204,11 +204,13 @@ def load_uncached(request):
     namespace['website'] = request.website
     script = compile(script, request.fs, 'exec')
     if template is not None and template.strip():
+        raw_template = template
         template = Template( template
                            , name = request.fs
                            , loader = request.website.template_loader
                            , compress_whitespace = False
                             )
+        template.raw = raw_template
     else:
         template = None
 
@@ -304,7 +306,10 @@ def handle(request, response=None):
         # If template is None that means that that page was empty.
     
         if template is not None:
-            response.body = template.generate(**namespace)
+            if response.bypass_templating:
+                response.body = template.raw
+            else: # default
+                response.body = template.generate(**namespace)
 
     
     # Set the mimetype.
