@@ -1,6 +1,7 @@
 from aspen import Response
 from aspen.http.mapping import Mapping
 from aspen.http.request import Request
+from aspen.http.headers import Headers
 from aspen.tests import assert_raises, StubRequest
 from aspen.tests.fsfix import attach_teardown
 
@@ -58,5 +59,24 @@ def test_is_xhr_is_case_insensitive():
     request.headers.set('X-Requested-With', 'xMLhTTPrEQUEST')
     assert request.is_xhr
 
+
+def test_headers_one_gets_a_value():
+    headers = Headers("Foo: Bar")
+    expected = "Bar"
+    actual = headers.one('Foo')
+    assert actual == expected, actual
+    
+def test_headers_one_gets_first_value():
+    headers = Headers("Foo: Bar\r\nFoo: Baz")
+    expected = "Bar"
+    actual = headers.one('Foo')
+    assert actual == expected, actual
+    
+def test_headers_one_is_case_insensitive():
+    headers = Headers("Foo: Bar")
+    expected = "Bar"
+    actual = headers.one('foo')
+    assert actual == expected, actual
+    
 
 attach_teardown(globals())

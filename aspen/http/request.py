@@ -70,7 +70,7 @@ class Request(object):
         raw_headers = '\r\n'.join(raw_headers)
         self.raw_headers = raw_headers
 
-
+        
         # Body
         # ====
         

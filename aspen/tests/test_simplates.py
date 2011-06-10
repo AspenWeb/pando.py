@@ -230,6 +230,16 @@ def test_json_raises_TypeError_on_unknown_types():
                  , filename="foo.json"
                   )
 
+def test_unknown_mimetype_yields_default_mimetype():
+    response = check( "Greetings, program!"
+                    , body=False
+                    , filename="foo.flugbaggity"
+                     )
+    expected = "text/plain; charset=UTF-8"
+    actual = response.headers.one('Content-Type')
+    assert actual == expected, actual
+
+
 
 # Teardown
 # ========
