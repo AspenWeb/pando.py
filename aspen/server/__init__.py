@@ -19,13 +19,12 @@ class BaseEngine(object):
         """
 
     def start_restarter(self, check_all):
-        """Start a loop that runs check_all every five seconds.
+        """Start a loop that runs check_all every half-second.
         """
 
     def stop_restarter(self):
-        """Stop the loop that runs check_all every five seconds (optional).
+        """Stop the loop that runs check_all (optional).
         """
-
 
 
 def main(argv=None):
@@ -36,7 +35,7 @@ def main(argv=None):
         # Do imports.
         # ===========
         # These are in here so that if you Ctrl-C during an import, the
-        # Keyboard Interupt is caught and ignored. Yes, that's how much I care.
+        # KeyboardInterrupt is caught and ignored. Yes, that's how much I care.
         # No, I don't care enough to put aspen/__init__.py in here too.
 
         import os
@@ -74,6 +73,7 @@ def main(argv=None):
             website.engine.bind()
             log.warn("Greetings, program! Welcome to %s." % welcome)
             if website.changes_kill:
+                log.info("Aspen will die when files change.")
                 restarter.install(website)
             website.start()
         except KeyboardInterrupt, SystemExit:

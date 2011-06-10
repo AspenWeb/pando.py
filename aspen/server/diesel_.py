@@ -25,6 +25,6 @@ class Engine(BaseEngine):
     def start_restarter(self, check_all):
         def loop():
             while True:
-                check_all
+                check_all()
                 diesel.sleep(0.5)
         self.app.add_loop(diesel.Loop(loop))
