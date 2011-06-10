@@ -11,6 +11,9 @@ def test_response_is_a_wsgi_callable():
     actual = response({}, start_response)
     assert actual == expected, actual
 
+def test_response_want_template_defaults_to_True():
+    response = Response(body="Greetings, program!")
+    assert not response.bypass_templating
 
 
 attach_teardown(globals())
