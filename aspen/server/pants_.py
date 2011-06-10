@@ -1,22 +1,23 @@
-import sys
-
+from aspen.server import BaseEngine
 from pants import cycle, engine
 from pants.contrib.http import HTTPServer
 from pants.contrib.wsgi import WSGIConnector
 
 
-def init(website):
-    global server
-    connector = WSGIConnector(website)
-    server = HTTPServer(connector)
-    server.listen(host=website.address[0], port=website.address[1])
+class Engine(BaseEngine):
 
-def start(website):
-    engine.start()
+    def bind(self):
+        connector = WSGIConnector(self.website)
+        self.server = HTTPServer(connector)
+        self.server.listen( host=self.website.address[0]
+                          , port=self.website.address[1]
+                           )
 
-def stop():
-    engine.stop()
+    def start(self):
+        engine.start()
 
-def start_restarter(check_all):
-    cycle(check_all, 0.5)
+    def stop(self):
+        engine.stop()
 
+    def start_restarter(self, check_all):
+        cycle(check_all, 0.5)

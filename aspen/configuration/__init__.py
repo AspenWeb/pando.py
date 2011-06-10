@@ -69,7 +69,7 @@ class Configurable(object):
         self.hooks = load_hooks(expanduser, dotaspen)
         self.__names.append('hooks')
 
-        self.engine = load_engine(opts, self.conf)
+        self.engine = load_engine(opts, self)
         self.changes_kill = self.conf['aspen.cli'].no('changes_kill')
         self.__names.extend(['engine', 'changes_kill'])
 
@@ -133,7 +133,8 @@ def init_mimetypes(mimetypes, dotaspen):
                             ] # later overrides earlier
     mimetypes.init()
 
-def load_engine(opts, conf):
+def load_engine(opts, configuration):
+    conf = configuration.conf
     if opts.engine is not None:     # use command line if present
         engine_name = opts.engine
     else:                           # fall back to aspen.conf
@@ -142,7 +143,7 @@ def load_engine(opts, conf):
             msg = "engine is not one of {%s}: %%s" % (','.join(aspen.ENGINES))
             raise ConfigurationError(msg % engine)
     try: 
-        exec 'from aspen.server import %s_ as engine' % engine_name
+        exec 'from aspen.server.%s_ import Engine' % engine_name
     except ImportError:
         # ANSI colors: 
         #   http://stackoverflow.com/questions/287871/
@@ -154,7 +155,7 @@ def load_engine(opts, conf):
         print >> sys.stderr
         raise
 
-    engine.name = engine_name
+    engine = Engine(engine_name, configuration)
     return engine
 
 def load_default_mimetype(conf):

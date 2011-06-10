@@ -1,34 +1,35 @@
-import sys
 import time
 import threading
 
 import rocket 
+from aspen.server import BaseEngine
 
 
-server = None
+class Engine(BaseEngine):
+    
+    rocket_server = None # a rocket.CherryPyWSGIServer instance
 
+    def bind(self):
+        self.rocket_server = rocket.CherryPyWSGIServer( self.website.address
+                                                      , self.website
+                                                       )
 
-def init(website):
-    global server
-    server = rocket.CherryPyWSGIServer(website.address, website)
+    def start(self):
+        self.rocket_server.start()
 
-def start(website):
-    server.start()
+    def stop(self):
+        self.rocket_server.stop()
 
-def stop():
-    server.stop()
+    def start_restarter(self, check_all):
 
-def start_restarter(check_all):
+        def loop():
+            while True:
+                try:
+                    check_all()
+                except SystemExit:
+                    self.rocket_server.stop()
+                time.sleep(0.5)
 
-    def loop():
-        while True:
-            try:
-                check_all()
-            except SystemExit:
-                server.stop()
-            time.sleep(0.5)
-
-    checker = threading.Thread(target=loop)
-    checker.daemon = True
-    checker.start()
-
+        checker = threading.Thread(target=loop)
+        checker.daemon = True
+        checker.start()

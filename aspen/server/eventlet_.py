@@ -3,32 +3,35 @@ import sys
     
 import eventlet
 import eventlet.wsgi
+from aspen.server import BaseEngine
 
-
-sock = None
 
 class DevNull:
     def write(self, msg):
         pass
 
 
-def init(website):
-    global sock
-    sock = eventlet.listen(website.address, website.sockfam)
-    if eventlet.version_info <= (0, 9, 15):
-        # Work around https://bitbucket.org/which_linden/eventlet/issue/86/
-        if sys.platform[:3] != "win":
-            sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+class Engine(BaseEngine):
 
-def start(website):
-    eventlet.wsgi.server(sock, website, log=DevNull())
+    eventlet_socket = None # a socket, per eventlet
 
-def stop():
-    pass
+    def bind(self):
+        self.eventlet_socket = eventlet.listen( self.website.address
+                                              , self.website.sockfam
+                                               )
+        if eventlet.version_info <= (0, 9, 15):
+            # Work around https://bitbucket.org/which_linden/eventlet/issue/86/
+            if sys.platform[:3] != "win":
+                self.eventlet_socket.setsockopt( socket.SOL_SOCKET
+                                               , socket.SO_REUSEADDR, 1
+                                                )
 
-def start_restarter(check_all):
-    def loop():
-        while True:
-            check_all()
-            eventlet.sleep(0.5)
-    eventlet.spawn_n(loop)
+    def start(self):
+        eventlet.wsgi.server(self.eventlet_socket, self.website, log=DevNull())
+
+    def start_restarter(self, check_all):
+        def loop():
+            while True:
+                check_all()
+                eventlet.sleep(0.5)
+        eventlet.spawn_n(loop)

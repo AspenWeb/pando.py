@@ -1,3 +1,33 @@
+class BaseEngine(object):
+
+    def __init__(self, name, website):
+        """Takes an identifying string and a WSGI application.
+        """
+        self.name = name
+        self.website = website
+
+    def bind(self):
+        """Bind to a socket, based on website.sockfam and website.address.
+        """
+
+    def start(self):
+        """Start listening on the socket.
+        """
+
+    def stop(self):
+        """Stop listening on the socket.
+        """
+
+    def start_restarter(self, check_all):
+        """Start a loop that runs check_all every five seconds.
+        """
+
+    def stop_restarter(self):
+        """Stop the loop that runs check_all every five seconds (optional).
+        """
+
+
+
 def main(argv=None):
     """http://aspen.io/cli/
     """
@@ -14,6 +44,7 @@ def main(argv=None):
         import socket
         import sys
         import time
+        import traceback
         from os.path import exists, join
 
         from aspen.server import restarter
@@ -40,18 +71,21 @@ def main(argv=None):
             else:
                 welcome = website.address
             log.info("Starting %s engine." % website.engine.name)
+            website.engine.bind()
             log.warn("Greetings, program! Welcome to %s." % welcome)
-            website.engine.init(website)
             if website.changes_kill:
                 restarter.install(website)
-            website.engine.start(website)
+            website.start()
+        except KeyboardInterrupt, SystemExit:
+            pass
+        except:
+            traceback.print_exc()
         finally:
             if hasattr(socket, 'AF_UNIX'):
                 if website.sockfam == socket.AF_UNIX:
                     if exists(website.address):
                         os.remove(website.address)
-            website.shutdown()
-            website.engine.stop()
+            website.stop()
     except KeyboardInterrupt, SystemExit:
         pass
 
