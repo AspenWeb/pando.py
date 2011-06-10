@@ -53,10 +53,11 @@ class Request(object):
         """
         self = cls()
 
+        self.environ = environ
         self.method = environ['REQUEST_METHOD']
         self.version = environ['SERVER_PROTOCOL']
         self.remote_addr = environ.get('REMOTE_ADDR', None) # relaxed for Pants
-        self.raw_url = environ['PATH_INFO']
+        self.raw_url = '?'.join([environ['PATH_INFO'], environ['QUERY_STRING']])
 
 
         # Headers
@@ -65,7 +66,7 @@ class Request(object):
         raw_headers = []
         for k, v in environ.items():
             if k.startswith('HTTP_'):
-                k = k[len('HTTP_'):]
+                k = k[len('HTTP_'):].replace('_', '-')
                 raw_headers.append(': '.join([k, v]))
         raw_headers = '\r\n'.join(raw_headers)
         self.raw_headers = raw_headers
