@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 from aspen.http.mapping import Mapping
 
 
@@ -9,10 +11,10 @@ class Headers(Mapping):
         """Takes headers as a string.
         """
         Mapping.__init__(self)
-        hd = {}
+        hd = defaultdict(list)
         for line in headers.splitlines():
             k, v = line.strip().split(': ', 1)
-            hd[k.lower()] = v
+            hd[k.lower()].append(v)
         self._dict.update(hd)
 
     def to_http(self):

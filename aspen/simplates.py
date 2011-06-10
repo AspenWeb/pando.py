@@ -105,7 +105,7 @@ def load_uncached(request):
     
     mimetype = mimetypes.guess_type(request.fs, strict=False)[0]
     if mimetype is None:
-        mimetype = request.configuration.default_mimetype
+        mimetype = request.default_mimetype
   
 
     # Try to exit early.
