@@ -155,21 +155,21 @@ def load_uncached(request):
 
         template = None
         if npage_breaks == 0:
-            imports = ""
+            imports = None
             script = simplate
         elif npage_breaks == 1:
             imports, script = simplate.split(PAGE_BREAK)
         else:
             raise SyntaxError( "JSON simplate %s may have at " % request.fs
-                             + "most one page breaks; it has "
+                             + "most one page break; it has "
                              + "%d." % npage_breaks
                               )
     else:
         if npage_breaks == 0:
-            script = imports = ""
+            script = imports = None
             template = simplate
         elif npage_breaks == 1:
-            imports = ""
+            imports = "" # only None if script is None
             script, template = simplate.split(PAGE_BREAK)
         elif npage_breaks == 2:
             imports, script, template = simplate.split(PAGE_BREAK)
@@ -179,42 +179,67 @@ def load_uncached(request):
                               )
 
 
-    # Standardize newlines.
-    # =====================
-    # compile requires \n, and doing it now makes the next line easier.
+    # Trim initial newline from template.
+    # ===================================
+    # This is a convenience. It's nice to put ^L on a line by itself, but
+    # really you want the template to start on the next line.
 
-    imports = imports.replace('\r\n', '\n')
-    script = script.replace('\r\n', '\n')
-
-
-    # Pad the beginning of the second page.
-    # =====================================
-    # This is so we get accurate tracebacks. We used to do this for the
-    # template page too, but Tornado templates have some weird error handling
-    # that we haven't exposed yet.
-
-    script = ''.join(['\n' for n in range(imports.count('\n'))]) + script
-
-
-    # Prep our cachable objects and return.
-    # =====================================
-
-    namespace = dict()
-    namespace['__file__'] = request.fs
-    namespace['website'] = request.website
-    script = compile(script, request.fs, 'exec')
-    if template is not None and template.strip():
-        raw_template = template
-        template = Template( template
-                           , name = request.fs
-                           , loader = request.website.template_loader
-                           , compress_whitespace = False
-                            )
-        template.raw = raw_template
+    if template is None:
+        pass # JSON simplate
     else:
-        template = None
+        try:
+            if template[0] == '\r':
+                if template[1] == '\n':
+                    template = template[2:]
+            elif template[0] == '\n':
+                template = template[1:]
+        except IndexError:
+            pass
 
-    exec compile(imports, request.fs, 'exec') in namespace
+
+    # Exec Python pages if they exist.
+    # ================================
+    # An imports page can't exist without a script page. If there are no Python
+    # pages then we want to serve the file statically (namespace is None).
+
+    namespace = None
+
+    if script is not None: 
+
+        # Standardize newlines.
+        # =====================
+        # compile requires \n, and doing it now makes the next line easier.
+
+        imports = imports.replace('\r\n', '\n')
+        script = script.replace('\r\n', '\n')
+
+
+        # Pad the beginning of the second page.
+        # =====================================
+        # This is so we get accurate tracebacks. We used to do this for the
+        # template page too, but Tornado templates have some weird error handling
+        # that we haven't exposed yet.
+
+        script = ''.join(['\n' for n in range(imports.count('\n'))]) + script
+
+
+        # Prep our cachable objects and return.
+        # =====================================
+
+        namespace = dict()
+        namespace['__file__'] = request.fs
+        namespace['website'] = request.website
+        script = compile(script, request.fs, 'exec')
+        if template is not None:
+            template = Template( template
+                               , name = request.fs
+                               , loader = request.website.template_loader
+                               , compress_whitespace = False
+                                )
+        else:
+            template = None
+
+        exec compile(imports, request.fs, 'exec') in namespace
 
     return (mimetype, namespace, script, template)
 
@@ -306,10 +331,7 @@ def handle(request, response=None):
         # If template is None that means that that page was empty.
     
         if template is not None:
-            if response.bypass_templating:
-                response.body = template.raw
-            else: # default
-                response.body = template.generate(**namespace)
+            response.body = template.generate(**namespace)
 
     
     # Set the mimetype.
