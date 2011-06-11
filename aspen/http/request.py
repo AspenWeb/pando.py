@@ -57,7 +57,10 @@ class Request(object):
         self.method = environ['REQUEST_METHOD']
         self.version = environ['SERVER_PROTOCOL']
         self.remote_addr = environ.get('REMOTE_ADDR', None) # relaxed for Pants
-        self.raw_url = '?'.join([environ['PATH_INFO'], environ['QUERY_STRING']])
+        self.raw_url = environ['PATH_INFO']
+        qs = environ.get('QUERY_STRING', '')
+        if qs:
+            self.raw_url += '?' + qs
 
 
         # Headers

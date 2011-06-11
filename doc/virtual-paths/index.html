@@ -17,7 +17,8 @@ directories and files on your filesystem.</p>
 <p>Then make an <code>index.html</code> <a href="/simplates/">simplate</a> in
 there with this content:</p>
 
-<pre>Greetings, {&#123; request.path['name'] }}!</pre>
+<pre>&#94;L
+Greetings, {&#123; request.path['name'] }}!</pre>
 
 <p>Now hit <a
     href="http://localhost:8080/aspen/">http://localhost:8080/aspen/</a>. You
@@ -40,7 +41,7 @@ should see:</p>
 Make a simplate in <code>%name</code> named <code>%cheese.txt</code>, with this
 content:</p>
 
-<pre>
+<pre>&#94;L
 {&#123; request.path['name'].title() }} likes {&#123; request.path['cheese'] }} cheese.
 </pre>
 
@@ -65,7 +66,8 @@ before the file extension, like <code>%month.int.html</code>).</p>
 
 <p>Then put an <code>index.html</code> in there with this content:
 
-<pre>Tonight we're going to party like it's {&#123; request.path['year'] }}!</pre>
+<pre>&#94;L
+Tonight we're going to party like it's {&#123; request.path['year'] }}!</pre>
 
 <p>Now hit <a
     href="http://localhost:8080/1999/">http://localhost:8080/1999/</a>.  What

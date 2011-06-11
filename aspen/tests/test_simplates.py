@@ -138,7 +138,7 @@ def test_raise_response_works():
 
 
 def test_website_is_in_namespace():
-    expected = "\nIt worked."
+    expected = "It worked."
     actual = check("""\
 assert website.__class__.__name__ == 'Stub', website
 
@@ -239,9 +239,8 @@ def test_unknown_mimetype_yields_default_mimetype():
     actual = response.headers.one('Content-Type')
     assert actual == expected, actual
 
-def test_templating_can_be_bypassed():
+def test_templating_skipped_without_script():
     response = Response()
-    response.bypass_templating = True
     expected = "{{ foo }}"
     actual = check("{{ foo }}", response=response)
     assert actual == expected, actual
