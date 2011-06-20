@@ -38,7 +38,7 @@ class Mapping(object):
         return self._dict.get(name, default)
        
     def one(self, name, default=None):
-        return self._dict.get(name.lower(), [default])[0]
+        return self._dict.get(name, [default])[0]
 
     def __iter__(self):
         return self._dict
