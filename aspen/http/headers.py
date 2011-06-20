@@ -13,9 +13,20 @@ class Headers(Mapping):
         Mapping.__init__(self)
         hd = defaultdict(list)
         for line in headers.splitlines():
-            k, v = line.strip().split(': ', 1)
-            hd[k.lower()].append(v)
+            k, v = line.strip().split(':', 1)
+            hd[k.strip().lower()].append(v.strip())
         self._dict.update(hd)
+
+    def __contains__(self, name):
+        return name.lower() in self._dict
+
+    def all(self, name, default=None):
+        """Given a name, return a list of values.
+        """
+	return super(Headers, self).all(name.lower(), default);
+
+    def one(self, name, default=None):
+        return super(Headers, self).one(name.lower(), default);
 
     def to_http(self):
         """Return the headers as a string, formatted for an HTTP message.
