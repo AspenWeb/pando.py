@@ -28,7 +28,7 @@ class Mapping(object):
             self._dict[name].append(value)
 
     def __contains__(self, name):
-        return name.lower() in self._dict
+        return name in self._dict
 
     def all(self, name, default=None):
         """Given a name, return a list of values.
@@ -64,7 +64,7 @@ class Mapping(object):
         """
         if value is None:
             del self._dict[name]
-        self._dict[name.lower()] = [str(value).strip()] # TODO unicode?
+        self._dict[name] = [str(value).strip()] # TODO unicode?
 
 
     # Convenience methods for coercing to bool.
