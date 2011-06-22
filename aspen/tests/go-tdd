@@ -1,0 +1,4 @@
+#!/bin/sh
+watch --color --interval 0.5 \
+    'nosetests --stop --with-snot '$@' 2>&1 | tail -n $(($LINES-2))'
+
