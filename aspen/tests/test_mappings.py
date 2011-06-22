@@ -7,8 +7,14 @@ def test_headers_are_case_insensitive():
     actual = headers.one('foo')
     assert actual == expected, actual
 
+def test_wwwform_basically_works():
+    wwwform = WwwForm('Foo=bar')
+    expected = 'bar'
+    actual = wwwform.one('Foo', default='missing')
+    assert actual == expected, actual
+
 def test_wwwform_is_case_sensitive():
-    wwwform = WwwForm('Foo: bar')
+    wwwform = WwwForm('Foo=bar')
     expected = 'missing'
     actual = wwwform.one('foo', default='missing')
     assert actual == expected, actual
