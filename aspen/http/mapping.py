@@ -64,6 +64,7 @@ class Mapping(object):
         """
         if value is None:
             del self._dict[name]
+        print "setting", name, "to", value
         self._dict[name] = [str(value).strip()] # TODO unicode?
 
 

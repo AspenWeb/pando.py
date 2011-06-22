@@ -17,17 +17,6 @@ class Headers(Mapping):
             hd[k.strip().lower()].append(v.strip())
         self._dict.update(hd)
 
-    def __contains__(self, name):
-        return name.lower() in self._dict
-
-    def all(self, name, default=None):
-        """Given a name, return a list of values.
-        """
-	return super(Headers, self).all(name.lower(), default);
-
-    def one(self, name, default=None):
-        return super(Headers, self).one(name.lower(), default);
-
     def to_http(self):
         """Return the headers as a string, formatted for an HTTP message.
         """
@@ -38,3 +27,18 @@ class Headers(Mapping):
         return '\r\n'.join(out)
 
 
+    # Extend Mapping to make case-insensitive.
+    # ========================================
+
+    def __contains__(self, name):
+        return name.lower() in self._dict
+
+    def all(self, name, default=None):
+        return super(Headers, self).all(name.lower(), default);
+
+    def one(self, name, default=None):
+        return super(Headers, self).one(name.lower(), default);
+
+    def set(self, name, value):
+        print "setting", name, "to", value
+        return super(Headers, self).set(name.lower(), value);
