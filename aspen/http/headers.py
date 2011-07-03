@@ -40,5 +40,4 @@ class Headers(Mapping):
         return super(Headers, self).one(name.lower(), default);
 
     def set(self, name, value):
-        print "setting", name, "to", value
         return super(Headers, self).set(name.lower(), value);
