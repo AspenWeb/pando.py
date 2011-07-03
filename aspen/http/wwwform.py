@@ -10,10 +10,8 @@ class WwwForm(Mapping):
     def __init__(self, s):
         """Takes a string of type application/x-www-form-urlencoded.
         """
+        self.raw = s
         self._dict = cgi.parse_qs( s
                                  , keep_blank_values = True
                                  , strict_parsing = False
                                   )
-
-
-
