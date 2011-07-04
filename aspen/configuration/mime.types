@@ -1,4 +1,4 @@
-text/plain          py
-application/json    json
-image/x-icon        ico
-
+application/json            json
+application/x-socket.io     sock
+image/x-icon                ico
+text/plain                  py

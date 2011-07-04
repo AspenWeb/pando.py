@@ -7,7 +7,7 @@ import traceback
 import urlparse
 from os.path import join, isfile
 
-from aspen import http, gauntlet, simplates
+from aspen import http, gauntlet, simplates, sockets
 from aspen.http.request import Request
 from aspen.http.response import Response
 from aspen.configuration import Configurable
@@ -53,10 +53,17 @@ class Website(Configurable):
             try:
                 self.copy_configuration_to(request)
                 request.website = self
+
                 self.hooks.run('inbound_early', request)
+                socket = sockets.get(request)
                 request.fs = self.translate(request)
                 self.hooks.run('inbound_late', request)
-                response = simplates.handle(request)
+
+                simplate = simplates.get(request)
+                if socket is not None:
+                    response = socket.handle(request)
+                else:
+                    response = simplate.handle(request)
             except:
                 response = self.handle_error_nicely(request)
         except Response, response:
@@ -86,6 +93,8 @@ class Website(Configurable):
             if not isinstance(response, Response):
                 log.error(tb_1)
                 response = Response(500, tb_1)
+            elif 200 <= response.code < 300:
+                return response
             response.request = request
             self.hooks.run('outbound_early', response)
             fs = self.ours_or_theirs(str(response.code) + '.html')
