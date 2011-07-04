@@ -1,4 +1,4 @@
-"""Simplates
+"""Simplates are the main attraction.
 
 Problems with tornado.template:
 
@@ -29,12 +29,14 @@ import sys
 import traceback
 from os.path import join
 
-from aspen import json, Response
-from _tornado.template import Loader, Template
-
-
 PAGE_BREAK = chr(12)
-log = logging.getLogger('aspen.simplate')
+
+from aspen import json, Response
+from aspen.simplates.simplate import Simplate
+from aspen._tornado.template import Loader, Template
+
+
+log = logging.getLogger('aspen.simplates')
 
 
 class LoadError(StandardError):
@@ -80,8 +82,8 @@ class Entry:
 # Core loader
 # ===========
 
-def load_uncached(request):
-    """Given a Request object, return three objects (uncached).
+def load(request):
+    """Given a Request object, return four objects.
 
     A simplate is a template with two optional Python components at the head of
     the file, delimited by '^L'. The first Python page is exec'd when the
@@ -97,7 +99,7 @@ def load_uncached(request):
 
     """
 
-    simplate = open(request.fs).read()
+    raw = open(request.fs).read()
     
     # We work with simplates exclusively as a bytestring. Any unicode objects
     # passed in by the user as {{ expressions }} will be encoded with UTF-8 by
@@ -115,12 +117,18 @@ def load_uncached(request):
 
     is_simplate = True # guilty until proven innocent
 
-    if mimetype.startswith('text/') or mimetype == 'application/json':
+    if mimetype == 'application/x-socket.io':
+        
+        # *.sock files are always simplates.
+
+        pass 
+
+    elif mimetype.startswith('text/') or mimetype == 'application/json':
 
         # For text formats we can perform a highly accurate test for
         # simplitude.
 
-        c = lambda s: s in simplate
+        c = lambda s: s in raw
         is_simplate = c("") or c("^L") or c("{%") or c("{{")
 
     else:
@@ -130,71 +138,27 @@ def load_uncached(request):
         # and I've actually seen, in the wild, a file with exactly two s. So
         # we sniff the first few bytes.
 
-        s = lambda s: simplate.startswith(s)
+        s = lambda s: raw.startswith(s)
         is_simplate = s('"""') or s('import') or s('from')
            
 
     if not is_simplate:
         # Static files have no Python pages.
-        return (mimetype, None, None, simplate) 
+        return (mimetype, None, None, raw) 
     
 
     # Parse as a simplate.
     # ====================
 
-    simplate = simplate.replace("^L", PAGE_BREAK)
-    npage_breaks = simplate.count(PAGE_BREAK)
-
-    if mimetype == 'application/json': # see: http://aspen.io/simplates/json/
-        if json is None:
-            raise LoadError("Neither json nor simplejson was found. Try "
-                            "installing simplejson to use dynamic JSON "
-                            "simplates. See "
-                            "http://aspen.io/simplates/json/#libraries for "
-                            "more information.")
-
-        template = None
-        if npage_breaks == 0:
-            imports = None
-            script = simplate
-        elif npage_breaks == 1:
-            imports, script = simplate.split(PAGE_BREAK)
-        else:
-            raise SyntaxError( "JSON simplate %s may have at " % request.fs
-                             + "most one page break; it has "
-                             + "%d." % npage_breaks
-                              )
+    if mimetype == 'application/json':
+        # http://aspen.io/simplates/json/
+        simplate = JSONSimplate(raw)
+    elif mimetype == 'application/x-socket.io':
+        # http://aspen.io/simplates/socket/
+        simplate = SocketSimplate(raw)
     else:
-        if npage_breaks == 0:
-            script = imports = None
-            template = simplate
-        elif npage_breaks == 1:
-            imports = "" # only None if script is None
-            script, template = simplate.split(PAGE_BREAK)
-        elif npage_breaks == 2:
-            imports, script, template = simplate.split(PAGE_BREAK)
-        else:
-            raise SyntaxError( "Simplate %s may have at most two " % request.fs
-                             + "page breaks; it has %d." % npage_breaks
-                              )
-
-
-    # Trim initial newline from template.
-    # ===================================
-    # This is a convenience. It's nice to put ^L on a line by itself, but
-    # really you want the template to start on the next line.
-
-    if template is None:
-        pass # JSON simplate
-    else:
-        try:
-            if template[0] == '\r':
-                if template[1] == '\n':
-                    template = template[2:]
-            elif template[0] == '\n':
-                template = template[1:]
-        except IndexError:
-            pass
+        # http://aspen.io/simplates/
+        simplate = Simplate(raw)
 
 
     # Exec Python pages if they exist.
@@ -204,21 +168,21 @@ def load_uncached(request):
 
     namespace = None
 
-    if script is not None: 
+    if simplate.two is not None: 
 
         # Standardize newlines.
         # =====================
         # compile requires \n, and doing it now makes the next line easier.
 
-        imports = imports.replace('\r\n', '\n')
-        script = script.replace('\r\n', '\n')
+        simplate.one = simplate.one.replace('\r\n', '\n')
+        simplate.two = simplate.two.replace('\r\n', '\n')
 
 
         # Pad the beginning of the second page.
         # =====================================
         # This is so we get accurate tracebacks. We used to do this for the
-        # template page too, but Tornado templates have some weird error handling
-        # that we haven't exposed yet.
+        # template page too, but Tornado templates have some weird error 
+        # handling that we haven't exposed yet.
 
         script = ''.join(['\n' for n in range(imports.count('\n'))]) + script
 
@@ -247,7 +211,7 @@ def load_uncached(request):
 # Cache wrapper
 # =============
 
-def load(request):
+def get_simplate(request):
     """Given a Request object, return four objects (with caching).
     """
 
@@ -295,68 +259,3 @@ def load(request):
     return (mimetype, namespace, script, template)
 
 
-# Main callable.
-# ==============
-
-def handle(request, response=None):
-    """Given a Request, return or raise a Response.
-    """
-    if response is None:
-        response = Response()
-
-    mimetype, namespace, script, template = load(request)
-
-    if namespace is None:
-        response.body = template
-    else:
-       
-        # Populate namespace.
-        # ===================
-    
-        namespace.update(request.namespace)
-        namespace['request'] = request
-        namespace['response'] = response
-   
-
-        # Exec the script.
-        # ================
-    
-        if script:
-            exec script in namespace
-            response = namespace['response']
-
-
-        # Process the template.
-        # =====================
-        # If template is None that means that that page was empty.
-    
-        if template is not None:
-            response.body = template.generate(**namespace)
-
-    
-    # Set the mimetype.
-    # =================
-    # We guess based on the filesystem path, not the URL path. Also, we 
-    # special case JSON.
-   
-    if mimetype == 'application/json':
-        if template is None:                # dynamic
-            if not isinstance(response.body, basestring):
-                # json.dumps is guaranteed to exist here.
-                response.body = json.dumps( response.body
-                                          , cls=FriendlyEncoder
-                                           )
-        else:                               # static
-            pass
-        response.headers.set('Content-Type', request.json_content_type)
-    
-    if response.headers.one('Content-Type') is None:
-        if mimetype.startswith('text/'):
-            mimetype += "; charset=UTF-8" 
-        response.headers.set('Content-Type', mimetype)
-
-
-    # Send it on back up the line.
-    # ============================
-
-    return response
