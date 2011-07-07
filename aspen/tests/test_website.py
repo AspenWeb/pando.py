@@ -22,7 +22,7 @@ def test_normal_response_is_returned():
     expected = '\r\n'.join("""\
 HTTP/1.1
 Content-Length: 19
-Content-Type: text/html; charset=UTF-8
+Content-Type: text/html
 
 Greetings, program!
 """.splitlines())

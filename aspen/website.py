@@ -7,7 +7,7 @@ import traceback
 import urlparse
 from os.path import join, isfile
 
-from aspen import http, gauntlet, simplates, sockets
+from aspen import http, gauntlet, resources, sockets
 from aspen.http.request import Request
 from aspen.http.response import Response
 from aspen.configuration import Configurable
@@ -55,20 +55,20 @@ class Website(Configurable):
                 request.website = self
 
                 self.hooks.run('inbound_early', request)
-                socket = sockets.get(request)
+                request.socket = sockets.get(request)
                 request.fs = self.translate(request)
+                request.resource = resources.get(request)
                 self.hooks.run('inbound_late', request)
 
-                simplate = simplates.get(request)
-                if socket is not None:
-                    response = socket.handle(request)
+                if request.socket is not None:
+                    response = request.socket.handle(request)
                 else:
-                    response = simplate.handle(request)
+                    response = request.resource.render(request)
             except:
                 response = self.handle_error_nicely(request)
         except Response, response:
             # Grab the response object in the case where it was raised.  In the
-            # case where it was returned from simplates.handle, response is set
+            # case where it was returned from resource.render, response is set
             # in a try block above.
             pass
         else:
@@ -103,7 +103,9 @@ class Website(Configurable):
             if fs is None:
                 raise
             request.fs = fs
-            response = simplates.handle(request, response)
+            request.original_resource = request.resource
+            request.resource = resources.get(request)
+            response = request.resource.render(request, response)
             return response
         except Response, response:  # no nice error template available
             raise
