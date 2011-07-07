@@ -5,7 +5,7 @@ import sys
 from os.path import dirname, isdir, isfile, join, realpath
 
 import aspen
-from aspen import simplates
+from aspen import resources
 from nose.tools import with_setup
 
 
@@ -77,7 +77,7 @@ def teardown():
     """
     os.chdir(dirname(__file__))
     rm()
-    simplates.__cache = dict() # The simplate cache is process global. Hrm ...
+    resources.__cache__ = dict() # The resources cache is process global. Hrm ...
     if '.aspen' in sys.path[0]:
         sys.path = sys.path[1:]
     if 'foo' in sys.modules:

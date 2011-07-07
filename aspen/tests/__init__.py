@@ -39,11 +39,11 @@ class StubRequest:
         """
         fs = os.sep.join(fs.split('/'))
         request = Request.from_wsgi(StubWSGIRequest(fs))
-        c = Configurable.from_argv(['fsfix'])
-        c.copy_configuration_to(request)
+        website = Configurable.from_argv(['fsfix'])
+        website.copy_configuration_to(request)
         request.fs = fs
         request.namespace = {}
-        request.website = Stub()
+        request.website = website 
         request.website.template_loader = Stub()
         return request
 

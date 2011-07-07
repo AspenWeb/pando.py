@@ -22,7 +22,10 @@ class Request(object):
     http://sync.in/aspen-request
 
     """
-   
+
+    resource = None
+    original_resource = None
+
     def hydrate(self):
         """Populate a number of attributes on self based on primitives.
         """
