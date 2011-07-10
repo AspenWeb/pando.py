@@ -10,7 +10,7 @@ class StaticResource(Resource):
         if self.mimetype == 'application/json':
             self.mimetype = self.website.json_content_type
 
-    def render(self, request, response=None):
+    def respond(self, request, response=None):
         """Given a Request and maybe a Response, return or raise a Response.
         """
         response = response or Response()

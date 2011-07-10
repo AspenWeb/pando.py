@@ -52,10 +52,14 @@ class AspenConf(ConfigParser.RawConfigParser):
         ConfigParser.RawConfigParser.__init__(self)
         if filenames:
             self.read(filenames)
+        self.__sections__ = {}
 
     def __getitem__(self, name):
-        section = self.has_section(name) and self.items(name) or []
-        return AspenConfSection(section)
+        if name not in self.__sections__:
+            section = self.has_section(name) and self.items(name) or []
+            section = AspenConfSection(section)
+            self.__sections__[name] = section
+        return self.__sections__[name]
 
     def __getattr__(self, name):
         if name in self.__dict__:

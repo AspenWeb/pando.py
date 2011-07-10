@@ -18,7 +18,7 @@ def check(content, filename="index.html", body=True, aspenconf="", response=None
     request = StubRequest.from_fs(filename)
     response = response or Response()
     resource = load(request, 0)
-    response = resource.render(request, response)
+    response = resource.respond(request, response)
     if body:
         return response.body
     else:
@@ -151,7 +151,6 @@ def test_templating_skipped_without_script():
     expected = "{{ foo }}"
     actual = check("{{ foo }}", response=response)
     assert actual == expected, actual
-
 
 
 # Teardown

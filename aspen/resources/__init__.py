@@ -64,7 +64,7 @@ def get_resource_class(raw, mimetype):
         
         # *.sock files are always dynamic.
 
-        is_dynamic = False
+        pass
 
     elif mimetype.startswith('text/') or mimetype == 'application/json':
 
@@ -99,11 +99,11 @@ def get_resource_class(raw, mimetype):
 def load(request, modtime):
     """Given a Request and a modtime, return a Resource object (w/o caching).
 
-        Resource ------> Resource ------> JSONResource
-                 \                \ 
-                  \                \----> SocketResource
-                   \
-                    \--> StaticFile
+        Resource ------> DynamicResource ------> JSONResource
+                 \                       \ 
+                  \                       \----> SocketResource
+                   \                       \
+                    \--> StaticResource     \--> TemplateResource
         
     """
 

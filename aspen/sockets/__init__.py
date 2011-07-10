@@ -2,40 +2,52 @@
 
 https://github.com/learnboost/socket.io-spec
 
+Ah, abstraction! This is a whole convoluted mess to provide some pretty nice
+API inside socket resources. Here are the objects involved on the server side:
+
+    Request     an HTTP Request message
+    Response    an HTTP Response message
+    Resource    an HTTP resource
+    Socket      a Socket.IO socket, unbound to a transport mechanism
+    Transported a Socket.IO socket, bound to a transport mechanism
+
 """
-import uuid
-from aspen import Response
-
-
-TRANSPORTS = ['xhr-polling']
-FFFD = u'\ufffd'.encode('utf-8')
+from aspen import resources, Response
+from aspen.sockets.socket_ import Socket
+from aspen.sockets.transported import XHRPollingSocket
 
 
 __cache__ = {}
 
 
 def get(request):
-    """Takes a Request object.
+    """Takes a Request object and returns a Response or Transport object.
 
-    The path after *.sock is something like 1/websocket/43ef6fe7?foo=bar.
+    When we get the request it has socket set to a string, the path part after
+    *.sock, which is something like 1/websocket/43ef6fe7?foo=bar.
 
-    The socket.io handshake is a GET request to 1/. After the handshake,
-    subsequent messages are to 1/%transport/%sid?%query.
+        1           protocol (we only support 1)
+        websocket   transport
+        43ef6fe7    socket id (sid)
+        ?foo=bar    querystring
+
+    The socket.io handshake is a GET request to 1/. We return Response for the
+    handshake. After the handshake, subsequent messages are to the full URL as
+    above. We return a Transported instance for actual messages.
 
     """
-    return None
-    parts = request.path.raw.split('.sock/')
-    socket = None
-    if len(parts) == 1:
+
+    # Exit early.
+    # ===========
+
+    if request.socket is None:
         return None
-        request.path.raw = parts[0] + '.sock'
-        socket = socket_io.get_socket(parts[1], request)
 
 
-    # Parse and validate the input.
-    # =============================
+    # Parse and validate the socket URL.
+    # ==================================
 
-    parts = request.fs.split('/')
+    parts = request.socket.split('/')
     nparts = len(parts)
     if nparts not in (2, 3):
         msg = "Expected 2 or 3 path parts for Socket.IO socket, got %d."
@@ -51,23 +63,16 @@ def get(request):
     # =========
 
     if len(parts) == 2:
-        sid = uuid.uuid4().hex
-        heartbeat = str(15)
-        timeout = str(10)
-        transports = ",".join(TRANSPORTS)
-
-        __cache__[sid] = None
-
-        handshake = ":".join([sid, heartbeat, timeout, transports])
-
-        response = Response(200)
-        response.body = handshake
-        raise response # TODO return would be faster
+        print "shaking hands"
+        socket = Socket(request)
+        __cache__[socket.sid] = socket
+        return socket.shake_hands()
 
 
     # More than a handshake.
     # ======================
 
+    print "transporting"
     transport = parts[1]
     sid = parts[2]
 
@@ -80,57 +85,11 @@ def get(request):
         msg = "Expected %s in cache, didn't find it"
         raise Response(400, msg % sid)
 
-    if __cache__[sid] is None:
+    if isinstance(__cache__[sid], Socket):
         # This is the first request after a handshake. It's not until this
         # point that we know what transport the client wants to use.
-        SpecificSocket = XHRPollingSocket
-        __cache__[sid] = SpecificSocket(sid) 
+        Transported = XHRPollingSocket
+        __cache__[sid] = Transported(__cache__[sid]) 
 
-    socket = __cache__[sid]
-    return socket 
-
-
-class Socket(object):
-    """Base class.
-    """
-
-    def __init__(self, sid):
-        self.sid = sid
-
-
-class XHRPollingSocket(Socket):
-
-    def handle(self, request):
-        """
-        """
-        if request.method == 'POST':
-            message = request.socket.recv()
-            request.socket.send(messages[0]) 
-        else:
-            while 1:
-                if request.socket.messages:
-                    request.socket.send("1::")
-                time.sleep(0.5)
-
-        response = Response(200)
-        response.body = ""
-        return response
-
-    def recv(self):
-        raw = self.request.body.raw
-        frames = raw.split(FFFD)
-        frames.pop() # packet starts with FFFD
-        assert len(frames) % 2 == 0, "Odd number of frames!"
-        messages = []
-        while frames:
-            nbytes = frames.pop()
-            bytes = frames.pop()
-            messages.append(bytes)
-        return messages 
-
-    def send(self, msg):
-        response = Response(200)
-        msg = msg.encode('utf-8')
-        msg = '%s%d%s%s' % (FFFD, len(msg), FFFD, msg)
-        response.body = msg
-        raise response
+    transported = __cache__[sid]
+    return transported

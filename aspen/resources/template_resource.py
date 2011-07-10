@@ -31,35 +31,26 @@ class TemplateResource(DynamicResource):
     """This is a template resource. It has one, two, or three pages.
     """
 
-    def compile(self, npages, pages):
-        """Given an int and a sequence of bytestrings, set attributes on self.
+    max_pages = 2
+    max_pages = 3
+
+    def compile_third(self, one, two, three, padding):
+        """Given three bytestrings, return a Template instance.
+
+        This method depends on fs and website attributes on self.
+        
+        We used to take advantage of padding, but:
+
+            a) Tornado templates have some weird error handling that we haven't
+            exposed yet.
+            
+            b) It's counter-intuitive if your template resources show up in the
+            browser with tons of whitespace at the beginning of them.
+
         """
-        if npages == 2:
-            one = ""
-            two, three = pages
-        elif npages == 3:
-            one, two, three = pages
-        else:
-            raise SyntaxError( "Template resources may have at most three page"
-                               "s; %s has %d." % (request.fs, npages)
-                              )
-       
-        one, two = self.compile_python(one, two)
-        three = self._trim_initial_newline(three)
-        three = self._compile_template( three
-                                      , self.fs
-                                      , self.website.template_loader
-                                       )
-        self.one = one
-        self.two = two
-        self.three = three
-  
-    def _compile_template(self, template, name, loader):
-        """Given a bytestring, return a Template instance.
-        """
-        return Template( template 
-                       , name = name 
-                       , loader = loader
+        return Template( self._trim_initial_newline(three)
+                       , name = self.fs
+                       , loader = self.website.template_loader 
                        , compress_whitespace = False
                         )
 
@@ -81,8 +72,11 @@ class TemplateResource(DynamicResource):
         return template
 
 
-    def mutate(self, namespace):
-        """Given a namespace dict, mutate it.
+    def get_response(self, namespace):
+        """Given a namespace dict, return a response object.
         """
         response = namespace['response']
         response.body = self.three.generate(**namespace)
+        if response.headers.one('Content-Type') is None:
+            response.headers.set('Content-Type', self.mimetype)
+        return response

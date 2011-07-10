@@ -3,7 +3,7 @@ import urllib
 import urlparse
 from Cookie import CookieError, SimpleCookie
 
-from aspen import Response
+from aspen import resources, Response
 from aspen.http.headers import Headers
 from aspen.http.wwwform import WwwForm
 
@@ -23,33 +23,19 @@ class Request(object):
 
     """
 
+    socket = None
     resource = None
     original_resource = None
 
-    def hydrate(self):
-        """Populate a number of attributes on self based on primitives.
-        """
-        self.body = WwwForm(self.raw_body)
-        self.headers = Headers(self.raw_headers)
-        self.cookie = SimpleCookie()
-        try:
-            self.cookie.load(self.headers.one('Cookie', ''))
-        except CookieError:
-            pass
-
-        urlparts = urlparse.urlparse(self.raw_url)
-        self.path = Path(urlparts[2]) # populated by Website
-        self.raw_querystring = urlparts[4]
-        self.qs = WwwForm(self.raw_querystring)
-        self.url = self.rebuild_url() # needs things above
-        self.urlparts = urlparse.urlparse(self.url)
-
-        self.transport = None # set by Website for *.sock files
-        self.session_id = None # set by Website for *.sock files
-        self.root = '' # set by Website
-        self.fs = '' # set by Website
-        self.namespace = {} # populated by user in inbound hooks
-
+    def __init__(self, method='GET', url='/', headers='', body=''):
+        self.method = method
+        self.raw_url = url 
+        if not headers:
+            headers = 'Host: localhost'
+        self.raw_headers = headers
+        self.raw_body = body
+        self.hydrate()
+    
     @classmethod
     def from_wsgi(cls, environ):
         """Set primitives from a WSGI environ.
@@ -128,6 +114,29 @@ class Request(object):
         return "<%s %s>" % (self.method, self.path)
     __repr__ = __str__
 
+    def hydrate(self):
+        """Populate a number of attributes on self based on primitives.
+        """
+        self.body = WwwForm(self.raw_body)
+        self.headers = Headers(self.raw_headers)
+        self.cookie = SimpleCookie()
+        try:
+            self.cookie.load(self.headers.one('Cookie', ''))
+        except CookieError:
+            pass
+
+        urlparts = urlparse.urlparse(self.raw_url)
+        self.path = Path(urlparts[2]) # populated by Website
+        self.qs = WwwForm(urlparts[4])
+        self.url = self.rebuild_url() # needs things above
+        self.urlparts = urlparse.urlparse(self.url)
+
+        self.transport = None # set by Website for *.sock files
+        self.session_id = None # set by Website for *.sock files
+        self.root = '' # set by Website
+        self.fs = '' # set by Website
+        self.namespace = {} # populated by user in inbound hooks
+
     def allow(self, *methods):
         """Given a list of methods, raise 405 if we don't meet the requirement.
         """
@@ -163,6 +172,6 @@ class Request(object):
 
         url += urllib.quote(self.path.raw)
         # screw params, fragment?
-        if self.raw_querystring:
-            url += '?' + self.raw_querystring
+        if self.qs.raw:
+            url += '?' + self.qs.raw
         return url

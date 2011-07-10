@@ -55,21 +55,23 @@ class Website(Configurable):
                 request.website = self
 
                 self.hooks.run('inbound_early', request)
-                request.socket = sockets.get(request)
                 request.fs = self.translate(request)
-                request.resource = resources.get(request)
+                request.socket = sockets.get(request)
                 self.hooks.run('inbound_late', request)
 
-                if request.socket is not None:
-                    response = request.socket.handle(request)
-                else:
-                    response = request.resource.render(request)
+                if isinstance(request.socket, Response):    # handshake
+                    response = request.socket
+                    request.socket = None
+                elif request.socket is None:                # non-socket
+                    request.resource = resources.get(request)
+                    response = request.resource.respond(request)
+                else:                                       # socket
+                    response = request.socket.respond(request)
             except:
                 response = self.handle_error_nicely(request)
         except Response, response:
             # Grab the response object in the case where it was raised.  In the
-            # case where it was returned from resource.render, response is set
-            # in a try block above.
+            # case where it was returned, response is set in a try block above.
             pass
         else:
             # If the response object is coming from handle_error via except 
@@ -105,7 +107,7 @@ class Website(Configurable):
             request.fs = fs
             request.original_resource = request.resource
             request.resource = resources.get(request)
-            response = request.resource.render(request, response)
+            response = request.resource.respond(request, response)
             return response
         except Response, response:  # no nice error template available
             raise
@@ -141,7 +143,16 @@ class Website(Configurable):
     def translate(self, request):
         """Given a Request, return a filesystem path, or raise Response.
         """
-       
+    
+        # Zeroth step.
+        # ============
+        # Intercept socket requests. We modify the filesystem path so that your
+        # application thinks the request was to /foo.sock instead of to
+        # /foo.sock/blah/blah/blah/.
+
+        request.path.raw, request.socket = gauntlet.intercept_socket(request)
+
+
         # First step.
         # ===========
         # Set request.fs initially, return a list of fspath parts.
