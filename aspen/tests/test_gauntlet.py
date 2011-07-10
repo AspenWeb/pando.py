@@ -4,7 +4,7 @@ from os.path import dirname, join, realpath
 from aspen import gauntlet, Response
 from aspen.tests import assert_raises, handle
 from aspen.tests.fsfix import attach_teardown, expect, mk
-from aspen.http.request import Path
+from aspen.http.request import Path, Request
 from aspen.configuration import Configurable
 
 
@@ -285,6 +285,25 @@ def test_virtual_path_docs_6():
     actual = response.body
     assert actual == expected, actual
 
+
+# intercept_socket
+# ================
+
+def test_intercept_socket_protects_direct_access():
+    request = Request(url="/foo.sock")
+    assert_raises(Response, gauntlet.intercept_socket, request)
+
+def test_intercept_socket_intercepts_handshake():
+    request = Request(url="/foo.sock/1")
+    expected = ('/foo.sock', '1')
+    actual = gauntlet.intercept_socket(request)
+    assert actual == expected, actual
+
+def test_intercept_socket_intercepts_transported():
+    request = Request(url="/foo.sock/1/websocket/46327hfjew3?foo=bar")
+    expected = ('/foo.sock', '1/websocket/46327hfjew3')
+    actual = gauntlet.intercept_socket(request)
+    assert actual == expected, actual
 
 
 # mongs

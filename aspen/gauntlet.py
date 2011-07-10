@@ -11,6 +11,21 @@ from os.path import join, isfile, isdir, dirname, exists
 from aspen import Response
 
 
+def intercept_socket(request):
+    """Given a request object, return a tuple of (str, None) or (str, str).
+    """
+    if request.path.raw.endswith('.sock'):
+        # request.path.raw does not include querystring.
+        raise Response(404)
+    parts = request.path.raw.rsplit('.sock/', 1)
+    if len(parts) == 1:
+        path = parts[0]
+        socket = None
+    else:
+        path = parts[0] + '.sock'
+        socket = parts[1]
+    return path, socket
+
 def translate(request):
     """Translate urlpath to fspath, returning urlpath parts.
 

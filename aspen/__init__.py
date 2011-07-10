@@ -2,20 +2,7 @@ import os
 import sys
 import time
 from aspen.http.response import Response
-
-
-# Find a json module.
-# ===================
-# The standard library includes simplejson as json since 2.6, but without the 
-# C speedups. So we prefer simplejson if it is available.
-
-try:
-    import simplejson as json
-except ImportError:
-    try:
-        import json
-    except ImportError:
-        json = None
+from aspen import json_ as json
 
 
 __version__ = "~~VERSION~~"
