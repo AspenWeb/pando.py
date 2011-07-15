@@ -82,7 +82,6 @@ class Website(Configurable):
             self.hooks.run('outbound_early', response)
 
         self.hooks.run('outbound_late', response)
-        response.headers.set('Content-Length', len(response.body))
         self.log_access(request, response) # TODO is this at the right level?
         return response
 

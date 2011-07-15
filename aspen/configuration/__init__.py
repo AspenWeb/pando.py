@@ -143,7 +143,7 @@ def load_engine(opts, configuration):
             msg = "engine is not one of {%s}: %%s" % (','.join(aspen.ENGINES))
             raise ConfigurationError(msg % engine)
     try: 
-        exec 'from aspen.server.%s_ import Engine' % engine_name
+        exec 'from aspen.engines.%s_ import Engine' % engine_name
     except ImportError:
         # ANSI colors: 
         #   http://stackoverflow.com/questions/287871/

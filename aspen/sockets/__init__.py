@@ -1,20 +1,29 @@
 """Implement the server side of Socket.IO.
 
-https://github.com/learnboost/socket.io-spec
+    https://github.com/learnboost/socket.io-spec
 
 Ah, abstraction! This is a whole convoluted mess to provide some pretty nice
 API inside socket resources. Here are the objects involved on the server side:
 
-    Request     an HTTP Request message
+    Message     a Socket.IO message, a colon-delimited set of strings
+    Packet      a Socket.IO packet, a message or series of framed messages
+    Buffer      a Socket.IO buffer, buffers incoming and outgoing messages 
+    Socket      a Socket.IO socket, maintains state
+    Transport   a Socket.IO transport mechanism, does HTTP work
+    Resource    an HTTP resource, a file on your filesystem, business logic
     Response    an HTTP Response message
-    Resource    an HTTP resource
-    Socket      a Socket.IO socket, unbound to a transport mechanism
-    Transported a Socket.IO socket, bound to a transport mechanism
+    Request     an HTTP Request message
 
 """
-from aspen import resources, Response
-from aspen.sockets.socket_ import Socket
-from aspen.sockets.transported import XHRPollingSocket
+from aspen import Response
+
+FFFD = u'\ufffd'.encode('utf-8')
+HEARTBEAT = 15
+TIMEOUT = 10
+TRANSPORTS = ['xhr-polling']
+
+from aspen.sockets.socket import Socket
+from aspen.sockets.transport import XHRPollingTransport
 
 
 __cache__ = {}
@@ -31,7 +40,7 @@ def get(request):
         43ef6fe7    socket id (sid)
         ?foo=bar    querystring
 
-    The socket.io handshake is a GET request to 1/. We return Response for the
+    The Socket.IO handshake is a GET request to 1/. We return Response for the
     handshake. After the handshake, subsequent messages are to the full URL as
     above. We return a Transported instance for actual messages.
 
@@ -63,7 +72,6 @@ def get(request):
     # =========
 
     if len(parts) == 2:
-        print "shaking hands"
         socket = Socket(request)
         __cache__[socket.sid] = socket
         return socket.shake_hands()
@@ -72,7 +80,6 @@ def get(request):
     # More than a handshake.
     # ======================
 
-    print "transporting"
     transport = parts[1]
     sid = parts[2]
 
@@ -85,11 +92,11 @@ def get(request):
         msg = "Expected %s in cache, didn't find it"
         raise Response(400, msg % sid)
 
-    if isinstance(__cache__[sid], Socket):
+    if type(__cache__[sid]) is Socket:
         # This is the first request after a handshake. It's not until this
         # point that we know what transport the client wants to use.
-        Transported = XHRPollingSocket
-        __cache__[sid] = Transported(__cache__[sid]) 
+        Transport = XHRPollingTransport
+        __cache__[sid] = Transport(__cache__[sid]) 
 
-    transported = __cache__[sid]
-    return transported
+    transport = __cache__[sid]
+    return transport
