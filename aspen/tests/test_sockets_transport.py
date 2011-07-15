@@ -1,17 +1,20 @@
+import time
 from collections import deque
 
 from aspen import Response
 from aspen.http.request import Request
+from aspen.sockets import TIMEOUT
 from aspen.sockets.transport import XHRPollingTransport
 from aspen.sockets.message import Message
 from aspen.tests.test_sockets_socket import make_socket
 from aspen.tests.fsfix import attach_teardown, mk
 
 
-def make_transport(state=0):
-    mk(('echo.sock', ''))
+def make_transport(content='', state=0):
+    mk(('echo.sock', content))
     socket = make_socket()
     transport = XHRPollingTransport(socket)
+    transport.timeout = 0.05
     if state == 1:
         transport.respond(Request())
     return transport
@@ -71,14 +74,40 @@ def test_transport_POST_gives_data_to_socket():
     
 def test_transport_GET_gets_data_from_socket():
     transport = make_transport(state=1)
-    transport.socket.outgoing.push(Message.from_bytes("3:::Greetings, program!"))
+    message = Message.from_bytes("3:::Greetings, program!")
+    transport.socket.outgoing.push(message)
     
     request = Request('GET')
     response = transport.respond(request)
    
-    expected = response.body
-    actual = ''
+    expected = '3:::Greetings, program!'
+    actual = response.body.next()
     assert actual == expected, actual
     
+def test_transport_GET_blocks_for_empty_socket():
+    transport = make_transport(state=1)
+    
+    request = Request('GET')
+    start = time.time()
+    response = transport.respond(request)
+    end = time.time()
+ 
+    expected = transport.timeout
+    actual = end - start
+    assert actual > expected, actual
+
+def test_transport_handles_roundtrip():
+    transport = make_transport(state=1, content="socket.send(socket.recv())")
+    
+    request = Request('POST', body="3:::ping")
+    transport.respond(request)
+ 
+    request = Request('GET')
+    response = transport.respond(request)
+
+    expected = "3:::ping"
+    actual = response.body.next()
+    assert actual == expected, actual
+
 
 attach_teardown(globals())

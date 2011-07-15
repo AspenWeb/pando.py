@@ -34,11 +34,20 @@ class Buffer(collections.deque):
     pop = collections.deque.pop
 
     def flush(self):
+        """Return an iterable of bytestrings or None.
+        """
+        if self:
+            return self.__flusher()
+        return None
+
+    def __flusher(self):
         """Yield strings.
 
         We unload bytestrings as fast as we can until we run out of time or
         bytestrings. We always yield at least one bytestring, however, to avoid
         deadlock.
+
+        This generator is instantiated in flush.
 
         """
         if self:

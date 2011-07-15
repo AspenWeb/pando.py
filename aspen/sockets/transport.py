@@ -17,6 +17,7 @@ class Transport(object):
 class XHRPollingTransport(Transport):
 
     state = 0
+    timeout = TIMEOUT * 0.90
 
     def respond(self, request):
         """Given a Request, return a Response.
@@ -33,11 +34,12 @@ class XHRPollingTransport(Transport):
         elif request.method == 'GET':
             # The client is asking for data.
             bytes = ""
-            timeout = time.time() + TIMEOUT - 1
-            while not bytes and time.time() < timeout:
+            timeout = time.time() + self.timeout
+            while time.time() < timeout:
+                _bytes = self.socket._recv()
+                if _bytes is not None:
+                    bytes = _bytes
+                    break
                 time.sleep(0.01)
-                bytes = self.socket._recv()
             response = Response(200, bytes)
         return response
-
-

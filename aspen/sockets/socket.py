@@ -1,3 +1,4 @@
+import time
 import uuid
 
 from aspen import resources, Response
@@ -26,6 +27,7 @@ class Socket(object):
         """Takes the handshake request.
         """
         self.sid = uuid.uuid4().hex
+        self.endpoint = request.path.raw
         self.resource = resources.get(request)
 
         self.incoming = Buffer()
@@ -51,8 +53,8 @@ class Socket(object):
         """Exec the third page of the resource forever.
         """
         while 1:
-            #print "buffers", self.incoming, self.outgoing
             self.tick()
+            time.sleep(0.010)
 
 
     # Client Side
@@ -65,27 +67,29 @@ class Socket(object):
         return self.incoming.next()
 
     def recv_json(self):
-        """Block for the next message, and parse it as JSON then return it.
+        """Block for the next message, parse it as JSON, and return it.
         """
-        data = self.incoming.next()
-        return json.loads(data)
+        bytes = self.incoming.next()
+        return json.loads(bytes)
 
     def recv_event(self):
-        """Block for the next message, and parse it as an event then return it.
+        """Block for the next message, parse it as an event, and return it.
         """
-        return Event(self.incoming.blocked.next())
+        bytes = self.incoming.next()
+        return Event(bytes)
+
 
     def send(self, data):
         """Buffer a plain message to be sent to the client.
         """
         self.__send(3, data)
 
-    def send_json(self, msg):
+    def send_json(self, data):
         """Buffer a JSON message to be sent to the client.
         """
         self.__send(4, data)
 
-    def send_event(self, msg):
+    def send_event(self, data):
         """Buffer an event message to be sent to the client.
         """
         self.__send(5, data)
@@ -93,6 +97,7 @@ class Socket(object):
     def __send(self, type_, data):
         message = Message()
         message.type = type_ 
+        message.endpoint = self.endpoint
         message.data = data
         self.outgoing.push(message)
 
@@ -102,21 +107,25 @@ class Socket(object):
     # These are called from Aspen's HTTP machinery.
 
     def _recv(self):
-        """Return an iterator of bytes. 
+        """Return an iterator of bytes or None. Don't block.
         """
         return self.outgoing.flush()
 
     def _send(self, bytes):
-        """Given bytes, process messages.
+        """Given a packet bytestring, process messages.
         """
         packet = Packet(bytes)
         for message in packet:
+            if message.endpoint != self.endpoint:
+                msg = "The %s endpoint got a message intended for %s."
+                msg %= self.endpoint, message.endpoint
+                raise RuntimeError(msg)
             if message.type == 0:           # disconnect
                 pass
-            elif message.type == 2:         # connect 
+            elif message.type == 1:         # connect 
                 pass
             elif message.type == 2:         # heartbeat
-                self.send()
+                pass
             elif message.type in (3, 4, 5): # data message
                 self.incoming.push(message.data)
             elif message.type in (6, 7, 8): # blah, blah, blah
