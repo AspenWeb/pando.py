@@ -1,54 +1,40 @@
+"""Packets.
+
+Socket.IO packets contain one or more frames of this format:
+      
+    \ufffdlength\ufffdencoded-message
+
+Alternately, a packet can contain a single encoded-message, without framing.
+
+"""
+from aspen.sockets import FFFD
 from aspen.sockets.message import Message
 
 
-FFFD = u'\ufffd'.encode('utf-8')
-
-
-class Packet(list):
-    """Represent a packet containing multiple messages framed together.
-    
-    Socket.IO packets contain one or more frames of this format:
-      
-        \ufffdlength\ufffdencoded-message
-
-    Alternately, a packet can contain a single encoded-message.
-
+class Packet(object):
+    """Model a Socket.IO packet. It takes bytes and yields Messages.
     """
-
+    
     def __init__(self, bytes):
-        """Takes possibly-framed bytes.
+        self.bytes = bytes
+
+    def __iter__(self):
+        """Yield Message objects.
         """
-        print repr(bytes[:3]), repr(FFFD)
-        if bytes[:3] != FFFD:
-            self.append(bytes)
+        if self.bytes[:3] != FFFD:
+            yield Message.from_bytes(self.bytes)
         else:
-            # If bytes is not a properly-formatted message, that will be 
-            # caught in Message.
-            frames = ['', len(bytes), bytes]
-            frames.pop() # packet starts with FFFD; discard empty string
+            frames = self.bytes.split(FFFD)
+            frames = frames[1:] # discard initial empty string
             nframes = len(frames)
             if nframes % 2 != 0:
-                raise Response(400, "Odd number of frames.")
-            while frames: 
-                #nbytes = frames[0] ignored
-                bytes = frames[1]
+                msg = "There are an odd number of frames in this packet: " 
+                msg += self.bytes
+                raise SyntaxError(msg)
+            while frames:
+                # frames == [nbytes, bytes, nbytes, bytes, ...]
+                # We only care about bytes.
+                yield Message.from_bytes(frames[1])
                 frames = frames[2:]
-                self.append(bytes)
-    
-    def append(self, message):
-        if type(message) is str:
-            message = Message.from_bytes(message)
-        super(Packet, self).append(message)
 
-    def __str__(self):
-        nmessages = len(self)
-        if nmessages == 0:
-            out = ''
-        elif nmessages == 1:
-            out = str(self[0])
-        else:
-            framed = []
-            for message in self:
-                framed.append("%s%d%s%s" % (FFFD, len(message), FFFD, message))
-            out = ''.join(framed)
-        return out
+

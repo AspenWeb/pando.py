@@ -6,7 +6,6 @@ class StaticResource(Resource):
 
     def __init__(self, *a, **kw):
         super(StaticResource, self).__init__(*a, **kw)
-        self.nbytes = len(self.raw)
         if self.mimetype == 'application/json':
             self.mimetype = self.website.json_content_type
 
@@ -17,5 +16,4 @@ class StaticResource(Resource):
         # XXX Perform HTTP caching here.
         response.body = self.raw
         response.headers.set('Content-Type', self.mimetype)
-        response.headers.set('Content-Length', self.nbytes)
         return response

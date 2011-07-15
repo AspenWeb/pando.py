@@ -23,8 +23,9 @@ class Response(Exception):
         """
         if not isinstance(code, int):
             raise TypeError("'code' must be an integer")
-        elif not isinstance(body, basestring):
-            raise TypeError("'body' must be a string")
+        elif not isinstance(body, str) and not hasattr(body, '__iter__'):
+            raise TypeError("'body' must be a bytestring or iterable of "
+                            "bytestrings")
         elif headers is not None and not isinstance(headers, (dict, list)):
             raise TypeError("'headers' must be a dictionary or a list of " +
                             "2-tuples")
@@ -53,7 +54,10 @@ class Response(Exception):
             for v in vals:
                 wsgi_headers.append((k, v))
         start_response(wsgi_status, wsgi_headers)
-        return [self.body]
+        body = self.body
+        if isinstance(body, basestring):
+            body = [body]
+        return body
 
     def __repr__(self):
         return "<Response: %s>" % str(self)

@@ -25,9 +25,14 @@ class Message(object):
     @classmethod
     def from_bytes(cls, bytes):
         parts = bytes.split(':', 3)
-        if len(parts) != 4:
-            raise Response(400, "Malformed message: %s" % bytes)
+        if len(parts) == 3:
+            parts.append('') # data part is optional
+        if len(parts) != 4: # "::".split(":", 3) == ['', '', '']
+            raise SyntaxError("This message has too few colons: %s." % bytes)
         return cls(*parts)
+
+    def __repr__(self):
+        return "<Message %s>" % self
 
     def __str__(self):
         data = self.data
@@ -38,6 +43,9 @@ class Message(object):
                         , self.endpoint
                         , data
                          ])
+
+    def __cmp__(self, other):
+        return cmp(str(self), str(other))
 
     # type
     # ====
@@ -52,7 +60,7 @@ class Message(object):
             type_ = int(type_)
             assert type_ in range(9)
         except (ValueError, AssertionError), exc:
-            raise Response(400, "Message type not in 0..8: %s" % type_)
+            raise ValueError("The message type is not in 0..8: %s." % type_)
         self.__type = type_
 
     type = property(_get_type, _set_type)
@@ -72,13 +80,12 @@ class Message(object):
         elif self.type == 5:            # event
             data = json.loads(data)
             if 'name' not in data:
-                raise Response(400, "Event message must have 'name' key.")
+                raise ValueError("An event message must have a 'name' key.")
             if 'args' not in data:
-                raise Response(400, "Event message must have 'args' key.")
+                raise ValueError("An event message must have an 'args' key.")
             if data['name'] in RESERVED_EVENTS:
-                raise Response( 400
-                              , "Event name is reserved: %s." % data['name']
-                               )
+                msg = "That event name is reserved: %s." % data['name']
+                raise ValueError(msg)
         self.__data = data
 
     data = property(_get_data, _set_data)
