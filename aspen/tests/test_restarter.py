@@ -1,4 +1,4 @@
-from aspen.server import restarter
+from aspen import restarter
 from aspen.tests.fsfix import attach_teardown
 
 class Foo:

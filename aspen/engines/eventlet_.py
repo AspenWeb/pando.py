@@ -3,7 +3,7 @@ import sys
     
 import eventlet
 import eventlet.wsgi
-from aspen.server import BaseEngine
+from aspen.engines import CooperativeEngine
 
 
 class DevNull:
@@ -11,7 +11,7 @@ class DevNull:
         pass
 
 
-class Engine(BaseEngine):
+class Engine(CooperativeEngine):
 
     eventlet_socket = None # a socket, per eventlet
 
@@ -35,3 +35,6 @@ class Engine(BaseEngine):
                 check_all()
                 eventlet.sleep(0.5)
         eventlet.spawn_n(loop)
+
+    def spawn_socket_handler(socket):
+        eventlet.spawn_n(socket.loop)

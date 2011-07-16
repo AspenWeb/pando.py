@@ -2,10 +2,10 @@ import time
 import threading
 
 from aspen._cherrypy.wsgiserver import CherryPyWSGIServer
-from aspen.server import BaseEngine
+from aspen.engines import ThreadedEngine
 
 
-class Engine(BaseEngine):
+class Engine(ThreadedEngine):
 
     cp_server = None # a CherryPyWSGIServer instance
 
@@ -31,13 +31,3 @@ class Engine(BaseEngine):
         checker = threading.Thread(target=loop)
         checker.daemon = True
         checker.start()
-
-
-    socket_threads = []
-    def spawn_socket_handler(self, socket):
-        """Given a Socket object, spawn a [micro]thread to loop it.
-        """
-        t = threading.Thread(target=socket.loop)
-        t.daemon = True
-        t.start()
-        self.socket_threads.append(t)

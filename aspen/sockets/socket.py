@@ -10,11 +10,11 @@ from aspen.sockets.packet import Packet
 
 
 class Socket(object):
-    """Model a Socket.IO socket session, regardless of transport.
+    """Model a persistent Socket.IO socket (regardless of transport).
 
-    Session objects sit between Aspen's HTTP machinery and your Resource. They
+    Socket objects sit between Aspen's HTTP machinery and your Resource. They
     function as middleware, and the recv/send and _recv/_send semantics reflect
-    this.
+    this. They are persistent.
     
     """
 
@@ -30,8 +30,8 @@ class Socket(object):
         self.endpoint = request.path.raw
         self.resource = resources.get(request)
 
-        self.incoming = Buffer()
-        self.outgoing = Buffer()
+        self.incoming = request.engine.Buffer()
+        self.outgoing = request.engine.Buffer()
         self.namespace = self.resource.exec_second(self, request)
 
     def shake_hands(self):
@@ -46,6 +46,10 @@ class Socket(object):
 
     def tick(self):
         """Exec the third page of the resource.
+
+        It is expected that socket resources will block via self.recv() or some
+        other mechanism.
+
         """
         exec self.resource.three in self.namespace
 
@@ -54,7 +58,6 @@ class Socket(object):
         """
         while 1:
             self.tick()
-            time.sleep(0.010)
 
 
     # Client Side
@@ -65,6 +68,12 @@ class Socket(object):
         """Block until the next message is available, then return it.
         """
         return self.incoming.next()
+
+    def recv_utf8(self):
+        """Block until the next message is available, then return it.
+        """
+        bytes = self.incoming.next()
+        return bytes.decode('utf8')
 
     def recv_json(self):
         """Block for the next message, parse it as JSON, and return it.
@@ -84,6 +93,11 @@ class Socket(object):
         """
         self.__send(3, data)
 
+    def send_utf8(self):
+        """Buffer a UTF-8 message to be sent to the client.
+        """
+        self.__send(3, data.encode('utf8'))
+
     def send_json(self, data):
         """Buffer a JSON message to be sent to the client.
         """
@@ -99,12 +113,12 @@ class Socket(object):
         message.type = type_ 
         message.endpoint = self.endpoint
         message.data = data
-        self.outgoing.push(message)
+        self.outgoing.put(message)
 
 
     # Server Side 
     # ===========
-    # These are called from Aspen's HTTP machinery.
+    # These are called by Aspen's HTTP machinery.
 
     def _recv(self):
         """Return an iterator of bytes or None. Don't block.
@@ -127,6 +141,6 @@ class Socket(object):
             elif message.type == 2:         # heartbeat
                 pass
             elif message.type in (3, 4, 5): # data message
-                self.incoming.push(message.data)
+                self.incoming.put(message.data)
             elif message.type in (6, 7, 8): # blah, blah, blah
                 pass
