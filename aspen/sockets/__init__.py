@@ -74,7 +74,7 @@ def get(request):
     if len(parts) == 2:
         socket = Socket(request)
         __cache__[socket.sid] = socket
-        request.engine.spawn_socket_handler(socket)
+        request.engine.spawn_socket_loop(socket)
         return socket.shake_hands()
 
 

@@ -3,7 +3,7 @@ from collections import deque
 
 from aspen import Response
 from aspen.http.request import Request
-from aspen.sockets import TIMEOUT
+from aspen.sockets import FFFD
 from aspen.sockets.transport import XHRPollingTransport
 from aspen.sockets.message import Message
 from aspen.tests.test_sockets_socket import make_socket
@@ -14,9 +14,9 @@ def make_transport(content='', state=0):
     mk(('echo.sock', content))
     socket = make_socket()
     transport = XHRPollingTransport(socket)
-    transport.timeout = 0.05
+    transport.timeout = 0.05 # for testing, could screw up the test
     if state == 1:
-        transport.respond(Request())
+        transport.respond(Request(url='/echo.sock'))
     return transport
 
 
@@ -65,7 +65,10 @@ def test_transport_stays_in_state_1_after_second_request():
 def test_transport_POST_gives_data_to_socket():
     transport = make_transport(state=1)
 
-    request = Request('POST', body='3:::Greetings, program!')
+    request = Request( 'POST'
+                     , '/echo.sock'
+                     , body='3::/echo.sock:Greetings, program!'
+                      )
     transport.respond(request)
    
     expected = deque(['Greetings, program!'])
@@ -75,12 +78,12 @@ def test_transport_POST_gives_data_to_socket():
 def test_transport_GET_gets_data_from_socket():
     transport = make_transport(state=1)
     message = Message.from_bytes("3:::Greetings, program!")
-    transport.socket.outgoing.push(message)
+    transport.socket.outgoing.put(message)
     
     request = Request('GET')
     response = transport.respond(request)
    
-    expected = '3:::Greetings, program!'
+    expected = FFFD+'23'+FFFD+'3:::Greetings, program!'
     actual = response.body.next()
     assert actual == expected, actual
     
@@ -99,13 +102,14 @@ def test_transport_GET_blocks_for_empty_socket():
 def test_transport_handles_roundtrip():
     transport = make_transport(state=1, content="socket.send(socket.recv())")
     
-    request = Request('POST', body="3:::ping")
+    request = Request('POST', '/echo.sock', body="3::/echo.sock:ping")
     transport.respond(request)
+    transport.socket.tick() # do it manually
  
-    request = Request('GET')
+    request = Request('GET', '/echo.sock')
     response = transport.respond(request)
 
-    expected = "3:::ping"
+    expected = FFFD+"18"+FFFD+"3::/echo.sock:ping"
     actual = response.body.next()
     assert actual == expected, actual
 

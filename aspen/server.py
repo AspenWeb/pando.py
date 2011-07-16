@@ -1,32 +1,3 @@
-class BaseEngine(object):
-
-    def __init__(self, name, website):
-        """Takes an identifying string and a WSGI application.
-        """
-        self.name = name
-        self.website = website
-
-    def bind(self):
-        """Bind to a socket, based on website.sockfam and website.address.
-        """
-
-    def start(self):
-        """Start listening on the socket.
-        """
-
-    def stop(self):
-        """Stop listening on the socket.
-        """
-
-    def start_restarter(self, check_all):
-        """Start a loop that runs check_all every half-second.
-        """
-
-    def stop_restarter(self):
-        """Stop the loop that runs check_all (optional).
-        """
-
-
 def main(argv=None):
     """http://aspen.io/cli/
     """
@@ -46,7 +17,7 @@ def main(argv=None):
         import traceback
         from os.path import exists, join
 
-        from aspen.server import restarter
+        from aspen import restarter
         from aspen.website import Website
 
         

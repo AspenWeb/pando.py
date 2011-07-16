@@ -1,9 +1,9 @@
 import diesel
-from aspen.server import BaseEngine
+from aspen.engines import CooperativeEngine
 from diesel.protocols import wsgi
 
 
-class Engine(BaseEngine):
+class Engine(CooperativeEngine):
 
     diesel_app = None # a diesel diesel_app instance
 

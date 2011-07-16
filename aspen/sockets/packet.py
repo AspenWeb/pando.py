@@ -38,3 +38,6 @@ class Packet(object):
                 frames = frames[2:]
 
 
+def frame(bytes):
+    bytes = str(bytes)
+    return "%s%d%s%s" % (FFFD, len(bytes), FFFD, bytes)

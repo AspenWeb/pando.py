@@ -1,10 +1,10 @@
-from aspen.server import BaseEngine
-from pants import cycle, engine
+from aspen.engines import ThreadEngine
+import pants
 from pants.contrib.http import HTTPServer
 from pants.contrib.wsgi import WSGIConnector
 
 
-class Engine(BaseEngine):
+class Engine(CooperativeEngine):
 
     def bind(self):
         connector = WSGIConnector(self.website)
@@ -14,10 +14,10 @@ class Engine(BaseEngine):
                            )
 
     def start(self):
-        engine.start()
+        pants.engine.start()
 
     def stop(self):
-        engine.stop()
+        pants.engine.stop()
 
     def start_restarter(self, check_all):
-        cycle(check_all, 0.5)
+        pants.cycle(check_all, 0.5)

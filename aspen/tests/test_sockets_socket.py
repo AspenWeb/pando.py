@@ -2,14 +2,16 @@ import os
 
 from aspen.tests.fsfix import mk, attach_teardown
 from aspen.http.request import Request
+from aspen.sockets import FFFD
 from aspen.sockets.socket import Socket
 from aspen.sockets.message import Message
 from aspen.website import Website
 
 
 def make_socket(filename='echo.sock'):
-    request = Request()
+    request = Request(url='/echo.sock')
     request.website = Website([])
+    request.website.copy_configuration_to(request)
     request.fs = os.sep.join([os.path.dirname(__file__), 'fsfix', filename])
     return Socket(request)
 
@@ -45,7 +47,7 @@ def test_socket_can_barely_function():
     socket = make_socket()
     socket.tick()
 
-    expected = '3:::Greetings, program!'
+    expected = FFFD+'33'+FFFD+'3::/echo.sock:Greetings, program!'
     actual = socket._recv().next()
     assert actual == expected, actual
 
@@ -53,10 +55,10 @@ def test_socket_can_echo():
     mk(('echo.sock', 'socket.send(socket.recv())'))
     
     socket = make_socket() 
-    socket._send('3:::Greetings, program!')
+    socket._send('3::/echo.sock:Greetings, program!')
     socket.tick()
 
-    expected = '3:::Greetings, program!'
+    expected = FFFD+'33'+FFFD+'3::/echo.sock:Greetings, program!'
     actual = socket._recv().next()
     assert actual == expected, actual
 

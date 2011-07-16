@@ -17,29 +17,31 @@ class Transport(object):
 class XHRPollingTransport(Transport):
 
     state = 0
-    timeout = TIMEOUT * 0.90
+    timeout = TIMEOUT * 0.90 # Allow for some wiggle-room to prevent XHRs
+                             # from cancelling too often.
 
     def respond(self, request):
         """Given a Request, return a Response.
         """
         request.allow('GET', 'POST')
-        if self.state == 0:
-            # Socket.IO wants confirmation.
+
+        if self.state == 0:             # The client wants confirmation.
             response = Response(200, "1:::")
             self.state = 1
-        elif request.method == 'POST':
-            # The client is sending us data.
+
+        elif request.method == 'POST':  # The client is sending us data.
             self.socket._send(request.body.raw)
-            response = Response(200) # XXX What's the proper response here?
-        elif request.method == 'GET':
-            # The client is asking for data.
-            bytes = ""
+            response = Response(200)
+            
+        elif request.method == 'GET':   # The client is asking for data.
+            bytes_iter = iter([""])
             timeout = time.time() + self.timeout
             while time.time() < timeout:
-                _bytes = self.socket._recv()
-                if _bytes is not None:
-                    bytes = _bytes
+                _bytes_iter = self.socket._recv()
+                if _bytes_iter is not None:
+                    bytes_iter = _bytes_iter
                     break
-                time.sleep(0.01)
-            response = Response(200, bytes)
+                time.sleep(0.010)
+            response = Response(200, bytes_iter)
+
         return response

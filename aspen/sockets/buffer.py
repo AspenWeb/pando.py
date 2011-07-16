@@ -1,11 +1,11 @@
 import collections
 import time
 
-from aspen.sockets import FFFD, packet
-from aspen.sockets.message import Message
+
+from aspen.sockets import packet
 
 
-class Buffer(collections.deque):
+class ThreadedBuffer(collections.deque):
     """Model a buffer of items.
   
     There are two of these for each Socket, one for incoming message payloads
@@ -27,11 +27,20 @@ class Buffer(collections.deque):
         """
         if messages is not None:
             for message in messages:
-                self.push(message)
+                self.put(message)
         self.__blocked = self.__blocked()
 
-    push = collections.deque.appendleft
-    pop = collections.deque.pop
+
+    # put/get
+    # =======
+
+    put = collections.deque.appendleft
+    get = collections.deque.pop
+
+    
+    # flush
+    # =====
+    # Used for outgoing buffer.
 
     def flush(self):
         """Return an iterable of bytestrings or None.
@@ -44,17 +53,23 @@ class Buffer(collections.deque):
         """Yield strings.
 
         We unload bytestrings as fast as we can until we run out of time or
-        bytestrings. We always yield at least one bytestring, however, to avoid
-        deadlock.
+        bytestrings. On my MacBook Pro I am seeing between 500 and 1000
+        messages dumped in 2ms--without any WSGI/HTTP/TCP overhead. We always
+        yield at least one bytestring to avoid deadlock.
 
         This generator is instantiated in flush.
 
         """
         if self:
-            yield str(self.pop())
-        timeout = time.time() + (0.020)
+            yield packet.frame(self.get())
+        timeout = time.time() + (0.007) # We have 7ms to dump bytestrings. Go!
         while self and time.time() < timeout:
-            yield str(self.pop())
+            yield packet.frame(self.get())
+
+
+    # next 
+    # ====
+    # Used for incoming buffer.
 
     def next(self):
         return self.__blocked.next()
@@ -67,6 +82,7 @@ class Buffer(collections.deque):
         """
         while 1:
             if self:
-                yield self.pop()
+                yield self.get()
             time.sleep(0.010)
 
+Buffer = ThreadedBuffer
