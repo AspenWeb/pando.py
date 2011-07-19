@@ -1,7 +1,7 @@
 import time
 import uuid
 
-from aspen import resources, Response
+from aspen import json, resources, Response
 from aspen.sockets import HEARTBEAT, TIMEOUT, TRANSPORTS
 from aspen.sockets.buffer import Buffer
 from aspen.sockets.event import Event
@@ -29,6 +29,7 @@ class Socket(object):
         self.sid = uuid.uuid4().hex
         self.endpoint = request.path.raw
         self.resource = resources.get(request)
+        request.website.copy_configuration_to(self)
 
         self.incoming = request.engine.Buffer()
         self.outgoing = request.engine.Buffer()
@@ -63,6 +64,11 @@ class Socket(object):
     # Client Side
     # ===========
     # Call these inside of your Resource.
+
+    def sleep(self, seconds):
+        """Sleep.
+        """
+        self.engine.sleep(seconds)
 
     def recv(self):
         """Block until the next message is available, then return it.
@@ -101,11 +107,15 @@ class Socket(object):
     def send_json(self, data):
         """Buffer a JSON message to be sent to the client.
         """
+        if not isinstance(data, basestring):
+            data = json.dumps(data)
         self.__send(4, data)
 
     def send_event(self, data):
         """Buffer an event message to be sent to the client.
         """
+        if not isinstance(data, basestring):
+            data = json.dumps(data)
         self.__send(5, data)
 
     def __send(self, type_, data):
