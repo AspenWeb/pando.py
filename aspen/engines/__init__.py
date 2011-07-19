@@ -1,4 +1,6 @@
 import threading
+import time
+
 from aspen.sockets.buffer import ThreadedBuffer
 
 
@@ -49,6 +51,9 @@ class ThreadedEngine(BaseEngine):
         t.daemon = True
         t.start()
 
+    def sleep(self, seconds):
+        time.sleep(seconds)
+
     Buffer = ThreadedBuffer
     
 class CooperativeEngine(BaseEngine):
@@ -65,5 +70,8 @@ class CooperativeEngine(BaseEngine):
 
         """
         socket.loop()
+
+    def sleep(self, seconds):
+        raise NotImplementedError
 
     Buffer = NotImplemented
