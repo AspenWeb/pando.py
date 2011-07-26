@@ -55,6 +55,12 @@ class AspenConf(ConfigParser.RawConfigParser):
         self.__sections__ = {}
 
     def __getitem__(self, name):
+        """Given a name, return a dictionary.
+
+        Take care to always return the same dictionary for a given name, so 
+        consumers can mutate the dictionary if they want to.
+
+        """
         if name not in self.__sections__:
             section = self.has_section(name) and self.items(name) or []
             section = AspenConfSection(section)
