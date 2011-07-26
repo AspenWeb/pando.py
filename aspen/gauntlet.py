@@ -1,9 +1,10 @@
-"""Define a bunch of functions that change request.fs.
+"""Define a bunch of functions that change the request.
 
 These functions determine the handelability of a request, and run in the order
 given here.
 
 """
+import logging
 import os
 import urlparse
 from os.path import join, isfile, isdir, dirname, exists
@@ -11,8 +12,16 @@ from os.path import join, isfile, isdir, dirname, exists
 from aspen import Response
 
 
+log = logging.getLogger('aspen.gauntlet')
+
+
 def intercept_socket(request):
     """Given a request object, return a tuple of (str, None) or (str, str).
+
+    Intercept socket requests. We modify the filesystem path so that your
+    application thinks the request was to /foo.sock instead of to
+    /foo.sock/blah/blah/blah/.
+
     """
     if request.path.raw.endswith('.sock'):
         # request.path.raw does not include querystring.
@@ -24,7 +33,8 @@ def intercept_socket(request):
     else:
         path = parts[0] + '.sock'
         socket = parts[1]
-    return path, socket
+    request.path.raw, request.socket = path, socket
+    log.debug('gauntlet.intercept_socket: ' + request.path.raw)
 
 def translate(request):
     """Translate urlpath to fspath, returning urlpath parts.
@@ -36,7 +46,8 @@ def translate(request):
     """
     parts = [request.root] + request.path.raw.lstrip('/').split('/')
     request.fs = os.sep.join(parts).rstrip(os.sep)
-    return parts
+    request._parts = parts # store for use in processing virtual_paths
+    log.debug('gauntlet.translate: ' + request.fs)
 
 def check_sanity(request):
     """Make sure the request is under our root.
@@ -50,7 +61,7 @@ def hidden_files(request):
     if '/.' in request.fs[len(request.root):]:
         raise Response(404)
 
-def virtual_paths(request, parts):
+def virtual_paths(request):
     """Support /foo/bar.html => ./%blah/bar.html and /blah.html => ./%flah.html
 
     Parts is a list of fs path parts as returned by translate, above. 
@@ -64,10 +75,13 @@ def virtual_paths(request, parts):
         raise Response(404)
     if not exists(request.fs):
         matched = request.root
+        parts = request._parts
+        del request._parts
         nparts = len(parts)
         for i in range(1, nparts):
             part = parts[i]
             next = join(matched, part)
+            print next
             if exists(next):    # this URL part names an actual directory
                 matched = next
             else:               # this part is missing; do we have a %subdir?
@@ -109,6 +123,7 @@ def virtual_paths(request, parts):
                     break # no match, reset
         if matched != request.root:
             request.fs = matched.rstrip(os.sep)
+    log.debug('gauntlet.virtual_paths: ' + request.fs)
 
 def _typecast(key, value):
     """Given two strings, return a string, and an int or string.
@@ -129,10 +144,8 @@ def _typecast(key, value):
 def trailing_slash(request):
     if isdir(request.fs):
         if not request.path.raw.endswith('/'):
-            parts = list(request.urlparts)
-            parts[2] += '/'
-            location = urlparse.urlunparse(parts)
-            raise Response(301, headers={'Location': location})
+            request.path.raw += '/'
+            raise Response(301, headers={'Location': request.rebuild_url()})
 
 def index(request):
     if isdir(request.fs):
@@ -141,33 +154,53 @@ def index(request):
             if isfile(index):
                 request.fs = index
                 break
+    log.debug('gauntlet.index: ' + request.fs)
 
-def autoindex(request, want_autoindex, autoindex):
+def autoindex(request):
     if isdir(request.fs):
-        if want_autoindex:
+        if request.conf.aspen.no('list_directories'):
             request.headers.set('X-Aspen-AutoIndexDir', request.fs)
-            request.fs = autoindex 
+            request.fs = request.website.ours_or_theirs('autoindex.html')
             assert request.fs is not None # sanity check
         else:
             raise Response(404)
+    log.debug('gauntlet.autoindex: ' + request.fs)
 
-def socket_files(request):
-    if 0 and '.sock/' in request.fs:
-        parts = request.fs.split('.sock/')
-        assert len(parts) == 2
-        request.fs = parts[0] + '.sock'
-        sockinfo = parts[1].split('/')
-        ninfo = len(sockinfo)
-        if ninfo >= 1:
-            request.transport = sockinfo[0]
-        if ninfo >= 2:
-            request.session_id = sockinfo[1]
-        if ninfo >= 3:
-            pass # what is this?
-
-def not_found(request, favicon):
+def not_found(request):
     if not isfile(request.fs):
         if request.path.raw == '/favicon.ico': # special case
-            request.fs = favicon
+            request.fs = request.website.find_ours('favicon.ico')
         else:
             raise Response(404)
+    log.debug('gauntlet.not_found: ' + request.fs)
+
+
+gauntlet = [ intercept_socket
+           , translate
+           , check_sanity
+           , hidden_files
+           , virtual_paths
+           , trailing_slash
+           , index
+           , autoindex
+           , not_found
+            ]
+
+def run(request):
+    """Given a request, run it through the gauntlet.
+    """
+    log.debug('gauntlet.run: ' + request.path.raw)
+    for func in gauntlet:
+        func(request)
+
+def run_through(request, last):
+    """For testing, here's a function that runs part of the gauntlet.
+
+    Pass in a request object and a gauntlet function, the last to be run.
+
+    """
+    log.debug('gauntlet.run_through: ' + request.path.raw)
+    for func in gauntlet:
+        func(request)
+        if func is last:
+            break

@@ -2,31 +2,20 @@ import os
 from os.path import dirname, join, realpath
 
 from aspen import gauntlet, Response
-from aspen.tests import assert_raises, handle
+from aspen.http.request import Request
+from aspen.tests import assert_raises, handle, StubRequest
 from aspen.tests.fsfix import attach_teardown, expect, mk
-from aspen.http.request import Path, Request
 from aspen.configuration import Configurable
-
-
-# Helpers 
-# =======
-
-class StubRequest:
-    def __init__(self, path):
-        self.path = Path(path)
-        c = Configurable.from_argv(['fsfix'])
-        c.copy_configuration_to(self)
 
 
 # Indices
 # =======
 
 def check_index(path):
-    """Given an urlpath, return a filesystem path per gauntlet.virtual_paths.
+    """Given an urlpath, return a filesystem path per gauntlet.index.
     """
-    request = StubRequest(path)
-    parts = gauntlet.translate(request)
-    gauntlet.index(request)
+    request = StubRequest.from_fs(path)
+    gauntlet.run_through(request, gauntlet.index)
     return request
 
 def test_index_is_found():
@@ -119,9 +108,8 @@ def test_index_conf_setting_works_with_only_comma():
 def check_virtual_paths(path):
     """Given an urlpath, return a filesystem path per gauntlet.virtual_paths.
     """
-    request = StubRequest(path)
-    parts = gauntlet.translate(request)
-    gauntlet.virtual_paths(request, parts)
+    request = StubRequest.from_fs(path)
+    gauntlet.run_through(request, gauntlet.virtual_paths)
     return request
 
 def test_virtual_path_can_passthrough():
@@ -228,6 +216,45 @@ def test_virtual_path_file_key_val_cast():
     assert actual == expected, actual
 
 
+# trailing slash
+# ==============
+
+def check_trailing_slash(path):
+    """Given an urlpath, return a filesystem path per gauntlet.trailing_slash.
+    """
+    request = StubRequest.from_fs(path)
+    gauntlet.run_through(request, gauntlet.trailing_slash)
+    return request
+
+def test_trailing_slash_passes_files_through():
+    mk(('foo/index.html', "Greetings, program!"))
+    expected = expect('/foo/537.html')
+    actual = check_trailing_slash('/foo/537.html').fs
+    assert actual == expected, actual
+
+def test_trailing_slash_passes_dirs_with_slash_through():
+    mk('foo')
+    expected = expect('/foo/')
+    actual = check_trailing_slash('/foo/').fs
+    assert actual == expected, actual
+
+def test_trailing_slash_redirects_trailing_slash():
+    mk('foo')
+    response = assert_raises(Response, check_trailing_slash, '/foo')
+
+    expected = 301
+    actual = response.code
+    assert actual == expected, actual
+
+def test_trailing_slash_redirects_trailing_slash_to_the_right_place():
+    mk('foo')
+    response = assert_raises(Response, check_trailing_slash, '/foo')
+
+    expected = 'http://localhost/foo/'
+    actual = response.headers.one('Location')
+    assert actual == expected, actual
+
+
 # Docs
 # ====
 
@@ -295,14 +322,18 @@ def test_intercept_socket_protects_direct_access():
 
 def test_intercept_socket_intercepts_handshake():
     request = Request(url="/foo.sock/1")
+    gauntlet.intercept_socket(request)
+    
     expected = ('/foo.sock', '1')
-    actual = gauntlet.intercept_socket(request)
+    actual = (request.path.raw, request.socket)
     assert actual == expected, actual
 
 def test_intercept_socket_intercepts_transported():
     request = Request(url="/foo.sock/1/websocket/46327hfjew3?foo=bar")
+    gauntlet.intercept_socket(request)
+
     expected = ('/foo.sock', '1/websocket/46327hfjew3')
-    actual = gauntlet.intercept_socket(request)
+    actual = (request.path.raw, request.socket)
     assert actual == expected, actual
 
 
