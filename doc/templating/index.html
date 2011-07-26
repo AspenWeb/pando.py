@@ -66,13 +66,28 @@ response.headers.set('Content-Type', 'text/plain; charset=latin1')
 
 <p>Here are the operators you get:<p>
 
-<h4>For</h4>
+<a name="comment"></a>
+<h4>Comment</h4>
 
-<pre>{&#37; for foo in bar %}
-    ...
+<p>For one-line comments you have a dedicated operator:</p>
+
+{% comment My comment goes here. %}
+
+<pre>{&#37; comment My comment goes here. %}</pre>
+
+<p>For multiple-line comments you have to resort to the hackish:</p>
+
+{% if 0 %}
+
+Foo bar
+
+{% end %}
+
+<pre>{&#37; if 0 %}
+
+Foo bar comment.
+
 {&#37; end %}</pre>
-
-<p>To implement loop counters, use <a href="#set">set</a>.</p>
 
 
 <a name="extends"></a>
@@ -87,6 +102,16 @@ template reloading.</p>
 {&#37; block bar %}
     ...
 {&#37; end %}</pre>
+
+
+<a name="for"></a>
+<h4>For</h4>
+
+<pre>{&#37; for foo in bar %}
+    ...
+{&#37; end %}</pre>
+
+<p>To implement loop counters, use <a href="#set">set</a>.</p>
 
 
 <a name="if"></a>
