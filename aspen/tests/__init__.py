@@ -3,7 +3,7 @@ import os
 import sys
 import time
 import urllib
-from os.path import join
+from os.path import dirname, join
 
 from aspen.configuration import Configurable
 from aspen.http.request import Request
@@ -41,6 +41,7 @@ class StubRequest:
         request = Request.from_wsgi(StubWSGIRequest(fs))
         website = Configurable.from_argv(['fsfix'])
         website.copy_configuration_to(request)
+        request.root = join(dirname(__file__), 'fsfix')
         request.fs = fs
         request.namespace = {}
         request.website = website 

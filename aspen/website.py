@@ -55,7 +55,7 @@ class Website(Configurable):
                 request.website = self
 
                 self.hooks.run('inbound_early', request)
-                request.fs = self.translate(request)
+                gauntlet.run(request) # sets request.fs
                 request.socket = sockets.get(request)
                 self.hooks.run('inbound_late', request)
 
@@ -138,51 +138,6 @@ class Website(Configurable):
         else:
             out = None
         return out
-
-    def translate(self, request):
-        """Given a Request, return a filesystem path, or raise Response.
-        """
-    
-        # Zeroth step.
-        # ============
-        # Intercept socket requests. We modify the filesystem path so that your
-        # application thinks the request was to /foo.sock instead of to
-        # /foo.sock/blah/blah/blah/.
-
-        request.path.raw, request.socket = gauntlet.intercept_socket(request)
-
-
-        # First step.
-        # ===========
-        # Set request.fs initially, return a list of fspath parts.
-
-        parts = gauntlet.translate(request)
-        log.debug("got request for " + request.fs)
-
-
-        # The Gauntlet
-        # ============
-        # Keep request.fs up to date for logging purposes. It is used in
-        # log_access, below, which could be triggered by any of the raises
-        # herein. Each of these sets request.fs, and returns None or raises.
-
-        gauntlet.check_sanity(request)
-        gauntlet.hidden_files(request)
-        gauntlet.virtual_paths(request, parts)
-        gauntlet.trailing_slash(request)
-        gauntlet.index(request)
-        gauntlet.autoindex( request
-                          , self.conf.aspen.no('list_directories')
-                          , self.ours_or_theirs('autoindex.html')
-                           )
-        gauntlet.socket_files(request)
-        gauntlet.not_found(request, self.find_ours('favicon.ico'))
-
-        
-        # Now you are one of us.
-        # ======================
-
-        return request.fs
 
     def log_access(self, request, response):
         """Log access.
