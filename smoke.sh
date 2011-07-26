@@ -1,9 +1,9 @@
 #!/bin/sh 
 mkdir foo
 cd foo
+echo "made directory ./foo/ and changed to it"
 virtualenv .aspen
 source .aspen/bin/activate
-pip install https://github.com/jamwt/diesel/tarball/master
-pip install https://github.com/whit537/aspen/tarball/master
+pip install ../
 echo Greetings, program! > index.html
 aspen
