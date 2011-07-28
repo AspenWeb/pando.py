@@ -72,7 +72,7 @@ def test_transport_POST_gives_data_to_socket():
     transport.respond(request)
    
     expected = deque(['Greetings, program!'])
-    actual = transport.socket.incoming
+    actual = transport.socket.incoming.queue
     assert actual == expected, actual
     
 def test_transport_GET_gets_data_from_socket():
@@ -96,7 +96,7 @@ def test_transport_GET_blocks_for_empty_socket():
     end = time.time()
  
     expected = transport.timeout
-    actual = end - start
+    actual = round(end - start, 4)
     assert actual > expected, actual
 
 def test_transport_handles_roundtrip():

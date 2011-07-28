@@ -1,11 +1,12 @@
 import collections
+import Queue
 import time
 
-
 from aspen.sockets import packet
+from aspen.sockets.loop import Die, Dead
 
 
-class ThreadedBuffer(collections.deque):
+class ThreadedBuffer(Queue.Queue):
     """Model a buffer of items.
   
     There are two of these for each Socket, one for incoming message payloads
@@ -16,28 +17,19 @@ class ThreadedBuffer(collections.deque):
         wire => [msg, msg, msg, msg, msg, msg, msg, msg] => resource
         wire <= [msg, msg, msg, msg, msg, msg, msg, msg] <= resource
 
-    Deques are thread-safe:
-
-        http://mail.python.org/pipermail/python-dev/2004-July/046350.html
-
     """
 
-    def __init__(self, messages=None):
-        """Given a sequence of Messages, buffer them.
+    def __init__(self, socket, name, messages=None):
+        """Takes a socket, a string, and sequence of Messages.
         """
+        Queue.Queue.__init__(self)
+        self._socket = socket
+        self._name = name
         if messages is not None:
             for message in messages:
                 self.put(message)
-        self.__blocked = self.__blocked()
 
 
-    # put/get
-    # =======
-
-    put = collections.deque.appendleft
-    get = collections.deque.pop
-
-    
     # flush
     # =====
     # Used for outgoing buffer.
@@ -45,7 +37,7 @@ class ThreadedBuffer(collections.deque):
     def flush(self):
         """Return an iterable of bytestrings or None.
         """
-        if self:
+        if self.queue:
             return self.__flusher()
         return None
 
@@ -57,13 +49,13 @@ class ThreadedBuffer(collections.deque):
         messages dumped in 2ms--without any WSGI/HTTP/TCP overhead. We always
         yield at least one bytestring to avoid deadlock.
 
-        This generator is instantiated in flush.
+        This generator is instantiated in self.flush.
 
         """
-        if self:
+        if self.queue:
             yield packet.frame(self.get())
         timeout = time.time() + (0.007) # We have 7ms to dump bytestrings. Go!
-        while self and time.time() < timeout:
+        while self.queue and time.time() < timeout:
             yield packet.frame(self.get())
 
 
@@ -72,17 +64,35 @@ class ThreadedBuffer(collections.deque):
     # Used for incoming buffer.
 
     def next(self):
-        return self.__blocked.next()
-
-    def __blocked(self):
-        """Yield items from self forever.
-
-        This generator is instantiated in __init__.
+        """Return the next item from the queue.
+        
+        The first time we are called, we lazily instantiate the generator at
+        self._blocked. Subsequent calls are directed directly to that
+        generator's next method.
 
         """
-        while 1:
-            if self:
-                yield self.get()
-            time.sleep(0.010)
+        self._blocked = self._blocked()
+        self.next = self._next
+        return self.next()
 
-Buffer = ThreadedBuffer
+    def _next(self):
+        try:
+            return self._blocked.next()
+        except StopIteration:
+            # When the _blocked generator discovers Die and breaks, the 
+            # effect is a StopIteration here. It's a bug if this happens
+            # other than when we are disconnecting the socket.
+            assert self._socket.loop.please_stop.is_set()
+
+    def _blocked(self):
+        """Yield items from self forever.
+
+        This generator is lazily instantiated in self.next. It is designed to
+        cooperate with ThreadedLoop.
+
+        """
+        while not self._socket.loop.please_stop.is_set():
+            out = self.get()
+            if out is Die:
+                break # will result in a StopIteration
+            yield out

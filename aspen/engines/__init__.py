@@ -2,6 +2,7 @@ import threading
 import time
 
 from aspen.sockets.buffer import ThreadedBuffer
+from aspen.sockets.loop import ThreadedLoop
 
 
 class BaseEngine(object):
@@ -32,35 +33,29 @@ class BaseEngine(object):
         """Stop the loop that runs check_all (optional).
         """
 
+
+# Threaded
+# ========
+
 class ThreadedEngine(BaseEngine):
     """An engine that uses threads for concurrent persistent sockets.
     """
-
-    def spawn_socket_loop(self, socket):
-        """Given a Socket object, spawn a thread to loop it.
-
-        Our architecture here is one thread per persistent socket. Depending on
-        the transport we probably have another thread already occupied with the
-        HTTP side of the request, from the CherryPy/Rocket threadpool. Assuming
-        the thread pool is larger than our concurrent user base, we have two
-        threads per persistent connection, in addition to the thread burden of
-        any stateless HTTP traffic.
-
-        """
-        t = threading.Thread(target=socket.loop)
-        t.daemon = True
-        t.start()
 
     def sleep(self, seconds):
         time.sleep(seconds)
 
     Buffer = ThreadedBuffer
-    
+    Loop = ThreadedLoop
+   
+
+# Cooperative
+# ===========
+
 class CooperativeEngine(BaseEngine):
     """An engine that assumes cooperative scheduling for persistent sockets.
     """
 
-    def spawn_socket_loop(self, socket):
+    def start_socket_loop(self, socket):
         """Given a Socket object, start it's main loop.
 
         The expectation here is that the buffer implementation in use will take
@@ -70,6 +65,7 @@ class CooperativeEngine(BaseEngine):
 
         """
         socket.loop()
+        return None
 
     def sleep(self, seconds):
         raise NotImplementedError

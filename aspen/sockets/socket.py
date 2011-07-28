@@ -3,7 +3,6 @@ import uuid
 
 from aspen import json, resources, Response
 from aspen.sockets import HEARTBEAT, TIMEOUT, TRANSPORTS
-from aspen.sockets.buffer import Buffer
 from aspen.sockets.event import Event
 from aspen.sockets.message import Message
 from aspen.sockets.packet import Packet
@@ -14,7 +13,7 @@ class Socket(object):
 
     Socket objects sit between Aspen's HTTP machinery and your Resource. They
     function as middleware, and the recv/send and _recv/_send semantics reflect
-    this. They are persistent.
+    this. They (the sockets) are persistent.
     
     """
 
@@ -31,8 +30,9 @@ class Socket(object):
         self.resource = resources.get(request)
         request.website.copy_configuration_to(self)
 
-        self.incoming = request.engine.Buffer()
-        self.outgoing = request.engine.Buffer()
+        self.loop = request.engine.Loop(self)
+        self.incoming = request.engine.Buffer(self, 'incoming')
+        self.outgoing = request.engine.Buffer(self, 'outgoing')
         self.namespace = self.resource.exec_second(self, request)
 
     def shake_hands(self):
@@ -49,16 +49,15 @@ class Socket(object):
         """Exec the third page of the resource.
 
         It is expected that socket resources will block via self.recv() or some
-        other mechanism.
+        other mechanism, like reading a remote TCP socket.
 
         """
         exec self.resource.three in self.namespace
 
-    def loop(self):
-        """Exec the third page of the resource forever.
+    def disconnect(self):
+        """Close the socket.
         """
-        while 1:
-            self.tick()
+        self.loop.stop()
 
 
     # Client Side
@@ -66,7 +65,7 @@ class Socket(object):
     # Call these inside of your Resource.
 
     def sleep(self, seconds):
-        """Sleep.
+        """Block until seconds have elapsed.
         """
         self.engine.sleep(seconds)
 
@@ -78,19 +77,19 @@ class Socket(object):
     def recv_utf8(self):
         """Block until the next message is available, then return it.
         """
-        bytes = self.incoming.next()
+        bytes = self.recv()
         return bytes.decode('utf8')
 
     def recv_json(self):
         """Block for the next message, parse it as JSON, and return it.
         """
-        bytes = self.incoming.next()
+        bytes = self.recv()
         return json.loads(bytes)
 
     def recv_event(self):
         """Block for the next message, parse it as an event, and return it.
         """
-        bytes = self.incoming.next()
+        bytes = self.recv()
         return Event(bytes)
 
 

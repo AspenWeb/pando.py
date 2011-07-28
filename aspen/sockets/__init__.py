@@ -3,16 +3,42 @@
     https://github.com/learnboost/socket.io-spec
 
 Ah, abstraction! This is a whole convoluted mess to provide some pretty nice
-API inside socket resources. Here are the objects involved on the server side:
+API inside socket resources. Here are the objects involved on the server side,
+from the inside out:
 
-    Message     a Socket.IO message, a colon-delimited set of strings
+    Message     a Socket.IO message, a colon-delimited set of bytestrings
     Packet      a Socket.IO packet, a message or series of framed messages
     Buffer      a Socket.IO buffer, buffers incoming and outgoing messages 
+    Loop        an object responsible for repeatedly calling socket.tick
     Socket      a Socket.IO socket, maintains state
     Transport   a Socket.IO transport mechanism, does HTTP work
-    Resource    an HTTP resource, a file on your filesystem, business logic
+    Resource    an HTTP resource, a file on your filesystem, application logic
     Response    an HTTP Response message
     Request     an HTTP Request message
+
+    Engine      fits somewhere, handles networking implementation; Buffer and 
+                  Loop attributes point to implementations of the above
+
+
+A specially-crafted HTTP request creates a new Socket. That socket object
+exists until one of these conditions is met:
+
+    - the application explicitly disconnects
+    - the client explicitly disconnects
+    - the client disappears (for some definition of "disappears")
+
+A second specially-crafted HTTP request negotiates a Transport. Subsequent
+specially-crafted HTTP requests are marshalled into socket reads and writes
+according to the Transport negotiated.
+
+The Loop object is responsible for running socket.tick until it is told to stop
+(as a result of one of the above three conditions). socket.tick exec's the
+third page of the application's socket resource in question. This code is
+expected to block. For ThreadedLoop that means we can't stop the loop inside of
+native code. The ThreadedBuffer object cooperates with ThreadedLoop, so if your
+application only ever blocks on socket.recv then you are okay. CooperativeLoops
+should be immediately terminable assuming your application and its dependencies
+cooperate ;-).
 
 """
 from aspen import Response
@@ -74,7 +100,7 @@ def get(request):
     if len(parts) == 2:
         socket = Socket(request)
         __cache__[socket.sid] = socket
-        request.engine.spawn_socket_loop(socket)
+        socket.loop.start()
         return socket.shake_hands()
 
 
