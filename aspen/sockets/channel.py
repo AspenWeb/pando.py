@@ -18,9 +18,19 @@ class Channel(list):
         for i in range(len(self)):
             self[i].disconnect()
 
-    def recv(self):
-        return self.incoming.next()
-
     def send(self, data):
         for socket in self:
             socket.send(data)
+
+    def send_event(self, data):
+        for socket in self:
+            socket.send_event(data)
+
+    def send_json(self, data):
+        for socket in self:
+            socket.send_json(data)
+
+    def send_utf8(self, data):
+        for socket in self:
+            socket.send_utf8(data)
+

@@ -76,24 +76,6 @@ class Socket(object):
         """
         return self.incoming.next()
 
-    def recv_utf8(self):
-        """Block until the next message is available, then return it.
-        """
-        bytes = self.recv()
-        return bytes.decode('utf8')
-
-    def recv_json(self):
-        """Block for the next message, parse it as JSON, and return it.
-        """
-        bytes = self.recv()
-        return json.loads(bytes)
-
-    def recv_event(self):
-        """Block for the next message, parse it as an event, and return it.
-        """
-        bytes = self.recv()
-        return Event(bytes)
-
 
     def send(self, data):
         """Buffer a plain message to be sent to the client.
