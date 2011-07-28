@@ -30,6 +30,7 @@ class SocketResource(DynamicResource):
         namespace.update(request.namespace)
         namespace['request'] = request 
         namespace['socket'] = socket
+        namespace['channel'] = socket.channel
         exec self.two in namespace
         return namespace
 
