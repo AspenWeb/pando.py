@@ -5,7 +5,7 @@ import sys
 from os.path import dirname, isdir, isfile, join, realpath
 
 import aspen
-from aspen import resources
+from aspen import resources, sockets
 from nose.tools import with_setup
 
 
@@ -77,7 +77,10 @@ def teardown():
     """
     os.chdir(dirname(__file__))
     rm()
-    resources.__cache__ = dict() # The resources cache is process global. Hrm ...
+    # Reset some process-global caches. Hrm ...
+    resources.__cache__ = {}
+    sockets.__sockets__ = {}
+    sockets.__channels__ = {}
     if '.aspen' in sys.path[0]:
         sys.path = sys.path[1:]
     if 'foo' in sys.modules:

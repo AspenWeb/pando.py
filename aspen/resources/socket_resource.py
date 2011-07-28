@@ -28,6 +28,7 @@ class SocketResource(DynamicResource):
         """
         namespace = self.one.copy()
         namespace.update(request.namespace)
+        namespace['request'] = request 
         namespace['socket'] = socket
         exec self.two in namespace
         return namespace
