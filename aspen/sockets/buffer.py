@@ -19,15 +19,18 @@ class ThreadedBuffer(Queue.Queue):
 
     """
 
-    def __init__(self, socket, name, messages=None):
-        """Takes a socket, a string, and sequence of Messages.
+    def __init__(self, name, socket=None):
+        """Takes a string and maybe a socket.
+
+        If given a socket, we will try to play nice with its loop.
+
         """
         Queue.Queue.__init__(self)
         self._socket = socket
         self._name = name
-        if messages is not None:
-            for message in messages:
-                self.put(message)
+        #if messages is not None:
+        #    for message in messages:
+        #        self.put(message)
 
 
     # flush
@@ -66,7 +69,7 @@ class ThreadedBuffer(Queue.Queue):
     def next(self):
         """Return the next item from the queue.
         
-        The first time we are called, we lazily instantiate the generator at
+        The first time this is called, we lazily instantiate the generator at
         self._blocked. Subsequent calls are directed directly to that
         generator's next method.
 
@@ -82,6 +85,7 @@ class ThreadedBuffer(Queue.Queue):
             # When the _blocked generator discovers Die and breaks, the 
             # effect is a StopIteration here. It's a bug if this happens
             # other than when we are disconnecting the socket.
+            assert self._socket is not None
             assert self._socket.loop.please_stop.is_set()
 
     def _blocked(self):
@@ -91,8 +95,12 @@ class ThreadedBuffer(Queue.Queue):
         cooperate with ThreadedLoop.
 
         """
-        while not self._socket.loop.please_stop.is_set():
-            out = self.get()
-            if out is Die:
-                break # will result in a StopIteration
-            yield out
+        if self._socket is None:    # We're on a Channel.
+            while 1:
+                yield self.get()
+        else:                       # We're on a Socket.
+            while not self._socket.loop.please_stop.is_set():
+                out = self.get()
+                if out is Die:
+                    break # will result in a StopIteration
+                yield out

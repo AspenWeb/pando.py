@@ -1,9 +1,10 @@
 import os
 import time
 
-from aspen.engines import ThreadedLoop
+from aspen.engines import ThreadedBuffer, ThreadedLoop
 from aspen.http.request import Request
 from aspen.sockets import FFFD
+from aspen.sockets.channel import Channel
 from aspen.sockets.socket import Socket
 from aspen.sockets.message import Message
 from aspen.tests.fsfix import mk, attach_teardown
@@ -17,9 +18,11 @@ def make_request(filename='echo.sock'):
     request.fs = os.sep.join([os.path.dirname(__file__), 'fsfix', filename])
     return request
 
-def make_socket(filename='echo.sock'):
+def make_socket(filename='echo.sock', channel=None):
     request = make_request(filename='echo.sock')
-    socket = Socket(request)
+    if channel is None:
+        channel = Channel(request.path.raw, ThreadedBuffer)
+    socket = Socket(request, channel)
     return socket
 
 class SocketInThread(object):

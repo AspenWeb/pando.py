@@ -11,6 +11,7 @@ from the inside out:
     Buffer      a Socket.IO buffer, buffers incoming and outgoing messages 
     Loop        an object responsible for repeatedly calling socket.tick
     Socket      a Socket.IO socket, maintains state
+    Channel     an object that represents all connections to a single Resource
     Transport   a Socket.IO transport mechanism, does HTTP work
     Resource    an HTTP resource, a file on your filesystem, application logic
     Response    an HTTP Response message
@@ -48,11 +49,13 @@ HEARTBEAT = 15
 TIMEOUT = 10
 TRANSPORTS = ['xhr-polling']
 
+from aspen.sockets.channel import Channel
 from aspen.sockets.socket import Socket
 from aspen.sockets.transport import XHRPollingTransport
 
 
-__cache__ = {}
+__sockets__ = {}
+__channels__ = {}
 
 
 def get(request):
@@ -98,10 +101,18 @@ def get(request):
     # =========
 
     if len(parts) == 2:
-        socket = Socket(request)
-        __cache__[socket.sid] = socket
+        if request.path.raw in __channels__:
+            channel = __channels__[request.path.raw]
+        else:
+            channel = Channel(request.path.raw, request.engine.Buffer)
+            __channels__[request.path.raw] = channel
+
+        socket = Socket(request, channel)
+        assert socket.sid not in __sockets__ # sanity check
+        __sockets__[socket.sid] = socket
         socket.loop.start()
-        return socket.shake_hands()
+
+        return socket.shake_hands() # a Response
 
 
     # More than a handshake.
@@ -115,15 +126,15 @@ def get(request):
         msg %= (",".join(transports), transport)
         raise Response(400, msg)
 
-    if sid not in __cache__:
+    if sid not in __sockets__:
         msg = "Expected %s in cache, didn't find it"
         raise Response(400, msg % sid)
 
-    if type(__cache__[sid]) is Socket:
+    if type(__sockets__[sid]) is Socket:
         # This is the first request after a handshake. It's not until this
         # point that we know what transport the client wants to use.
-        Transport = XHRPollingTransport
-        __cache__[sid] = Transport(__cache__[sid]) 
+        Transport = XHRPollingTransport # XXX derp
+        __sockets__[sid] = Transport(__sockets__[sid]) 
 
-    transport = __cache__[sid]
+    transport = __sockets__[sid]
     return transport

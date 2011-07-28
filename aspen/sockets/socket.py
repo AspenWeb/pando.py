@@ -22,17 +22,20 @@ class Socket(object):
     timeout = str(TIMEOUT)
 
 
-    def __init__(self, request):
-        """Takes the handshake request.
+    def __init__(self, request, channel):
+        """Takes the handshake request and the socket's channel.
         """
         self.sid = uuid.uuid4().hex
         self.endpoint = request.path.raw
         self.resource = resources.get(request)
         request.website.copy_configuration_to(self)
+        request.website.copy_configuration_to(channel)
 
         self.loop = request.engine.Loop(self)
-        self.incoming = request.engine.Buffer(self, 'incoming')
-        self.outgoing = request.engine.Buffer(self, 'outgoing')
+        self.incoming = request.engine.Buffer('incoming', self)
+        self.outgoing = request.engine.Buffer('outgoing', self)
+        self.channel = channel
+        self.channel.add(self)
         self.namespace = self.resource.exec_second(self, request)
 
     def shake_hands(self):
@@ -55,9 +58,8 @@ class Socket(object):
         exec self.resource.three in self.namespace
 
     def disconnect(self):
-        """Close the socket.
-        """
         self.loop.stop()
+        self.channel.remove(self)
 
 
     # Client Side
@@ -151,5 +153,6 @@ class Socket(object):
                 pass
             elif message.type in (3, 4, 5): # data message
                 self.incoming.put(message.data)
+                self.channel.incoming.put(message.data)
             elif message.type in (6, 7, 8): # blah, blah, blah
                 pass
