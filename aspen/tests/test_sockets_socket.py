@@ -1,19 +1,36 @@
 import os
+import time
 
-from aspen.tests.fsfix import mk, attach_teardown
+from aspen.engines import ThreadedLoop
 from aspen.http.request import Request
 from aspen.sockets import FFFD
 from aspen.sockets.socket import Socket
 from aspen.sockets.message import Message
+from aspen.tests.fsfix import mk, attach_teardown
 from aspen.website import Website
 
 
-def make_socket(filename='echo.sock'):
+def make_request(filename='echo.sock'):
     request = Request(url='/echo.sock')
     request.website = Website([])
     request.website.copy_configuration_to(request)
     request.fs = os.sep.join([os.path.dirname(__file__), 'fsfix', filename])
-    return Socket(request)
+    return request
+
+def make_socket(filename='echo.sock'):
+    request = make_request(filename='echo.sock')
+    socket = Socket(request)
+    return socket
+
+class SocketInThread(object):
+
+    def __enter__(self, filename='echo.sock'):
+        self.socket = make_socket(filename) 
+        self.socket.loop.start()
+        return self.socket
+
+    def __exit__(self, *a):
+        self.socket.loop.stop()
 
 
 def test_socket_is_instantiable():
@@ -53,14 +70,13 @@ def test_socket_can_barely_function():
 
 def test_socket_can_echo():
     mk(('echo.sock', 'socket.send(socket.recv())'))
-    
-    socket = make_socket() 
-    socket._send('3::/echo.sock:Greetings, program!')
-    socket.tick()
 
-    expected = FFFD+'33'+FFFD+'3::/echo.sock:Greetings, program!'
-    actual = socket._recv().next()
-    assert actual == expected, actual
+    with SocketInThread() as socket:
+        socket._send('3::/echo.sock:Greetings, program!')
+        time.sleep(0.05) # give the resource time to tick
 
+        expected = FFFD+'33'+FFFD+'3::/echo.sock:Greetings, program!'
+        actual = socket._recv().next()
+        assert actual == expected, actual
 
 attach_teardown(globals())

@@ -1,14 +1,37 @@
 import errno
+import inspect
 import os
 import sys
 import time
+import traceback
 import urllib
 from os.path import dirname, join
+
+import threading
+import collections
+def _log(*a):
+    things = collections.deque(a)
+    things.appendleft(threading.current_thread().name.ljust(12))
+    while things:
+        thing = things.popleft()
+        sys.stdout.write(str(thing))
+        if things:
+            sys.stdout.write(" ")
+    print
+
 
 from aspen.configuration import Configurable
 from aspen.http.request import Request
 from aspen.website import Website
 from aspen._tornado.template import Loader
+
+
+def print_stack():
+    """Print the current stack trace.
+    """
+    previous_frame = inspect.stack()[1][0] # strip off ourselves
+    for line in traceback.format_stack(previous_frame):
+        sys.stdout.write(line)
 
 
 class Stub:
