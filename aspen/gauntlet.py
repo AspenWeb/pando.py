@@ -34,7 +34,7 @@ def intercept_socket(request):
         path = parts[0] + '.sock'
         socket = parts[1]
     request.path.raw, request.socket = path, socket
-    log.debug('gauntlet.intercept_socket: ' + request.path.raw)
+    #spam -- log.debug('gauntlet.intercept_socket: ' + request.path.raw)
 
 def translate(request):
     """Translate urlpath to fspath, returning urlpath parts.
@@ -47,7 +47,7 @@ def translate(request):
     parts = [request.root] + request.path.raw.lstrip('/').split('/')
     request.fs = os.sep.join(parts).rstrip(os.sep)
     request._parts = parts # store for use in processing virtual_paths
-    log.debug('gauntlet.translate: ' + request.fs)
+    #spam -- log.debug('gauntlet.translate: ' + request.fs)
 
 def check_sanity(request):
     """Make sure the request is under our root.
@@ -123,7 +123,7 @@ def virtual_paths(request):
                     break # no match, reset
         if matched != request.root:
             request.fs = matched.rstrip(os.sep)
-    log.debug('gauntlet.virtual_paths: ' + request.fs)
+    #spam -- log.debug('gauntlet.virtual_paths: ' + request.fs)
 
 def _typecast(key, value):
     """Given two strings, return a string, and an int or string.
@@ -154,7 +154,7 @@ def index(request):
             if isfile(index):
                 request.fs = index
                 break
-    log.debug('gauntlet.index: ' + request.fs)
+    #spam -- log.debug('gauntlet.index: ' + request.fs)
 
 def autoindex(request):
     if isdir(request.fs):
@@ -164,7 +164,7 @@ def autoindex(request):
             assert request.fs is not None # sanity check
         else:
             raise Response(404)
-    log.debug('gauntlet.autoindex: ' + request.fs)
+    #spam -- log.debug('gauntlet.autoindex: ' + request.fs)
 
 def not_found(request):
     if not isfile(request.fs):
@@ -172,7 +172,7 @@ def not_found(request):
             request.fs = request.website.find_ours('favicon.ico')
         else:
             raise Response(404)
-    log.debug('gauntlet.not_found: ' + request.fs)
+    #spam -- log.debug('gauntlet.not_found: ' + request.fs)
 
 
 gauntlet = [ intercept_socket
@@ -189,7 +189,7 @@ gauntlet = [ intercept_socket
 def run(request):
     """Given a request, run it through the gauntlet.
     """
-    log.debug('gauntlet.run: ' + request.path.raw)
+    #spam -- log.debug('gauntlet.run: ' + request.path.raw)
     for func in gauntlet:
         func(request)
 
@@ -199,7 +199,7 @@ def run_through(request, last):
     Pass in a request object and a gauntlet function, the last to be run.
 
     """
-    log.debug('gauntlet.run_through: ' + request.path.raw)
+    #spam -- log.debug('gauntlet.run_through: ' + request.path.raw)
     for func in gauntlet:
         func(request)
         if func is last:
