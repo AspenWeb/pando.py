@@ -3,7 +3,7 @@ import Queue
 import time
 
 from aspen.sockets import packet
-from aspen.sockets.loop import Die, Dead
+from aspen.sockets.loop import Die
 
 
 class ThreadedBuffer(Queue.Queue):
@@ -28,9 +28,6 @@ class ThreadedBuffer(Queue.Queue):
         Queue.Queue.__init__(self)
         self._socket = socket
         self._name = name
-        #if messages is not None:
-        #    for message in messages:
-        #        self.put(message)
 
 
     # flush

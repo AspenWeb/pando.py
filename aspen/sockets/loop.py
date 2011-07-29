@@ -4,9 +4,6 @@ import threading
 class Die:
     pass
 
-class Dead:
-    pass
-
 
 class ThreadedLoop(threading.Thread):
     """Model a loop using a thread.
