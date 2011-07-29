@@ -81,7 +81,6 @@ def virtual_paths(request):
         for i in range(1, nparts):
             part = parts[i]
             next = join(matched, part)
-            print next
             if exists(next):    # this URL part names an actual directory
                 matched = next
             else:               # this part is missing; do we have a %subdir?
