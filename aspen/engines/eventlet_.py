@@ -61,11 +61,9 @@ class EventletBuffer(LightQueue):
 
         """
         if not self.empty():
-            print "flushing"
             yield packet.frame(self.get())
         timeout = time.time() + (0.007) # We have 7ms to dump bytestrings. Go!
         while not self.empty() and time.time() < timeout:
-            print "still flushing"
             yield packet.frame(self.get())
 
 
@@ -81,7 +79,6 @@ class EventletBuffer(LightQueue):
         generator's next method.
 
         """
-        print "nexting"
         self._blocked = self._blocked()
         self.next = self._next
         return self.next()
@@ -123,7 +120,6 @@ class EventletLoop(object):
 
     def __call__(self):
         while not self.please_stop:
-            print "ticking", self.socket.incoming, self.socket.outgoing
             self.socket.tick()
 
     def start(self):
