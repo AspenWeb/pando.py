@@ -41,7 +41,7 @@ class XHRPollingTransport(Transport):
                 if _bytes_iter is not None:
                     bytes_iter = _bytes_iter
                     break
-                time.sleep(0.010) # XXX Is this really what we want to do?
+                request.engine.sleep(0.010)
             response = Response(200, bytes_iter)
 
         return response
