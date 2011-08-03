@@ -1,3 +1,4 @@
+import cgi
 import socket
 import urllib
 import urlparse
@@ -6,6 +7,7 @@ from Cookie import CookieError, SimpleCookie
 from aspen import resources, Response
 from aspen.http.headers import Headers
 from aspen.http.wwwform import WwwForm
+from aspen.http.formdata import FormData
 
 
 class Path(dict):
@@ -55,10 +57,20 @@ class Request(object):
         # Headers
         # =======
 
+        # For some reason there are a couple keys that CherryPyWSGIServer 
+        # explicitly doesn't include as HTTP_ keys.
+        also = ['CONTENT_TYPE', 'CONTENT_LENGTH'] 
+
         raw_headers = []
         for k, v in environ.items():
+            val = None
             if k.startswith('HTTP_'):
-                k = k[len('HTTP_'):].replace('_', '-')
+                k = k[len('HTTP_'):]
+                val = v
+            elif k in also:
+                val = v
+            if val is not None:
+                k = k.replace('_', '-')
                 raw_headers.append(': '.join([k, v]))
         raw_headers = '\r\n'.join(raw_headers)
         self.raw_headers = raw_headers
@@ -117,7 +129,6 @@ class Request(object):
     def hydrate(self):
         """Populate a number of attributes on self based on primitives.
         """
-        self.body = WwwForm(self.raw_body)
         self.headers = Headers(self.raw_headers)
         self.cookie = SimpleCookie()
         try:
@@ -131,11 +142,20 @@ class Request(object):
         self.url = self.rebuild_url() # needs things above
         self.urlparts = urlparse.urlparse(self.url)
 
-        self.transport = None # set by Website for *.sock files
-        self.session_id = None # set by Website for *.sock files
+        self.socket = None # set by Website for *.sock files
         self.root = '' # set by Website
         self.fs = '' # set by Website
         self.namespace = {} # populated by user in inbound hooks
+
+        content_type = self.headers.one('Content-Type', '')
+        if content_type.startswith('multipart/form-data'):
+            # Oh, for shame!
+            self.body = cgi.FieldStorage( fp = cgi.StringIO(self.raw_body)
+                                        , environ = self.environ
+                                        , strict_parsing = True 
+                                         )
+        else:
+            self.body = WwwForm(self.raw_body)
 
     def allow(self, *methods):
         """Given a list of methods, raise 405 if we don't meet the requirement.

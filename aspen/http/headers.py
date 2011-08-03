@@ -10,6 +10,7 @@ class Headers(Mapping):
     def __init__(self, headers):
         """Takes headers as a string.
         """
+        self.raw = headers
         Mapping.__init__(self)
         hd = defaultdict(list)
         for line in headers.splitlines():
