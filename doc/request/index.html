@@ -31,9 +31,9 @@ doc_next = ('Response', '/response/')
 <h3>Headers and WwwForm Objects</h3>
 
 <p>The <code>Headers</code> and <code>WwwForm</code> objects both have the same
-API. I decided not to make them overly dictionary-ish. Sorry. You always need
-to deal with the "either list or value" problem, so I&rsquo;m making you deal
-with that explicitly up front. I like that these are all three letters.</p>
+API. I decided not to make them overly dictionary-ish. You always need to deal
+with the "either list or value" problem, so I&rsquo;m making you deal with that
+explicitly up front.</p>
 
 <pre>def all(self, name, default=None):
     """Given a name, return a list of values.
@@ -54,6 +54,13 @@ def has(self, name):
     """Given a header name and value, set the header. Pass None to remove.
     """</pre>
 
+
+<p>If a <code>POST</code> request is of <code>Content-Type</code>
+<code>multipart/form-data</code>, then <code>request.body</code> will be an
+instance of the standard library&rsquo;s <code>cgi.FieldStorage</code> class.
+This is a mapping of field names to additional <code>FieldStorage</code>
+objects. Each such object has <code>filename</code> and <code>value</code>
+attributes with the name and content of the file you uploaded.</p>
 
 {% end %}
 
