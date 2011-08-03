@@ -7,7 +7,6 @@ from Cookie import CookieError, SimpleCookie
 from aspen import resources, Response
 from aspen.http.headers import Headers
 from aspen.http.wwwform import WwwForm
-from aspen.http.formdata import FormData
 
 
 class Path(dict):
