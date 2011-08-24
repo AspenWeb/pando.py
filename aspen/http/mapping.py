@@ -40,6 +40,11 @@ class Mapping(object):
     def one(self, name, default=None):
         return self._dict.get(name, [default])[0]
 
+    def ones(self, *names):
+        """Given one or more names of keys, return a list of their values.
+        """
+        return [self.one(name) for name in names]
+
     def __iter__(self):
         return self._dict
 
