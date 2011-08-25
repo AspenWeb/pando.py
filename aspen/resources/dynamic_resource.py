@@ -45,12 +45,16 @@ class DynamicResource(Resource):
         # Exec the script.
         # ================
     
-        exec self.two in namespace
+        try:
+            exec self.two in namespace
+        except Response, response:
+            response = self.process_raised_response(response)
+            raise response
 
 
         # Hook.
         # =====
-    
+
         return self.get_response(namespace)
 
         
@@ -158,6 +162,11 @@ class DynamicResource(Resource):
         """Given a bytestring, return an object.
         """
         raise NotImplementedError
+
+    def process_raised_response(self, response):
+        """Given a response object, return a response object.
+        """
+        return response
 
     def get_response(self, namespace):
         """Given a namespace dictionary, return a Response object.
