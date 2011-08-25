@@ -6,7 +6,7 @@ from aspen.http.request import Request
 from aspen.sockets import FFFD
 from aspen.sockets.transport import XHRPollingTransport
 from aspen.sockets.message import Message
-from aspen.tests.test_sockets_socket import make_socket
+from aspen.tests.test_sockets_socket import make_socket, make_request
 from aspen.tests.fsfix import attach_teardown, mk
 
 
@@ -54,7 +54,7 @@ def test_transport_goes_to_state_1_after_first_request():
 
 def test_transport_stays_in_state_1_after_second_request():
     transport = make_transport()
-    request = Request()
+    request = make_request()
     transport.respond(request)
     transport.respond(request)
     
@@ -90,7 +90,7 @@ def test_transport_GET_gets_data_from_socket():
 def test_transport_GET_blocks_for_empty_socket():
     transport = make_transport(state=1)
     
-    request = Request('GET')
+    request = make_request()
     start = time.time()
     response = transport.respond(request)
     end = time.time()
