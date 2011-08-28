@@ -9,6 +9,18 @@ from aspen.http.headers import Headers
 from aspen.http.wwwform import WwwForm
 
 
+# http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html
+METHODS = [ 'OPTIONS'
+          , 'GET'
+          , 'HEAD'
+          , 'POST'
+          , 'PUT'
+          , 'DELETE'
+          , 'TRACE'
+          , 'CONNECT'
+           ]
+
+
 class Path(dict):
     def __init__(self, bytes):
         self.raw = bytes
@@ -156,12 +168,30 @@ class Request(object):
         else:
             self.body = WwwForm(self.raw_body)
 
+    def redirect(self, location, code=302):
+        """Given a string and a boolean, raise a Response.
+
+        Some day port this:
+
+            http://cherrypy.org/browser/trunk/cherrypy/_cperror.py#L154
+
+        """
+        raise Response(code, headers={'Location': location})
+
     def allow(self, *methods):
         """Given a list of methods, raise 405 if we don't meet the requirement.
         """
         methods = [x.upper() for x in methods]
         if self.method not in methods:
             raise Response(405, headers={'Allow': ', '.join(methods)})
+
+    def set_method(self, method):
+        """Given a string, store it and update booleans on self.
+        """
+        self._method = method
+        for m in METHODS:
+            setattr(self, m, m == method)
+    method = property(lambda self: self._method, set_method)
 
     @property
     def is_xhr(self):
