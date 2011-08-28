@@ -10,6 +10,8 @@ expression = str(Foo())
 # for Set documentation
 foo = [1, 2, 3, 4]
 nfoo = len(foo)
+
+bar = "<b>foo</b>"
 
 {% extends doc.html %}
 {% block doc %}
@@ -45,6 +47,16 @@ def squeeze(value):
 
 def url_escape(value):
     """Returns a valid URL-encoded version of the given value."""</pre>
+
+
+<a name="escaping"></a>
+<h4>Escaping</h4>
+
+<p>For better or for worse, expressions are not HTML-escaped by default. You
+must explicitly escape values using the helper function mentioned about, like
+so:</p>
+
+<pre>{&#123; escape(foo) }}</pre>
 
 
 <a name="unicode"></a>

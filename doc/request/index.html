@@ -20,9 +20,22 @@ doc_next = ('Response', '/response/')
     <tr><th>method</th><td>string</td></tr>
     <tr><th>path</th><td><a href="/virtual-paths/">dict</a></td></tr>
     <tr><th>qs</th><td>query string, <a href="#not-a-dict">WwwForm</a> object</td></tr>
+    <tr><th>redirect</th><td>given a location string and an optional status code (defaults to 302), raise a redirect response</td></tr>
     <tr><th>url</th><td>string</td></tr>
     <tr><th>urlparts</th><td><a href="http://docs.python.org/library/urlparse.html">urlparse.urlparse</a> output</td></tr>
 </table>
+
+<p>There are also boolean attributes for the <a
+    href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html">nine
+    methods</a> defined in the HTTP spec, so in a simplate you can branch like
+this:</p>
+
+<pre>
+if request.GET:
+    foo
+elif request.POST:
+    bar
+</pre>
 
 <p>You can alter this API globally using an <a href="/hooks/">inbound
     hook</a>.</p>

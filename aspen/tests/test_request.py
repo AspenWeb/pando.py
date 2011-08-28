@@ -44,7 +44,30 @@ def test_allow_can_handle_lowercase():
     expected = 405
     actual = assert_raises(Response, request.allow, 'post').code
     assert actual == expected, actual
-    
+
+def test_methods_start_with_GET():
+    request = StubRequest()
+    assert not request.OPTIONS
+    assert request.GET
+    assert not request.HEAD
+    assert not request.POST
+    assert not request.PUT
+    assert not request.DELETE
+    assert not request.TRACE
+    assert not request.CONNECT
+
+def test_methods_changing_changes():
+    request = StubRequest()
+    request.method = 'POST'
+    assert not request.OPTIONS
+    assert not request.GET
+    assert not request.HEAD
+    assert request.POST
+    assert not request.PUT
+    assert not request.DELETE
+    assert not request.TRACE
+    assert not request.CONNECT
+
 def test_is_xhr_false():
     request = StubRequest()
     assert not request.is_xhr
