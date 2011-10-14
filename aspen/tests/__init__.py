@@ -60,7 +60,7 @@ class StubRequest:
     def from_fs(cls, fs):
         """Takes a path under ./fsfix using / as the path separator.
         """
-        fs = os.sep.join(fs.split('/'))
+        fs = os.sep.join(fs.split(os.sep))
         request = Request.from_wsgi(StubWSGIRequest(fs))
         website = Configurable.from_argv(['fsfix'])
         website.copy_configuration_to(request)
