@@ -1,2 +1,4 @@
+*.egg-info/
 aspen/tests/log
 env
+*.pyc
