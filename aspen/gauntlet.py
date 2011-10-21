@@ -71,7 +71,7 @@ def virtual_paths(request):
     starting with '%' then only the 'first' is used.
 
     """
-    if '/%' in request.fs[len(request.root):]:  # disallow direct access
+    if os.sep + '%' in request.fs[len(request.root):]:  # disallow direct access
         raise Response(404)
     if not exists(request.fs):
         matched = request.root
