@@ -274,7 +274,7 @@ def test_virtual_path_docs_2():
 
 def test_virtual_path_docs_3():
     mk( ('%name/index.html', "^L\nGreetings, {{ request.path['name'] }}!")
-      , ('%name/%cheese.txt', "^L\r\n{{ request.path['name'].title() }} likes {{ request.path['cheese'] }} cheese.")
+      , ('%name/%cheese.txt', "^L\n{{ request.path['name'].title() }} likes {{ request.path['cheese'] }} cheese.")
        )
     response = handle('/chad/cheddar.txt')
     expected = "Chad likes cheddar cheese."
