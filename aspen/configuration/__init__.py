@@ -10,7 +10,7 @@ from os.path import dirname, expanduser, isdir, join, realpath
 import aspen
 from aspen.configuration.aspenconf import AspenConf 
 from aspen.configuration.exceptions import ConfigurationError
-from aspen.configuration.hooks import HooksConf
+from aspen.configuration.hooks import Hooks
 from aspen.configuration.optparser import optparser, validate_address
 from aspen._tornado.template import Loader
 from aspen.configuration.logging_ import configure_logging
@@ -66,7 +66,7 @@ class Configurable(object):
         self.__names.extend(['default_mimetype', 'default_filenames', 
             'json_content_type', 'show_tracebacks'])
 
-        self.hooks = load_hooks(expanduser, dotaspen)
+        self.hooks = load_hooks()
         self.__names.append('hooks')
 
         self.engine = load_engine(opts, self)
@@ -175,13 +175,14 @@ def load_default_filenames(conf):
 def load_json_content_type(conf):
     return conf.aspen.get('json_content_type', 'application/json')
 
-def load_hooks(expanduser, dotaspen):
-    return HooksConf( join(dirname(__file__), 'hooks.conf')
-                    , '/etc/aspen/hooks.conf'
-                    , '/usr/local/etc/aspen/hooks.conf'
-                    , expanduser('~/.aspen/hooks.conf')
-                    , join(dotaspen, 'hooks.conf')
-                     ) # later comes after earlier, per section
+def load_hooks():
+    try:
+        exec 'import aspen_hooks'
+    except ImportError:
+        import traceback
+        #traceback.print_exc()
+        aspen_hooks = None
+    return Hooks(aspen_hooks)
 
 def load_address_sockfam(opts, conf):
     """These can be set either on the command line or in the conf file.
