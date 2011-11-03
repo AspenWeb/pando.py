@@ -4,7 +4,7 @@ import sys
 from aspen.tests import assert_raises
 from aspen.tests.fsfix import mk, attach_teardown
 from aspen.configuration.exceptions import *
-from aspen.configuration import load_hooks
+from aspen.configuration.hooks import HooksConf
 
 
 # Fixture
@@ -19,29 +19,28 @@ sys.path.insert(0, os.path.join('fsfix', lib_python))
 class Paths:
     pass
 
-def check(getter=lambda o: o):
-    sys.path.insert(0, os.path.join('fsfix', '.aspen')) # is reset in teardown
-    out = load_hooks().hooks
+def load(*also):
+    return HooksConf(chr(12), 'fsfix/.aspen/hooks.conf', *also)
 
 
 # No hooks configured
 # ===================
 
 def test_no_aspen_directory():
-    expected = None
-    actual = check()
+    expected = [[], [], [], [], [], []]
+    actual = load()
     assert actual == expected, actual
 
 def test_no_file():
     mk('.aspen')
-    expected = None
-    actual = check()
+    expected = [[], [], [], [], [], []]
+    actual = load()
     assert actual == expected, actual
 
 def test_empty_file():
-    mk('.aspen', ('.aspen/aspen_hooks.py', 'HELLO?!?!?!?'))
-    expected = "aspen_hooks"
-    actual = check(lambda o: o.__name__)
+    mk('.aspen', ('.aspen/hooks.conf', ''))
+    expected = [[], [], [], [], [], []]
+    actual = load()
     assert actual == expected, actual
 
 
@@ -51,19 +50,19 @@ def test_empty_file():
 def test_something():
     mk('.aspen', ('.aspen/hooks.conf', 'random:choice'))
     expected = [[random.choice], [], [], [], [], []]
-    actual = check()
+    actual = load()
     assert actual == expected, actual
 
 def test_must_be_callable():
     mk('.aspen', ('.aspen/hooks.conf', 'string:digits'))
-    err = assert_raises(ConfFileError, check)
+    err = assert_raises(ConfFileError, load)
     assert err.msg == ("'string:digits' is not callable. [fsfix/.aspen"
                        "/hooks.conf, line 1]"), err.msg
 
 def test_order():
     mk('.aspen', ('.aspen/hooks.conf', 'random:choice\nrandom:seed'))
     expected = [[random.choice, random.seed], [], [], [], [], []]
-    actual = check()
+    actual = load()
     assert actual == expected, actual
 
 
@@ -73,7 +72,7 @@ def test_order():
 def test_blank_lines_skipped():
     mk('.aspen', ('.aspen/hooks.conf', '\n\nrandom:choice\n\n'))
     expected = [[random.choice], [], [], [], [], []]
-    actual = check()
+    actual = load()
     assert actual == expected, actual
 
 def test_comments_ignored():
@@ -85,7 +84,7 @@ def test_comments_ignored():
 
         """))
     expected = [[random.choice, random.sample], [], [], [], [], []]
-    actual = check()
+    actual = load()
     assert actual == expected, actual
 
 
@@ -113,7 +112,7 @@ def test_outbound_section():
                , []
                , []
                 ]
-    actual = check()
+    actual = load()
     assert actual == expected, actual
 
 
@@ -138,7 +137,7 @@ def test_caret_L_converted_to_page_break():
                , []
                , []
                 ]
-    actual = check()
+    actual = load()
     assert actual == expected, actual
 
 
@@ -170,7 +169,7 @@ def test_layering():
                , []
                , []
                 ]
-    actual = check('fsfix/first.conf', 'fsfix/second.conf')
+    actual = load('fsfix/first.conf', 'fsfix/second.conf')
     assert actual == expected, actual
 
 
@@ -199,7 +198,7 @@ def test_form_feeds_on_same_line():
                , [random.gauss]
                , [random.shuffle]
                 ]
-    actual = check('fsfix/foo.conf')
+    actual = load('fsfix/foo.conf')
     assert actual == expected, actual
 
 
@@ -227,7 +226,7 @@ def test_all_six():
                , []
                , []
                 ]
-    actual = check('fsfix/foo.conf')
+    actual = load('fsfix/foo.conf')
     assert actual == expected, actual
 
 
@@ -248,7 +247,7 @@ def test_equal_sections_dont_screw_up_parsing():
         random:shuffle 
         """))
     expected = [[],[],[],[],[random.shuffle],[]]
-    actual = check('fsfix/hooks.conf')
+    actual = load('fsfix/hooks.conf')
     assert actual == expected, actual
 
 
