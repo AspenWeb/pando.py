@@ -56,7 +56,7 @@ class Section(list):
             self.append(obj)
 
 class Done(Exception):
-    pass    
+    pass
 
 def HooksConf(*filenames):
     """Given a list of filenames, return six lists.
