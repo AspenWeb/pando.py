@@ -29,7 +29,7 @@ if [ $? -eq 0 ]; then
     git push
     git push --tags
 
-    python setup.py sdist --formats=zip,gztar,bztar upload
+    ./env/bin/python setup.py sdist --formats=zip,gztar,bztar upload
 
     printf "+" >> version.txt
     git commit version.txt -m"Version bump post-release."
