@@ -146,8 +146,7 @@ def store_raw(option, opt, value, parser_):
     setattr(parser_.values, 'raw_'+option.dest, value)
 
 
-usage = "aspen [options]; --help for "\
-        "more"
+usage = "aspen [options] [root]"
 version = """\
 aspen, version %s
 
@@ -157,11 +156,10 @@ http://aspen.io/
 
 optparser = optparse.OptionParser(usage=usage, version=version)
 optparser.description = """\
-Aspen is a Python web framework, and this is the server it comes with, which is
-suitable for production. If given no arguments or options, it will start
-serving a website from the current directory on port 8080, based on
-configuration files in ./.aspen/etc/, logging to stdout. Full documentation is
-on the web at http://aspen.io/.
+Aspen is a Python web framework. By default this program will start serving a
+website from the current directory on port 8080. If given arguments the first
+will be interpreted as the website root. Options are as follows. See also
+http://aspen.io/.
 """
 
 
