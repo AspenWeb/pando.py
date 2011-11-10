@@ -3,28 +3,20 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
     <head>
         <title>Aspen: Python Web Framework with Simplates</title>
-        <style>
-            @import url("/_lib/aspen.5.css");
-            @import url("/_lib/syntaxhighlighter_3.0.83/styles/shCore.css");
-            @import url("/_lib/shTheme.css");
-        </style>
-        <script src="/_lib/jquery-1.5.min.js"></script>
-        <script src="/_lib/syntaxhighlighter_3.0.83/scripts/shCore.js"></script>
-        <script src="/_lib/syntaxhighlighter_3.0.83/scripts/shBrushPython.js"></script>
-        <script>
-            $(document).ready(function() {
-                SyntaxHighlighter.all();
-            });
-        </script>
+        <style>@import url("/_lib/aspen.6.css");</style>
         {% block head %}{% end %}
     </head>
     <body>
         <div id="body">
             <div id="definition">
 
-                <h1><a href="/">Aspen</a></h1> is a Python web framework.<br />
-                <i><a href="/simplates/">Simplates</a></i> are 
-                        the main attraction.
+                <h1><a href="/">Aspen</a></h1>
+
+                <p>A Python web framework that makes the most of the
+                filesystem. {% if not homepage %}</p>
+
+                <p>{% end %}<i><a href="/simplates/">Simplates</a></i> are the
+                main attraction.</p>
 
             </div>
             {% block content %}{% end %}
