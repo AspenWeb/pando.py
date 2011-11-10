@@ -125,8 +125,12 @@ template reloading.</p>
     ...
 {&#37; end %}</pre>
 
-<p>To implement loop counters, use <a href="#set">set</a>.</p>
+<p>To implement loop counters, use <a
+    href="http://docs.python.org/library/functions.html#enumerate"><code>enumerate</code></a>:</p>
 
+<pre>{&#37; for i, foo in enumerate(bar) %}
+    ...
+{&#37; end %}</pre>
 
 <a name="if"></a>
 <h4>If/Elif/Else</h4>
@@ -158,34 +162,9 @@ reloading.</p>
 
 <pre>{&#37; set foo = "bar" %}</pre>
 
-<p>You can implement your own loop counters with this. For example, this:</p>
-
-<pre>foo = [1,2,3,4]
-nfoo = len(foo)
-# -------------------------------- &#94;L
-{&#37; set i = 0 %}
-{&#37; for x in foo %}{&#37; set i += 1 %}{&#123; x }}{&#37; if i < nfoo %}, {&#37; end %}{&#37; end %}
-</pre>
-
-<p>Gives this output:</p>
-
-<pre>{% set i = 0 %}
-{% for e in foo %}{% set i += 1 %}{{ e }}{% if i < nfoo %}, {% end %}{% end %}
-</pre>
-
-<p>This will break, however:</p>
-
-<pre>foo = [1,2,3,4]
-nfoo = len(foo)
-i = 0
-# -------------------------------- &#94;L
-{&#37; for x in foo %}{&#37; set i += 1 %}{&#123; x }}{&#37; if i < nfoo %}, {&#37; end %}{&#37; end %}
-</pre>
-
-<p>You can&rsquo;t initially define <code>i</code> in the Python page of the
-simplate, you have to define it in the template page. Set variables are in
-their own namespace that is only accessible within the template page of the
-simplate.</p>
+<p>Note that variables defined this way are in their own namespace that is only
+accessible within the template page of the simplate. You can&rsquo;t use this
+to mutate objects defined in earlier simplate pages.</p>
 
 
 <a name="try"></a>
@@ -206,7 +185,5 @@ simplate.</p>
 <pre>{&#37; while foo %}
     ...
 {&#37; end %}</pre>
-
-<p>To implement loop counters, use <a href="#set">set</a>.</p>
 
 {% end %}
