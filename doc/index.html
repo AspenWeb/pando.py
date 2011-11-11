@@ -75,12 +75,93 @@ homepage = True
         font-size: 11pt;
         line-height: 13pt;
     }
-    #media {
-        float: left;
-        width: 600px;
-    }
     #media .pad {
         padding: 26pt 0 0 15px;
+    }
+    #media IFRAME {
+        width: 585px;
+        height: 470px; 
+        border: 0;
+    }
+    #appearances H2 {
+        margin-top: 26pt ! important;
+    }
+    BR.maybe {
+        display: none;
+    }
+    #media {
+        clear: both;
+    }
+    @media screen and (min-width: 940px) {
+        #definition P {
+            position: absolute;
+            top: 10pt;
+            right: 0;
+        }
+        #media {
+            float: left;
+            width: 600px;
+            clear: none;
+        }
+    }
+    @media screen and (min-width: 640px) and (max-width: 939px) {
+        #body {
+            width: 600px;
+        }
+        #appearances {
+            position: relative;
+            width: 600px;
+            margin-top: 39pt;
+        } 
+        #col1 .pad { padding-right: 15px; }
+        #col2 .pad { padding: 0 0 0 15px; }
+        #col3 .pad { padding-left: 15px; }
+        #col3 H2 {
+            margin-top: 26pt ! important;
+        }
+        #media .pad {
+            padding-left: 0;
+        }
+        #media IFRAME {
+            width: 600px;
+            height: 482px;
+        }
+        BR.maybe {
+            display: block;
+        }
+    }
+    @media screen and (max-width: 639px) {
+        BODY { padding: 10px; }
+        #body {
+            width: 100%;
+        }
+        .col {
+            width: auto;
+            float: none;
+        }
+        #col1 .pad { padding-right: 0; }
+        #col2 .pad { padding: 0 0 0 0; }
+        #col3 .pad { padding-left: 0; }
+        #index H2:first-child {
+            margin-top: 26pt;
+        }
+        #col1 H2:first-child {
+            margin-top: 0;
+        }
+        #media .pad {
+            padding: 0;
+        }
+        #media IFRAME {
+            width: 300px;
+            height: 240px;
+        }
+    }
+    @media screen and (max-width: 319px) {
+        BODY { padding: 5px; }
+        #media IFRAME {
+            width: 230px;
+            height: 185px;
+        }
     }
 </style>
 {% end %}
@@ -150,36 +231,39 @@ homepage = True
             for http://aspen.io/ itself</a></p>
 
 
-        <h2>Appearances
-            <a href="mailto:chad@zetaweb.com">Something to add?</a>
-        </h2>
+        <div id="appearances">
+
+            <h2>Appearances
+                <a href="mailto:chad@zetaweb.com">Something to add?</a>
+            </h2>
 
 
-        <p><strike><i>2011-09-28</i></strike> Chad Whitacre gave a short intro
-        to Aspen at <a href="http://pghpython.org/">PghPython</a>.</p>
+            <p><strike><i>2011-09-28</i></strike> Chad Whitacre gave a short intro
+            to Aspen at <a href="http://pghpython.org/">PghPython</a>.</p>
 
-        <p><strike><i>2011-08-21</i></strike> Richard Jones included Aspen in
-        his <a
-            href="http://blag.whit537.org/2011/08/aspen-marching-to-different-drummer.html">micro-framework
-            battle</a>.</p>
+            <p><strike><i>2011-08-21</i></strike> Richard Jones included Aspen in
+            his <a
+                href="http://blag.whit537.org/2011/08/aspen-marching-to-different-drummer.html">micro-framework
+                battle</a>.</p>
 
-        <p><strike><i>2011-07-30</i></strike> Chad Whitacre spoke about <a
-            href="http://blip.tv/pyohio/aspen-a-next-generation-web-framework-5436552">the
-            design philosophy behind Aspen</a> at <a
-            href="http://pyohio.org/">PyOhio</a>.</p>
+            <p><strike><i>2011-07-30</i></strike> Chad Whitacre spoke about <a
+                href="http://blip.tv/pyohio/aspen-a-next-generation-web-framework-5436552">the
+                design philosophy behind Aspen</a> at <a
+                href="http://pyohio.org/">PyOhio</a>.</p>
 
-        <p><strike><i>2011-07-05</i></strike> Jason Coombs gave an impromptu
-        lightening talk about Aspen at <a href="http://dcpython.org/">DC
-            Python</a>.</p>
+            <p><strike><i>2011-07-05</i></strike> Jason Coombs gave an impromptu
+            lightening talk about Aspen at <a href="http://dcpython.org/">DC
+                Python</a>.</p>
 
-        <p><strike><i>2011-06-08</i></strike> Kevin LaTona <a
-            href="http://www.studiosola.com/seapyaspen/">introduced Aspen</a>
-        to <a href="http://www.seapig.org/">SeaPIG</a>.</p>
+            <p><strike><i>2011-06-08</i></strike> Kevin LaTona <a
+                href="http://www.studiosola.com/seapyaspen/">introduced Aspen</a>
+            to <a href="http://www.seapig.org/">SeaPIG</a>.</p>
 
-        <p><strike><i>2011-06-07</i></strike> Chad Whitacre released <a
-            href="http://www.whit537.org/mongs/">Mongs</a> while at <a
-            href="http://www.10gen.com/conferences/mongonyc2011">MongoNYC</a>.</p>
+            <p><strike><i>2011-06-07</i></strike> Chad Whitacre released <a
+                href="http://www.whit537.org/mongs/">Mongs</a> while at <a
+                href="http://www.10gen.com/conferences/mongonyc2011">MongoNYC</a>.</p>
 
+        </div>
 
     
     </div></div>
@@ -220,10 +304,7 @@ homepage = True
 
         <h2>Extended Video Introduction</h2>
 
-        <embed src="http://blip.tv/play/AYLL6WwC"
-        type="application/x-shockwave-flash" width="585" height="470"
-        wmode="transparent" allowscriptaccess="always" allowfullscreen="true"
-        ></embed>
+        <iframe src="http://blip.tv/play/AYLL6WwC"></iframe>
     
     </div></div>
 

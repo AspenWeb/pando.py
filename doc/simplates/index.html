@@ -7,7 +7,7 @@ doc_next = ('Request', '/request/')
 <p>Simplates are Aspen&rsquo;s main attraction. Here&rsquo;s what a simplate
 looks like:</p>
 
-<pre lass="brush: python">"""This is my simplate.
+<pre>"""This is my simplate.
 """
 import random
 
@@ -34,9 +34,9 @@ breaks, or the two characters caret and L.</p>
 available in the third (template) page.</p>
 
 <p>Can you guess what the difference is between the first two Python pages?
-The first one is run once, on startup, and again any time the simplate is
-changed. It&rsquo;s designed for imports and constants. The second is run once
-for each request.</p>
+The first one is run once, the first time the page is hit (<i>not</i> on
+startup), and again any time the simplate is changed. It&rsquo;s designed for
+imports and constants. The second is run once for each request.</p>
 
 <p>The first page has these variables defined and available to you:</p>
 

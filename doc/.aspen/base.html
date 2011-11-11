@@ -3,7 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
     <head>
         <title>Aspen: Python Web Framework with Simplates</title>
-        <style>@import url("/_lib/aspen.6.css");</style>
+        <style>@import url("/_lib/aspen.7.css");</style>
         {% block head %}{% end %}
     </head>
     <body>
@@ -12,11 +12,13 @@
 
                 <h1><a href="/">Aspen</a></h1>
 
-                <p>A Python web framework that makes the most of the
-                filesystem. {% if not homepage %}</p>
+                <p>
+                    A Python web framework that makes the most of the
+                    filesystem. <br class="maybe" />
 
-                <p>{% end %}<i><a href="/simplates/">Simplates</a></i> are the
-                main attraction.</p>
+                    <i><a href="/simplates/">Simplates</a></i>&nbsp;are the
+                    main attraction.
+                </p>
 
             </div>
             {% block content %}{% end %}
