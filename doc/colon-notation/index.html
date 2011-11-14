@@ -1,46 +1,3 @@
-doc_title = "Colon Notation"
-doc_next = ''
-
-from aspen.configuration import colon
-
-objdef = "aspen.configuration.colon:colonize"
-colonize = colon.colonize(objdef)
-assert colonize == colon.colonize
-
 
-{% extends doc.html %}
-{% block doc %}
-
-<p>Aspen&rsquo;s <code><a href="/hooks/">hooks.conf</a></code> file uses colon
-notation to specify Python objects.</p>
-
-<pre>mypackage.sub.another:blah</pre>
-
-<p>becomes</p>
-
-<pre>from mypackage.sub import another</pre>
-
-<p>The <code>blah</code> attribute of <code>another</code> would then be
-used.</p>
-
-
-<h4>API</h4>
-
-<p>To use colon notation in your own application, import the
-<code>colonize</code> function from <code>aspen.colon</code>. Here is
-its signature:</p>
-
-<pre>def colonize(name, filename='n/a', lineno=-1):
-    """Given a name in colon notation and some error helpers, return an object.
-    """</pre>
-
-<p>And here&rsquo;s a contrived example of how to use it:</p>
-
-<pre>from aspen.configuration import colon
-
-objdef = "aspen.configuration.colon:colonize"
-colonize = colon.colonize(objdef)
-
-assert colonize == colon.colonize</pre>
-
-{% end %}
+request.redirect("/hooks/", 301)
+
