@@ -24,12 +24,24 @@ def main(argv=None):
         log = logging.getLogger('aspen.cli')
 
 
-        # Actual stuff.
-        # =============
+        # Website
+        # =======
+        # User-developers get this website object inside of their simplates and
+        # hooks. It provides access to configuration information in addition to
+        # being a WSGI callable and holding the request/response handling
+        # logic. See aspen/website.py
 
         if argv is None:
             argv = sys.argv[1:]
         website = Website(argv)
+
+
+        # Start serving the website.
+        # ==========================
+        # This amounts to binding the requested socket, with logging and 
+        # restarting as needed. Wrap the whole thing in a try/except to
+        # do some cleanup on shutdown.
+
         try:
             if hasattr(socket, 'AF_UNIX'):
                 if website.sockfam == socket.AF_UNIX:

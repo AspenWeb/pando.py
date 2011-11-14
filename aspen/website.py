@@ -18,6 +18,11 @@ log = logging.getLogger('aspen.website')
 
 class Website(Configurable):
     """Represent a website.
+
+    This object holds configuration information, and also knows how to start
+    and stop a server, *and* how to handle HTTP requests (per WSGI). It is
+    available to user-developers inside of their simplates and hooks.
+
     """
 
     def __init__(self, argv=None):
@@ -48,6 +53,10 @@ class Website(Configurable):
 
     def handle(self, request):
         """Given an Aspen request, return an Aspen response.
+
+        Aspen uses Resource subclasses to generate responses. See
+        aspen/resources/__init__.py.
+
         """
         try:
             try:
@@ -59,6 +68,7 @@ class Website(Configurable):
                 request.socket = sockets.get(request)
                 self.hooks.run('inbound_late', request)
 
+                # Look for a Socket.IO socket (http://socket.io/).
                 if isinstance(request.socket, Response):    # handshake
                     response = request.socket
                     request.socket = None

@@ -1,3 +1,5 @@
+"""Aspen supports Socket.IO sockets. http://socket.io/
+"""
 from aspen.resources.dynamic_resource import DynamicResource
 
 
