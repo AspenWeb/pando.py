@@ -1,3 +1,17 @@
+"""Aspen uses Resource classes to model HTTP resources.
+
+Here is the class hierarchy:
+
+    Resource ------> DynamicResource ------> JSONResource
+             \                       \ 
+              \                       \----> SocketResource
+               \                       \
+                \--> StaticResource     \--> TemplateResource
+
+XXX: There is lots of semantic ambiguity and overlap between Resource and
+Simplate.
+
+"""
 import datetime
 import logging
 import mimetypes
@@ -7,7 +21,7 @@ import sys
 import traceback
 from os.path import join
 
-PAGE_BREAK = chr(12)
+PAGE_BREAK = chr(12) # used in the following imports
 
 from aspen import json
 from aspen.resources.json_resource import JSONResource
@@ -48,14 +62,24 @@ class Entry:
 # ============
 
 def get_resource_class(raw, mimetype):
-    """Given bytes and a mimetype, return a Resource subclass.
+    """Given raw file contents and a mimetype, return a Resource subclass.
 
-    If the mimetype does not start with 'text/', then it is only a resource if
-    it has at least one form feed in it. Binary files generally can't be
-    decoded using UTF-8. If Python's mimetypes module doesn't know about a
-    certain extension, then we default to a configurable value (default is
-    text/plain).
+    This function encodes the algorithm for deciding what kind of Resource (==
+    simplate) a given file is. Is it a static file or a dynamic JSON simplate
+    or what? Etc. Here is the algorithm:
 
+        If mimetype is 'application/x-socket.io' then it's a Socket simplate.
+
+        If mimetype is 'text/*' or 'application/json' then we look for page
+        breaks (^L). If there aren't any page breaks then it's a static file.
+        If it has at least one page break then it's a dynamic simplate (either
+        Template or JSON).
+
+        For all other mimetypes we sniff the first few bytes of the file. If it
+        looks Python-y then it's a Template simplate, otherwise it's a static
+        file. What looks Python-y? Triple quotes for a leading docstring, or
+        the beginning of an import statement ("from" or "import").
+    
     """
 
     is_dynamic = True
@@ -98,13 +122,6 @@ def get_resource_class(raw, mimetype):
 
 def load(request, modtime):
     """Given a Request and a modtime, return a Resource object (w/o caching).
-
-        Resource ------> DynamicResource ------> JSONResource
-                 \                       \ 
-                  \                       \----> SocketResource
-                   \                       \
-                    \--> StaticResource     \--> TemplateResource
-        
     """
 
     # Load bytes.
