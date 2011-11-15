@@ -19,7 +19,6 @@ homepage = True
         line-height: 13pt;
         font-weight: 200;
         margin: 26pt 0 0;
-        argin: 19pt 0 5pt; /* hrm ... throwing off vertical spacing ... */
         padding: 0;
         border-bottom: 3px solid white;
     }
@@ -93,29 +92,36 @@ homepage = True
         clear: both;
     }
     #grove {
-        display: none; /* only at widest size */
         border: 1px solid #B1502C;
         border-style: solid none; 
+        height: 60px;
+        background: center center url("/_lib/grove.585.jpg");
     }
-    #index TABLE {
+    #screenshots {
         font: inherit;
         margin: 20px 0 0;
     }
-    #index TABLE H4 {
+    #screenshots .col.left {
+        width: 253px;
+    }
+    #screenshots .col.right {
+        width: 332px;
+    }
+    #screenshots H4 {
         font: 900 16pt/24pt Lato, sans-serif;
         margin: 5px 0 0;
         padding: 0;
         color: black;
         text-transform: none;
     }
-    #index TABLE P {
+    #screenshots P {
         font: 300 italic 12pt/16pt Lato, sans-serif;
         color: black;
         text-indent: 0;
         padding: 0;
         border: 0;
     } 
-    #index TABLE P I {
+    #screenshots P I {
         font-style: normal;
     }
     @media screen and (min-width: 940px) {
@@ -129,7 +135,6 @@ homepage = True
             width: 600px;
             clear: none;
         }
-        #grove { display: block; }
     }
     @media screen and (min-width: 640px) and (max-width: 939px) {
         #body {
@@ -138,7 +143,7 @@ homepage = True
         #appearances {
             position: relative;
             width: 600px;
-            margin-top: 39pt;
+            margin-top: 26pt;
         } 
         #col1 .pad { padding-right: 15px; }
         #col2 .pad { padding: 0 0 0 15px; }
@@ -148,10 +153,6 @@ homepage = True
         }
         #media .pad {
             padding-left: 0;
-        }
-        #media IFRAME {
-            width: 600px;
-            height: 482px;
         }
         BR.maybe {
             display: block;
@@ -178,17 +179,31 @@ homepage = True
         #media .pad {
             padding: 0;
         }
-        #media IFRAME {
-            width: 300px;
-            height: 240px;
+        #grove { margin-top: 30px; }
+        #screenshots .col.right {
+            width: 212px;
+        }
+        #screenshots H4 {
+            font-size: 12pt;
+            line-height: 18pt;
+            margin-left: 20px;
+            margin-top: -10px;
+        }
+        #screenshots P {
+            font-size: 10pt;
+            line-height: 13pt;
+            margin-left: 20px;
+            margin-bottom: 30px;
+        }
+        #screenshots .col.right IMG {
+            margin-left: 20px;
+            margin-top: -25px;
+            width: 212px;
         }
     }
     @media screen and (max-width: 319px) {
         BODY { padding: 5px; }
-        #media IFRAME {
-            width: 230px;
-            height: 185px;
-        }
+
     }
 </style>
 {% end %}
@@ -342,52 +357,48 @@ homepage = True
     </div></div>
     <div id="media"><div class="pad">
 
-        <img src="/_lib/grove.jpg" id="grove" />
+        <div id="grove"></div>
 
-        <table>
-            <tr>
-                <td><img src="0-page.png" /></td>
-                <td><h4>Your Page</h2>
+        <div id="screenshots">
+            <div class="col left"><img src="0-page.png" /></div>
+            <div class="col right"><h4>Your Page</h2>
 
-                    <p>Aspen maps your URLs directly to the filesystem.
-                    It&rsquo;s way simpler than regular expression routing or
-                    object traversal. Capture path parts with <a
-                        href="/virtual-paths/">virtual paths</a>.</p>
-       
-                </td>
-            </tr> 
-            <tr>
-                <td><img src="1-simplate.png" /></td>
-                <td><h4>Your Simplate</h2>
+                <p>Aspen maps your URLs directly to the filesystem.
+                It&rsquo;s way simpler than regular expression routing or
+                object traversal. Capture path parts with <a
+                    href="/virtual-paths/">virtual paths</a>.</p>
+   
+            </div>
+            <div class="clear"></div>
+            <div class="col left"><img src="1-simplate.png" /></div>
+            <div class="col right"><h4>Your Simplate</h2>
 
-                    <p>On the filesystem you have a <a
-                        href="/simplates/">simplate</a>. This is one file with
-                    three pages: import, request, and template. The &#94;L is a
-                    <a href="/page-break/">page break</a>. It separates your
-                    concerns.</p>
-       
-                </td>
-            </tr> 
-            <tr>
-                <td><img src="2-library.png" /></td>
-                <td><h4>Your Library</h2>
+                <p>On the filesystem you have a <a
+                    href="/simplates/">simplate</a>. This is one file with
+                three pages: import, request, and template. The &#94;L is a
+                <a href="/page-break/">page break</a>. It separates your
+                concerns.</p>
+   
+            </div>
+            <div class="clear"></div>
+            <div class="col left"><img src="2-library.png" /></div>
+            <div class="col right"><h4>Your Library</h2>
 
-                    <p>Mature projects keep functionality in object-oriented,
-                    tested, documented libraries. Of course, you have the full
-                    power and depth of <a
-                        href="http://www.python.org">Python</a> as well.</p>
+                <p>Mature projects keep functionality in object-oriented,
+                tested, documented libraries. Of course, you have the full
+                power and depth of <a
+                    href="http://www.python.org">Python</a> as well.</p>
 
-                    <img src="power-of-python.png" 
-                         alt="Python logo + common libraries" />
+                <img src="power-of-python.png" 
+                     alt="Python logo + common libraries" />
 
 
-                     <p>Want more? Here&rsquo;s <a
-                         href="http://blip.tv/pyohio/aspen-a-next-generation-web-framework-5436552">a
-                         50-minute video introduction</a>.</p>
+                 <p>Want more? Here&rsquo;s <a
+                     href="http://blip.tv/pyohio/aspen-a-next-generation-web-framework-5436552">a
+                     50-minute video introduction</a>.</p>
 
-                </td>
-            </tr> 
-        </table>
+            </div>
+        </div>
 
     </div></div>
 
