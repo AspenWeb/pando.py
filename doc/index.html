@@ -92,10 +92,31 @@ homepage = True
     #media {
         clear: both;
     }
-    IMG {
+    #grove {
         display: none; /* only at widest size */
         border: 1px solid #B1502C;
         border-style: solid none; 
+    }
+    #index TABLE {
+        font: inherit;
+        margin: 20px 0 0;
+    }
+    #index TABLE H4 {
+        font: 900 16pt/24pt Lato, sans-serif;
+        margin: 5px 0 0;
+        padding: 0;
+        color: black;
+        text-transform: none;
+    }
+    #index TABLE P {
+        font: 300 italic 12pt/16pt Lato, sans-serif;
+        color: black;
+        text-indent: 0;
+        padding: 0;
+        border: 0;
+    } 
+    #index TABLE P I {
+        font-style: normal;
     }
     @media screen and (min-width: 940px) {
         #definition P {
@@ -108,7 +129,7 @@ homepage = True
             width: 600px;
             clear: none;
         }
-        IMG { display: block; }
+        #grove { display: block; }
     }
     @media screen and (min-width: 640px) and (max-width: 939px) {
         #body {
@@ -321,12 +342,52 @@ homepage = True
     </div></div>
     <div id="media"><div class="pad">
 
-        <img src="/_lib/grove.jpg" />
+        <img src="/_lib/grove.jpg" id="grove" />
 
-        <h2>Extended Video Introduction</h2>
+        <table>
+            <tr>
+                <td><img src="0-page.png" /></td>
+                <td><h4>Your Page</h2>
 
-        <iframe src="http://blip.tv/play/AYLL6WwC"></iframe>
-    
+                    <p>Aspen maps your URLs directly to the filesystem.
+                    It&rsquo;s way simpler than regular expression routing or
+                    object traversal. Capture path parts with <a
+                        href="/virtual-paths/">virtual paths</a>.</p>
+       
+                </td>
+            </tr> 
+            <tr>
+                <td><img src="1-simplate.png" /></td>
+                <td><h4>Your Simplate</h2>
+
+                    <p>On the filesystem you have a <a
+                        href="/simplates/">simplate</a>. This is one file with
+                    three pages: import, request, and template. The &#94;L
+                    character is a <a href="/page-break/">page break</a>.</p>
+       
+                </td>
+            </tr> 
+            <tr>
+                <td><img src="2-library.png" /></td>
+                <td><h4>Your Library</h2>
+
+                    <p>Aspen encourages clean coding. Mature projects keep
+                    functionality in object-oriented, tested, documented
+                    libraries. Of course, you have the full power and depth of
+                    <a href="http://www.python.org">Python</a> as well.</p>
+
+                    <img src="power-of-python.png" 
+                         alt="Python logo + common libraries" />
+
+
+                     <p>Want more? Here&rsquo;s <a
+                         href="http://blip.tv/pyohio/aspen-a-next-generation-web-framework-5436552">a
+                         50-minute video introduction</a>.</p>
+
+                </td>
+            </tr> 
+        </table>
+
     </div></div>
 
     <div class="clear"></div>
