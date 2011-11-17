@@ -26,16 +26,13 @@ setup( author = 'Chad Whitacre'
                                            , 'thrash = aspen:thrash'
                                             ] }
      , name = 'aspen'
-     , packages = find_packages(exclude=[ 'aspen.socket_io'     # not ready for
-                                        , 'aspen.socket_io.*'      # prime time
-                                        , 'aspen.tests'
+     , packages = find_packages(exclude=[ 'aspen.tests'
                                         , 'aspen.tests.*'
                                          ])
      , url = 'http://aspen.io/'
      , version = version
      , zip_safe = False
      , package_data = {'aspen': [ 'www/*'
-                                , 'configuration/hooks.conf'
                                 , 'configuration/mime.types'
                                  ]}
       )
