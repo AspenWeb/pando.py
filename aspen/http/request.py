@@ -168,7 +168,7 @@ class Request(object):
         else:
             self.body = WwwForm(self.raw_body)
 
-    def redirect(self, location, code=302):
+    def redirect(self, location, code=None, permanent=False):
         """Given a string and a boolean, raise a Response.
 
         Some day port this:
@@ -176,6 +176,8 @@ class Request(object):
             http://cherrypy.org/browser/trunk/cherrypy/_cperror.py#L154
 
         """
+        if code is None:
+            code = permanent is True and 301 or 302
         raise Response(code, headers={'Location': location})
 
     def allow(self, *methods):
