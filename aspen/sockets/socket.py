@@ -122,7 +122,6 @@ class Socket(object):
         """
         while 1:
             msg = self.incoming.next()
-            print msg
             if not filter or msg['name'] in filter:
                 break
         return (msg['name'], msg['args'])
