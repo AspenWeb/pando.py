@@ -34,3 +34,6 @@ class Channel(list):
         for socket in self:
             socket.send_utf8(data)
 
+    def notify(self, name, *args):
+        for socket in self:
+            socket.notify(name, *args)
