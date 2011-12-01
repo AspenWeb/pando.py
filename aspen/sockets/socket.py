@@ -108,6 +108,35 @@ class Socket(object):
         message.data = data
         self.outgoing.put(message)
 
+   
+    # Event API
+    # =========
+    # Working with events is so common that we offer these conveniences.
+
+    def listen(self, *filter):
+        """Given a series of events to listen for, return a tuple.
+    
+        The return value is a tuple of the event name and data. If no events
+        are specified, the first event is returned.
+
+        """
+        while 1:
+            msg = self.incoming.next()
+            print msg
+            if not filter or msg['name'] in filter:
+                break
+        return (msg['name'], msg['args'])
+
+    def notify(self, name, *args):
+        """This is a convenience function for event notification.
+
+        The first argument is the name of the event, and subsequent arguments
+        show up as the arguments to the callback function in your event
+        listener on the client side.
+
+        """
+        self.send_event({"name": name, "args": args})
+
 
     # Server Side 
     # ===========
