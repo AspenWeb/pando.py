@@ -17,6 +17,7 @@ def main(argv=None):
         import traceback
         from os.path import exists, join
 
+        import aspen
         from aspen import restarter
         from aspen.website import Website
 
@@ -58,7 +59,17 @@ def main(argv=None):
             if website.changes_kill:
                 log.info("Aspen will die when files change.")
                 restarter.install(website)
-            website.start()
+            try:
+                website.start()
+            except socket.error:
+                if website.port is not None:
+                    msg = "Um, is something already running on that port? Because ..."
+                    if not aspen.WINDOWS:
+                        # Assume we can use ANSI color escapes.
+                        msg = '\033[01;31m%s\033[00m' % msg
+                    print >> sys.stderr, msg
+                raise
+
         except KeyboardInterrupt, SystemExit:
             pass
         except:
