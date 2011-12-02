@@ -59,16 +59,32 @@ def main(argv=None):
             if website.changes_kill:
                 log.info("Aspen will die when files change.")
                 restarter.install(website)
-            try:
-                website.start()
-            except socket.error:
-                if website.port is not None:
-                    msg = "Um, is something already running on that port? Because ..."
-                    if not aspen.WINDOWS:
-                        # Assume we can use ANSI color escapes.
-                        msg = '\033[01;31m%s\033[00m' % msg
-                    print >> sys.stderr, msg
-                raise
+            website.start()
+
+        except socket.error:
+
+            # Be friendly about port conflicts.
+            # =================================
+            # The traceback one gets from a port conflict is not that friendly.
+            # Here's a helper to let the user know (in color?!) that a port
+            # conflict is the probably the problem. But in case it isn't
+            # (website.start fires the start hook, and maybe the user tries to
+            # connect to a network service in there?), don't fully swallow the
+            # exception. Also, be explicit about the port number. What if they
+            # have logging turned off? Then they won't see the port number in
+            # the "Greetings, program!" line. They definitely won't see it if
+            # using an engine like eventlet that binds to the port early.
+
+            if website.port is not None:
+                msg = "Is something already running on port %s? Because ..."
+                msg %= website.port
+                if not aspen.WINDOWS:
+                    # Assume we can use ANSI color escapes if not on Windows.
+                    # XXX Maybe a bad assumption if this is going into a log 
+                    # file?
+                    msg = '\033[01;33m%s\033[00m' % msg
+                print >> sys.stderr, msg
+            raise
 
         except KeyboardInterrupt, SystemExit:
             pass
