@@ -3,7 +3,7 @@ from os.path import dirname, join, realpath
 
 from aspen import gauntlet, Response
 from aspen.http.request import Request
-from aspen.tests import assert_raises, handle, StubRequest
+from aspen.tests import assert_raises, handle, NoException, StubRequest 
 from aspen.tests.fsfix import attach_teardown, expect, mk
 from aspen.configuration import Configurable
 
@@ -353,7 +353,43 @@ def test_file_matches_in_face_of_dir():
       , ('%value.txt', "Greetings, program!")
        )
     expected = {'value': 'baz'}
-    actual = check_virtual_paths('/baz.html').path
+    actual = check_virtual_paths('/baz.txt').path
+    assert actual == expected, actual
+
+def test_file_matches_extension():
+    mk( ('%value.json', '{"Greetings,": "program!"}')
+      , ('%value.txt', "Greetings, program!")
+       )
+    expected = "%value.json"
+    actual = os.path.basename(check_virtual_paths('/baz.json').fs)
+    assert actual == expected, actual
+
+def test_file_matches_other_extension():
+    mk( ('%value.json', '{"Greetings,": "program!"}')
+      , ('%value.txt', "Greetings, program!")
+       )
+    expected = "%value.txt"
+    actual = os.path.basename(check_virtual_paths('/baz.txt').fs)
+    assert actual == expected, actual
+
+def test_virtual_file_with_no_extension_works():
+    mk(('%value', '{"Greetings,": "program!"}'))
+    check_virtual_paths('/baz.txt')
+    assert NoException 
+
+def test_normal_file_with_no_extension_works():
+    mk( ('%value', '{"Greetings,": "program!"}')
+      , ('value', '{"Greetings,": "program!"}')
+       )
+    check_virtual_paths('/baz.txt')
+    assert NoException 
+
+def test_file_with_no_extension_matches():
+    mk( ('%value', '{"Greetings,": "program!"}')
+      , ('value', '{"Greetings,": "program!"}')
+       )
+    expected = {'value': 'baz'}
+    actual = check_virtual_paths('/baz').path
     assert actual == expected, actual
 
 attach_teardown(globals())
