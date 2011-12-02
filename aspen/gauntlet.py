@@ -95,7 +95,7 @@ def virtual_paths(request):
                             # ============================
                             # We want to allow file matches for the last URL
                             # path part, and in that case we strip the file
-                            # extension.  For other matches we need them to be
+                            # extension. For other matches we need them to be
                             # directories.
 
                             fs = join(matched, name)
@@ -103,8 +103,18 @@ def virtual_paths(request):
                             v = part
                             if i == (nparts - 1):
                                 if isfile(fs):
-                                    k = k.rsplit('.', 1)[0]
-                                    v = part.rsplit('.', 1)[0]
+                                    # Take care with extensions.
+                                    x = k.rsplit('.', 1)
+                                    y = part.rsplit('.', 1)
+                                    nx = len(x) # 1|2
+                                    if nx != len(y):
+                                        continue
+                                    if nx == 2:
+                                        # If there's an extension, match it.
+                                        k, ext1 = x
+                                        v, ext2 = y
+                                        if ext1 != ext2:
+                                            continue
                             elif not isdir(fs):
                                 continue 
 
