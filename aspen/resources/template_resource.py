@@ -31,7 +31,7 @@ class TemplateResource(DynamicResource):
     """This is a template resource. It has one, two, or three pages.
     """
 
-    max_pages = 2
+    min_pages = 2
     max_pages = 3
 
     def compile_third(self, one, two, three, padding):

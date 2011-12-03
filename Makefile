@@ -1,13 +1,24 @@
-env:
-	python2.7 virtualenv-1.6.4.py --distribute \
-			                      --no-site-packages \
-			                      --unzip-setuptools \
-			                      --prompt="[aspen] " \
-			                      env/
+default: env
 	./env/bin/pip install -r requirements.txt
+
+dev: env
+	./env/bin/pip install -r requirements.dev.txt
+	./env/bin/pip install -e ./
+
+env:
+	python2.7 ./vendor/virtualenv-1.6.4.py \
+		--distribute \
+		--unzip-setuptools \
+		--prompt="[aspen] " \
+		--never-download \
+		--extra-search-dir=./vendor/ \
+		env/
 
 clean:
 	rm -rf env
 
 run: env
 	sudo ./env/bin/thrash ./env/bin/aspen -vDEBUG -a:80 doc/
+
+test:
+	./env/bin/nosetests -sx aspen/tests/
