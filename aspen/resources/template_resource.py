@@ -54,6 +54,12 @@ class TemplateResource(DynamicResource):
                        , compress_whitespace = False
                         )
 
+    def compile_fourth(self, one, two, three, four, padding_two, padding_three):
+        """Given None, return None. Template resources have no fourth page.
+        """
+        assert four is None # sanity check
+        return four 
+
     def _trim_initial_newline(self, template):
         """Trim any initial newline from page three.
         

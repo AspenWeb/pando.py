@@ -4,6 +4,10 @@ from aspen.resources.resource import Resource
 
 PAGE_BREAK = chr(12)
 
+# Global page limits. There are further limits per-resource-type.
+MIN_PAGES = 2
+MAX_PAGES = 4
+
 class StringDefaultingList(list):
     def __getitem__(self, key):
         try:
@@ -22,10 +26,10 @@ class DynamicResource(Resource):
     max_pages = None
     
     def __init__(self, *a, **kw):
-        assert self.max_pages in (2, 3) # sanity check
+        assert MIN_PAGES <= self.max_pages <= MAX_PAGES # sanity check
         super(DynamicResource, self).__init__(*a, **kw)
-        one, two, three = self._parse(self.raw)
-        self.one, self.two, self.three = self._compile(one, two, three)
+        pages = self._parse(self.raw)
+        self.one, self.two, self.three, self.four = self._compile(*pages)
 
     def respond(self, request, response=None):
         """Given a Request and maybe a Response, return or raise a Response.
@@ -59,7 +63,7 @@ class DynamicResource(Resource):
 
         
     def _parse(self, raw):
-        """Given a bytestring, return a list of three items.
+        """Given a bytestring, return a list of four items.
         
         If there are too few pages, raise AssertionError. Any resource with
         only one page should land in StaticResource, not here.
@@ -69,8 +73,8 @@ class DynamicResource(Resource):
         If there are fewer than self.max_pages, then pad the front of the list
         with empty strings.
 
-        If self.max_pages is less than three (i.e., two), pad the end of the
-        list with None.
+        If self.max_pages is less than four (i.e., three or two), pad the end
+        of the list with None.
         
         """
 
@@ -98,13 +102,13 @@ class DynamicResource(Resource):
             pages.insert(0, '')
 
         # Pad the back with None.
-        while len(pages) < 3:
+        while len(pages) < MAX_PAGES:
             pages.append(None)
 
         return pages
        
-    def _compile(self, one, two, three):
-        """Given three items, return a 3-tuple of compiled objects.
+    def _compile(self, one, two, three, four):
+        """Given fouritems, return a 4-tuple of compiled objects.
 
         All dynamic resources compile the first two pages the same way. It's
         the third page that differs, so we require subclasses to provide a hook
@@ -118,17 +122,22 @@ class DynamicResource(Resource):
 
         one = one.replace('\r\n', '\n')
         two = two.replace('\r\n', '\n')
+        if three is not None:
+            three = three .replace('\r\n', '\n')
 
 
-        # Compute paddings and pad the second page.
-        # =========================================
-        # This is so we get accurate tracebacks. We will pass padding_two to 
-        # the compile_third hook in case subclasses want to use it.
+        # Compute paddings and pad the second and third pages.
+        # ====================================================
+        # This is so we get accurate tracebacks. We will pass padding_* to the
+        # compile_* hooks in case subclasses want to use them.
         
         padding = lambda s: ''.join(['\n' for n in range(s.count('\n'))])
         padding_two = padding(one)
         padding_three = padding_two + padding(two)
         two = padding_two + two 
+        if four is not None:
+            padding_four = padding_three + padding(three)
+            three = padding_three + three
 
 
         # Exec the first page and compile the second.
@@ -146,19 +155,28 @@ class DynamicResource(Resource):
         one = namespace
 
 
-        # Third
-        # =====
+        # Third and Fourth
+        # ================
 
         three = self.compile_third(one, two, three, padding_two)
+        four = self.compile_fourth( one, two, three, four
+                                  , padding_two
+                                  , padding_three
+                                   )
 
 
-        return one, two, three
+        return one, two, three, four
 
 
     # Hooks
     # =====
 
-    def compile_third(self, raw):
+    def compile_third(self, *a):
+        """Given a bytestring, return an object.
+        """
+        raise NotImplementedError
+
+    def compile_fourth(self, *a):
         """Given a bytestring, return an object.
         """
         raise NotImplementedError

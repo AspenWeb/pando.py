@@ -15,6 +15,12 @@ class JSONResource(DynamicResource):
         assert three is None # sanity check
         return three 
 
+    def compile_fourth(self, one, two, three, four, padding_two, padding_three):
+        """Given None, return None. Socket resources have no fourth page.
+        """
+        assert four is None # sanity check
+        return four 
+
     def process_raised_response(self, response):
         """Given a response, return a response.
         """
