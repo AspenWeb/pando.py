@@ -59,6 +59,7 @@ class Socket(object):
 
     def disconnect(self):
         self.loop.stop()
+        exec self.resource.four in self.namespace
         self.channel.remove(self)
 
 
@@ -151,12 +152,13 @@ class Socket(object):
         """
         packet = Packet(bytes)
         for message in packet:
+            # https://github.com/learnboost/socket.io-spec
             if message.endpoint != self.endpoint:
                 msg = "The %s endpoint got a message intended for %s."
                 msg %= self.endpoint, message.endpoint
                 raise RuntimeError(msg)
             if message.type == 0:           # disconnect
-                pass
+                self.disconnect()
             elif message.type == 1:         # connect 
                 pass
             elif message.type == 2:         # heartbeat
