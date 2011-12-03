@@ -1,0 +1,3 @@
+./vendor/nose-1.1.2.tar.gz
+#./vendor/snot-0.5.tar.gz
+
