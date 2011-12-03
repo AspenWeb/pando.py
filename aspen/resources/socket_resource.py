@@ -25,6 +25,12 @@ class SocketResource(DynamicResource):
         three = compile(three, self.fs, 'exec')
         return three
 
+    def compile_fourth(self, one, two, three, four, padding_two, padding_three):
+        """Given None, return None. Socket resources have no fourth page.
+        """
+        assert four is None # sanity check
+        return four 
+
     def exec_second(self, socket, request):
         """Given a Request, return a namespace dictionary.
         """
