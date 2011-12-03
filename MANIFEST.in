@@ -1,5 +1,4 @@
 include ez_setup.py
 include version.txt
-include aspen/configuration/hooks.conf
 include aspen/configuration/mime.types
 graft aspen/www
