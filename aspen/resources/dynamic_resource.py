@@ -61,7 +61,7 @@ class DynamicResource(Resource):
 
         return self.get_response(namespace)
 
-        
+
     def _parse(self, raw):
         """Given a bytestring, return a list of four items.
         
@@ -71,7 +71,7 @@ class DynamicResource(Resource):
         If there are too many pages, raise SyntaxError. 
 
         If there are fewer than self.max_pages, then pad the front of the list
-        with empty strings.
+        with up to two empty strings, and the end with up to one.
 
         If self.max_pages is less than four (i.e., three or two), pad the end
         of the list with None.
@@ -97,9 +97,12 @@ class DynamicResource(Resource):
                     )
             raise SyntaxError(msg)
 
-        # Pad the front with empty strings.
-        while len(pages) < self.max_pages:
+        # Pad front (and back?) with empty strings.
+        while len(pages) < (self.max_pages - 1):
             pages.insert(0, '')
+        if len(pages) < self.max_pages:
+            pages.append('')
+
 
         # Pad the back with None.
         while len(pages) < MAX_PAGES:
@@ -123,7 +126,7 @@ class DynamicResource(Resource):
         one = one.replace('\r\n', '\n')
         two = two.replace('\r\n', '\n')
         if three is not None:
-            three = three .replace('\r\n', '\n')
+            three = three.replace('\r\n', '\n')
 
 
         # Compute paddings and pad the second and third pages.
@@ -135,9 +138,6 @@ class DynamicResource(Resource):
         padding_two = padding(one)
         padding_three = padding_two + padding(two)
         two = padding_two + two 
-        if four is not None:
-            padding_four = padding_three + padding(three)
-            three = padding_three + three
 
 
         # Exec the first page and compile the second.
@@ -159,10 +159,7 @@ class DynamicResource(Resource):
         # ================
 
         three = self.compile_third(one, two, three, padding_two)
-        four = self.compile_fourth( one, two, three, four
-                                  , padding_two
-                                  , padding_three
-                                   )
+        four = self.compile_fourth(one, two, three, four, padding_three)
 
 
         return one, two, three, four

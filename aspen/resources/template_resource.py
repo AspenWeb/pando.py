@@ -32,7 +32,7 @@ class TemplateResource(DynamicResource):
     """
 
     min_pages = 2
-    max_pages = 3
+    max_pages = 4
 
     def compile_third(self, one, two, three, padding):
         """Given three bytestrings, return a Template instance.
@@ -54,11 +54,13 @@ class TemplateResource(DynamicResource):
                        , compress_whitespace = False
                         )
 
-    def compile_fourth(self, one, two, three, four, padding_two, padding_three):
-        """Given None, return None. Template resources have no fourth page.
+    def compile_fourth(self, one, two, three, four, padding):
+        """Given None, return None. Template resources have a noop fourth page.
         """
-        assert four is None # sanity check
-        return four 
+        four = four.replace('\r\n', '\n')
+        four = padding + four
+        four = compile(four, self.fs, 'exec')
+        return four
 
     def _trim_initial_newline(self, template):
         """Trim any initial newline from page three.

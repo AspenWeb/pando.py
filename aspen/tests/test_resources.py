@@ -79,16 +79,11 @@ text = unichr(1758)
 
 def test_resources_dont_leak_whitespace():
     """This aims to resolve https://github.com/whit537/aspen/issues/8.
-
-    It is especially weird with JSON output, which we test below. When
-    you return [1,2,3,4] that's what you want in the HTTP response
-    body.
-
     """
     actual = check(dedent("""
         
-        json_list = [1,2,3,4]
-        {{repr(json_list)}}"""))
+        foo = [1,2,3,4]
+        {{repr(foo)}}"""))
     expected = "[1, 2, 3, 4]"
     assert actual == expected, repr(actual)
 
