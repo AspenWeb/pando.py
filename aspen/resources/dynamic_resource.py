@@ -22,10 +22,10 @@ class DynamicResource(Resource):
     max_pages = None
     
     def __init__(self, *a, **kw):
-        assert self.max_pages in (2, 3) # sanity check
+        assert self.max_pages in (2, 3, 4) # sanity check
         super(DynamicResource, self).__init__(*a, **kw)
-        one, two, three = self._parse(self.raw)
-        self.one, self.two, self.three = self._compile(one, two, three)
+        pages = self._parse(self.raw)
+        self.one, self.two, self.three, self.four = self._compile(*pages)
 
     def respond(self, request, response=None):
         """Given a Request and maybe a Response, return or raise a Response.
@@ -59,7 +59,7 @@ class DynamicResource(Resource):
 
         
     def _parse(self, raw):
-        """Given a bytestring, return a list of three items.
+        """Given a bytestring, return a list of four items.
         
         If there are too few pages, raise AssertionError. Any resource with
         only one page should land in StaticResource, not here.
