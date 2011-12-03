@@ -28,7 +28,7 @@ from aspen._tornado.template import Template
 
 
 class TemplateResource(DynamicResource):
-    """This is a template resource. It has one, two, or three pages.
+    """This is a template resource. It has two or three pages.
     """
 
     min_pages = 2
