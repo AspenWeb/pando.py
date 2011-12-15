@@ -45,3 +45,6 @@ class XHRPollingTransport(Transport):
             response = Response(200, bytes_iter)
 
         return response
+
+    def disconnect(self):
+        pass
