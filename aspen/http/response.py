@@ -24,6 +24,8 @@ class Response(Exception):
     """Represent an HTTP Response message.
     """
 
+    request = None
+
     def __init__(self, code=200, body='', headers=None):
         """Takes an int, a string, and a dict (or list of tuples).
 
