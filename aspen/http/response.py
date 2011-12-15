@@ -4,6 +4,22 @@ from aspen.http import status_strings
 from aspen.http.headers import Headers
 
 
+class CloseWrapper(object):
+    """Conform to WSGI's facility for running code *after* a response is sent.
+    """
+    def __init__(self, request, body):
+        self.request = request
+        self.body = body
+    def __iter__(self):
+        return iter(self.body)
+    def close(self):
+        socket = getattr(self.request, "socket", None)
+        if socket is not None:
+            pass
+            # implement some socket closing logic here
+            #self.request.socket.close()
+
+
 class Response(Exception):
     """Represent an HTTP Response message.
     """
@@ -57,7 +73,7 @@ class Response(Exception):
         body = self.body
         if isinstance(body, basestring):
             body = [body]
-        return body
+        return CloseWrapper(self.request, body)
 
     def __repr__(self):
         return "<Response: %s>" % str(self)

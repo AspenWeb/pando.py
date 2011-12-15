@@ -36,6 +36,8 @@ class Website(Configurable):
         """
         request = Request.from_wsgi(environ) # too big to fail :-/
         response = self.handle(request)
+        response.request = request # Stick this on here at the last minute
+                                   # in order to support close hooks.
         return response(environ, start_response)
 
     def start(self):
