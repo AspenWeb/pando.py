@@ -15,15 +15,6 @@ except ImportError:
         _json = None
 
 
-# Support pymongo binary #redhotbaby.
-# ===================================
-
-try:
-    from pymongo.binary import Binary
-except ImportError:
-    class Binary:
-        pass
-
 if _json is not None:
     class FriendlyEncoder(_json.JSONEncoder):
         """Add support for additional types to the default JSON encoder.
@@ -36,8 +27,6 @@ if _json is not None:
             elif isinstance(obj, datetime.datetime):
                 # http://stackoverflow.com/questions/455580/
                 out = obj.isoformat()
-            elif isinstance(obj, Binary):
-                out = str(obj).encode('base64')
             else:
                 out = super(FriendlyEncoder, self).default(obj)
             return out
