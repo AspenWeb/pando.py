@@ -1,5 +1,7 @@
 import datetime
 
+from aspen.exceptions import LoadError
+
 
 # Find a json module.
 # ===================
@@ -48,4 +50,3 @@ def dumps(*a, **kw):
     if 'cls' not in kw:
         kw['cls'] = FriendlyEncoder
     return _json.dumps(*a, **kw)
-
