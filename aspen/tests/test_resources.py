@@ -3,7 +3,8 @@ from textwrap import dedent
 
 from aspen import Response
 from aspen.configuration import Configurable
-from aspen.resources import load, LoadError
+from aspen.exceptions import LoadError
+from aspen.resources import load
 from aspen.resources.template_resource import TemplateResource 
 from aspen.tests import assert_raises, StubRequest
 from aspen.tests.fsfix import attach_teardown, mk

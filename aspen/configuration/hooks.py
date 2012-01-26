@@ -1,5 +1,10 @@
 import os.path
-from collections import Callable
+try:                # Python >= 2.6
+    from collections import Callable
+    def isCallable(obj):
+        return isinstance(obj, Callable)
+except ImportError: # Python < 2.6
+    from operator import isCallable
 
 from aspen.configuration.colon import colonize
 from aspen.configuration.exceptions import ConfFileError
@@ -48,7 +53,7 @@ class Section(list):
         line = line.split('#', 1)[0].strip()
         if line: 
             obj = colonize(line, path, i)
-            if not isinstance(obj, Callable):
+            if not isCallable(obj):
                 raise ConfFileError( "'%s' is not callable." % line
                                    , i
                                    , path

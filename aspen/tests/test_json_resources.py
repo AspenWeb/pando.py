@@ -1,6 +1,6 @@
+from aspen.exceptions import LoadError
 from aspen.tests import assert_raises
 from aspen.tests.test_resources import check
-from aspen.resources import LoadError
 
 
 def test_json_basically_works():

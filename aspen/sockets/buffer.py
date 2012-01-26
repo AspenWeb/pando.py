@@ -1,9 +1,15 @@
 import collections
 import Queue
+import sys
+import threading
 import time
 
 from aspen.sockets import packet
 from aspen.sockets.loop import Die
+
+
+if sys.version_info < (2, 6): # patch
+    threading._Event.is_set = threading._Event.isSet
 
 
 class ThreadedBuffer(Queue.Queue):

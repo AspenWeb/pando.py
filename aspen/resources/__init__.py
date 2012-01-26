@@ -24,6 +24,7 @@ from os.path import join
 PAGE_BREAK = chr(12) # used in the following imports
 
 from aspen import json
+from aspen.exceptions import LoadError
 from aspen.resources.json_resource import JSONResource
 from aspen.resources.template_resource import TemplateResource
 from aspen.resources.socket_resource import SocketResource
@@ -31,11 +32,6 @@ from aspen.resources.static_resource import StaticResource
 
 
 log = logging.getLogger('aspen.resources')
-
-
-class LoadError(StandardError):
-    """Represent a problem loading a resource.
-    """
 
 
 # Cache helpers

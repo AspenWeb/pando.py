@@ -1,3 +1,4 @@
+from __future__ import with_statement # for Python 2.5
 import os
 import time
 
