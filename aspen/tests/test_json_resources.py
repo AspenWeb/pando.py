@@ -63,6 +63,24 @@ def test_json_doesnt_handle_non_ascii_bytestrings():
                  , filename="foo.json"
                   )
 
+def test_json_handles_time():
+    expected = '{"seen": "19:30:00"}'
+    actual = check( "import datetime"
+                  + ""
+                  + "response.body = {'seen': datetime.time(19, 30)}"
+                  , filename="foo.json"
+                   )
+    assert actual == expected, actual
+
+def test_json_handles_date():
+    expected = '{"created": "2011-05-09"}'
+    actual = check( "import datetime"
+                  + ""
+                  + "response.body = {'created': datetime.date(2011, 5, 9)}"
+                  , filename="foo.json"
+                   )
+    assert actual == expected, actual
+
 def test_json_handles_datetime():
     expected = '{"timestamp": "2011-05-09T00:00:00"}'
     actual = check( "import datetime"
