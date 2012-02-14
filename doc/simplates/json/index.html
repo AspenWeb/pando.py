@@ -96,16 +96,45 @@ still process as JSON:</p>
 <a name="libraries"></a>
 <h3>Supported JSON Libraries</h3>
 
-<p>Aspen will try to use <code>simplejson</code> if <code>json</code> is
-unavailable. <a
-    href="http://docs.python.org/library/json.html"><code>json</code></a> was
-added to the standard library in Python 2.6, so if you are using Python 2.5,
-you need to manually install <a
+<p>Aspen will prefer <a
     href="http://pypi.python.org/pypi/simplejson/"><code>simplejson</code></a>
-in order to take advantage of dynamic JSON simplates. (They&rsquo;re actually
-the same library.) Static JSON simplates will still work without a JSON
-library.</p>
+if it is available, falling back to the standard library&rsquo;s <a
+    href="http://docs.python.org/library/json.html"><code>json</code></a>
+module, which was added in Python 2.6. The latter is a more or less out-of-date
+version of the former. It also doesn&rsquo;t have any C speedups. If Aspen
+can&rsquo;t find either, then dynamic JSON simplates will raise an
+<code>ImportError</code>, though static JSON simplates will still work.</p>
 
+
+<a name="encoders"></a>
+<h3>Custom Encoders</h3>
+
+<p>It&rsquo;s fairly common to want to add encoders for custom classes or
+classes otherwise unknown to one or another version of simplejson. To this end,
+Aspen provides an API to manage a registry of encoders. These functions can be
+imported <code>from aspen.json</code>:</p>
+
+<pre>
+def register_encoder(cls, encode):
+    """Register the encode function for cls.
+    
+    An encoder should take an instance of cls and return something 
+    basically serializable (strings, lists, dictionaries).
+
+    """
+
+def unregister_encoder(cls):
+    """Given a class, remove any encoder that has been registered for it.
+    """
+</pre>
+
+<p>These functions don&rsquo;t affect the underlying simplejson library, only
+the Aspen abstraction layer. So if for example you have a simplejson that knows
+about Decimal objects (support for which was added in version 2.1 of the
+library), then if you register a custom encoder for Decimals, Aspen will use
+that where appropriate, and if you unregister it, the underlying implementation
+will be used again. Furthermore, if you use the simplejson library directly,
+the encoders registered with Aspen won&rsquo;t be used at all.</p>
 
 {% end %}
 
