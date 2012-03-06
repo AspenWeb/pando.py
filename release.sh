@@ -20,7 +20,7 @@ confirm () {
 }
 
 # Real work.
-confirm "Tag version $1 and upload to PyPI?"
+confirm "Tag version $1 and upload to PyPI and push to github and heroku?"
 if [ $? -eq 0 ]; then
     printf "$1" > version.txt
     git commit version.txt -m"Version bump for release."
@@ -34,6 +34,7 @@ if [ $? -eq 0 ]; then
     printf "+" >> version.txt
     git commit version.txt -m"Version bump post-release."
     git push
+    git push heroku
 
     rm -rf dist
 fi
