@@ -57,7 +57,9 @@ a trailing slash), you&rsquo;ll get a 404:</p>
 
 <h3>Typecasting</h3>
 
-<p>By default, path parts are decoded to Python unicode objects using ASCII.
+<p>By default, path parts are decoded to Python unicode objects using ASCII,
+and are then unquoted (per <a
+    href="http://docs.python.org/library/urllib.html#urllib.unquote">urllib.unquote</a>).
 You can also typecast path parts to integers. Make a directory called <code
     style="white-space: nowrap">%year.int</code> (for files, put the cast
 before the file extension, like <code>%month.int.html</code>).</p>

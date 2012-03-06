@@ -6,6 +6,7 @@ given here.
 """
 import logging
 import os
+import urllib
 import urlparse
 from os.path import join, isfile, isdir, dirname, exists
 
@@ -143,11 +144,12 @@ def _typecast(key, value):
             value = int(value)
         except ValueError:
             raise Response(404)
-    else:                       # otherwise it's ASCII
+    else:                       # otherwise it's URL-quoted ASCII
         try:
             value = value.decode('ASCII')
         except UnicodeDecodeError:
             raise Response(400)
+        value = urllib.unquote(value)
     return key, value
 
 def trailing_slash(request):
