@@ -1,3 +1,10 @@
+"""Implement an "engine" abstraction for network access.
+
+This submodule contains adapters for network I/O. These come in two basic
+flavors: threaded and evented. The Buffer object is part of Aspen's Socket.IO
+implementation.
+
+"""
 import threading
 import time
 
