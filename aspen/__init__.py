@@ -7,7 +7,8 @@ from aspen import json_ as json
 
 __version__ = "~~VERSION~~"
 WINDOWS = sys.platform[:3] == 'win'
-ENGINES = ['cherrypy', 'diesel', 'eventlet', 'gevent', 'pants', 'rocket']
+ENGINES = ['cherrypy', 'diesel', 'eventlet', 'gevent', 'pants', 'rocket', 
+           'twisted']
 
 
 def thrash():
