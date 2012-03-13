@@ -43,13 +43,15 @@ in <code>./.aspen/</code>, logging to <code>stdout</code>.</p>
 
     <dt>-e ENGINE, --engine=ENGINE</dt>
 
-    <dd>the HTTP engine to use, one of {<a
-        href="http://www.cherrypy.org/">cherrypy</a>,<a
-        href="https://github.com/jamwt/diesel">diesel</a>,<a
-        href="http://eventlet.net/">eventlet</a>,<a
-        href="http://gevent.org/">gevent</a>,<a
-        href="http://www.pantsweb.org/">pants</a>,<a
-        href="http://packages.python.org/rocket/">rocket</a>} [cherrypy]</dd>
+    <dd>the HTTP engine to use, one of 
+       {<a href="http://www.cherrypy.org/">cherrypy</a>,
+        <a href="https://github.com/jamwt/diesel">diesel</a>,
+        <a href="http://eventlet.net/">eventlet</a>,
+        <a href="http://gevent.org/">gevent</a>,
+        <a href="http://www.pantsweb.org/">pants</a>,
+        <a href="http://packages.python.org/rocket/">rocket</a>,
+        <a href="http://twistedmatrix.com/">twisted</a>} [cherrypy]
+    </dd>
 
 </dl>
 
@@ -122,11 +124,14 @@ comparable command-line options override any values set here.</p>
         <ul>
             <li><a href="https://github.com/jamwt/diesel">Diesel</a></li>
             <li><a href="http://eventlet.net/">Eventlet</a></li>
+            <li><a href="http://gevent.org/">Gevent</a></li>
             <li><a href="http://www.pantsweb.org/">Pants</a></li>
             <li><a href="http://packages.python.org/rocket/">Rocket</a></li>
+            <li><a href="http://twistedmatrix.com/">Twisted</a></li>
         </ul>
 
-        <b>Valid values:</b> cherrypy, diesel, eventlet, pants, rocket<br />
+        <b>Valid values:</b> cherrypy, diesel, eventlet, gevent, pants, rocket,
+        twisted<br />
 
         <b>Default:</b> cherrypy
 
