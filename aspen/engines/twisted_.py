@@ -24,7 +24,7 @@ class Engine(ThreadedEngine):
         self.twisted_site = twisted.web.server.Site(resource)
 
     def sleep(self, seconds):
-        time.sleep(seconds)
+        time.sleep(seconds) # We're threaded.
 
     def start(self):
         twisted.internet.reactor.listenTCP( port=self.website.address[1]
