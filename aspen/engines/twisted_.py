@@ -61,6 +61,9 @@ class Engine(ThreadedEngine):
         #  like, five of these things in their stuff."
         # "I just want there to be a single Python networking library with a
         #  consistent API."
+        # "Oh! That's your vim. I thought for a second that Aspen was the most 
+        #  advanced web server in the world."
+        # "I started using vim when I was six."
 
         def error(failure):
             failure.trap(SystemExit)
