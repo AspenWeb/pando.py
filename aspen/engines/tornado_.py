@@ -33,8 +33,9 @@ class TornadoBuffer(collections.deque):
 
         # It feels like it's going to take deeper rewiring to get *.sock files
         # working with Tornado callbacks.
-        raise NotImplementedError("Sorry, for now please use gevent or "
-                                  "eventlet for *.sock files.")
+        raise NotImplementedError("Sorry, for now please use a different "
+                                  "networking library in order to use *.sock "
+                                  "files.")
 
         collections.deque.__init__(self)
         self._socket = socket
