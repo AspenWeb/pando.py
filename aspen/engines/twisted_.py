@@ -43,16 +43,16 @@ class Engine(ThreadedEngine):
         # just told me a story (PyCon 2012 sprints) that when he was a kid his
         # father told him that programs should be robust in the face of error
         # conditions. "If you shoot it in the leg, it should crawl towards you.
-        # And then if you crush its torso, it should drag itself towards you.
-        # And then if you shoot it in the head, it should reach out for you
-        # with its dying breath." So he captures SystemExit, and now, due to a
-        # very wonderful time together, I can respect that. And that's the way
-        # it works, motherfuckers. Get to it!
+        # Then when you crush its torso, it should drag itself towards you.
+        # And when you shoot it in the head, it should reach out for you with 
+        # its dying breath." So he captures SystemExit, and now, due to a very 
+        # wonderful time together, I can respect that. And that's the way it 
+        # works, motherfuckers. Get to it!
         # 
         # Other memorable quotes:
         # 
         # "Twisted started as a MUD written in Java that used three or four 
-        #  threads per connections."
+        #  threads per connection."
         # "That was the big moment: if NetHack can do it, so can I!"
         # "No, this wasn't ncurses, this was a full-on Swing app."
         # "1999."
