@@ -186,7 +186,7 @@ basic_group.add_option( "-e", "--engine"
                     , dest="engine"
                     , help=( "the HTTP engine to use, one of "
                            + "{%s}" % ','.join(aspen.ENGINES)
-                           + " [%s]" % aspen.ENGINES[0]
+                           + " [%s]" % aspen.ENGINES[1]
                             )
                     , type='choice'
                      )

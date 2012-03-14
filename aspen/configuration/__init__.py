@@ -138,7 +138,7 @@ def load_engine(opts, configuration):
     if opts.engine is not None:     # use command line if present
         engine_name = opts.engine
     else:                           # fall back to aspen.conf
-        engine_name = conf['aspen.cli'].get('engine', aspen.ENGINES[0])
+        engine_name = conf['aspen.cli'].get('engine', aspen.ENGINES[1])
         if engine_name not in aspen.ENGINES:
             msg = "engine is not one of {%s}: %%s" % (','.join(aspen.ENGINES))
             raise ConfigurationError(msg % engine)
