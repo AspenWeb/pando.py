@@ -2,4 +2,4 @@
 aspen/tests/log
 env
 *.pyc
-distribute*
+distribute-*
