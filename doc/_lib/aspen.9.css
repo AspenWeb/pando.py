@@ -25,7 +25,7 @@ A:hover         { color: #F5936E; text-decoration: underline; }
 A:visited:hover {}
 A IMG           { border: none; }
 
-H1 A, 
+H1 A,
 #definition I A {
     text-decoration: none;
     color: #00A359;
