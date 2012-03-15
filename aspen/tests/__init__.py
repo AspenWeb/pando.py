@@ -117,7 +117,8 @@ def assert_raises(Exc, call, *arg, **kw):
     exc = None
     try:
         call(*arg, **kw)
-    except (SystemExit, Exception), exc: # SystemExit isn't an Exception?!
+    except:
+        exc = sys.exc_info()[1]
         pass
     assert exc is not None, "no exception; expected %s" % Exc
     assert isinstance(exc, Exc), "raised %s, not %s" % (repr(exc), repr(Exc))
