@@ -1,4 +1,7 @@
-from Cookie import CookieError, SimpleCookie
+try:                # 2
+    from Cookie import CookieError, SimpleCookie
+except ImportError: # 3
+    from http.cookies import CookieError, SimpleCookie
 
 from aspen.http import status_strings
 from aspen.http.headers import Headers
