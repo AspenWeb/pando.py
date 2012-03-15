@@ -18,7 +18,7 @@ clean:
 	rm -rf env
 
 run: env
-	sudo ./env/bin/thrash ./env/bin/aspen -vDEBUG -a:80 doc/
+	./env/bin/thrash ./env/bin/aspen -vDEBUG -a:5370 doc/
 
 test:
 	./env/bin/nosetests -sx aspen/tests/
