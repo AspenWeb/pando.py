@@ -76,7 +76,10 @@ def validate_address(address):
             try:
                 socket.inet_aton(ip)
             except socket.error:
-                raise err
+                if ip == 'localhost':
+                    ip = '127.0.0.1'
+                else:
+                    raise err
 
 
         # port
@@ -131,7 +134,7 @@ def callback_address(option, opt, value, parser_):
     parser_.values.address = address
     parser_.values.sockfam = sockfam
     parser_.values.have_address = True
-    parser_.values.raw_address = value 
+    parser_.values.raw_address = value
 
 def callback_log_level(option, opt, value, parser_):
     """Convert the string to an int.
@@ -194,7 +197,7 @@ basic_group.add_option( "-e", "--engine"
 optparser.add_option_group(basic_group)
 
 
-# Logging 
+# Logging
 # -------
 
 logging_group = optparse.OptionGroup( optparser
