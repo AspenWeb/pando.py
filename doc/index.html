@@ -30,6 +30,7 @@ homepage = True
         text-transform: lowercase;
         font-style: italic;
     }
+    #index ul li,
     #index P {
         font-size: 10pt;
         line-height: 13pt;
@@ -38,15 +39,19 @@ homepage = True
         padding: 0 0 0 1.5em;
         text-indent: -1.5em;
     }
+    #index ul {
+        margin: 0 0;
+    }
+    #index ul li {
+        list-style: none;
+        margin: 0 0 4px 0;
+    }
     #index H2 A {
         text-transform: none;
         text-decoration: none;
         font-size: 8pt;
         font-style: italic;
         color: #999;
-    }
-    #index #screenshots A {
-        text-decoration: underline;
     }
     #index H2 A:hover {
         color: #B1502C;
@@ -83,7 +88,7 @@ homepage = True
     }
     #media IFRAME {
         width: 585px;
-        height: 470px; 
+        height: 470px;
         border: 0;
     }
     #appearances H2 {
@@ -97,7 +102,7 @@ homepage = True
     }
     #grove {
         border: 1px solid #B1502C;
-        border-style: solid none; 
+        border-style: solid none;
         height: 60px;
         background: center center url("/_lib/grove.jpg");
     }
@@ -124,7 +129,7 @@ homepage = True
         text-indent: 0;
         padding: 0;
         border: 0;
-    } 
+    }
     #screenshots P I {
         font-style: normal;
     }
@@ -148,7 +153,7 @@ homepage = True
             position: relative;
             width: 600px;
             margin-top: 26pt;
-        } 
+        }
         #col1 .pad { padding-right: 15px; }
         #col2 .pad { padding: 0 0 0 15px; }
         #col3 .pad { padding-left: 15px; }
@@ -220,7 +225,8 @@ homepage = True
 
         <h2>Downloads</h2>
         <p>
-            <a class="highlighted" href="http://pypi.python.org/packages/source/a/aspen/aspen-{{ version }}.tar.bz2"><b>aspen-{{ version }}.tar.bz2</b></a>,
+            <a class="highlighted" href="http://pypi.python.org/packages/source/a/aspen/aspen-{{ version }}.tar.bz2">
+                <strong>aspen-{{ version }}.tar.bz2</strong></a>,
             <a href="http://pypi.python.org/packages/source/a/aspen/aspen-{{ version }}.tar.gz">tar.gz</a>,
             <a href="http://pypi.python.org/packages/source/a/aspen/aspen-{{ version }}.zip">zip</a>,
             <a href="http://pypi.python.org/pypi/aspen/">pypi</a>,
@@ -241,73 +247,39 @@ homepage = True
 
         <h2>Testimonials</h2>
 
-        <p>&ldquo;I&rsquo;m so glad someone has the guts to take on
-        MVC.&rdquo; &mdash;<a
-            href="https://twitter.com/#!/pydanny">@pydanny</a></p>
-
-        <p>&ldquo;I am afraid of this.&rdquo;
-            &mdash;some guy at PyCon 2012</p>
-
-        <p>&ldquo;Love it. It was super easy to set up. Really
-        Impressed.&rdquo; &mdash;<a href="http://jordanmessina.com/">Jordan
-            Messina</a> (via IRC)</p>
-
-        <p>&ldquo;<a
-            href="https://twitter.com/#!/patcoll/status/136154129880989696">Awesome.
-            App Engine feels clunky in comparison.</a>&rdquo; &mdash;Pat
-        Collins</p>
-
-        <p>&ldquo;<a href="/success/approximatrix.html">A pleasure to work
-            with.</a>&rdquo; &mdash;Jeffrey Armstrong</p>
-
-        <p>&ldquo;<a
-            href="http://www.youtube.com/watch?v=AYjPIMe0BhA#t=32m33s">A
-            completely different approach.</a>&rdquo;
-        &mdash;Richard Jones</p>
-
-        <p>&ldquo;<a
-            href="https://twitter.com/#!/splee/status/78668600940048385">Aspen
-            seems insane to me.</a>&rdquo; &mdash;Lee McFadden</p>
-
+        <ul>
+            <li>&ldquo;Love it. It was super easy to set up. Really Impressed.&rdquo; &mdash;
+                <a href="http://jordanmessina.com/">Jordan Messina</a> (via IRC)
+            </li>
+            <li>&ldquo;<a href="https://twitter.com/#!/patcoll/status/136154129880989696">
+                Awesome. App Engine feels clunky in comparison.</a>&rdquo; &mdash;Pat Collins
+            </li>
+            <li>&ldquo;<a href="/success/approximatrix.html">
+                A pleasure to work with.</a>&rdquo; &mdash;Jeffrey Armstrong</li>
+            <li>&ldquo;<a href="http://www.youtube.com/watch?v=AYjPIMe0BhA#t=32m33s">
+                A completely different approach.</a>&rdquo; &mdash;Richard Jones</li>
+            <li>&ldquo;<a href="https://twitter.com/#!/splee/status/78668600940048385">
+                Aspen seems insane to me.</a>&rdquo; &mdash;Lee McFadden</li>
+        </ul>
 
         <h2>Showcase
             <a href="mailto:chad@zetaweb.com">Something to add?</a>
         </h2>
-        
-        <p><a href="https://www.ihasamoney.com/">IHasAMoney.com, personal
-            finance for geeks</a></p>
 
-        <p><a href="http://www.plus45design.com/">plus45design</a></p>
-
-        <p><a href="http://pastie.org/pastes/3021242">Voice synthesizer for
-            your Mac</a> (<a
-            href="http://static.whit537.org/2011/for-david.png">screenshot</a>)</p>
-
-        <p><a href="https://github.com/whit537/pictionary">Pictionary demo of
-            Socket.IO integration</a></p>
-
-        <p><a href="http://www.burned.com/">Burned Media</a></p>
-
-        <p><a href="/success/approximatrix.html">Approximatrix, Solutions for
-            Numerical Computing</a>
-
-        <p><a href="http://www.whit537.org/mongs/">Mongs, a
-            web-based data browser for MongoDB</a></p>
-
-        <p><a href="http://code.google.com/p/gheat/">Gheat, heatmaps 
-            for Google Maps</a></p>
-
-        <p><a href="https://github.com/whit537/aspen-socket-toys">A couple
-            demos of Aspen&rsquo;s Socket.IO integration</a></p>
-
-        <p><a href="https://github.com/coopernurse/aspen-demo">Aspen + diesel
-            talking to a STOMP server</a></p>
-
-        <p><a href="https://github.com/whit537/aspen-toy-blog">A toy blog,
-            demonstrating Aspen&rsquo;s core features</p>
-
-        <p><a href="https://github.com/whit537/aspen/tree/master/doc">Source code
-            for http://aspen.io/ itself</a></p>
+        <ul>
+            <li><a href="http://www.plus45design.com/">plus45design</a></li>
+            <li><a href="http://pastie.org/pastes/3021242">Voice synthesizer for your Mac</a>
+                (<a href="http://static.whit537.org/2011/for-david.png">screenshot</a>)</li>
+            <li><a href="https://github.com/whit537/pictionary">Pictionary demo of Socket.IO integration</a></li>
+            <li><a href="http://www.burned.com/">Burned Media</a></li>
+            <li><a href="/success/approximatrix.html">Approximatrix, Solutions for Numerical Computing</a></li>
+            <li><a href="http://www.whit537.org/mongs/">Mongs, a web-based data browser for MongoDB</a></li>
+            <li><a href="http://code.google.com/p/gheat/">Gheat, heatmaps for Google Maps</a></li>
+            <li><a href="https://github.com/whit537/aspen-socket-toys">A couple demos of Aspen&rsquo;s Socket.IO integration</a></li>
+            <li><a href="https://github.com/coopernurse/aspen-demo">Aspen + diesel talking to a STOMP server</a></li>
+            <li><a href="https://github.com/whit537/aspen-toy-blog">A toy blog, demonstrating Aspen&rsquo;s core features</li>
+            <li><a href="https://github.com/whit537/aspen/tree/master/doc">Source code for http://aspen.io/ itself</a></li>
+        </ul>
 
 
         <div id="appearances">
@@ -316,96 +288,99 @@ homepage = True
                 <a href="mailto:chad@zetaweb.com">Something to add?</a>
             </h2>
 
-            <p><i>2012-03-09</i>&mdash;<i>2012-03-13</i> <a
-                href="https://us.pycon.org/2012/">PyCon</a></p>
-
-            <p><i>2012-03-08</i> <a
-                href="https://us.pycon.org/2012/community/WebDevSummit/">PyWeb
-                Summit</a></p>
-
-            <p><strike><i>2012-02-01</i></strike> Monthly sprint, 7-9pm
-            US/Eastern. Pittsburgh location TBD and/or <a
-                href="irc://irc.freenode.net/#aspen">IRC</a>.</p>
-
-            <p><strike><i>2012-01-05</i></strike> Monthly sprint, 7-9pm
-            US/Eastern. <a
-                href="http://tinyurl.com/crazy-mocha-south-side">Crazy
-                Mocha</a> or <a
-                href="irc://irc.freenode.net/#aspen">IRC</a>.</p>
-
-            <p><strike><i>2011-12-14</i></strike> Monthly sprint, 7-9pm
-            US/Eastern. <a href="http://tinyurl.com/crzymcha">Crazy Mocha</a>
-            or <a href="irc://irc.freenode.net/#aspen">IRC</a>. Whiteboard,
-            Socket.IO disconnect.</p>
-
-            <p><strike><i>2011-11-09</i></strike> Monthly sprint, 7-9pm
-            US/Eastern. <a href="http://tinyurl.com/crzymcha">Crazy Mocha</a>
-            or <a href="irc://irc.freenode.net/#aspen">IRC</a>. Homepage
-            refresh. Socket.IO for Windows</p>
-
-            <p><strike><i>2011-10-12</i></strike> Monthly sprint, 7-9pm
-            US/Eastern. <a href="http://tinyurl.com/crzymcha">Crazy Mocha</a>
-            or <a href="irc://irc.freenode.net/#aspen">IRC</a>.  Ported to
-            Windows.</p>
-
-            <p><strike><i>2011-09-28</i></strike> Chad Whitacre gave a short
-            intro to Aspen at <a
-                href="http://pghpython.org/">PghPython</a>.</p>
-
-            <p><strike><i>2011-08-21</i></strike> Richard Jones included Aspen
-            in his <a
-                href="http://blag.whit537.org/2011/08/aspen-marching-to-different-drummer.html">micro-framework
-                battle</a>.</p>
-
-            <p><strike><i>2011-07-30</i></strike> Chad Whitacre spoke about <a
-                href="http://blip.tv/pyohio/aspen-a-next-generation-web-framework-5436552">the
-                design philosophy behind Aspen</a> at <a
-                href="http://pyohio.org/">PyOhio</a>.</p>
-
-            <p><strike><i>2011-07-05</i></strike> Jason Coombs gave an
-            impromptu lightening talk about Aspen at <a
-                href="http://dcpython.org/">DC Python</a>.</p>
-
-            <p><strike><i>2011-06-08</i></strike> Kevin LaTona <a
-                href="http://www.studiosola.com/seapyaspen/">introduced
-                Aspen</a> to <a href="http://www.seapig.org/">SeaPIG</a>.</p>
-
-            <p><strike><i>2011-06-07</i></strike> Chad Whitacre released <a
-                href="http://www.whit537.org/mongs/">Mongs</a> while at <a
-                href="http://www.10gen.com/conferences/mongonyc2011">MongoNYC</a>.</p>
+            <ul>
+                <li>
+                    <em>2012-03-08</em> <a href="https://us.pycon.org/2012/community/WebDevSummit/">PyWeb Summit</a>
+                </li>
+                <li>
+                    <strike><em>2012-02-01</em></strike> Monthly sprint, 7-9pm US/Eastern. Pittsburgh location TBD and/or
+                    <a href="irc://irc.freenode.net/#aspen">IRC</a>.
+                </li>
+                <li>
+                    <strike><em>2012-01-05</em></strike> Monthly sprint, 7-9pm US/Eastern.
+                    <a href="http://tinyurl.com/crazy-mocha-south-side">Crazy Mocha</a> or
+                    <a href="irc://irc.freenode.net/#aspen">IRC</a>.</li>
+                <li>
+                    <strike><em>2011-12-14</em></strike> Monthly sprint, 7-9pm US/Eastern.
+                    <a href="http://tinyurl.com/crzymcha">Crazy Mocha</a> or
+                    <a href="irc://irc.freenode.net/#aspen">IRC</a>.
+                    Whiteboard, Socket.IO disconnect.
+                </li>
+                <li>
+                    <strike><em>2011-11-09</em></strike> Monthly sprint, 7-9pm US/Eastern.
+                    <a href="http://tinyurl.com/crzymcha">Crazy Mocha</a> or
+                    <a href="irc://irc.freenode.net/#aspen">IRC</a>. Homepage refresh. Socket.IO for Windows
+                </li>
+                <li>
+                    <strike><em>2011-10-12</em></strike> Monthly sprint, 7-9pm US/Eastern.
+                    <a href="http://tinyurl.com/crzymcha">Crazy Mocha</a> or
+                    <a href="irc://irc.freenode.net/#aspen">IRC</a>.  Ported to Windows.
+                </li>
+                <li>
+                    <strike><em>2011-09-28</em></strike> Chad Whitacre gave a short intro to Aspen at
+                    <a href="http://pghpython.org/">PghPython</a>.
+                </li>
+                <li>
+                    <strike><em>2011-08-21</em></strike> Richard Jones included Aspen in his
+                    <a href="http://blag.whit537.org/2011/08/aspen-marching-to-different-drummer.html">micro-framework battle</a>.
+                </li>
+                <li>
+                    <strike><em>2011-07-30</em></strike> Chad Whitacre spoke about
+                    <a href="http://blip.tv/pyohio/aspen-a-next-generation-web-framework-5436552">the design philosophy behind Aspen</a> at
+                    <a href="http://pyohio.org/">PyOhio</a>.
+                </li>
+                <li>
+                    <strike><em>2011-07-05</em></strike> Jason Coombs gave an impromptu lightening talk about Aspen at
+                    <a href="http://dcpython.org/">DC Python</a>.
+                </li>
+                <li>
+                    <strike><em>2011-06-08</em></strike> Kevin LaTona
+                    <a href="http://www.studiosola.com/seapyaspen/">introduced Aspen</a> to
+                    <a href="http://www.seapig.org/">SeaPIG</a>.
+                </li>
+                <li>
+                    <strike><em>2011-06-07</em></strike> Chad Whitacre released
+                    <a href="http://www.whit537.org/mongs/">Mongs</a> while at
+                    <a href="http://www.10gen.com/conferences/mongonyc2011">MongoNYC</a>.
+                </li>
+            </ul>
 
         </div>
 
-    
+
     </div></div>
     <div id="col2" class="col"><div class="pad">
 
-        <h2><b>Documentation</b> <i>for</i> Developers</h2>
+        <h2><strong>Documentation</strong> <i>for</i> Developers</h2>
 
         <p><a href="/quick-start/" class="highlighted">Quick
             Start</a></p>
 
-        <p><a href="/hooks/">Hooks</a></p>
-        <p><a href="/simplates/json/">JSON</a></p>
-        <p><a href="/page-break/">Page Break, &#94;L</a></p>
-        <p><a href="/request/">Request</a></p>
-        <p><a href="/response/">Response</a></p>
-        <p><a href="/simplates/">Simplates</a></p>
-        <p><a href="/templating/">Templating</a></p>
-        <p><a href="/virtual-paths/">Virtual Paths</a></p>
+        <ul>
+            <li><a href="/hooks/">Hooks</a></li>
+            <li><a href="/simplates/json/">JSON</a></li>
+            <li><a href="/page-break/">Page Break, &#94;L</a></li>
+            <li><a href="/request/">Request</a></li>
+            <li><a href="/response/">Response</a></li>
+            <li><a href="/simplates/">Simplates</a></li>
+            <li><a href="/templating/">Templating</a></li>
+            <li><a href="/virtual-paths/">Virtual Paths</a></li>
+        </ul>
 
     </div></div>
     <div id="col3" class="col"><div class="pad">
 
-        <h2><b>Documentation</b> <i>for</i> Sysadmins</h2>
+        <h2><strong>Documentation</strong> <i>for</i> Sysadmins</h2>
 
-        <p><a href="/dotaspen/"><code>.aspen/</code></a></p>
-        <p><a href="/aspen/"><code>aspen</code></a> (executable)</p>
-        <p><a href="/aspen.conf/"><code>aspen.conf</code></a></p>
-        <p><a href="/deployment/">Deployment</a></p>
-        <p><a href="/hooks/"><code>hooks.conf</code></a></p>
-        <p><a href="/mime.types/"><code>mime.types</code></a></p>
-        <p><a href="/thrash/"><code>thrash</code></a> (executable)</p>
+        <ul>
+            <li><a href="/dotaspen/"><code>.aspen/</code></a></li>
+            <li><a href="/aspen/"><code>aspen</code></a> (executable)</li>
+            <li><a href="/aspen.conf/"><code>aspen.conf</code></a></li>
+            <li><a href="/deployment/">Deployment</a></li>
+            <li><a href="/hooks/"><code>hooks.conf</code></a></li>
+            <li><a href="/mime.types/"><code>mime.types</code></a></li>
+            <li><a href="/thrash/"><code>thrash</code></a> (executable)</li>
+        </ul>
 
     </div></div>
     <div id="media"><div class="pad">
@@ -420,7 +395,7 @@ homepage = True
                 It&rsquo;s way simpler than regular expression routing or
                 object traversal. Capture path parts with <a
                     href="/virtual-paths/">virtual paths</a>.</p>
-   
+
             </div>
             <div class="clear"></div>
             <div class="col left"><img src="1-simplate.png" /></div>
@@ -431,7 +406,7 @@ homepage = True
                 three pages: import, request, and template. The &#94;L is a
                 <a href="/page-break/">page break</a>. It separates your
                 concerns.</p>
-   
+
             </div>
             <div class="clear"></div>
             <div class="col left"><img src="2-library.png" /></div>
@@ -442,13 +417,13 @@ homepage = True
                 power and depth of <a
                     href="http://www.python.org">Python</a> as well.</p>
 
-                <img src="power-of-python.png" 
+                <img src="power-of-python.png"
                      alt="Python logo + common libraries" />
 
 
                  <p>Want more? Here&rsquo;s <a
                      href="http://blip.tv/pyohio/aspen-a-next-generation-web-framework-5436552">a
-                     50-minute video</a>.</p>
+                     50-minute video introduction</a>.</p>
 
             </div>
         </div>
