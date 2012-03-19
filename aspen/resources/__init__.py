@@ -60,7 +60,7 @@ class Entry:
 def get_resource_class(raw, mimetype):
     """Given raw file contents and a mimetype, return a Resource subclass.
 
-    This function encodes the algorithm for deciding what kind of Resource (==
+    This function encodes the algorithm for deciding what kind of Resource (=~
     simplate) a given file is. Is it a static file or a dynamic JSON simplate
     or what? Etc. Here is the algorithm:
 

@@ -68,7 +68,8 @@ Content-Type header for text files. To alter the former, manually encode your
 unicode objects before expressing them. To alter the latter, set the header
 manually on the response object in page 2. Here&rsquo;s an example:</p>
 
-<pre>latinate = chr(181).decode('latin1')
+<pre>&#94;L
+latinate = chr(181).decode('latin1')
 response.headers.set('Content-Type', 'text/plain; charset=latin1')
 &#94;L
 {&#123; latinate.encode('latin1') }}</pre>
