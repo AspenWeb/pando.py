@@ -40,10 +40,16 @@ class Configurable(object):
         # Orient ourselves.
         # =================
 
-        self.root = root = find_root(args)
+        self.root = root = opts.root
+        if isinstance(root, ConfigurationError):
+            # It turns out that os.getcwd can raise OSError (I've seen this
+            # happen under supervisord, e.g.). I need to do some gymnastics to
+            # work with the optparse module's handling of defaults, and this is
+            # the gymnastics I'm doing.
+            raise root
         os.chdir(root)
 
-        self.dotaspen = dotaspen = join(self.root, '.aspen')
+        self.dotaspen = dotaspen = join(root, '.aspen')
         if isdir(dotaspen):
             if sys.path[0] != dotaspen:
                 sys.path.insert(0, dotaspen)
@@ -95,28 +101,6 @@ class Configurable(object):
         """
         for name in self.__names:
             setattr(other, name, getattr(self, name))
-
-def find_root(args):        
-    """This can only be passed on the command line.
-    """
-    if args:
-        root = args[0]
-    else:
-        try:
-            # Under supervisord, the following raises 
-            #   OSError: [Errno 2] No such file or directory
-            # So be sure to pass a directory in on the command line, or cwd
-            # using supervisord's own facility for that.
-            root = os.getcwd()
-        except OSError:
-            raise ConfigurationError("Could not get a current working "
-                                     "directory. You can specify the site "
-                                     "root on the command line.")
-    root = realpath(root)
-    if not isdir(root):
-        msg = "%s does not point to a directory" % root
-        raise ConfigurationError(msg)
-    return root
 
 def load_conf(expanduser, dotaspen):
     return AspenConf( '/etc/aspen/aspen.conf'

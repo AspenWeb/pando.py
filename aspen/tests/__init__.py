@@ -62,7 +62,7 @@ class StubRequest:
         """
         fs = os.sep.join(fs.split(os.sep))
         request = Request.from_wsgi(StubWSGIRequest(fs))
-        website = Configurable.from_argv(['fsfix'])
+        website = Configurable.from_argv(['--root', 'fsfix'])
         website.copy_configuration_to(request)
         request.root = join(dirname(__file__), 'fsfix')
         request.fs = fs
@@ -75,7 +75,7 @@ StubRequest = StubRequest()
 
 
 def handle(path='/'):
-    website = Website(['fsfix'])
+    website = Website(['--root', 'fsfix'])
     request = StubRequest(path)
     request.website = website
     response = website.handle(request)

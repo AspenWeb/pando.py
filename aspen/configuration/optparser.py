@@ -127,6 +127,33 @@ def validate_log_level(log_level):
 # optparse
 # ========
 
+def _getcwd():
+    try:
+        # Under supervisord, the following raises 
+        #   OSError: [Errno 2] No such file or directory
+        # So be sure to pass a directory in on the command line, or cwd
+        # using supervisord's own facility for that.
+        return os.getcwd()
+    except OSError:
+        # The optparse machinery only calls callback_root if an -r/--root
+        # option was actually passed in. We means we need to set a default
+        # before callback_root is called, but we don't want to raise unless
+        # callback_root isn't called. So default will either be a string
+        # or a ConfigurationError, and we'll let God sort them out.
+        return ConfigurationError("Could not get a current working "
+                                  "directory. You can specify the site "
+                                  "root on the command line.")
+
+def callback_root(option, opt, value, parser_):
+    """Must point to a directory.
+    """
+    root = value
+    root = os.path.realpath(root)
+    if not os.path.isdir(root):
+        msg = "%s does not point to a directory" % root
+        raise ConfigurationError(msg)
+    parser_.values.root = root
+
 def callback_address(option, opt, value, parser_):
     """Must be a valid AF_INET or AF_UNIX address.
     """
@@ -149,20 +176,19 @@ def store_raw(option, opt, value, parser_):
     setattr(parser_.values, 'raw_'+option.dest, value)
 
 
-usage = "aspen [options] [root]"
+usage = "aspen [options]"
 version = """\
 aspen, version %s
 
-(c) 2006-2011 Chad Whitacre and contributors
+(c) 2006-2012 Chad Whitacre and contributors
 http://aspen.io/
 """ % aspen.__version__
 
 optparser = optparse.OptionParser(usage=usage, version=version)
 optparser.description = """\
 Aspen is a Python web framework. By default this program will start serving a
-website from the current directory on port 8080. If given arguments the first
-will be interpreted as the website root. Options are as follows. See also
-http://aspen.io/.
+website from the current directory on port 8080. Options are as follows. See 
+also http://aspen.io/.
 """
 
 
@@ -171,28 +197,38 @@ http://aspen.io/.
 
 basic_group = optparse.OptionGroup( optparser
                                   , "Basics"
-                                  , "How should we get on the network?"
+                                  , "What should we put where, and how?"
                                    )
+basic_group.add_option( "-r", "--root"
+                      , action="callback"
+                      , callback=callback_root
+                      , default=_getcwd()
+                      , dest="root"
+                      , help=("the filesystem path of the document publishing "
+                              "root [.]")
+                      , type='string'
+                       )
 basic_group.add_option( "-a", "--address"
-                    , action="callback"
-                    , callback=callback_address
-                    , default=('0.0.0.0', 8080)
-                    , dest="address"
-                    , help="the IPv4 or Unix address to bind to [0.0.0.0:8080]"
-                    , type='string'
-                     )
+                      , action="callback"
+                      , callback=callback_address
+                      , default=('0.0.0.0', 8080)
+                      , dest="address"
+                      , help=("the IPv4 or Unix address to bind to "
+                              "[0.0.0.0:8080]")
+                      , type='string'
+                       )
 basic_group.add_option( "-e", "--engine"
-                    , action="callback"
-                    , callback=store_raw
-                    , choices=aspen.ENGINES
-                    , default=None
-                    , dest="engine"
-                    , help=( "the HTTP engine to use, one of "
-                           + "{%s}" % ','.join(aspen.ENGINES)
-                           + " [%s]" % aspen.ENGINES[1]
-                            )
-                    , type='choice'
-                     )
+                      , action="callback"
+                      , callback=store_raw
+                      , choices=aspen.ENGINES
+                      , default=None
+                      , dest="engine"
+                      , help=( "the HTTP engine to use, one of "
+                             + "{%s}" % ','.join(aspen.ENGINES)
+                             + " [%s]" % aspen.ENGINES[1]
+                              )
+                      , type='choice'
+                       )
 
 optparser.add_option_group(basic_group)
 
