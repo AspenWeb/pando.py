@@ -1,1 +1,1 @@
-web: aspen --address :$PORT doc/
+web: aspen --address=:$PORT --root=doc/
