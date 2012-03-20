@@ -11,7 +11,7 @@ import aspen
 from aspen.configuration.aspenconf import AspenConf 
 from aspen.configuration.exceptions import ConfigurationError
 from aspen.configuration.hooks import HooksConf
-from aspen.configuration.optparser import optparser, validate_address
+from aspen.configuration.options import OptionParser, validate_address
 from aspen._tornado.template import Loader
 from aspen.configuration.logging_ import configure_logging
 from aspen.configuration.colon import colonize
@@ -34,7 +34,7 @@ class Configurable(object):
         # Parse argv.
         # ===========
 
-        opts, args = optparser.parse_args(argv)
+        opts, args = OptionParser().parse_args(argv)
 
 
         # Orient ourselves.
@@ -43,9 +43,9 @@ class Configurable(object):
         self.root = root = opts.root
         if isinstance(root, ConfigurationError):
             # It turns out that os.getcwd can raise OSError (I've seen this
-            # happen under supervisord, e.g.). I need to do some gymnastics to
-            # work with the optparse module's handling of defaults, and this is
-            # the gymnastics I'm doing.
+            # happen under supervisord, I swear it). I need to do some
+            # gymnastics to work with the optparse module's handling of
+            # defaults, and this is the gymnastics I'm doing.
             raise root
         os.chdir(root)
 
