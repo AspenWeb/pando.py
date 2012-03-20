@@ -3,3 +3,5 @@ aspen/tests/log
 env
 *.pyc
 distribute-*
+__pycache__
+*\$py.class
