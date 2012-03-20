@@ -129,10 +129,11 @@ def validate_log_level(log_level):
 
 def _getcwd():
     try:
-        # Under supervisord, the following raises 
-        #   OSError: [Errno 2] No such file or directory
-        # So be sure to pass a directory in on the command line, or cwd
-        # using supervisord's own facility for that.
+        # If the working directory no longer exists, then the following will
+        # raise OSError: [Errno 2] No such file or directory. I swear I've seen
+        # this under supervisor, though I don't have steps to reproduce. :-(
+        # To get around this you specify --root on aspen's command line, or you
+        # can use supervisor's cwd facility.
         return os.getcwd()
     except OSError:
         # The optparse machinery only calls callback_root if an -r/--root
@@ -176,7 +177,11 @@ def store_raw(option, opt, value, parser_):
     setattr(parser_.values, 'raw_'+option.dest, value)
 
 
+# OptionParser
+# ------------
+
 usage = "aspen [options]"
+
 version = """\
 aspen, version %s
 
@@ -184,109 +189,117 @@ aspen, version %s
 http://aspen.io/
 """ % aspen.__version__
 
-optparser = optparse.OptionParser(usage=usage, version=version)
-optparser.description = """\
+description = """\
 Aspen is a Python web framework. By default this program will start serving a
 website from the current directory on port 8080. Options are as follows. See 
 also http://aspen.io/.
 """
 
+def OptionParser():
+    optparser = optparse.OptionParser( usage=usage
+                                     , version=version
+                                     , description=description
+                                      )
+    add_basic_group(optparser)
+    add_logging_group(optparser)
+    return optparser
+
 
 # Basic
 # -----
 
-basic_group = optparse.OptionGroup( optparser
-                                  , "Basics"
-                                  , "What should we put where, and how?"
-                                   )
-basic_group.add_option( "-r", "--root"
-                      , action="callback"
-                      , callback=callback_root
-                      , default=_getcwd()
-                      , dest="root"
-                      , help=("the filesystem path of the document publishing "
-                              "root [.]")
-                      , type='string'
-                       )
-basic_group.add_option( "-a", "--address"
-                      , action="callback"
-                      , callback=callback_address
-                      , default=('0.0.0.0', 8080)
-                      , dest="address"
-                      , help=("the IPv4 or Unix address to bind to "
-                              "[0.0.0.0:8080]")
-                      , type='string'
-                       )
-basic_group.add_option( "-e", "--engine"
-                      , action="callback"
-                      , callback=store_raw
-                      , choices=aspen.ENGINES
-                      , default=None
-                      , dest="engine"
-                      , help=( "the HTTP engine to use, one of "
-                             + "{%s}" % ','.join(aspen.ENGINES)
-                             + " [%s]" % aspen.ENGINES[1]
-                              )
-                      , type='choice'
-                       )
+def add_basic_group(optparser):
+    basic_group = optparse.OptionGroup( optparser
+                                      , "Basics"
+                                      , "What should we put where, and how?"
+                                       )
+    basic_group.add_option( "-r", "--root"
+                          , action="callback"
+                          , callback=callback_root
+                          , default=_getcwd()
+                          , dest="root"
+                          , help=("the filesystem path of the document publishing "
+                                  "root [.]")
+                          , type='string'
+                           )
+    basic_group.add_option( "-a", "--address"
+                          , action="callback"
+                          , callback=callback_address
+                          , default=('0.0.0.0', 8080)
+                          , dest="address"
+                          , help=("the IPv4 or Unix address to bind to "
+                                  "[0.0.0.0:8080]")
+                          , type='string'
+                           )
+    basic_group.add_option( "-e", "--engine"
+                          , action="callback"
+                          , callback=store_raw
+                          , choices=aspen.ENGINES
+                          , default=None
+                          , dest="engine"
+                          , help=( "the HTTP engine to use, one of "
+                                 + "{%s}" % ','.join(aspen.ENGINES)
+                                 + " [%s]" % aspen.ENGINES[1]
+                                  )
+                          , type='choice'
+                           )
 
-optparser.add_option_group(basic_group)
+    optparser.add_option_group(basic_group)
 
 
 # Logging
 # -------
 
-logging_group = optparse.OptionGroup( optparser
-                                    , "Logging"
-                                    , "Configure the Python logging library. "
-                                      "For more complex needs use a "
-                                      "logging.conf file."
-                                     )
+def add_logging_group(optparser):
+    logging_group = optparse.OptionGroup( optparser
+                                        , "Logging"
+                                        , "Configure the Python logging library. "
+                                          "For more complex needs use a "
+                                          "logging.conf file."
+                                         )
 
-logging_group.add_option( "-o", "--log-file"
-                    , action="callback"
-                    , callback=store_raw
-                    , default=None
-                    , dest="log_file"
-                    , help="the file to which messages will be logged; if "\
-                           "specified, it will be rotated nightly for 7 days "\
-                           "[stdout]"
-                    , type='string'
-                    , metavar="FILE"
-                     )
-logging_group.add_option( "-i", "--log-filter"
-                    , action="callback"
-                    , callback=store_raw
-                    , default=None
-                    , dest="log_filter"
-                    , help="the subsystem outside of which messages will "\
-                           "not be logged []"
-                    , type='string'
-                    , metavar="FILTER"
-                     )
-logging_group.add_option( "-t", "--log-format"
-                    , action="callback"
-                    , callback=store_raw
-                    , default=None
-                    , dest="log_format"
-                    , help="the log message format per the Formatter class "\
-                           "in the Python standard library's logging module "\
-                           "[%(message)s]"
-                    , type='string'
-                    , metavar="FORMAT"
-                     )
-logging_group.add_option( "-v", "--log-level"
-                    , action="callback"
-                    , callback=callback_log_level
-                    , choices=LOG_LEVELS
-                    , default=None
-                    , help="the importance level at or above which to log "\
-                           "a message; options are %s [WARNING]" % \
-                           ', '.join(LOG_LEVELS)
-                    , type='choice'
-                    , metavar="LEVEL"
-                     )
-optparser.add_option_group(logging_group)
-
-
+    logging_group.add_option( "-o", "--log-file"
+                        , action="callback"
+                        , callback=store_raw
+                        , default=None
+                        , dest="log_file"
+                        , help="the file to which messages will be logged; if "\
+                               "specified, it will be rotated nightly for 7 days "\
+                               "[stdout]"
+                        , type='string'
+                        , metavar="FILE"
+                         )
+    logging_group.add_option( "-i", "--log-filter"
+                        , action="callback"
+                        , callback=store_raw
+                        , default=None
+                        , dest="log_filter"
+                        , help="the subsystem outside of which messages will "\
+                               "not be logged []"
+                        , type='string'
+                        , metavar="FILTER"
+                         )
+    logging_group.add_option( "-t", "--log-format"
+                        , action="callback"
+                        , callback=store_raw
+                        , default=None
+                        , dest="log_format"
+                        , help="the log message format per the Formatter class "\
+                               "in the Python standard library's logging module "\
+                               "[%(message)s]"
+                        , type='string'
+                        , metavar="FORMAT"
+                         )
+    logging_group.add_option( "-v", "--log-level"
+                        , action="callback"
+                        , callback=callback_log_level
+                        , choices=LOG_LEVELS
+                        , default=None
+                        , help="the importance level at or above which to log "\
+                               "a message; options are %s [WARNING]" % \
+                               ', '.join(LOG_LEVELS)
+                        , type='choice'
+                        , metavar="LEVEL"
+                         )
+    optparser.add_option_group(logging_group)
 

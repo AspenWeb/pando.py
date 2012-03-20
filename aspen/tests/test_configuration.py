@@ -3,7 +3,7 @@ import logging
 import sys
 
 from aspen.configuration import Configurable, ConfigurationError
-from aspen.configuration.optparser import validate_address, callback_root
+from aspen.configuration.options import validate_address, callback_root
 from aspen.tests import assert_raises
 from aspen.tests.fsfix import attach_teardown, expect, mk
 
@@ -24,6 +24,24 @@ def test_root_defaults_to_cwd():
     c = Configurable()
     c.configure([])
     expected = os.getcwd()
+    actual = c.root
+    assert actual == expected, actual
+
+def test_ConfigurationError_raised_if_no_cwd():
+    mk()
+    os.chdir('fsfix')
+    os.rmdir(os.getcwd())
+    c = Configurable()
+    assert_raises(ConfigurationError, c.configure, [])
+
+def test_ConfigurationError_NOT_raised_if_no_cwd_but_do_have___root():
+    mk()
+    foo = os.getcwd()
+    os.chdir('fsfix')
+    os.rmdir(os.getcwd())
+    c = Configurable()
+    c.configure(['--root', foo])
+    expected = foo
     actual = c.root
     assert actual == expected, actual
 
@@ -52,7 +70,6 @@ def test_callback_root_finds_root():
 def test_address_can_be_localhost():
     expected = (('127.0.0.1', 8000), 2)
     actual = validate_address('localhost:8000')
-    print actual
     assert actual == expected, actual
 
 

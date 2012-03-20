@@ -5,7 +5,7 @@ from logging import StreamHandler
 from logging.handlers import TimedRotatingFileHandler
 from os.path import dirname, exists, expanduser, isdir, join, realpath
 
-from aspen.configuration.optparser import validate_log_level
+from aspen.configuration.options import validate_log_level
 
 
 LOG_FORMAT = "%(message)s"
