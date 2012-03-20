@@ -16,6 +16,8 @@ classifiers = [ 'Development Status :: 4 - Beta'
               , 'Programming Language :: Python :: 2.5'
               , 'Programming Language :: Python :: 2.6'
               , 'Programming Language :: Python :: 2.7'
+              , 'Programming Language :: Python :: Implementation :: CPython'
+              , 'Programming Language :: Python :: Implementation :: Jython'
               , 'Topic :: Internet :: WWW/HTTP :: HTTP Servers'
                ]
 

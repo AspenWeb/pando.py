@@ -12,6 +12,19 @@ class Engine(ThreadedEngine):
     def bind(self):
         self.cp_server = CherryPyWSGIServer(self.website.address, self.website)
 
+        # Work around a Jython bug.
+        # =========================
+        # http://bugs.jython.org/issue1848
+        # http://stackoverflow.com/questions/1103487/
+        try:                        # >= 2.6
+            import platform
+            if platform.python_implementation() == 'Jython':
+                self.cp_server.nodelay = False
+        except AttributeError:      # < 2.6
+            import sys
+            if sys.platform.startswith('java'):
+                self.cp_server.nodelay = False
+
     def start(self):
         self.cp_server.start()
 
