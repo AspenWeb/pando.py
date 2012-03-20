@@ -13,13 +13,13 @@ doc_next = ''
     server</a>, and Aspen also bundles a production-quality server of its own.
 It&rsquo;s called ... <code>aspen</code>!</p>
 
-<p>If given no arguments or options, <code>aspen</code> will start serving a
-website from the current directory on port 8080, based on configuration files
-in <code>./.aspen/</code>, logging to <code>stdout</code>.</p>
+<p>If given no options, <code>aspen</code> will start serving a website from
+the current directory on port 8080, based on configuration files in
+<code>./.aspen/</code>, logging to <code>stdout</code>.</p>
 
 <h3>Usage</h3>
 
-<p><code>aspen [options] [root]</code></p>
+<p><code>aspen [options]</code></p>
 
 
 <h3>Options</h3>
@@ -35,9 +35,12 @@ in <code>./.aspen/</code>, logging to <code>stdout</code>.</p>
 
 <h4>Basics</h4>
 
-<p>How should we get on the network?</p>
+<p>What should we put where, and how?</p>
 
 <dl>
+    <dt>-r ROOT, --root=ROOT</dt>
+    <dd>the filesystem path of the document publishing root [.]</dd>
+
     <dt>-a ADDRESS, --address=ADDRESS</dt>
     <dd>the IPv4 or Unix address to bind to [0.0.0.0:8080]</dd>
 
@@ -54,7 +57,6 @@ in <code>./.aspen/</code>, logging to <code>stdout</code>.</p>
         <a href="http://www.tornadoweb.org/">tornado</a>,
         <a href="http://twistedmatrix.com/">twisted</a>} [cherrypy]
     </dd>
-
 </dl>
 
 
