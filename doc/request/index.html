@@ -9,7 +9,7 @@ doc_next = ('Response', '/response/')
 
 <p>Inside of the second and third pages of a <a
     href="/simplates/">simplate</a>, you have a request object called
-<code>request</code>. Here&rsquo;s what you get:</p>
+<code>request</code>. Here are the attributes you get:</p>
 
 <table>
     <tr><th>allow</th><td>given HTTP methods as positional args, return None or raise 405</td></tr>
@@ -20,10 +20,28 @@ doc_next = ('Response', '/response/')
     <tr><th>method</th><td>string</td></tr>
     <tr><th>path</th><td><a href="/virtual-paths/">dict</a></td></tr>
     <tr><th>qs</th><td>query string, <a href="#not-a-dict">WwwForm</a> object</td></tr>
-    <tr><th>redirect</th><td>given a location string and an optional status code (defaults to 302), raise a redirect response</td></tr>
     <tr><th>url</th><td>string</td></tr>
     <tr><th>urlparts</th><td><a href="http://docs.python.org/library/urlparse.html">urlparse.urlparse</a> output</td></tr>
 </table>
+
+<p>And here are the methods:</p>
+
+<pre>def allow(*methods):
+    """Given method strings, raise 405 if we don't meet the requirements.
+
+    The method names are case insensitive (they are uppercased). If 405
+    is raised then the Allow header is set to the methods given.
+
+    """
+
+def redirect(location, code=None, permanent=False):
+    """Given a string, an int, and a boolean, raise a Response.
+
+    If code is None then it will be set to 301 (Moved Permanently) 
+    if permanent is True and 302 (Found) if it is False.
+
+    """
+</pre>
 
 <p>There are also boolean attributes for the <a
     href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html">nine

@@ -168,25 +168,6 @@ class Request(object):
         else:
             self.body = WwwForm(self.raw_body)
 
-    def redirect(self, location, code=None, permanent=False):
-        """Given a string and a boolean, raise a Response.
-
-        Some day port this:
-
-            http://cherrypy.org/browser/trunk/cherrypy/_cperror.py#L154
-
-        """
-        if code is None:
-            code = permanent is True and 301 or 302
-        raise Response(code, headers={'Location': location})
-
-    def allow(self, *methods):
-        """Given a list of methods, raise 405 if we don't meet the requirement.
-        """
-        methods = [x.upper() for x in methods]
-        if self.method not in methods:
-            raise Response(405, headers={'Allow': ', '.join(methods)})
-
     def set_method(self, method):
         """Given a string, store it and update booleans on self.
         """
@@ -194,11 +175,6 @@ class Request(object):
         for m in METHODS:
             setattr(self, m, m == method)
     method = property(lambda self: self._method, set_method)
-
-    @property
-    def is_xhr(self):
-        val = self.headers.one('X-Requested-With', '')
-        return val.lower() == 'xmlhttprequest'
 
     def rebuild_url(self):
         """Return a full URL for this request, per PEP 333:
@@ -226,3 +202,38 @@ class Request(object):
         if self.qs.raw:
             url += '?' + self.qs.raw
         return url
+
+
+    # Public Methods
+    # ==============
+
+    @property
+    def is_xhr(self):
+        val = self.headers.one('X-Requested-With', '')
+        return val.lower() == 'xmlhttprequest'
+
+    def redirect(self, location, code=None, permanent=False):
+        """Given a string, an int, and a boolean, raise a Response.
+
+        If code is None then it will be set to 301 (Moved Permanently) if
+        permanent is True and 302 (Found) if it is False.
+
+        XXX Some day port this:
+
+            http://cherrypy.org/browser/trunk/cherrypy/_cperror.py#L154
+
+        """
+        if code is None:
+            code = permanent is True and 301 or 302
+        raise Response(code, headers={'Location': location})
+
+    def allow(self, *methods):
+        """Given method strings, raise 405 if we don't meet the requirements.
+
+        The method names are case insensitive (they are uppercased). If 405
+        is raised then the Allow header is set to the methods given.
+
+        """
+        methods = [x.upper() for x in methods]
+        if self.method not in methods:
+            raise Response(405, headers={'Allow': ', '.join(methods)})
