@@ -3,8 +3,8 @@ import cgi
 from aspen.http.mapping import Mapping
 
 
-class WwwForm(Mapping):
-    """Represent a WWW form.
+class Querystring(Mapping):
+    """Represent an HTTP querystring.
     """
 
     def __init__(self, s):

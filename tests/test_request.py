@@ -4,27 +4,66 @@ from aspen.http.request import Request
 from aspen.http.headers import Headers
 from aspen.testing import assert_raises, StubRequest
 from aspen.testing.fsfix import attach_teardown
+from aspen.http.line import Method
 
+
+
+def test_method_works():
+    method = Method("GET")
+    actual = method
+    expected = u"GET"
+    assert actual == expected, actual
+
+def test_method_is_unicode():
+    method = Method("GET")
+    actual = method
+    assert isinstance(actual, unicode), actual.__class__
+
+def test_method_raw_works():
+    method = Method("GET")
+    actual = method.raw
+    expected = "GET"
+    assert actual == expected, actual
+
+def test_method_raw_is_bytestring():
+    method = Method("GET")
+    actual = method.raw
+    assert isinstance(actual, str), actual.__class__
+
+
+
+
+def test_request_line_version_raw_works():
+    request = StubRequest()
+    actual = request.line.raw
+    expected = u"GET / HTTP/1.1"
+    assert actual == expected, actual
+
+def test_raw_is_raw():
+    request = Request()
+    expected = "GET / HTTP/1.1\r\nHost: localhost\r\n\r\n"
+    actual = request.raw
+    assert actual == expected, actual
 
 def test_blank_by_default():
     assert_raises(AttributeError, lambda: Request().version)
 
-def test_hydrate_can_hydrate():
+def test_request_line_version_defaults_to_HTTP_1_1():
     request = StubRequest()
-    actual = request.version
-    expected = 'HTTP/1.1'
+    actual = request.line.version
+    expected = (1, 1)
     assert actual == expected, actual
 
-def test_mappings_minimally_work():
+def test_request_line_version_raw_works():
     request = StubRequest()
-    actual = request.version
-    expected = 'HTTP/1.1'
+    actual = request.line.version.raw
+    expected = u"HTTP/1.1"
     assert actual == expected, actual
 
 def test_allow_default_method_is_GET():
     request = StubRequest()
-    expected = 'GET'
-    actual = request.method
+    expected = u'GET'
+    actual = request.line.method
     assert actual == expected, actual
 
 def test_allow_allows_allowed():
@@ -47,26 +86,16 @@ def test_allow_can_handle_lowercase():
 
 def test_methods_start_with_GET():
     request = StubRequest()
-    assert not request.OPTIONS
-    assert request.GET
-    assert not request.HEAD
-    assert not request.POST
-    assert not request.PUT
-    assert not request.DELETE
-    assert not request.TRACE
-    assert not request.CONNECT
+    expected = "GET"
+    actual = request.line.method
+    assert actual == expected, actual
 
 def test_methods_changing_changes():
     request = StubRequest()
-    request.method = 'POST'
-    assert not request.OPTIONS
-    assert not request.GET
-    assert not request.HEAD
-    assert request.POST
-    assert not request.PUT
-    assert not request.DELETE
-    assert not request.TRACE
-    assert not request.CONNECT
+    request.line.method = 'POST'
+    expected = "POST"
+    actual = request.line.method
+    assert actual == expected, actual
 
 def test_is_xhr_false():
     request = StubRequest()

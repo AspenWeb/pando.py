@@ -62,7 +62,7 @@ class StubRequest:
         request = Request.from_wsgi(StubWSGIRequest(fs))
         website = Configurable.from_argv(['--root', FSFIX])
         website.copy_configuration_to(request)
-        request.root = join(dirname(__file__), FSFIX)
+        #request.root = join(dirname(__file__), FSFIX)
         request.fs = fs
         request.namespace = {}
         request.website = website 

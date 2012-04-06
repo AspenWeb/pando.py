@@ -1,5 +1,5 @@
 from aspen.http.headers import Headers
-from aspen.http.wwwform import WwwForm
+from aspen.http.querystring import Querystring
 
 def test_headers_are_case_insensitive():
     headers = Headers('Foo: bar')
@@ -7,15 +7,15 @@ def test_headers_are_case_insensitive():
     actual = headers.one('foo')
     assert actual == expected, actual
 
-def test_wwwform_basically_works():
-    wwwform = WwwForm('Foo=bar')
+def test_querystring_basically_works():
+    querystring = Querystring('Foo=bar')
     expected = 'bar'
-    actual = wwwform.one('Foo', default='missing')
+    actual = querystring.one('Foo', default='missing')
     assert actual == expected, actual
 
-def test_wwwform_is_case_sensitive():
-    wwwform = WwwForm('Foo=bar')
+def test_querystring_is_case_sensitive():
+    querystring = Querystring('Foo=bar')
     expected = 'missing'
-    actual = wwwform.one('foo', default='missing')
+    actual = querystring.one('foo', default='missing')
     assert actual == expected, actual
 

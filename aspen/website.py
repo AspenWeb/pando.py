@@ -163,7 +163,7 @@ class Website(Configurable):
             fs = '.'+fs
         else:
             fs = request.fs
-        log.info("%s => %s" % (request.path.raw, fs))
+        log.info("%s => %s" % (request.line.url.path.raw, fs))
 
 
         # Where was response raised from?

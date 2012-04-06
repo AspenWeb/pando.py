@@ -18,7 +18,7 @@ def make_request(filename='echo.sock'):
 def make_socket(filename='echo.sock', channel=None):
     request = make_request(filename='echo.sock')
     if channel is None:
-        channel = Channel(request.path.raw, ThreadedBuffer)
+        channel = Channel(request.line.url.path.raw, ThreadedBuffer)
     socket = Socket(request, channel)
     return socket
 
