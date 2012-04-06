@@ -1,6 +1,6 @@
 from aspen import Response
-from aspen.tests import assert_raises
-from aspen.tests.fsfix import attach_teardown
+from aspen.testing import assert_raises
+from aspen.testing.fsfix import attach_teardown
 
 
 def test_response_is_a_wsgi_callable():

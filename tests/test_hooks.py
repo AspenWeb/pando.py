@@ -1,8 +1,7 @@
 import os
 import sys
 
-from aspen.tests import assert_raises
-from aspen.tests.fsfix import mk, attach_teardown
+from aspen.testing import assert_raises, attach_teardown, fix, FSFIX, mk
 from aspen.configuration.exceptions import *
 from aspen.configuration.hooks import HooksConf
 
@@ -14,13 +13,15 @@ import random
 import string
 
 lib_python = os.path.join('.aspen', 'lib', 'python%s' % sys.version[:3])
-sys.path.insert(0, os.path.join('fsfix', lib_python))
+sys.path.insert(0, os.path.join(FSFIX, lib_python))
 
 class Paths:
     pass
 
 def load(*also):
-    return HooksConf(chr(12), 'fsfix/.aspen/hooks.conf', *also)
+    also = ['.aspen/hooks.conf'] + list(also)
+    also = [fix(p) for p in also]
+    return HooksConf(chr(12), *also)
 
 
 # No hooks configured
@@ -56,8 +57,8 @@ def test_something():
 def test_must_be_callable():
     mk('.aspen', ('.aspen/hooks.conf', 'string:digits'))
     err = assert_raises(ConfFileError, load)
-    assert err.msg == ("'string:digits' is not callable. [fsfix/.aspen"
-                       "/hooks.conf, line 1]"), err.msg
+    assert err.msg.startswith("'string:digits' is not callable. ["), err.msg
+    assert err.msg.endswith("fsfix/.aspen/hooks.conf, line 1]"), err.msg
 
 def test_order():
     mk('.aspen', ('.aspen/hooks.conf', 'random:choice\nrandom:seed'))
@@ -169,7 +170,7 @@ def test_layering():
                , []
                , []
                 ]
-    actual = load('fsfix/first.conf', 'fsfix/second.conf')
+    actual = load('first.conf', 'second.conf')
     assert actual == expected, actual
 
 
@@ -198,7 +199,7 @@ def test_form_feeds_on_same_line():
                , [random.gauss]
                , [random.shuffle]
                 ]
-    actual = load('fsfix/foo.conf')
+    actual = load('foo.conf')
     assert actual == expected, actual
 
 
@@ -226,7 +227,7 @@ def test_all_six():
                , []
                , []
                 ]
-    actual = load('fsfix/foo.conf')
+    actual = load('foo.conf')
     assert actual == expected, actual
 
 
@@ -247,7 +248,7 @@ def test_equal_sections_dont_screw_up_parsing():
         random:shuffle 
         """))
     expected = [[],[],[],[],[random.shuffle],[]]
-    actual = load('fsfix/hooks.conf')
+    actual = load('hooks.conf')
     assert actual == expected, actual
 
 

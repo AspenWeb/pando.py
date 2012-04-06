@@ -3,8 +3,8 @@ from os.path import dirname, join, realpath
 
 from aspen import gauntlet, Response
 from aspen.http.request import Request
-from aspen.tests import assert_raises, handle, NoException, StubRequest 
-from aspen.tests.fsfix import attach_teardown, expect, mk
+from aspen.testing import assert_raises, handle, NoException, StubRequest 
+from aspen.testing import attach_teardown, fix, FSFIX, mk
 from aspen.configuration import Configurable
 
 
@@ -20,13 +20,13 @@ def check_index(path):
 
 def test_index_is_found():
     mk(('index.html', "Greetings, program!"))
-    expected = expect('index.html')
+    expected = fix('index.html')
     actual = check_index('/').fs
     assert actual == expected, actual
     
 def test_alternate_index_is_not_found():
     mk(('default.html', "Greetings, program!"))
-    expected = expect('')
+    expected = fix('')
     actual = check_index('/').fs
     assert actual == expected, actual
     
@@ -34,7 +34,7 @@ def test_alternate_index_is_found():
     mk( ('.aspen/aspen.conf', '[aspen]\ndefault_filenames = default.html')
       , ('default.html', "Greetings, program!")
        )
-    expected = expect('default.html')
+    expected = fix('default.html')
     actual = check_index('/').fs
     assert actual == expected, actual
     
@@ -42,7 +42,7 @@ def test_index_conf_setting_overrides_and_doesnt_extend():
     mk( ('.aspen/aspen.conf', '[aspen]\ndefault_filenames = default.html')
       , ('index.html', "Greetings, program!")
        )
-    expected = expect('')
+    expected = fix('')
     actual = check_index('/').fs
     assert actual == expected, actual
     
@@ -52,7 +52,7 @@ def test_index_conf_setting_takes_first():
       , ('index.html', "Greetings, program!")
       , ('default.html', "Greetings, program!")
        )
-    expected = expect('index.html')
+    expected = fix('index.html')
     actual = check_index('/').fs
     assert actual == expected, actual
     
@@ -61,7 +61,7 @@ def test_index_conf_setting_takes_second_if_first_is_missing():
         , '[aspen]\ndefault_filenames = index.html default.html')
       , ('default.html', "Greetings, program!")
        )
-    expected = expect('default.html')
+    expected = fix('default.html')
     actual = check_index('/').fs
     assert actual == expected, actual
     
@@ -70,7 +70,7 @@ def test_index_conf_setting_strips_commas():
         , '[aspen]\ndefault_filenames: index.html, default.html')
       , ('default.html', "Greetings, program!")
        )
-    expected = expect('default.html')
+    expected = fix('default.html')
     actual = check_index('/').fs
     assert actual == expected, actual
     
@@ -79,7 +79,7 @@ def test_index_conf_setting_strips_many_commas():
         , '[aspen]\ndefault_filenames: index.html,,,,,,, default.html')
       , ('default.html', "Greetings, program!")
        )
-    expected = expect('default.html')
+    expected = fix('default.html')
     actual = check_index('/').fs
     assert actual == expected, actual
     
@@ -88,7 +88,7 @@ def test_index_conf_setting_ignores_blanks():
         , '[aspen]\ndefault_filenames: index.html,, ,, ,,, default.html')
       , ('default.html', "Greetings, program!")
        )
-    expected = expect('default.html')
+    expected = fix('default.html')
     actual = check_index('/').fs
     assert actual == expected, actual
 
@@ -97,7 +97,7 @@ def test_index_conf_setting_works_with_only_comma():
         , '[aspen]\ndefault_filenames: index.html,default.html')
       , ('default.html', "Greetings, program!")
        )
-    expected = expect('default.html')
+    expected = fix('default.html')
     actual = check_index('/').fs
     assert actual == expected, actual
 
@@ -114,20 +114,20 @@ def check_virtual_paths(path):
 
 def test_virtual_path_can_passthrough():
     mk(('foo.html', "Greetings, program!"))
-    expected = expect('foo.html')
+    expected = fix('foo.html')
     actual = check_virtual_paths('foo.html').fs
     assert actual == expected, actual
 
 def test_unfound_virtual_path_passes_through():
     mk(('%bar/foo.html', "Greetings, program!"))
     request = check_virtual_paths('/blah/flah.html')
-    expected = expect('/blah/flah.html')
+    expected = fix('/blah/flah.html')
     actual = request.fs
     assert actual == expected, actual
 
 def test_virtual_path_is_virtual():
     mk(('%bar/foo.html', "Greetings, program!"))
-    expected = expect('%bar/foo.html')
+    expected = fix('%bar/foo.html')
     actual = check_virtual_paths('/blah/foo.html').fs
     assert actual == expected, actual
 
@@ -169,31 +169,31 @@ def test_virtual_path_matches_the_first():
     mk( ('%first/foo.html', "Greetings, program!")
       , ('%second/foo.html', "WWAAAAAAAAAAAA!!!!!!!!")
        )
-    expected = expect('%first/foo.html')
+    expected = fix('%first/foo.html')
     actual = check_virtual_paths('/1999/foo.html').fs
     assert actual == expected, actual
 
 def test_virtual_path_directory():
     mk(('%first/index.html', "Greetings, program!"))
-    expected = expect('%first')
+    expected = fix('%first')
     actual = check_virtual_paths('/foo/').fs
     assert actual == expected, actual
 
 def test_virtual_path_file():
     mk(('foo/%bar.html', "Greetings, program!"))
-    expected = expect('foo/%bar.html')
+    expected = fix('foo/%bar.html')
     actual = check_virtual_paths('/foo/blah.html').fs
     assert actual == expected, actual
 
 def test_virtual_path_file_only_last_part():
     mk(('foo/%bar.html', "Greetings, program!"))
-    expected = expect('foo/blah.html/baz')
+    expected = fix('foo/blah.html/baz')
     actual = check_virtual_paths('/foo/blah.html/baz').fs
     assert actual == expected, actual
 
 def test_virtual_path_file_only_last_part____no_really():
     mk(('foo/%bar.html', "Greetings, program!"))
-    expected = expect('foo/blah.html/')
+    expected = fix('foo/blah.html/')
     actual = check_virtual_paths('/foo/blah.html/').fs
     assert actual == expected, actual
 
@@ -228,13 +228,13 @@ def check_trailing_slash(path):
 
 def test_trailing_slash_passes_files_through():
     mk(('foo/index.html', "Greetings, program!"))
-    expected = expect('/foo/537.html')
+    expected = fix('/foo/537.html')
     actual = check_trailing_slash('/foo/537.html').fs
     assert actual == expected, actual
 
 def test_trailing_slash_passes_dirs_with_slash_through():
     mk('foo')
-    expected = expect('/foo/')
+    expected = fix('/foo/')
     actual = check_trailing_slash('/foo/').fs
     assert actual == expected, actual
 

@@ -6,8 +6,8 @@ from aspen.http.request import Request
 from aspen.sockets import FFFD
 from aspen.sockets.transport import XHRPollingTransport
 from aspen.sockets.message import Message
-from aspen.tests.test_sockets_socket import make_socket, make_request
-from aspen.tests.fsfix import attach_teardown, mk
+from aspen.testing.sockets import make_socket, make_request
+from aspen.testing.fsfix import attach_teardown, mk
 
 
 def make_transport(content='', state=0):

@@ -3,8 +3,8 @@ from os.path import join
 
 from aspen._tornado.template import Loader
 from aspen.http.request import Request
-from aspen.tests import handle, StubRequest
-from aspen.tests.fsfix import attach_teardown, mk
+from aspen.testing import handle, StubRequest
+from aspen.testing.fsfix import attach_teardown, mk
 from aspen.website import Website
 
 

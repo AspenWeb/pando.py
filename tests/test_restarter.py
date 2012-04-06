@@ -1,5 +1,5 @@
 from aspen import restarter
-from aspen.tests.fsfix import attach_teardown
+from aspen.testing.fsfix import attach_teardown
 
 class Foo:
     pass

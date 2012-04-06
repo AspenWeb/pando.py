@@ -4,8 +4,8 @@ import sys
 
 from aspen.configuration import Configurable, ConfigurationError
 from aspen.configuration.options import validate_address, callback_root
-from aspen.tests import assert_raises
-from aspen.tests.fsfix import attach_teardown, expect, mk
+from aspen.testing import assert_raises
+from aspen.testing.fsfix import attach_teardown, fix, FSFIX, mk
 
 
 def test_nirvana():
@@ -17,7 +17,7 @@ def test_nirvana():
     assert actual == expected, actual
 
 def test_callback_root_fails_when_directory_doesnt_exist():
-    assert_raises(ConfigurationError, callback_root, None, None, 'fsfix', None)
+    assert_raises(ConfigurationError, callback_root, None, None, FSFIX, None)
 
 def test_root_defaults_to_cwd():
     mk()
@@ -29,7 +29,7 @@ def test_root_defaults_to_cwd():
 
 def test_ConfigurationError_raised_if_no_cwd():
     mk()
-    os.chdir('fsfix')
+    os.chdir(FSFIX)
     os.rmdir(os.getcwd())
     c = Configurable()
     assert_raises(ConfigurationError, c.configure, [])
@@ -37,7 +37,7 @@ def test_ConfigurationError_raised_if_no_cwd():
 def test_ConfigurationError_NOT_raised_if_no_cwd_but_do_have___root():
     mk()
     foo = os.getcwd()
-    os.chdir('fsfix')
+    os.chdir(FSFIX)
     os.rmdir(os.getcwd())
     c = Configurable()
     c.configure(['--root', foo])
@@ -48,21 +48,21 @@ def test_ConfigurationError_NOT_raised_if_no_cwd_but_do_have___root():
 def test_configurable_sees_root_option():
     mk()
     c = Configurable()
-    c.configure(['--root', 'fsfix'])
+    c.configure(['--root', FSFIX])
     expected = os.getcwd()
     actual = c.root
     assert actual == expected, actual
 
 def test_callback_root_finds_root():
     mk()
-    expected = expect()
+    expected = fix()
     class Values():
         pass
     class Parser:
         values = Values()
     parser = Parser()
-    callback_root(None, None, 'fsfix', parser)
-    expected = os.path.realpath("fsfix")
+    callback_root(None, None, FSFIX, parser)
+    expected = os.path.realpath(FSFIX)
     actual = parser.values.root
 
     assert actual == expected, actual

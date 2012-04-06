@@ -2,11 +2,21 @@ import logging
 import os
 import re
 import sys
+import tempfile
+import traceback
 from os.path import dirname, isdir, isfile, join, realpath
 
 import aspen
 from aspen import resources, sockets
-from nose.tools import with_setup
+try:
+    from nose.tools import with_setup
+except ImportError:
+    with_setup = None
+    nose_tb = traceback.format_exc()
+
+
+CWD = os.getcwd()
+FSFIX = os.path.realpath(os.path.join(tempfile.gettempdir(), 'fsfix'))
 
 
 def convert_path(path):
@@ -20,7 +30,7 @@ def convert_paths(paths):
     return tuple([convert_path(p) for p in paths])
 
 def mk(*treedef, **kw):
-    """Given a treedef, build a filesystem fixture in ./fsfix.
+    """Given a treedef, build a filesystem fixture in FSFIX.
 
     treedef is a sequence of strings and tuples. If a string, it is interpreted
     as a path to a directory that should be created. If a tuple, the first
@@ -28,11 +38,11 @@ def mk(*treedef, **kw):
     it this way to ease cross-platform testing.
 
     The one meaningful keyword argument is configure. If True, mk will call
-    aspen.configure with ./fsfix as the root.
+    aspen.configure with FSFIX as the root.
 
     """
     configure = kw.get('configure', False)
-    root = realpath('fsfix')
+    root = FSFIX
     os.mkdir(root)
     for item in treedef:
         if isinstance(item, basestring):
@@ -50,20 +60,20 @@ def mk(*treedef, **kw):
     if configure is True:
         aspen.configure(['--root', root])
 
-def expect(path=''):
-    """Given a relative path, return an absolute path.
+def fix(path=''):
+    """Given a relative path, return an absolute path under FSFIX.
 
     The incoming path is in UNIX form (/foo/bar.html). The outgoing path is in 
     native form, with symlinks removed.
 
     """
-    path = os.sep.join([dirname(__file__), 'fsfix'] + path.split('/'))
+    path = os.sep.join([FSFIX] + path.split('/'))
     return realpath(path)
 
 def rm():
-    """Remove the filesystem fixture at fsfix/.
+    """Remove the filesystem fixture at FSFIX.
     """
-    root = realpath('fsfix')
+    root = FSFIX
     if isdir(root):
         for root, dirs, files in os.walk(root, topdown=False):
             for name in dirs:
@@ -74,8 +84,16 @@ def rm():
 
 def teardown():
     """Standard teardown function.
+    
+    - reset the current working directory
+    - remove FSFIX = %{tempdir}/fsfix
+    - reset Aspen's global state
+    - remove '.aspen' from sys.path
+    - remove 'foo' from sys.modules
+    - remove logging handlers
+
     """
-    os.chdir(dirname(__file__))
+    os.chdir(CWD)
     rm()
     # Reset some process-global caches. Hrm ...
     resources.__cache__ = {}
@@ -89,11 +107,21 @@ def teardown():
 
 teardown() # start clean
 
-def attach_teardown(context, prefix='test_'):
-    """Given a namespace and a routine prefix, attach the teardown function.
+def attach_teardown(context):
+    """Given a namespace dictionary, attach the teardown function.
+
+    This function is designed for nose and will raise NotImplementedError at
+    runtime with an additional ImportError traceback if nose is not available.
+    To use it put this line at the end of your test modules:
+
+        attach_teardown(globals())
+
     """
+    if with_setup is None:
+        raise NotImplementedError("This function is designed for nose, which "
+                                  "couldn't be imported:" + os.sep + nose_tb)
     for name, func in context.items():
-        if name.startswith(prefix):
+        if name.startswith('test_'):
             func = with_setup(teardown=teardown)(func) # non-destructive
 
 def torndown(func):

@@ -1,7 +1,7 @@
 from aspen.sockets import FFFD
 from aspen.sockets.packet import Packet 
 from aspen.sockets.message import Message
-from aspen.tests import assert_raises
+from aspen.testing import assert_raises
 
 
 def test_packet_Packetable_with_unframed_bytes():

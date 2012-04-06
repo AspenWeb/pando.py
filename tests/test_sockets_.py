@@ -1,7 +1,7 @@
 from aspen import sockets
 from aspen.http.request import Request
-from aspen.tests.fsfix import mk, attach_teardown
-from aspen.tests.test_sockets_socket import make_request
+from aspen.testing import mk, attach_teardown
+from aspen.testing.sockets import make_request
 
 
 def test_sockets_get_nonsock_returns_None():

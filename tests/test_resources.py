@@ -4,26 +4,10 @@ from textwrap import dedent
 from aspen import Response
 from aspen.configuration import Configurable
 from aspen.exceptions import LoadError
-from aspen.resources import load
-from aspen.resources.template_resource import TemplateResource 
-from aspen.tests import assert_raises, StubRequest
-from aspen.tests.fsfix import attach_teardown, mk
+from aspen.testing import assert_raises, check
+from aspen.testing.fsfix import attach_teardown
 from aspen._tornado.template import Template, Loader
 
-
-def Resource(fs):
-    return load(StubRequest.from_fs(fs), 0)
-
-def check(content, filename="index.html", body=True, aspenconf="", response=None):
-    mk(('.aspen/aspen.conf', aspenconf), (filename, content))
-    request = StubRequest.from_fs(filename)
-    response = response or Response()
-    resource = load(request, 0)
-    response = resource.respond(request, response)
-    if body:
-        return response.body
-    else:
-        return response
 
 
 # Tests
