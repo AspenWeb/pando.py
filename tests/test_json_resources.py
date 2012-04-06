@@ -1,6 +1,6 @@
 from aspen.exceptions import LoadError
-from aspen.tests import assert_raises
-from aspen.tests.test_resources import check
+from aspen.testing import assert_raises, check
+from aspen.testing.fsfix import attach_teardown
 
 
 def test_json_basically_works():
@@ -106,3 +106,7 @@ def test_json_raises_TypeError_on_unknown_types():
                   )
 
 
+# Teardown
+# ========
+
+attach_teardown(globals())

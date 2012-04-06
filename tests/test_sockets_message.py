@@ -1,4 +1,4 @@
-from aspen.tests import assert_raises
+from aspen.testing import assert_raises
 from aspen.sockets.message import Message
 
 

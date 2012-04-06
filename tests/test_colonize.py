@@ -1,6 +1,6 @@
 from aspen.configuration.colon import *
-from aspen.tests import assert_raises as _assert_raises
-from aspen.tests.fsfix import attach_teardown
+from aspen.testing import assert_raises as _assert_raises
+from aspen.testing.fsfix import attach_teardown
 
 
 def assert_raises(name, Err):

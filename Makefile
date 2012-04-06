@@ -21,4 +21,4 @@ run: env
 	./env/bin/thrash ./env/bin/aspen -vDEBUG -a:5370 -rdoc/
 
 test:
-	./env/bin/nosetests -sx aspen/tests/
+	./env/bin/nosetests -sx tests/

@@ -3,9 +3,9 @@ from collections import deque
 from aspen.sockets.buffer import ThreadedBuffer
 from aspen.sockets.channel import Channel
 from aspen.sockets.message import Message 
-from aspen.tests.test_sockets_socket import make_socket
-from aspen.tests import assert_raises
-from aspen.tests.fsfix import mk, attach_teardown
+from aspen.testing.sockets import make_socket
+from aspen.testing import assert_raises
+from aspen.testing.fsfix import mk, attach_teardown
 
 
 def test_channel_is_instantiable():

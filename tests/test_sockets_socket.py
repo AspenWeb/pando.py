@@ -2,39 +2,12 @@ from __future__ import with_statement # for Python 2.5
 import os
 import time
 
-from aspen.engines import ThreadedBuffer, ThreadedLoop
 from aspen.http.request import Request
 from aspen.sockets import FFFD
-from aspen.sockets.channel import Channel
 from aspen.sockets.socket import Socket
 from aspen.sockets.message import Message
-from aspen.tests.fsfix import mk, attach_teardown
-from aspen.website import Website
-
-
-def make_request(filename='echo.sock'):
-    request = Request(url='/echo.sock')
-    request.website = Website([])
-    request.website.copy_configuration_to(request)
-    request.fs = os.sep.join([os.path.dirname(__file__), 'fsfix', filename])
-    return request
-
-def make_socket(filename='echo.sock', channel=None):
-    request = make_request(filename='echo.sock')
-    if channel is None:
-        channel = Channel(request.path.raw, ThreadedBuffer)
-    socket = Socket(request, channel)
-    return socket
-
-class SocketInThread(object):
-
-    def __enter__(self, filename='echo.sock'):
-        self.socket = make_socket(filename) 
-        self.socket.loop.start()
-        return self.socket
-
-    def __exit__(self, *a):
-        self.socket.loop.stop()
+from aspen.testing.fsfix import mk, attach_teardown
+from aspen.testing.sockets import make_socket, SocketInThread
 
 
 def test_socket_is_instantiable():

@@ -2,8 +2,8 @@ from aspen import Response
 from aspen.http.mapping import Mapping
 from aspen.http.request import Request
 from aspen.http.headers import Headers
-from aspen.tests import assert_raises, StubRequest
-from aspen.tests.fsfix import attach_teardown
+from aspen.testing import assert_raises, StubRequest
+from aspen.testing.fsfix import attach_teardown
 
 
 def test_blank_by_default():
