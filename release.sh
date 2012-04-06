@@ -20,21 +20,25 @@ confirm () {
 }
 
 # Real work.
-confirm "Tag version $1 and upload to PyPI and push to github and heroku?"
-if [ $? -eq 0 ]; then
-    printf "$1" > version.txt
-    git commit version.txt -m"Version bump for release."
-    git tag $1
+if [ "`git tag | grep $1`" ]; then
+    echo "Version $1 is already git tagged."
+else
+    confirm "Tag version $1 and upload to PyPI and push to github and heroku?"
+    if [ $? -eq 0 ]; then
+        printf "$1" > version.txt
+        git commit version.txt -m"Version bump for release."
+        git tag $1
 
-    git push
-    git push --tags
+        git push
+        git push --tags
 
-    ./env/bin/python setup.py sdist --formats=zip,gztar,bztar upload
+        ./env/bin/python setup.py sdist --formats=zip,gztar,bztar upload
 
-    printf "+" >> version.txt
-    git commit version.txt -m"Version bump post-release."
-    git push
-    git push heroku
+        printf "+" >> version.txt
+        git commit version.txt -m"Version bump post-release."
+        git push
+        git push heroku
 
-    rm -rf dist
+        rm -rf dist
+    fi
 fi
