@@ -27,8 +27,11 @@ class Mapping(object):
         else:
             self._dict[name].append(value)
 
-    def __contains__(self, name):
+    def __in__(self, name):
+        """Given a name, return True if it is known in the mapping.
+        """
         return name in self._dict
+    __contains__ = __in__ # diff?
 
     def all(self, name, default=None):
         """Given a name, return a list of values.
@@ -44,14 +47,6 @@ class Mapping(object):
         """Given one or more names of keys, return a list of their values.
         """
         return [self.one(name) for name in names]
-
-    def __iter__(self):
-        return self._dict
-
-    def __in__(self, name):
-        """Given a name, return True if it is known in the mapping.
-        """
-        return name in self._dict
 
     def __iter__(self):
         return self._dict.__iter__()

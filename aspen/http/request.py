@@ -1,12 +1,11 @@
+"""Define a Request class.
+"""
 import cgi
-import socket
-import urllib
-import urlparse
-from Cookie import CookieError, SimpleCookie
 
-from aspen import resources, Response
-from aspen.http.headers import Headers
-from aspen.http.wwwform import WwwForm
+from aspen import Response
+from aspen.http.body import Body
+from aspen.http.headers import RequestHeaders
+from aspen.http.line import Line
 
 
 # http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html
@@ -21,18 +20,23 @@ METHODS = [ 'OPTIONS'
            ]
 
 
-class Path(dict):
-    def __init__(self, bytes):
-        self.raw = bytes
-        dict.__init__(self)
-    def __str__(self):
-        return self.raw
-
-
 class Request(object):
-    """Represent an HTTP Request message. Attributes:
+    """Represent an HTTP Request message.
 
-    http://sync.in/aspen-request
+    Here is how we analyze the structure of an HTTP message, along with the
+    objects we use to model each:
+
+        - line                  Line
+            - method            Method
+            - url               URL
+                - path          Path
+                - querystring   Querystring
+            - version           Version
+        - headers               RequestHeaders
+            - cookie            Cookie
+            - host              unicode
+            - scheme            unicode
+        - body                  Body
 
     """
 
@@ -40,29 +44,75 @@ class Request(object):
     resource = None
     original_resource = None
 
-    def __init__(self, method='GET', url='/', headers='', body=''):
-        self.method = method
-        self.raw_url = url 
+    def __init__(self, method='GET', url='/', version='HTTP/1.1', 
+            headers='', body=None):
+        """Takes four bytestrings and an iterable of bytestrings.
+        """
+
+        # Line
+        # ====
+
+        self.line = Line(method, url, version)
+
+
+        # Headers
+        # =======
+        # The RequestHeaders object parses out scheme, host, and cookie for us.
+
         if not headers:
             headers = 'Host: localhost'
-        self.raw_headers = headers
-        self.raw_body = body
-        self.hydrate()
-    
+        self.headers = RequestHeaders(headers)
+
+        
+        # Body
+        # ====
+
+        if body is None:
+            body = ['']
+        content_type = self.headers.one('Content-Type', '')
+        self.body = Body(content_type, body)
+
+        
+        # Other Things
+        # ============
+        # This namespace dictionary will be the basis for the context for
+        # dynamic simplates.
+
+        self.namespace = {}
+        self.namespace['body'] = self.body
+        self.namespace['headers'] = self.headers
+        self.namespace['cookie'] = self.line.url.querystring
+        self.namespace['path'] = self.line.url.path
+        self.namespace['qs'] = self.line.url.querystring
+        self.namespace['request'] = self
+
+        for method in METHODS:
+            self.namespace[method] = method == self.line.method
+ 
+
+    def __str__(self):
+        return "<%s %s>" % (self.line.method.raw, self.line.url.path.raw)
+    __repr__ = __str__
+
     @classmethod
     def from_wsgi(cls, environ):
-        """Set primitives from a WSGI environ.
-        """
-        self = cls()
+        """Parse instantiables from a WSGI environ.
 
-        self.environ = environ
-        self.method = environ['REQUEST_METHOD']
-        self.version = environ['SERVER_PROTOCOL']
-        self.remote_addr = environ.get('REMOTE_ADDR', None) # relaxed for Pants
-        self.raw_url = environ['PATH_INFO']
+        It would be more efficient to parse directly for the API we want, but
+        then we lose the benefits of playing the WSGI game. People love their
+        gunicorn.
+
+        """
+        
+        # Line
+        # ====
+
+        method = environ['REQUEST_METHOD']
+        url = environ['PATH_INFO']
         qs = environ.get('QUERY_STRING', '')
         if qs:
-            self.raw_url += '?' + qs
+            url += '?' + qs
+        version = environ['SERVER_PROTOCOL']
 
 
         # Headers
@@ -72,7 +122,7 @@ class Request(object):
         # explicitly doesn't include as HTTP_ keys.
         also = ['CONTENT_TYPE', 'CONTENT_LENGTH'] 
 
-        raw_headers = []
+        headers = []
         for k, v in environ.items():
             val = None
             if k.startswith('HTTP_'):
@@ -82,135 +132,33 @@ class Request(object):
                 val = v
             if val is not None:
                 k = k.replace('_', '-')
-                raw_headers.append(': '.join([k, v]))
-        raw_headers = '\r\n'.join(raw_headers)
-        self.raw_headers = raw_headers
+                headers.append(': '.join([k, v]))
+        headers = '\r\n'.join(headers) # *sigh*
 
         
         # Body
         # ====
         
-        if not environ.get('SERVER_SOFTWARE', '').startswith('Rocket'):
-            # normal case
-            self.raw_body = environ['wsgi.input'].read()
-        else:
-            # rocket engine
-
-            # Email from Rocket guy: While HTTP stipulates that you shouldn't
-            # read a socket unless you are specifically expecting data to be
-            # there, WSGI allows (but doesn't require) for that
-            # (http://www.python.org/dev/peps/pep-3333/#id25).  I've started
-            # support for this (if you feel like reading the code, its in the
-            # connection class) but this feature is not yet production ready
-            # (it works but it way too slow on cPython).
-            #
-            # The hacky solution is to grab the socket from the stream and
-            # manually set the timeout to 0 and set it back when you get your
-            # data (or not).
-            # 
-            # If you're curious, those HTTP conditions are (it's better to do
-            # this anyway to avoid unnecessary and slow OS calls):
-            # - You can assume that there will be content in the body if the
-            #   request type is "POST" or "PUT"
-            # - You can figure how much to read by the "CONTENT_LENGTH" header
-            #   existence with a valid integer value
-            #   - alternatively "CONTENT_TYPE" can be set with no length and
-            #     you can read based on the body content ("content-encoding" =
-            #     "chunked" is a good example).
-            #
-            # Here's the "hacky solution":
-
-            _tmp = environ['wsgi.input']._sock.timeout
-            environ['wsgi.input']._sock.settimeout(0) # equiv. to non-blocking
-            try:
-                self.raw_body = environ['wsgi.input'].read()
-            except Exception, exc:
-                if exc.errno != 35:
-                    raise
-                self.raw_body = ""
-            environ['wsgi.input']._sock.settimeout(_tmp)
-
-        self.hydrate()
-        return self
-
-    def __str__(self):
-        return "<%s %s>" % (self.method, self.path)
-    __repr__ = __str__
-
-    def hydrate(self):
-        """Populate a number of attributes on self based on primitives.
-        """
-        self.headers = Headers(self.raw_headers)
-        self.cookie = SimpleCookie()
-        try:
-            self.cookie.load(self.headers.one('Cookie', ''))
-        except CookieError:
-            pass
-
-        urlparts = urlparse.urlparse(self.raw_url)
-        self.path = Path(urlparts[2]) # populated by Website
-        self.qs = WwwForm(urlparts[4])
-        self.url = self.rebuild_url() # needs things above
-        self.urlparts = urlparse.urlparse(self.url)
-
-        self.socket = None # set by Website for *.sock files
-        self.root = '' # set by Website
-        self.fs = '' # set by Website
-        self.namespace = {} # populated by user in inbound hooks
-
-        content_type = self.headers.one('Content-Type', '')
-        if content_type.startswith('multipart/form-data'):
-            # Oh, for shame!
-            self.body = cgi.FieldStorage( fp = cgi.StringIO(self.raw_body)
-                                        , environ = self.environ
-                                        , strict_parsing = True 
-                                         )
-        else:
-            self.body = WwwForm(self.raw_body)
-
-    def set_method(self, method):
-        """Given a string, store it and update booleans on self.
-        """
-        self._method = method
-        for m in METHODS:
-            setattr(self, m, m == method)
-    method = property(lambda self: self._method, set_method)
-
-    def rebuild_url(self):
-        """Return a full URL for this request, per PEP 333:
-
-            http://www.python.org/dev/peps/pep-0333/#url-reconstruction
-
-        This function is kind of naive.
-
-        """
-        # http://docs.python.org/library/wsgiref.html#wsgiref.util.guess_scheme
-        scheme = self.headers.one('HTTPS') and 'https' or 'http'
-        url = scheme
-        url += '://'
-
-        if 'X-Forwarded-Host' in self.headers:
-            url += self.headers.one('X-Forwarded-Host')
-        elif 'Host' in self.headers:
-            url += self.headers.one('Host')
-        else:
-            # per spec, respond with 400 if no Host header given
-            raise Response(400)
-
-        url += urllib.quote(self.path.raw)
-        # screw params, fragment?
-        if self.qs.raw:
-            url += '?' + self.qs.raw
-        return url
+        body = environ['wsgi.input']
+        
+        return cls(method, url, version, headers, body)
 
 
     # Public Methods
     # ==============
 
-    @property
+    _raw = ""
+    def raw(self):
+        if not self._raw:
+            fmt = "%s\r\n%s\r\n\r\n%s" 
+            self._raw = fmt % (self.line.raw, self.headers.raw, self.body.raw)
+        return self._raw
+    raw = property(raw)
+       
     def is_xhr(self):
         val = self.headers.one('X-Requested-With', '')
         return val.lower() == 'xmlhttprequest'
+    is_xhr = property(is_xhr)
 
     def redirect(self, location, code=None, permanent=False):
         """Given a string, an int, and a boolean, raise a Response.
@@ -228,12 +176,12 @@ class Request(object):
         raise Response(code, headers={'Location': location})
 
     def allow(self, *methods):
-        """Given method strings, raise 405 if we don't meet the requirements.
+        """Given method strings, raise 405 if ours is not among them.
 
         The method names are case insensitive (they are uppercased). If 405
         is raised then the Allow header is set to the methods given.
 
         """
         methods = [x.upper() for x in methods]
-        if self.method not in methods:
+        if self.line.method not in methods:
             raise Response(405, headers={'Allow': ', '.join(methods)})
