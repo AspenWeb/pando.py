@@ -191,7 +191,7 @@ def get(request):
 
     # Return
     # ======
-    # The caller must take care to avoid mutating any namespace dictionary at 
+    # The caller must take care to avoid mutating any context dictionary at 
     # entry.resource.pages[0].
 
     return entry.resource

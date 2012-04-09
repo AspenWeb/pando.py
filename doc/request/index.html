@@ -4,24 +4,31 @@ doc_next = ('Response', '/response/')
 {% extends doc.html %}
 {% block doc %}
 
-<p class="warning"><b>Warning:</b> This API is guaranteed to change before Aspen
-1.0.</p>
-
 <p>Inside of the second and third pages of a <a
     href="/simplates/">simplate</a>, you have a request object called
 <code>request</code>. Here are the attributes you get:</p>
 
 <table>
-    <tr><th>allow</th><td>given HTTP methods as positional args, return None or raise 405</td></tr>
-    <tr><th>body</th><td><a href="#not-a-dict">WwwForm</a> object</td></tr>
-    <tr><th>cookie</th><td>a <a href="http://docs.python.org/library/cookie.html#Cookie.SimpleCookie">Cookie.SimpleCookie</a> object</td></tr>
+    <tr><th>line</th><td>Line(unicode)</td></tr>
+    <tr><th>line.method</th><td>Method(unicode)</td></tr>
+    <tr><th>line.method.raw</th><td>str</td></tr>
+    <tr><th>line.url</th><td>Url(unicode)</td></tr>
+    <tr><th>line.url.path</th><td>Path(dict)</td></tr>
+    <tr><th>line.url.path.raw</th><td>str</td></tr>
+    <tr><th>line.url.querystring</th><td>Querystring</td></tr>
+    <tr><th>line.url.querystring.raw</th><td>str</td></tr>
+    <tr><th>line.url.raw</th><td>str</td></tr>
+    <tr><th>line.version</th><td>Version(unicode)</td></tr>
+    <tr><th>line.raw</th><td>str</td></tr>
     <tr><th>headers</th><td><a href="#not-a-dict">Headers</a> object</td></tr>
+    <tr><th>headers.cookie</th><td>a <a
+                href="http://docs.python.org/library/cookie.html#Cookie.SimpleCookie">Cookie.SimpleCookie</a>
+            object</td></tr>
+    <tr><th>headers.host</th><td>unicode, X-Forwarded-For if it exists, Host
+            otherwise (no Host will raise Response(400)</td></tr>
+    <tr><th>headers.scheme</th><td>unicode, u"https" or u"http"</td></tr>
+    <tr><th>body</th><td><a href="#not-a-dict">WwwForm</a> object</td></tr>
     <tr><th>is_xhr</th><td>a boolean: is this request from an XmlHttpRequest?</td></tr>
-    <tr><th>method</th><td>string</td></tr>
-    <tr><th>path</th><td><a href="/virtual-paths/">dict</a></td></tr>
-    <tr><th>qs</th><td>query string, <a href="#not-a-dict">WwwForm</a> object</td></tr>
-    <tr><th>url</th><td>string</td></tr>
-    <tr><th>urlparts</th><td><a href="http://docs.python.org/library/urlparse.html">urlparse.urlparse</a> output</td></tr>
 </table>
 
 <p>And here are the methods:</p>
@@ -42,21 +49,6 @@ def redirect(location, code=None, permanent=False):
 
     """
 </pre>
-
-<p>There are also boolean attributes for the <a
-    href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html">nine
-    methods</a> defined in the HTTP spec, so in a simplate you can branch like
-this:</p>
-
-<pre>
-if request.GET:
-    foo
-elif request.POST:
-    bar
-</pre>
-
-<p>You can alter this API globally using an <a href="/hooks/">inbound
-    hook</a>.</p>
 
 <a name="not-a-dict"></a>
 <h3>Headers and WwwForm Objects</h3>

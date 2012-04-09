@@ -36,7 +36,7 @@ class Socket(object):
         self.outgoing = request.engine.Buffer('outgoing', self)
         self.channel = channel
         self.channel.add(self)
-        self.namespace = self.resource.exec_second(self, request)
+        self.context = self.resource.exec_second(self, request)
 
     def shake_hands(self):
         """Return a handshake response.
@@ -55,11 +55,11 @@ class Socket(object):
         other mechanism, like reading a remote TCP socket.
 
         """
-        exec self.resource.three in self.namespace
+        exec self.resource.three in self.context
 
     def disconnect(self):
         self.loop.stop()
-        exec self.resource.four in self.namespace
+        exec self.resource.four in self.context
         self.channel.remove(self)
 
 

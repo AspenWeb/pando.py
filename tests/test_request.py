@@ -1,10 +1,9 @@
 from aspen import Response
 from aspen.http.mapping import Mapping
-from aspen.http.request import Request
-from aspen.http.headers import Headers
+from aspen.http.request import Request, Method
+from aspen.http.baseheaders import BaseHeaders
 from aspen.testing import assert_raises, StubRequest
 from aspen.testing.fsfix import attach_teardown
-from aspen.http.line import Method
 
 
 
@@ -99,33 +98,33 @@ def test_methods_changing_changes():
 
 def test_is_xhr_false():
     request = StubRequest()
-    assert not request.is_xhr
+    assert not request.is_xhr()
     
 def test_is_xhr_true():
     request = StubRequest()
     request.headers.set('X-Requested-With', 'XmlHttpRequest')
-    assert request.is_xhr
+    assert request.is_xhr()
     
 def test_is_xhr_is_case_insensitive():
     request = StubRequest()
     request.headers.set('X-Requested-With', 'xMLhTTPrEQUEST')
-    assert request.is_xhr
+    assert request.is_xhr()
 
 
 def test_headers_one_gets_a_value():
-    headers = Headers("Foo: Bar")
+    headers = BaseHeaders("Foo: Bar")
     expected = "Bar"
     actual = headers.one('Foo')
     assert actual == expected, actual
     
 def test_headers_one_gets_first_value():
-    headers = Headers("Foo: Bar\r\nFoo: Baz")
+    headers = BaseHeaders("Foo: Bar\r\nFoo: Baz")
     expected = "Bar"
     actual = headers.one('Foo')
     assert actual == expected, actual
     
 def test_headers_one_is_case_insensitive():
-    headers = Headers("Foo: Bar")
+    headers = BaseHeaders("Foo: Bar")
     expected = "Bar"
     actual = headers.one('foo')
     assert actual == expected, actual

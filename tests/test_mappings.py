@@ -1,8 +1,8 @@
-from aspen.http.headers import Headers
-from aspen.http.querystring import Querystring
+from aspen.http.baseheaders import BaseHeaders
+from aspen.http.request import Querystring
 
 def test_headers_are_case_insensitive():
-    headers = Headers('Foo: bar')
+    headers = BaseHeaders('Foo: bar')
     expected = 'bar'
     actual = headers.one('foo')
     assert actual == expected, actual

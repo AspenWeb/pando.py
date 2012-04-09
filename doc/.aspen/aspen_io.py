@@ -44,11 +44,11 @@ def inbound(request):
     # Make these available within simplates.
     # ======================================
 
-    request.namespace['img'] = img
-    request.namespace['screenshot'] = screenshot
-    request.namespace['translate'] = translate
-    request.namespace['version'] = opts['version']
-    request.namespace['homepage'] = False
+    request.context['img'] = img
+    request.context['screenshot'] = screenshot
+    request.context['translate'] = translate
+    request.context['version'] = opts['version']
+    request.context['homepage'] = False
 
 
 # TODO Redirect direct requests to the CDN.
