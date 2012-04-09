@@ -26,10 +26,10 @@ class JSONResource(DynamicResource):
         """
         return self._process(response)
   
-    def get_response(self, namespace):
-        """Given a namespace dict, return a response object.
+    def get_response(self, context):
+        """Given a context dict, return a response object.
         """
-        response = namespace['response']
+        response = context['response']
         return self._process(response)
 
     def _process(self, response):

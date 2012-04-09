@@ -80,11 +80,11 @@ class TemplateResource(DynamicResource):
         return template
 
 
-    def get_response(self, namespace):
-        """Given a namespace dict, return a response object.
+    def get_response(self, context):
+        """Given a context dict, return a response object.
         """
-        response = namespace['response']
-        response.body = self.three.generate(**namespace)
+        response = context['response']
+        response.body = self.three.generate(**context)
         if response.headers.one('Content-Type') is None:
             response.headers.set('Content-Type', self.mimetype)
         return response

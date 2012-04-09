@@ -108,7 +108,7 @@ def test_raise_response_works():
     assert actual == expected, actual
 
 
-def test_website_is_in_namespace():
+def test_website_is_in_context():
     expected = "It worked."
     actual = check("""\
 assert website.__class__.__name__ == 'Configurable', website

@@ -64,7 +64,7 @@ class StubRequest:
         website.copy_configuration_to(request)
         #request.root = join(dirname(__file__), FSFIX)
         request.fs = fs
-        request.namespace = {}
+        request.context = {}
         request.website = website 
         request.website.template_loader = Stub()
         return request

@@ -4,7 +4,7 @@ except ImportError: # 3
     from http.cookies import CookieError, SimpleCookie
 
 from aspen.http import status_strings
-from aspen.http.headers import Headers
+from aspen.http.baseheaders import BaseHeaders as Headers
 
 
 class CloseWrapper(object):
