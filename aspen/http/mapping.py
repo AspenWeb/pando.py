@@ -64,6 +64,11 @@ class Mapping(dict):
         """
         return dict.get(self, name, [default])[-1]
 
+    def set(self, name, value):
+        """Clobber any existing item.
+        """
+        return dict.__setitem__(self, name, [value])
+
     def ones(self, *names):
         """Given one or more names of keys, return a list of their values.
         """
@@ -77,9 +82,32 @@ class Mapping(dict):
 
 class CaseInsensitiveMapping(Mapping):
 
+    def __init__(self, *a, **kw):
+        if a:
+            d = a[0]
+            items = d.iteritems if hasattr(d, 'iteritems') else d
+            for k, v in items():
+                self[k] = v
+        for k, v in kw.iteritems():
+            self[k] = v
+
     def __getitem__(self, name):
-        return Mapping.__getitem__(self, name.lower())
+        return Mapping.__getitem__(self, name.title())
 
     def __setitem__(self, name, value):
-        return Mapping.__setitem__(self, name.lower(), value)
+        return Mapping.__setitem__(self, name.title(), value)
 
+    def get(self, name, default=None):
+        return Mapping.get(self, name.title(), default)
+
+    def set(self, name, value):
+        return Mapping.set(self, name.title(), value)
+
+    def all(self, name):
+        return Mapping.all(self, name.title())
+
+    def pop(self, name):
+        return Mapping.pop(self, name.title())
+
+    def popall(self, name):
+        return Mapping.popall(self, name.title())

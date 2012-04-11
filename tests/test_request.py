@@ -23,7 +23,7 @@ def test_blank_by_default():
 
 def test_request_line_version_defaults_to_HTTP_1_1():
     request = StubRequest()
-    actual = request.line.version
+    actual = request.line.version.info
     expected = (1, 1)
     assert actual == expected, actual
 
@@ -85,22 +85,22 @@ def test_is_xhr_is_case_insensitive():
     assert request.is_xhr()
 
 
-def test_headers_one_gets_a_value():
+def test_headers_access_gets_a_value():
     headers = BaseHeaders("Foo: Bar")
     expected = "Bar"
-    actual = headers.one('Foo')
+    actual = headers['Foo']
     assert actual == expected, actual
     
-def test_headers_one_gets_first_value():
+def test_headers_access_gets_last_value():
     headers = BaseHeaders("Foo: Bar\r\nFoo: Baz")
-    expected = "Bar"
-    actual = headers.one('Foo')
+    expected = "Baz"
+    actual = headers['Foo']
     assert actual == expected, actual
     
-def test_headers_one_is_case_insensitive():
+def test_headers_access_is_case_insensitive():
     headers = BaseHeaders("Foo: Bar")
     expected = "Bar"
-    actual = headers.one('foo')
+    actual = headers['foo']
     assert actual == expected, actual
     
 

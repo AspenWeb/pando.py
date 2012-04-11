@@ -252,7 +252,7 @@ def test_trailing_slash_redirects_trailing_slash_to_the_right_place():
     response = assert_raises(Response, check_trailing_slash, '/foo')
 
     expected = '/foo/'
-    actual = response.headers.one('Location')
+    actual = response.headers['Location']
     assert actual == expected, actual
 
 
@@ -353,7 +353,7 @@ def test_file_matches_in_face_of_dir():
     mk( ('%page/index.html', 'Nothing to see here.')
       , ('%value.txt', "Greetings, program!")
        )
-    expected = {'value': 'baz'}
+    expected = {'value': [u'baz']}
     actual = check_virtual_paths('/baz.txt').line.url.path
     assert actual == expected, actual
 
@@ -389,7 +389,7 @@ def test_file_with_no_extension_matches():
     mk( ('%value', '{"Greetings,": "program!"}')
       , ('value', '{"Greetings,": "program!"}')
        )
-    expected = {'value': 'baz'}
+    expected = {'value': [u'baz']}
     actual = check_virtual_paths('/baz').line.url.path
     assert actual == expected, actual
 
