@@ -6,6 +6,7 @@ from aspen.http.request import Request
 from aspen.testing import assert_raises, handle, NoException, StubRequest 
 from aspen.testing import attach_teardown, fix, FSFIX, mk
 from aspen.configuration import Configurable
+from aspen.http.mapping import Mapping
 
 
 # Indices
@@ -133,13 +134,13 @@ def test_virtual_path_is_virtual():
 
 def test_virtual_path_sets_request_path():
     mk(('%bar/foo.html', "Greetings, program!"))
-    expected = {'bar': 'blah'}
+    expected = {'bar': [u'blah']}
     actual = check_virtual_paths('/blah/foo.html').line.url.path
     assert actual == expected, actual
 
 def test_virtual_path_typecasts_to_int():
     mk(('%year.int/foo.html', "Greetings, program!"))
-    expected = {'year': 1999}
+    expected = {'year': [1999]}
     actual = check_virtual_paths('/1999/foo.html').line.url.path
     assert actual == expected, actual
 
@@ -199,19 +200,19 @@ def test_virtual_path_file_only_last_part____no_really():
 
 def test_virtual_path_file_key_val_set():
     mk(('foo/%bar.html', "Greetings, program!"))
-    expected = {'bar': u'blah'}
+    expected = {'bar': [u'blah']}
     actual = check_virtual_paths('/foo/blah.html').line.url.path
     assert actual == expected, actual
 
 def test_virtual_path_file_key_val_not_cast():
     mk(('foo/%bar.html', "Greetings, program!"))
-    expected = {'bar': u'537'}
+    expected = {'bar': [u'537']}
     actual = check_virtual_paths('/foo/537.html').line.url.path
     assert actual == expected, actual
 
 def test_virtual_path_file_key_val_cast():
     mk(('foo/%bar.int.html', "Greetings, program!"))
-    expected = {'bar': 537}
+    expected = {'bar': [537]}
     actual = check_virtual_paths('/foo/537.html').line.url.path
     assert actual == expected, actual
 
