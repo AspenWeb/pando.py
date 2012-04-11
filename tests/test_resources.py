@@ -17,7 +17,7 @@ def test_barely_working():
     response = check("Greetings, program!", 'index.html', False)
    
     expected = 'text/html'
-    actual = response.headers.one('Content-Type')
+    actual = response.headers['Content-Type']
     assert actual == expected, actual
 
 def test_resource_pages_work():
@@ -86,7 +86,7 @@ response.headers.set('Content-Type', 'text/plain; charset=latin1')
 def test_content_type_is_right_in_template_doc_unicode_example():
     response = check(eg, body=False)
     expected = "text/plain; charset=latin1"
-    actual = response.headers.one('Content-Type')
+    actual = response.headers['Content-Type']
     assert actual == expected, actual
 
 def test_body_is_right_in_template_doc_unicode_example():
@@ -123,7 +123,7 @@ def test_unknown_mimetype_yields_default_mimetype():
                     , filename="foo.flugbaggity"
                      )
     expected = "text/plain"
-    actual = response.headers.one('Content-Type')
+    actual = response.headers['Content-Type']
     assert actual == expected, actual
 
 def test_templating_skipped_without_script():

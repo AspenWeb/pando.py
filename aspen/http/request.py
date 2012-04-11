@@ -417,7 +417,7 @@ class Request(object):
     def is_xhr(self):
         """Check the value of X-Requested-With.
         """
-        val = self.headers.one('X-Requested-With', '')
+        val = self.headers.get('X-Requested-With', '')
         return val.lower() == 'xmlhttprequest'
 
     def redirect(self, location, code=None, permanent=False):

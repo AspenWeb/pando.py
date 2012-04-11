@@ -62,7 +62,7 @@ class Response(Exception):
             if isinstance(headers, dict):
                 headers = headers.items()
             for k, v in headers:
-                self.headers.add(k, v)
+                self.headers[k] = v
         self.cookie = SimpleCookie()
         try:
             self.cookie.load(self.headers.get('Cookie', ''))
@@ -72,9 +72,9 @@ class Response(Exception):
     def __call__(self, environ, start_response):
         wsgi_status = str(self)
         for morsel in self.cookie.values():
-            self.headers.add('Set-Cookie', morsel.OutputString())
+            self.headers['Set-Cookie'] = morsel.OutputString()
         wsgi_headers = []
-        for k, vals in self.headers._dict.items():
+        for k, vals in self.headers.iteritems():
             for v in vals:
                 wsgi_headers.append((k, v))
         start_response(wsgi_status, wsgi_headers)
@@ -96,7 +96,7 @@ class Response(Exception):
         """Given a version string like 1.1, return an HTTP message, a string.
         """
         status_line = "HTTP/%s" % version
-        headers = self.headers.to_http()
+        headers = self.headers.raw
         body = self.body
         if self.headers.get('Content-Type', '').startswith('text/'):
             body = body.replace('\n', '\r\n')
