@@ -10,11 +10,14 @@ from aspen.http.baseheaders import BaseHeaders as Headers
 class CloseWrapper(object):
     """Conform to WSGI's facility for running code *after* a response is sent.
     """
+
     def __init__(self, request, body):
         self.request = request
         self.body = body
+
     def __iter__(self):
         return iter(self.body)
+
     def close(self):
         socket = getattr(self.request, "socket", None)
         if socket is not None:
@@ -62,7 +65,7 @@ class Response(Exception):
                 self.headers.add(k, v)
         self.cookie = SimpleCookie()
         try:
-            self.cookie.load(self.headers.one('Cookie', ''))
+            self.cookie.load(self.headers.get('Cookie', ''))
         except CookieError:
             pass
 
@@ -95,7 +98,7 @@ class Response(Exception):
         status_line = "HTTP/%s" % version
         headers = self.headers.to_http()
         body = self.body
-        if self.headers.one('Content-Type', '').startswith('text/'):
+        if self.headers.get('Content-Type', '').startswith('text/'):
             body = body.replace('\n', '\r\n')
             body = body.replace('\r\r', '\r')
         return '\r\n'.join([status_line, headers, '', body])

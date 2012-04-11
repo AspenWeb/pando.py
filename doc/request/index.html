@@ -1,39 +1,99 @@
 doc_title = "Request"
 doc_next = ('Response', '/response/')
+import pdb; pdb.set_trace()
+
 
 {% extends doc.html %}
 {% block doc %}
 
 <p>Inside of the second and third pages of a <a
     href="/simplates/">simplate</a>, you have a request object called
-<code>request</code>. Here are the attributes you get:</p>
+<code>request</code>. The Aspen Request object tries to consistently model the
+actual structure of an HTTP Request message. Consequently, it is rather
+verbose. 
+
+
+<h3>Shortcuts</h3>
+
+<p>The most common parts of the HTTP Request message are given these shortcuts
+inside the second and third simplate pages:</p>
 
 <table>
-    <tr><th>line</th><td>Line(unicode)</td></tr>
-    <tr><th>line.method</th><td>Method(unicode)</td></tr>
-    <tr><th>line.method.raw</th><td>str</td></tr>
-    <tr><th>line.url</th><td>Url(unicode)</td></tr>
-    <tr><th>line.url.path</th><td>Path(dict)</td></tr>
-    <tr><th>line.url.path.raw</th><td>str</td></tr>
-    <tr><th>line.url.querystring</th><td>Querystring</td></tr>
-    <tr><th>line.url.querystring.raw</th><td>str</td></tr>
-    <tr><th>line.url.raw</th><td>str</td></tr>
-    <tr><th>line.version</th><td>Version(unicode)</td></tr>
-    <tr><th>line.raw</th><td>str</td></tr>
-    <tr><th>headers</th><td><a href="#not-a-dict">Headers</a> object</td></tr>
-    <tr><th>headers.cookie</th><td>a <a
-                href="http://docs.python.org/library/cookie.html#Cookie.SimpleCookie">Cookie.SimpleCookie</a>
-            object</td></tr>
-    <tr><th>headers.host</th><td>unicode, X-Forwarded-For if it exists, Host
-            otherwise (no Host will raise Response(400)</td></tr>
-    <tr><th>headers.scheme</th><td>unicode, u"https" or u"http"</td></tr>
-    <tr><th>body</th><td><a href="#not-a-dict">WwwForm</a> object</td></tr>
-    <tr><th>is_xhr</th><td>a boolean: is this request from an XmlHttpRequest?</td></tr>
+
+    <tr><td>body</td><td>request.body</td></tr>
+    <tr><td>cookie</td><td>request.line.url.path</td></tr>
+    <tr><td>headers</td><td>request.headers</td></tr>
+    <tr><td>path</td><td>request.line.url.path</td></tr>
+    <tr><td>qs</td><td>request.line.url.querystring</td></tr>
+
 </table>
 
-<p>And here are the methods:</p>
+<p>For example, here&rsquo;s how to pull a value out of the querystring:</p>
 
-<pre>def allow(*methods):
+<pre>foo = qs.one("foo")
+</pre>
+
+
+<p>There are also booleans for each of the <a
+    href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html">standard HTTP
+    methods</a>, so simplates in a <a
+    href="http://en.wikipedia.org/wiki/Representational_state_transfer">REST
+    style</a> will end up looking like this:</p>
+
+<pre>if GET:
+    pass # handle GET 
+elif POST:
+    pass # handle POST</pre>
+
+
+
+<h3>Full API</h3>
+
+<p>The following object model is used to comprehensively represent an HTTP
+Request message. Note that each part has a "raw" attribute; it contains the
+bytes as received on the wire (as an optimization, this attribute is lazily
+computed for request.body.raw and request.raw).</p>
+
+<table>
+
+    <tr><th>name</th><td>class</td><td>base&nbsp;type</td><td>notes</td></tr>
+    <tr><th>request.line</th><td>Line</td><td>str</td><td></td></tr>
+    <tr><th>request.line.method</th><td>str</td><td></td><td></td></tr>
+    <tr><th>request.line.url</th><td>URL</td><td>unicode</td><td></td></tr>
+    <tr><th>request.line.url.scheme</th><td>UnicodeWithRaw</td><td>unicode</td><td></td></tr>
+    <tr><th>request.line.url.scheme.raw</th><td>str</td><td></td><td></td></tr>
+    <tr><th>request.line.url.username</th><td>UnicodeWithRaw</td><td>unicode</td><td></td></tr>
+    <tr><th>request.line.url.username.raw</th><td>str</td><td></td><td></td></tr>
+    <tr><th>request.line.url.password</th><td>UnicodeWithRaw</td><td>unicode</td><td></td></tr>
+    <tr><th>request.line.url.password.raw</th><td>str</td><td></td><td></td></tr>
+    <tr><th>request.line.url.host</th><td>UnicodeWithRaw</td><td>unicode</td><td></td></tr>
+    <tr><th>request.line.url.host.raw</th><td>str</td><td></td><td></td></tr>
+    <tr><th>request.line.url.port</th><td>int or None</td><td></td><td></td></tr>
+    <tr><th>request.line.url.port.raw</th><td>str</td><td></td><td></td></tr>
+    <tr><th>request.line.url.path</th><td>Path</td><td>dict</td><td></td></tr>
+    <tr><th>request.line.url.path.raw</th><td>str</td><td></td><td></td></tr>
+    <tr><th>request.line.url.path.decoded</th><td>unicode</td><td></td><td></td></tr>
+    <tr><th>request.line.url.querystring</th><td>Querystring</td><td>unicode</td><td></td></tr>
+    <tr><th>request.line.url.querystring.raw</th><td>str</td><td></td></tr>
+    <tr><th>request.line.url.raw</th><td>str</td><td></td><td></td></tr>
+    <tr><th>request.line.version</th><td>Version</td><td>unicode</td><td></td></tr>
+    <tr><th>request.line.raw</th><td>str</td><td></td><td></td></tr>
+    <tr><th>request.headers</th><td><a href="#not-a-dict">Headers</a></td></tr>
+    <tr><th>request.headers.cookie</th><td><a
+            href="http://docs.python.org/library/cookie.html#Cookie.SimpleCookie">Cookie.SimpleCookie</a>
+            </td></tr>
+            <tr><th>request.headers.host</th><td>unicode</td><td></td><td>X-Forwarded-For if it exists, Host
+            otherwise (no Host will raise Response(400))</td></tr>
+    <tr><th>request.headers.scheme</th><td>unicode</td><td></td><td>u"https" or u"http"</td></tr>
+    <tr><th>request.headers.raw</th><td>str</td></tr>
+    <tr><th>request.body</th><td><a href="#not-a-dict">Body</a> or <a href="#uploads">cgi.FieldStorage</a></td><td></td></tr>
+    <tr><th>request.body.raw</th><td>str</td></tr>
+    <tr><th>request.raw</th><td>str</td></tr>
+</table>
+
+<p>Here are the methods on the Request object:</p>
+
+<pre>request.allow(*methods):
     """Given method strings, raise 405 if we don't meet the requirements.
 
     The method names are case insensitive (they are uppercased). If 405
@@ -41,7 +101,11 @@ doc_next = ('Response', '/response/')
 
     """
 
-def redirect(location, code=None, permanent=False):
+request.is_xhr():
+    """Check the value of X-Requested-With.
+    """
+
+request.redirect(location, code=None, permanent=False):
     """Given a string, an int, and a boolean, raise a Response.
 
     If code is None then it will be set to 301 (Moved Permanently) 
@@ -51,36 +115,47 @@ def redirect(location, code=None, permanent=False):
 </pre>
 
 <a name="not-a-dict"></a>
-<h3>Headers and WwwForm Objects</h3>
+<h3>Headers, Querystring, and Body Objects</h3>
 
-<p>The <code>Headers</code> and <code>WwwForm</code> objects both have the same
-API. I decided not to make them overly dictionary-ish. You always need to deal
-with the "either list or value" problem, so I&rsquo;m making you deal with that
-explicitly up front.</p>
+<p>The <code>Headers</code>, <code>Querystring</code>, and <code>Body</code>
+objects all have the same API. I decided not to make them overly
+dictionary-ish. You always need to deal with the &ldquo;either list or
+value&rdquo; problem, so I&rsquo;m making you deal with that explicitly up
+front. Likewise, there is no API that folds the querystring and body together.
+It&rsquo;s better to be explicit about where you&rsquo;re expecting your values
+from.</p>
 
-<pre>def all(self, name, default=None):
+<pre>obj.all(name, default=None):
     """Given a name, return a list of values.
     """
    
-def one(self, name, default=None):
+obj.one(name, default=None):
     """Given a name, return the first known value.
     """
 
-def has(self, name):
+obj.has(name):
     """Given a name, return True if it is known in the form/headers.
     """</pre>
 
 
-<p><code>Headers</code> objects actually have an additional method:</p>
+<p><code>Headers</code> objects have these additional methods:</p>
 
-<pre>def set(self, name, value):
+<pre>headers.add(name, value):
+    """Given a name and value, add another entry.
+    """
+
+headers.set(name, value):
     """Given a header name and value, set the header. Pass None to remove.
     """</pre>
 
 
-<p>If a <code>POST</code> request is of <code>Content-Type</code>
-<code>multipart/form-data</code>, then <code>request.body</code> will be an
-instance of the standard library&rsquo;s <a href="http://docs.python.org/library/cgi.html">cgi.FieldStorage</a> class.
+<a name="uploads"></a>
+<h3>File Uploads</h3>
+
+<p>If a request is of <code>Content-Type</code>
+<code>multipart/form-data</code>, then <code>request.body</code> will actually
+be an instance of the standard library&rsquo;s <a
+    href="http://docs.python.org/library/cgi.html">cgi.FieldStorage</a> class.
 This is a mapping of field names to additional <code>FieldStorage</code>
 objects. Each such object has <code>filename</code> and <code>value</code>
 attributes with the name and content of the file you uploaded.</p>

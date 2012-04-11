@@ -6,8 +6,6 @@ given here.
 """
 import logging
 import os
-import urllib
-import urlparse
 from os.path import join, isfile, isdir, dirname, exists
 
 from aspen import Response
@@ -68,7 +66,7 @@ def virtual_paths(request):
 
     Parts is a list of fs path parts as returned by translate, above. 
 
-    Path parts will end up in request.line.url.path, a dict subclass. There can
+    Path parts will end up in request.line.url.path, a Mapping. There can
     only be one variable per path part. If a directory has more than one
     subdirectory starting with '%' then only the 'first' is used.
 
@@ -150,7 +148,6 @@ def _typecast(key, value):
             value = value.decode('ASCII')
         except UnicodeDecodeError:
             raise Response(400)
-        value = urllib.unquote(value)
     return key, value
 
 def trailing_slash(request):

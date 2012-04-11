@@ -6,32 +6,6 @@ from aspen.testing import assert_raises, StubRequest
 from aspen.testing.fsfix import attach_teardown
 
 
-
-def test_method_works():
-    method = Method("GET")
-    actual = method
-    expected = u"GET"
-    assert actual == expected, actual
-
-def test_method_is_unicode():
-    method = Method("GET")
-    actual = method
-    assert isinstance(actual, unicode), actual.__class__
-
-def test_method_raw_works():
-    method = Method("GET")
-    actual = method.raw
-    expected = "GET"
-    assert actual == expected, actual
-
-def test_method_raw_is_bytestring():
-    method = Method("GET")
-    actual = method.raw
-    assert isinstance(actual, str), actual.__class__
-
-
-
-
 def test_request_line_version_raw_works():
     request = StubRequest()
     actual = request.line.raw

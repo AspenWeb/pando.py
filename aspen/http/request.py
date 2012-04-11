@@ -5,19 +5,20 @@ we use to model each:
 
     - request                   Request
         - line                  Line
-            - method            Method
-            - url               URL
-                - path          Path
-                - querystring   Querystring
-            - version           Version
-        - headers               Headers
-            - cookie            Cookie
-            - host              unicode
-            - scheme            unicode
-        - body                  Body
+            - method            Method      ASCII
+            - url               URL         
+                - path          Path        
+                - querystring   Querystring 
+            - version           Version     ASCII
+        - headers               Headers     str
+            - cookie            Cookie      str
+            - host              unicode     str
+            - scheme            unicode     str
+        - body                  Body        Content-Type?
 
 """
 import cgi
+import urllib
 import urlparse
 from Cookie import CookieError, SimpleCookie
 
@@ -31,110 +32,136 @@ from aspen.context import Context
 # ====
 
 class Line(unicode):
-
-    __slots__ = ['method', 'url', 'version', 'raw']
+    """Represent the first line of an HTTP Request message.
+    """
 
     def __new__(cls, method, url, version):
         """Takes three bytestrings.
         """
-        raw = " ".join([method, url, version])
+        bytes = " ".join([method, url, version])
         method = Method(method)
         url = URL(url)
         version = Version(version)
-        line = u" ".join([method, url, version.decoded])
-        obj = super(Line, cls).__new__(cls, line)
+        decoded = u" ".join([method, url, version])
+
+        obj = super(Line, cls).__new__(cls, decoded)
         obj.method = method
         obj.url = url
         obj.version = version
-        obj.raw = raw
+        obj.raw = bytes
         return obj
-    
-    def __repr__(self):
-        return u"<Line(unicode): %s>" % self
 
 
 class Method(unicode):
+    """Represent the HTTP method in the first line of an HTTP Request message.
+    """
 
     __slots__ = ['raw']
 
     def __new__(cls, bytes):
-        try:
-            method = bytes.decode('ASCII').upper()
-        except UnicodeDecodeError:
-            raise Response(400)
-        obj = super(Method, cls).__new__(cls, method)
+        obj = super(Method, cls).__new__(cls, bytes.decode('UTF-8'))
         obj.raw = bytes
         return obj
-    
-    def __repr__(self):
-        return u"<Method(unicode): %s>" % self
+
+
+class UnicodeWithRaw(unicode):
+    """Generis subclass of unicode to store the underlying raw bytestring.
+    """
+
+    __slots__ = ['raw']
+
+    def __new__(cls, bytes, encoding="UTF-8"):
+        obj = super(UnicodeWithRaw, cls).__new__(cls, bytes.decode(encoding))
+        obj.raw = bytes
+        return obj
 
 
 class URL(unicode):
+    """Represent the URL in the first line of an HTTP Request message.
+    """
    
-    __slots__ = ['raw', 'parsed', 'path', 'querystring']
-
     def __new__(cls, bytes):
-        url = bytes.decode('utf-8') # XXX really?
-        obj = super(URL, cls).__new__(cls, url)
-        parsed = urlparse.urlparse(url)
-        obj.path = Path(parsed[2]) # further populated by Website
-        obj.querystring = Querystring(parsed[4])
+
+        # we require that the url as a whole be decodable with ASCII
+        decoded = bytes.decode('ASCII')
+        obj = super(URL, cls).__new__(cls, decoded)
+
+        # split str and not unicode so we can store .raw for each subobj
+        url = urlparse.urlsplit(bytes)
+
+        # scheme is going to be ASCII 99.99999999% of the time
+        obj.scheme      = UnicodeWithRaw(url.scheme)
+
+        # let's decode username and password as url-encoded UTF-8
+        no_None = lambda o: o if o is not None else ""
+        parse = lambda o: UnicodeWithRaw(urllib.unquote(no_None(o)))
+        obj.username    = parse(url.username)
+        obj.password    = parse(url.password)
+
+        # host we will decode as IDNA, which may raise UnicodeError
+        obj.host        = UnicodeWithRaw(no_None(url.hostname), 'IDNA')
+
+        # port is int or None, which is fine
+        obj.port        = url.port
+
+        # path and querystring get bytes and do their own parsing
+        obj.path        = Path(url.path)  # further populated in gauntlet
+        obj.querystring = Querystring(url.query)
+
         obj.raw = bytes
         return obj
 
-    def __repr__(self):
-        return u"<URL(unicode): %s>" % self
+
+versions = { 'HTTP/0.9': ((0, 9), u'HTTP/0.9') 
+           , 'HTTP/1.0': ((1, 0), u'HTTP/1.0') 
+           , 'HTTP/1.1': ((1, 1), u'HTTP/1.1')
+            }  # Go ahead, find me another version.
+
+class Version(unicode):
+    """Represent the version in an HTTP status line. HTTP/1.1. Like that.
+    """
+
+    __slots__ = ['major', 'minor', 'info', 'raw']
+
+    def __new__(cls, bytes):
+        version = versions.get(bytes.upper(), None)
+        if version is None:
+            raise Response(400, body="Bad HTTP version: %s" % bytes)
+        version, decoded = version
+
+        obj = super(Version, cls).__new__(cls, decoded)
+        obj.major = version[0]  # 1
+        obj.minor = version[1]  # 1
+        obj.info = version      # (1, 1)
+        obj.raw = bytes         # 'hTtP/1.1'
+        return obj
 
 
-class Path(dict):
-    # Populated by aspen.website.Website.
+class Path(Mapping):
+    """Represent the path of a resource.
+
+    This is populated by aspen.gauntlet.virtual_paths.
+
+    """
    
-    __slots__ = ['raw', 'decoded']
-
     def __init__(self, bytes):
+        self.decoded = urllib.unquote(bytes).decode('UTF-8')
         self.raw = bytes
-        self.decoded = bytes.decode('utf-8') # XXX really?
-
-    def __repr__(self):
-        return u"<Path(dict): %s>" % self.keys()
 
 
 class Querystring(Mapping):
     """Represent an HTTP querystring.
     """
 
-    def __init__(self, s):
+    def __init__(self, bytes):
         """Takes a string of type application/x-www-form-urlencoded.
         """
-        self.raw = s
-        self._dict = cgi.parse_qs( s
-                                 , keep_blank_values = True
-                                 , strict_parsing = False
-                                  )
-
-
-class Version(tuple):
-    """Represent the version in an HTTP status line. HTTP/1.1. Like that.
-    """
-
-    def __new__(cls, bytes):
-        http, version = bytes.split('/')    # ("HTTP", "1.1")
-        parts = version.split('.')          # (1, 1)
-        try:
-            major, minor = int(parts[0]), int(parts[1])
-        except ValueError:                  # (1, 2, 3) or ('foo', 'bar')
-            raise Response(400)
-
-        obj = super(Version, cls).__new__(cls, (major, minor))
-        obj.major = major                   # 1
-        obj.minor = minor                   # 1
-        obj.raw = bytes                     # HTTP/1.1
-        obj.decoded = bytes.decode('utf-8') # warty?
-        return obj
-
-    def __repr__(self):
-        return u"<Version(tuple): %s>" % self
+        self.decoded = urllib.unquote_plus(bytes).decode('UTF-8')
+        self.raw = bytes
+        Mapping.__init__(self, cgi.parse_qs( self.decoded
+                                           , keep_blank_values = True
+                                           , strict_parsing = False
+                                            ))
 
 
 # Headers
@@ -155,7 +182,7 @@ class Headers(BaseHeaders):
 
         self.cookie = SimpleCookie()
         try:
-            self.cookie.load(self.one('Cookie', ''))
+            self.cookie.load(self.get('Cookie', ''))
         except CookieError:
             pass
 
@@ -165,10 +192,8 @@ class Headers(BaseHeaders):
         # Per the spec, respond with 400 if no Host header is given. However,
         # we prefer X-Forwarded-For if that is available.
         
-        if 'Host' not in self:
-            raise Response(400)
-        self.host = self.one( 'X-Forwarded-Host'    # preferred
-                            , self.one('Host')      # fall-back
+        self.host = self.get( 'X-Forwarded-Host'    # preferred
+                            , self['Host']          # fall-back
                              ).decode('idna')
 
 
@@ -176,7 +201,7 @@ class Headers(BaseHeaders):
         # ======
         # http://docs.python.org/library/wsgiref.html#wsgiref.util.guess_scheme
 
-        self.scheme = self.one('HTTPS', False) and u'https' or u'http'
+        self.scheme = 'https' if self.get('HTTPS', False) else 'http'
 
 
 # Body
@@ -214,18 +239,6 @@ class Body(Mapping):
                                    , environ = {} # XXX?
                                    , strict_parsing = True 
                                     )
-
-    def __contains__(self, name):
-        self._parse()
-        return super(Body, self).__contains__(name);
-
-    def all(self, name, default=None):
-        self._parse()
-        return super(Body, self).all(name, default);
-
-    def one(self, name, default=None):
-        self._parse()
-        return super(Body, self).one(name, default);
 
     if 0: # XXX What I do wif it?
         if not environ.get('SERVER_SOFTWARE', '').startswith('Rocket'):
@@ -284,6 +297,14 @@ class Request(object):
             headers='', body=None):
         """Takes four bytestrings and an iterable of bytestrings.
         """
+        try:
+            self.__unsafe_init__(method, url, version, headers, body) 
+        except UnicodeError:
+            raise Response(400, body="Error decoding request.") # XXX Where?!
+
+    def __unsafe_init__(self, method, url, version, headers, body): 
+        """Do the real initialization work. May raise UnicodeDecodeError.
+        """
 
         # Line
         # ====
@@ -305,8 +326,8 @@ class Request(object):
 
         if body is None:
             body = ['']
-        content_type = self.headers.one('Content-Type', '')
-        self.body = Body(content_type, body)
+        content_type = self.headers.get('Content-Type', '')
+        self.body = Body(self.headers, body)
 
         
         # Context 
@@ -394,6 +415,8 @@ class Request(object):
             raise Response(405, headers={'Allow': ', '.join(methods)})
        
     def is_xhr(self):
+        """Check the value of X-Requested-With.
+        """
         val = self.headers.one('X-Requested-With', '')
         return val.lower() == 'xmlhttprequest'
 
