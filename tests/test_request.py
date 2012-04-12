@@ -1,6 +1,6 @@
 from aspen import Response
 from aspen.http.mapping import Mapping
-from aspen.http.request import Request, Method
+from aspen.http.request import kick_against_goad, Method, Request
 from aspen.http.baseheaders import BaseHeaders
 from aspen.testing import assert_raises, StubRequest
 from aspen.testing.fsfix import attach_teardown
@@ -15,7 +15,7 @@ def test_request_line_version_raw_works():
 def test_raw_is_raw():
     request = Request()
     expected = "GET / HTTP/1.1\r\nHost: localhost\r\n\r\n"
-    actual = request.raw
+    actual = request
     assert actual == expected, actual
 
 def test_blank_by_default():
@@ -103,5 +103,61 @@ def test_headers_access_is_case_insensitive():
     actual = headers['foo']
     assert actual == expected, actual
     
+
+# kick_against_goad
+
+def test_goad_passes_method_through():
+    environ = {}
+    environ['REQUEST_METHOD'] = '\xdead\xbeef'
+    environ['SERVER_PROTOCOL'] = ''
+    environ['wsgi.input'] = None
+
+    expected = ('\xdead\xbeef', '', '', '', None)
+    actual = kick_against_goad(environ)
+    assert actual == expected, actual
+
+def test_goad_makes_franken_uri():
+    environ = {}
+    environ['REQUEST_METHOD'] = ''
+    environ['SERVER_PROTOCOL'] = ''
+    environ['PATH_INFO'] = '/cheese'
+    environ['QUERY_STRING'] = 'foo=bar'
+    environ['wsgi.input'] = ''
+
+    expected = ('', '/cheese?foo=bar', '', '', '')
+    actual = kick_against_goad(environ)
+    assert actual == expected, actual
+
+def test_goad_passes_version_through():
+    environ = {}
+    environ['REQUEST_METHOD'] = ''
+    environ['SERVER_PROTOCOL'] = '\xdead\xbeef'
+    environ['wsgi.input'] = None
+
+    expected = ('', '', '\xdead\xbeef', '', None)
+    actual = kick_against_goad(environ)
+    assert actual == expected, actual
+
+def test_goad_makes_franken_headers():
+    environ = {}
+    environ['REQUEST_METHOD'] = ''
+    environ['SERVER_PROTOCOL'] = ''
+    environ['HTTP_FOO_BAR'] = 'baz=buz'
+    environ['wsgi.input'] = ''
+
+    expected = ('', '', '', 'FOO-BAR: baz=buz', '')
+    actual = kick_against_goad(environ)
+    assert actual == expected, actual
+
+def test_goad_passes_body_through():
+    environ = {}
+    environ['REQUEST_METHOD'] = ''
+    environ['SERVER_PROTOCOL'] = ''
+    environ['wsgi.input'] = '\xdead\xbeef'
+
+    expected = ('', '', '', '', '\xdead\xbeef')
+    actual = kick_against_goad(environ)
+    assert actual == expected, actual
+
 
 attach_teardown(globals())

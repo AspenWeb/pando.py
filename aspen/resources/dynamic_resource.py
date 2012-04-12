@@ -111,7 +111,7 @@ class DynamicResource(Resource):
         return pages
        
     def _compile(self, one, two, three, four):
-        """Given fouritems, return a 4-tuple of compiled objects.
+        """Given four items, return a 4-tuple of compiled objects.
 
         All dynamic resources compile the first two pages the same way. It's
         the third page that differs, so we require subclasses to provide a hook

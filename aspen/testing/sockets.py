@@ -9,7 +9,7 @@ from aspen.testing import fix
 
 
 def make_request(filename='echo.sock'):
-    request = Request(url='/echo.sock')
+    request = Request(uri='/echo.sock')
     request.website = Website([])
     request.website.copy_configuration_to(request)
     request.fs = fix(filename)
@@ -18,7 +18,7 @@ def make_request(filename='echo.sock'):
 def make_socket(filename='echo.sock', channel=None):
     request = make_request(filename='echo.sock')
     if channel is None:
-        channel = Channel(request.line.url.path.raw, ThreadedBuffer)
+        channel = Channel(request.line.uri.path.raw, ThreadedBuffer)
     socket = Socket(request, channel)
     return socket
 

@@ -9,8 +9,8 @@ class Context(dict):
         self.body       = request.body
         self.headers    = request.headers
         self.cookie     = request.headers.cookie
-        self.path       = request.line.url.path
-        self.qs         = request.line.url.querystring
+        self.path       = request.line.uri.path
+        self.qs         = request.line.uri.querystring
         self.request    = request
         self.socket     = None
         self.channel    = None

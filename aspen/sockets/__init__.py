@@ -101,7 +101,7 @@ def get(request):
     # =========
 
     if len(parts) == 2:
-        path = request.line.url.path.raw
+        path = request.line.uri.path.raw
         if path in __channels__:
             channel = __channels__[path]
         else:

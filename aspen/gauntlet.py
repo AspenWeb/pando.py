@@ -22,9 +22,9 @@ def intercept_socket(request):
     /foo.sock/blah/blah/blah/.
 
     """
-    path = request.line.url.path.raw
+    path = request.line.uri.path.raw
     if path.endswith('.sock'):
-        # request.line.url.path.raw does not include querystring.
+        # request.line.uri.path.raw does not include querystring.
         raise Response(404)
     parts = path.rsplit('.sock/', 1)
     if len(parts) == 1:
@@ -33,8 +33,8 @@ def intercept_socket(request):
     else:
         path = parts[0] + '.sock'
         socket = parts[1]
-    request.line.url.path.raw, request.socket = path, socket
-    #spam -- log.debug('gauntlet.intercept_socket: ' + request.line.url.path.raw)
+    request.line.uri.path.raw, request.socket = path, socket
+    #spam -- log.debug('gauntlet.intercept_socket: ' + request.line.uri.path.raw)
 
 def translate(request):
     """Translate urlpath to fspath, returning urlpath parts.
@@ -44,7 +44,7 @@ def translate(request):
     directories in request.fs.
 
     """
-    parts = [request.root] + request.line.url.path.raw.lstrip('/').split('/')
+    parts = [request.root] + request.line.uri.path.decoded.lstrip('/').split('/')
     request.fs = os.sep.join(parts).rstrip(os.sep)
     request._parts = parts # store for use in processing virtual_paths
     #spam -- log.debug('gauntlet.translate: ' + request.fs)
@@ -66,7 +66,7 @@ def virtual_paths(request):
 
     Parts is a list of fs path parts as returned by translate, above. 
 
-    Path parts will end up in request.line.url.path, a Mapping. There can
+    Path parts will end up in request.line.uri.path, a Mapping. There can
     only be one variable per path part. If a directory has more than one
     subdirectory starting with '%' then only the 'first' is used.
 
@@ -124,7 +124,7 @@ def virtual_paths(request):
 
                             matched = fs 
                             key, value = _typecast(k, v)
-                            request.line.url.path[key] = value
+                            request.line.uri.path[key] = value
                             break # Only use the first %match per level.
                     break # don't recurse in os.walk
                 if key is None:
@@ -152,12 +152,12 @@ def _typecast(key, value):
 
 def trailing_slash(request):
     if isdir(request.fs):
-        url = request.line.url
-        if not url.path.raw.endswith('/'):
-            url.path.raw += '/'
-            location = url.path.raw
-            if url.querystring.raw:
-                location += '?' + url.querystring.raw
+        uri = request.line.uri
+        if not uri.path.raw.endswith('/'):
+            uri.path.raw += '/'
+            location = uri.path.raw
+            if uri.querystring.raw:
+                location += '?' + uri.querystring.raw
             raise Response(301, headers={'Location': location})
 
 def index(request):
@@ -181,7 +181,7 @@ def autoindex(request):
 
 def not_found(request):
     if not isfile(request.fs):
-        if request.line.url.path.raw == '/favicon.ico': # special case
+        if request.line.uri.path.raw == '/favicon.ico': # special case
             request.fs = request.website.find_ours('favicon.ico')
         else:
             raise Response(404)
@@ -202,7 +202,7 @@ gauntlet = [ intercept_socket
 def run(request):
     """Given a request, run it through the gauntlet.
     """
-    #spam -- log.debug('gauntlet.run: ' + request.line.url.path.raw)
+    #spam -- log.debug('gauntlet.run: ' + request.line.uri.path.raw)
     for func in gauntlet:
         func(request)
 
@@ -212,7 +212,7 @@ def run_through(request, last):
     Pass in a request object and a gauntlet function, the last to be run.
 
     """
-    #spam -- log.debug('gauntlet.run_through: ' + request.line.url.path.raw)
+    #spam -- log.debug('gauntlet.run_through: ' + request.line.uri.path.raw)
     for func in gauntlet:
         func(request)
         if func is last:
