@@ -13,7 +13,7 @@ from aspen.http.mapping import Mapping
 # =======
 
 def check_index(path):
-    """Given an urlpath, return a filesystem path per gauntlet.index.
+    """Given a uripath, return a filesystem path per gauntlet.index.
     """
     request = StubRequest.from_fs(path)
     gauntlet.run_through(request, gauntlet.index)
@@ -135,13 +135,13 @@ def test_virtual_path_is_virtual():
 def test_virtual_path_sets_request_path():
     mk(('%bar/foo.html', "Greetings, program!"))
     expected = {'bar': [u'blah']}
-    actual = check_virtual_paths('/blah/foo.html').line.url.path
+    actual = check_virtual_paths('/blah/foo.html').line.uri.path
     assert actual == expected, actual
 
 def test_virtual_path_typecasts_to_int():
     mk(('%year.int/foo.html', "Greetings, program!"))
     expected = {'year': [1999]}
-    actual = check_virtual_paths('/1999/foo.html').line.url.path
+    actual = check_virtual_paths('/1999/foo.html').line.uri.path
     assert actual == expected, actual
 
 def test_virtual_path_raises_on_bad_typecast():
@@ -201,19 +201,19 @@ def test_virtual_path_file_only_last_part____no_really():
 def test_virtual_path_file_key_val_set():
     mk(('foo/%bar.html', "Greetings, program!"))
     expected = {'bar': [u'blah']}
-    actual = check_virtual_paths('/foo/blah.html').line.url.path
+    actual = check_virtual_paths('/foo/blah.html').line.uri.path
     assert actual == expected, actual
 
 def test_virtual_path_file_key_val_not_cast():
     mk(('foo/%bar.html', "Greetings, program!"))
     expected = {'bar': [u'537']}
-    actual = check_virtual_paths('/foo/537.html').line.url.path
+    actual = check_virtual_paths('/foo/537.html').line.uri.path
     assert actual == expected, actual
 
 def test_virtual_path_file_key_val_cast():
     mk(('foo/%bar.int.html', "Greetings, program!"))
     expected = {'bar': [537]}
-    actual = check_virtual_paths('/foo/537.html').line.url.path
+    actual = check_virtual_paths('/foo/537.html').line.uri.path
     assert actual == expected, actual
 
 
@@ -318,23 +318,23 @@ def test_virtual_path_docs_6():
 # ================
 
 def test_intercept_socket_protects_direct_access():
-    request = Request(url="/foo.sock")
+    request = Request(uri="/foo.sock")
     assert_raises(Response, gauntlet.intercept_socket, request)
 
 def test_intercept_socket_intercepts_handshake():
-    request = Request(url="/foo.sock/1")
+    request = Request(uri="/foo.sock/1")
     gauntlet.intercept_socket(request)
     
     expected = ('/foo.sock', '1')
-    actual = (request.line.url.path.raw, request.socket)
+    actual = (request.line.uri.path.raw, request.socket)
     assert actual == expected, actual
 
 def test_intercept_socket_intercepts_transported():
-    request = Request(url="/foo.sock/1/websocket/46327hfjew3?foo=bar")
+    request = Request(uri="/foo.sock/1/websocket/46327hfjew3?foo=bar")
     gauntlet.intercept_socket(request)
 
     expected = ('/foo.sock', '1/websocket/46327hfjew3')
-    actual = (request.line.url.path.raw, request.socket)
+    actual = (request.line.uri.path.raw, request.socket)
     assert actual == expected, actual
 
 
@@ -346,7 +346,7 @@ def test_virtual_path_parts_can_be_empty():
     return
     mk(('foo/%bar/index.html', "Greetings, program!"))
     expected = {'bar': ''}
-    actual = check_virtual_paths('/foo//').line.url.path
+    actual = check_virtual_paths('/foo//').line.uri.path
     assert actual == expected, actual
 
 def test_file_matches_in_face_of_dir():
@@ -354,7 +354,7 @@ def test_file_matches_in_face_of_dir():
       , ('%value.txt', "Greetings, program!")
        )
     expected = {'value': [u'baz']}
-    actual = check_virtual_paths('/baz.txt').line.url.path
+    actual = check_virtual_paths('/baz.txt').line.uri.path
     assert actual == expected, actual
 
 def test_file_matches_extension():
@@ -390,7 +390,7 @@ def test_file_with_no_extension_matches():
       , ('value', '{"Greetings,": "program!"}')
        )
     expected = {'value': [u'baz']}
-    actual = check_virtual_paths('/baz').line.url.path
+    actual = check_virtual_paths('/baz').line.uri.path
     assert actual == expected, actual
 
 attach_teardown(globals())

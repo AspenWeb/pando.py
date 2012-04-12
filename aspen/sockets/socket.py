@@ -26,7 +26,7 @@ class Socket(object):
         """Takes the handshake request and the socket's channel.
         """
         self.sid = uuid.uuid4().hex
-        self.endpoint = request.line.url.path.raw
+        self.endpoint = request.line.uri.path.raw
         self.resource = resources.get(request)
         request.website.copy_configuration_to(self)
         request.website.copy_configuration_to(channel)
