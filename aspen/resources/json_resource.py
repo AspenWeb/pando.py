@@ -26,10 +26,10 @@ class JSONResource(DynamicResource):
         """
         return self._process(response)
   
-    def get_response(self, namespace):
-        """Given a namespace dict, return a response object.
+    def get_response(self, context):
+        """Given a context dict, return a response object.
         """
-        response = namespace['response']
+        response = context['response']
         return self._process(response)
 
     def _process(self, response):
@@ -37,5 +37,5 @@ class JSONResource(DynamicResource):
         """
         if not isinstance(response.body, basestring):
             response.body = json.dumps(response.body)
-        response.headers.set('Content-Type', self.website.json_content_type)
+        response.headers['Content-Type'] = self.website.json_content_type
         return response

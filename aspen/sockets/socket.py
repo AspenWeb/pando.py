@@ -26,7 +26,7 @@ class Socket(object):
         """Takes the handshake request and the socket's channel.
         """
         self.sid = uuid.uuid4().hex
-        self.endpoint = request.path.raw
+        self.endpoint = request.line.uri.path.raw
         self.resource = resources.get(request)
         request.website.copy_configuration_to(self)
         request.website.copy_configuration_to(channel)
@@ -36,7 +36,7 @@ class Socket(object):
         self.outgoing = request.engine.Buffer('outgoing', self)
         self.channel = channel
         self.channel.add(self)
-        self.namespace = self.resource.exec_second(self, request)
+        self.context = self.resource.exec_second(self, request)
 
     def shake_hands(self):
         """Return a handshake response.
@@ -55,11 +55,11 @@ class Socket(object):
         other mechanism, like reading a remote TCP socket.
 
         """
-        exec self.resource.three in self.namespace
+        exec self.resource.three in self.context
 
     def disconnect(self):
         self.loop.stop()
-        exec self.resource.four in self.namespace
+        exec self.resource.four in self.context
         self.channel.remove(self)
 
 

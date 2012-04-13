@@ -18,7 +18,7 @@ def test_json_defaults_to_application_json_for_static_json():
     actual = check( '{"Greetings": "program!"}'
                   , filename="foo.json"
                   , body=False
-                   ).headers.one('Content-Type')
+                   ).headers['Content-Type']
     assert actual == expected, actual
 
 def test_json_defaults_to_application_json_for_dynamic_json():
@@ -26,7 +26,7 @@ def test_json_defaults_to_application_json_for_dynamic_json():
     actual = check( "response.body = {'Greetings': 'program!'}"
                   , filename="foo.json"
                   , body=False
-                   ).headers.one('Content-Type')
+                   ).headers['Content-Type']
     assert actual == expected, actual
 
 def test_json_content_type_is_configurable_for_static_json():
@@ -36,7 +36,7 @@ def test_json_content_type_is_configurable_for_static_json():
                   , filename="foo.json"
                   , body=False
                   , aspenconf=aspenconf
-                   ).headers.one('Content-Type')
+                   ).headers['Content-Type']
     assert actual == expected, actual
 
 def test_json_content_type_is_configurable_for_dynamic_json():
@@ -46,7 +46,7 @@ def test_json_content_type_is_configurable_for_dynamic_json():
                   , filename="foo.json"
                   , body=False
                   , aspenconf=aspenconf
-                   ).headers.one('Content-Type')
+                   ).headers['Content-Type']
     assert actual == expected, actual
 
 def test_json_handles_unicode():

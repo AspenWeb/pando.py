@@ -25,15 +25,15 @@ class XHRPollingTransport(Transport):
         """
         request.allow('GET', 'POST')
 
-        if self.state == 0:             # The client wants confirmation.
+        if self.state == 0:                 # The client wants confirmation.
             response = Response(200, "1:::")
             self.state = 1
 
-        elif request.method == 'POST':  # The client is sending us data.
+        elif request.line.method == 'POST': # The client is sending us data.
             self.socket._send(request.body.raw)
             response = Response(200)
             
-        elif request.method == 'GET':   # The client is asking for data.
+        elif request.line.method == 'GET':  # The client is asking for data.
             bytes_iter = iter([""])
             timeout = time.time() + self.timeout
             while time.time() < timeout:

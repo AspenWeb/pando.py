@@ -6,13 +6,14 @@ from aspen.http.request import Request
 from aspen.testing import assert_raises, handle, NoException, StubRequest 
 from aspen.testing import attach_teardown, fix, FSFIX, mk
 from aspen.configuration import Configurable
+from aspen.http.mapping import Mapping
 
 
 # Indices
 # =======
 
 def check_index(path):
-    """Given an urlpath, return a filesystem path per gauntlet.index.
+    """Given a uripath, return a filesystem path per gauntlet.index.
     """
     request = StubRequest.from_fs(path)
     gauntlet.run_through(request, gauntlet.index)
@@ -133,14 +134,14 @@ def test_virtual_path_is_virtual():
 
 def test_virtual_path_sets_request_path():
     mk(('%bar/foo.html', "Greetings, program!"))
-    expected = {'bar': 'blah'}
-    actual = check_virtual_paths('/blah/foo.html').path
+    expected = {'bar': [u'blah']}
+    actual = check_virtual_paths('/blah/foo.html').line.uri.path
     assert actual == expected, actual
 
 def test_virtual_path_typecasts_to_int():
     mk(('%year.int/foo.html', "Greetings, program!"))
-    expected = {'year': 1999}
-    actual = check_virtual_paths('/1999/foo.html').path
+    expected = {'year': [1999]}
+    actual = check_virtual_paths('/1999/foo.html').line.uri.path
     assert actual == expected, actual
 
 def test_virtual_path_raises_on_bad_typecast():
@@ -199,20 +200,20 @@ def test_virtual_path_file_only_last_part____no_really():
 
 def test_virtual_path_file_key_val_set():
     mk(('foo/%bar.html', "Greetings, program!"))
-    expected = {'bar': u'blah'}
-    actual = check_virtual_paths('/foo/blah.html').path
+    expected = {'bar': [u'blah']}
+    actual = check_virtual_paths('/foo/blah.html').line.uri.path
     assert actual == expected, actual
 
 def test_virtual_path_file_key_val_not_cast():
     mk(('foo/%bar.html', "Greetings, program!"))
-    expected = {'bar': u'537'}
-    actual = check_virtual_paths('/foo/537.html').path
+    expected = {'bar': [u'537']}
+    actual = check_virtual_paths('/foo/537.html').line.uri.path
     assert actual == expected, actual
 
 def test_virtual_path_file_key_val_cast():
     mk(('foo/%bar.int.html', "Greetings, program!"))
-    expected = {'bar': 537}
-    actual = check_virtual_paths('/foo/537.html').path
+    expected = {'bar': [537]}
+    actual = check_virtual_paths('/foo/537.html').line.uri.path
     assert actual == expected, actual
 
 
@@ -250,8 +251,8 @@ def test_trailing_slash_redirects_trailing_slash_to_the_right_place():
     mk('foo')
     response = assert_raises(Response, check_trailing_slash, '/foo')
 
-    expected = 'http://localhost/foo/'
-    actual = response.headers.one('Location')
+    expected = '/foo/'
+    actual = response.headers['Location']
     assert actual == expected, actual
 
 
@@ -259,22 +260,22 @@ def test_trailing_slash_redirects_trailing_slash_to_the_right_place():
 # ====
 
 def test_virtual_path_docs_1():
-    mk(('%name/index.html', "^L\nGreetings, {{ request.path['name'] }}!"))
+    mk(('%name/index.html', "^L\nGreetings, {{ path['name'] }}!"))
     response = handle('/aspen/')
     expected = "Greetings, aspen!"
     actual = response.body
     assert actual == expected, actual
 
 def test_virtual_path_docs_2():
-    mk(('%name/index.html', "^L\nGreetings, {{ request.path['name'] }}!"))
+    mk(('%name/index.html', "^L\nGreetings, {{ path['name'] }}!"))
     response = handle('/python/')
     expected = "Greetings, python!"
     actual = response.body
     assert actual == expected, actual
 
 def test_virtual_path_docs_3():
-    mk( ('%name/index.html', "^L\nGreetings, {{ request.path['name'] }}!")
-      , ('%name/%cheese.txt', "^L\n{{ request.path['name'].title() }} likes {{ request.path['cheese'] }} cheese.")
+    mk( ('%name/index.html', "^L\nGreetings, {{ path['name'] }}!")
+      , ('%name/%cheese.txt', "^L\n{{ path['name'].title() }} likes {{ path['cheese'] }} cheese.")
        )
     response = handle('/chad/cheddar.txt')
     expected = "Chad likes cheddar cheese."
@@ -282,8 +283,8 @@ def test_virtual_path_docs_3():
     assert actual == expected, actual
 
 def test_virtual_path_docs_4():
-    mk( ('%name/index.html', "^L\nGreetings, {{ request.path['name'] }}!")
-      , ('%name/%cheese.txt', "{{ request.path['name'].title() }} likes {{ request.path['cheese'] }} cheese.")
+    mk( ('%name/index.html', "^L\nGreetings, {{ path['name'] }}!")
+      , ('%name/%cheese.txt', "{{ path['name'].title() }} likes {{ path['cheese'] }} cheese.")
        )
     response = handle('/chad/cheddar.txt/')
     expected = 404 
@@ -291,10 +292,10 @@ def test_virtual_path_docs_4():
     assert actual == expected, actual
 
 def test_virtual_path_docs_5():
-    mk( ('%name/index.html', "^L\nGreetings, {{ request.path['name'] }}!")
-      , ('%name/%cheese.txt', "{{ request.path['name'].title() }} likes {{ request.path['cheese'] }} cheese.")
+    mk( ('%name/index.html', "^L\nGreetings, {{ path['name'] }}!")
+      , ('%name/%cheese.txt', "{{ path['name'].title() }} likes {{ path['cheese'] }} cheese.")
       , ( '%year.int/index.html'
-        , "^L\nTonight we're going to party like it's {{ request.path['year'] }}!"
+        , "^L\nTonight we're going to party like it's {{ path['year'] }}!"
          )
        )
     response = handle('/1999/')
@@ -304,7 +305,7 @@ def test_virtual_path_docs_5():
 
 def test_virtual_path_docs_6():
     mk( ( '%year.int/index.html'
-        , "^L\nTonight we're going to party like it's {{ request.path['year'] }}!"
+        , "^L\nTonight we're going to party like it's {{ path['year'] }}!"
          )
        )
     response = handle('/1999/')
@@ -317,23 +318,23 @@ def test_virtual_path_docs_6():
 # ================
 
 def test_intercept_socket_protects_direct_access():
-    request = Request(url="/foo.sock")
+    request = Request(uri="/foo.sock")
     assert_raises(Response, gauntlet.intercept_socket, request)
 
 def test_intercept_socket_intercepts_handshake():
-    request = Request(url="/foo.sock/1")
+    request = Request(uri="/foo.sock/1")
     gauntlet.intercept_socket(request)
     
     expected = ('/foo.sock', '1')
-    actual = (request.path.raw, request.socket)
+    actual = (request.line.uri.path.raw, request.socket)
     assert actual == expected, actual
 
 def test_intercept_socket_intercepts_transported():
-    request = Request(url="/foo.sock/1/websocket/46327hfjew3?foo=bar")
+    request = Request(uri="/foo.sock/1/websocket/46327hfjew3?foo=bar")
     gauntlet.intercept_socket(request)
 
     expected = ('/foo.sock', '1/websocket/46327hfjew3')
-    actual = (request.path.raw, request.socket)
+    actual = (request.line.uri.path.raw, request.socket)
     assert actual == expected, actual
 
 
@@ -345,15 +346,15 @@ def test_virtual_path_parts_can_be_empty():
     return
     mk(('foo/%bar/index.html', "Greetings, program!"))
     expected = {'bar': ''}
-    actual = check_virtual_paths('/foo//').path
+    actual = check_virtual_paths('/foo//').line.uri.path
     assert actual == expected, actual
 
 def test_file_matches_in_face_of_dir():
     mk( ('%page/index.html', 'Nothing to see here.')
       , ('%value.txt', "Greetings, program!")
        )
-    expected = {'value': 'baz'}
-    actual = check_virtual_paths('/baz.txt').path
+    expected = {'value': [u'baz']}
+    actual = check_virtual_paths('/baz.txt').line.uri.path
     assert actual == expected, actual
 
 def test_file_matches_extension():
@@ -388,8 +389,8 @@ def test_file_with_no_extension_matches():
     mk( ('%value', '{"Greetings,": "program!"}')
       , ('value', '{"Greetings,": "program!"}')
        )
-    expected = {'value': 'baz'}
-    actual = check_virtual_paths('/baz').path
+    expected = {'value': [u'baz']}
+    actual = check_virtual_paths('/baz').line.uri.path
     assert actual == expected, actual
 
 attach_teardown(globals())

@@ -38,12 +38,11 @@ class SocketResource(DynamicResource):
         return four
 
     def exec_second(self, socket, request):
-        """Given a Request, return a namespace dictionary.
+        """Given a Request, return a context dictionary.
         """
-        namespace = self.one.copy()
-        namespace.update(request.namespace)
-        namespace['request'] = request 
-        namespace['socket'] = socket
-        namespace['channel'] = socket.channel
-        exec self.two in namespace
-        return namespace
+        context = request.context
+        context.update(self.one)
+        context['socket'] = socket
+        context['channel'] = socket.channel
+        exec self.two in context
+        return context 

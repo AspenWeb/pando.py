@@ -1,106 +1,120 @@
-class Mapping(object):
-    """Base class for HTTP mappings.
+from aspen.utils import ascii_dammit
 
-    HTTP forms and headers may have a single item or a list of items as the
-    value. So while Python dictionary semantics work for almost everything, it
-    is better (IMO) for the API to force you to be explicit about whether you
-    are expecting a single item or list of items. We do that here by providing
-    'one' and 'all' methods, rather than item access and a 'get' method.
-    Furthermore, this class supports iteration over keys, but not iteration
-    over values. Iterate over keys, and then use one or all.
 
-    All API here operates on a self._dict dictionary. Set that in subclass
-    constructors.
+NO_DEFAULT = object()
+
+
+class Mapping(dict):
+    """Base class for HTTP mappings: Path, Querystring, Headers, Cookie, Body.
+
+    Mappings in HTTP differ from Python dictionaries in that they may have one
+    or more values. This dictionary subclass maintains a list of values for
+    each key. However, access semantics are asymetric: subscript assignment
+    clobbers to the list, while subscript access returns the last item. Think
+    about it.
 
     """
-
-    def __init__(self, **kw):
-        self._dict = {}
-        for name, value in kw.iteritems():
-            self.set(name, value)
-
-    def add(self, name, value):
-        """Given a name and value, add another entry.
+  
+    def __getitem__(self, name):
+        """Given a name, return the last value or raise Response(400).
         """
-        if name not in self._dict:
-            self.set(name, value)
-        else:
-            self._dict[name].append(value)
+        try:
+            return dict.__getitem__(self, name)[-1]
+        except KeyError:
+            from aspen import Response
+            raise Response(400, "Missing key: %s" % ascii_dammit(name))
 
-    def __contains__(self, name):
-        return name in self._dict
+    def __setitem__(self, name, value):
+        """Given a name and value, clobber any existing values.
+        """
+        dict.__setitem__(self, name, [value])
 
-    def all(self, name, default=None):
+    def pop(self, name, default=NO_DEFAULT):
+        """Given a name, return a value.
+
+        This removes the last value from the list for name and returns it. If
+        there was only one value in the list then the key is removed from the
+        mapping. If name is not present and default is given, that is returned
+        instead.
+
+        """
+        if name not in self:
+            if default is not NO_DEFAULT:
+                return default
+            else:
+                dict.pop(self, name) # KeyError
+        values = dict.__getitem__(self, name)
+        value = values.pop()
+        if not values:
+            del self[name]
+        return value
+
+    popall = dict.pop
+
+    def all(self, name):
         """Given a name, return a list of values.
         """
-        if default is None:
-            default = []
-        return self._dict.get(name, default)
-       
-    def one(self, name, default=None):
-        return self._dict.get(name, [default])[0]
+        try:
+            return dict.__getitem__(self, name)
+        except KeyError:
+            from aspen import Response
+            raise Response(400)
+      
+    def get(self, name, default=None):
+        """Override to only return the last value.
+        """
+        return dict.get(self, name, [default])[-1]
+
+    def add(self, name, value):
+        """Given a name and value, clobber any existing values with the new one.
+        """
+        if name in self:
+            self.all(name).append(value)
+        else:
+            dict.__setitem__(self, name, [value])
 
     def ones(self, *names):
         """Given one or more names of keys, return a list of their values.
         """
-        return [self.one(name) for name in names]
-
-    def __iter__(self):
-        return self._dict
-
-    def __in__(self, name):
-        """Given a name, return True if it is known in the mapping.
-        """
-        return name in self._dict
-
-    def __iter__(self):
-        return self._dict.__iter__()
-
-    def keys(self):
-        """Return a list of names.
-        """
-        return self._dict.keys()
-
-    def set(self, name, value):
-        """Given a name and value, set the value, clearing all others.
-        
-        Pass None to remove.
-
-        """
-        if value is None:
-            del self._dict[name]
-        self._dict[name] = [str(value).strip()] # TODO unicode?
+        lowered = []
+        for name in names:
+            n = name.lower()
+            if n not in lowered:
+                lowered.append(n)
+        return [self[name] for name in lowered]
 
 
-    # Convenience methods for coercing to bool.
-    # =========================================
+class CaseInsensitiveMapping(Mapping):
 
-    def yes(self, name):
-        """Given a key name, return a boolean.
-        
-        The value for the key must be in the set {0,1,yes,no,true,false},
-        case-insensistive. If the key is not in this section, we return True.
+    def __init__(self, *a, **kw):
+        if a:
+            d = a[0]
+            items = d.iteritems if hasattr(d, 'iteritems') else d
+            for k, v in items():
+                self[k] = v
+        for k, v in kw.iteritems():
+            self[k] = v
 
-        """
-        return self._yes_no(name, True)
+    def __contains__(self, name):
+        return Mapping.__contains__(self, name.title())
 
-    def no(self, name):
-        """Given a key name, return a boolean.
-        
-        The value for the key must be in the set {0,1,yes,no,true,false},
-        case-insensistive. If the key is not in this section, we return False.
+    def __getitem__(self, name):
+        return Mapping.__getitem__(self, name.title())
 
-        """
-        return self._yes_no(name, False)
+    def __setitem__(self, name, value):
+        return Mapping.__setitem__(self, name.title(), value)
 
-    def _yes_no(self, name, default):
-        if name not in self._dict:
-            return default 
-        value = self._dict[name].lower()
-        if value not in YES_NO:
-            raise ConfigurationError( "%s should be 'yes' or 'no', not %s" 
-                                    % (name, self._dict[name])
-                                     )
-        return value in YES 
+    def add(self, name, value):
+        return Mapping.add(self, name.title(), value)
 
+    def get(self, name, default=None):
+        return Mapping.get(self, name.title(), default)
 
+    def all(self, name):
+        return Mapping.all(self, name.title())
+
+    def pop(self, name):
+        return Mapping.pop(self, name.title())
+
+    def popall(self, name):
+        return Mapping.popall(self, name.title())

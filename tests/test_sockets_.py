@@ -28,12 +28,12 @@ def test_channel_survives_transportation():
     mk(('echo.sock', ''))
     request = make_request()
     request.socket = '1/'
-    try:
-        response = sockets.get(request) # handshake
-        sid = response.body.split(':')[0]
-        request.socket = '1/xhr-polling/' + sid
-        transport = sockets.get(request)   # transport
+    response = sockets.get(request) # handshake
+    sid = response.body.split(':')[0]
+    request.socket = '1/xhr-polling/' + sid
+    transport = sockets.get(request)   # transport
 
+    try:
         expected = '/echo.sock' 
         actual = sockets.__channels__['/echo.sock'].name
         assert actual == expected, actual

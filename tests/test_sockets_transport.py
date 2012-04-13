@@ -16,7 +16,7 @@ def make_transport(content='', state=0):
     transport = XHRPollingTransport(socket)
     transport.timeout = 0.05 # for testing, could screw up the test
     if state == 1:
-        transport.respond(Request(url='/echo.sock'))
+        transport.respond(Request(uri='/echo.sock'))
     return transport
 
 
