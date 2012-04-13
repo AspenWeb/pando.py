@@ -237,9 +237,9 @@ def test_uri_empty_host_is_empty_unicode():
     assert uri.host == u"", uri.host
     assert isinstance(uri.host, unicode), uri.host.__class__
 
-def test_uri_empty_port_is_None():
+def test_uri_empty_port_is_0():
     uri = URI("://foobar:secret@www.example.com:8080/baz.html?buz=bloo")
-    assert uri.port is None, uri.port
+    assert uri.port == 0, uri.port
 
 
 def test_uri_normal_case_is_normal():

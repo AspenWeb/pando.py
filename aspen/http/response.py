@@ -1,3 +1,5 @@
+import re
+
 try:                # 2
     from Cookie import CookieError, SimpleCookie
 except ImportError: # 3
@@ -26,19 +28,32 @@ class CloseWrapper(object):
             #self.request.socket.close()
 
 
+# Define a charset name filter.
+# =============================
+# "The character set names may be up to 40 characters taken from the
+#  printable characters of US-ASCII."
+#  (http://www.iana.org/assignments/character-sets)
+#
+# We're going to be slightly more restrictive. Instead of allowing all
+# printable characters, which include whitespace and newlines, we're going to
+# only allow punctuation that is actually in use in the current IANA list.
+
+charset_re = re.compile("^[A-Za-z0-9:_()+.-]{1,40}$")
+
+
 class Response(Exception):
     """Represent an HTTP Response message.
     """
 
     request = None
 
-    def __init__(self, code=200, body='', headers=None):
-        """Takes an int, a string, and a dict (or list of tuples).
+    def __init__(self, code=200, body='', headers=None, charset="UTF-8"):
+        """Takes an int, a string, a dict, and a basestring.
 
             - code      an HTTP response code, e.g., 404
             - body      the message body as a string
             - headers   a Headers instance
-            - cookie    a Cookie.SimpleCookie instance
+            - charset   string that will be set in the Content-Type in the future at some point but not now
 
         Code is first because when you're raising your own Responses, they're
         usually error conditions. Body is second because one more often wants
@@ -53,11 +68,14 @@ class Response(Exception):
         elif headers is not None and not isinstance(headers, (dict, list)):
             raise TypeError("'headers' must be a dictionary or a list of " +
                             "2-tuples")
+        elif charset_re.match(charset) is None:
+            raise TypeError("'charset' must match " + charset_re.pattern)
 
         Exception.__init__(self)
         self.code = code
         self.body = body
         self.headers = Headers('')
+        self.charset = charset
         if headers:
             if isinstance(headers, dict):
                 headers = headers.items()
