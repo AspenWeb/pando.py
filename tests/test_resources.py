@@ -17,7 +17,7 @@ def test_barely_working():
     response = check("Greetings, program!", 'index.html', False)
    
     expected = 'text/html'
-    actual = response.headers.one('Content-Type')
+    actual = response.headers['Content-Type']
     assert actual == expected, actual
 
 def test_resource_pages_work():
@@ -79,14 +79,14 @@ def test_resources_dont_leak_whitespace():
 
 eg = """\
 latinate = chr(181).decode('latin1')
-response.headers.set('Content-Type', 'text/plain; charset=latin1')
+response.headers['Content-Type'] = 'text/plain; charset=latin1'
 ^L
 {{ latinate.encode('latin1') }}"""
 
 def test_content_type_is_right_in_template_doc_unicode_example():
     response = check(eg, body=False)
     expected = "text/plain; charset=latin1"
-    actual = response.headers.one('Content-Type')
+    actual = response.headers['Content-Type']
     assert actual == expected, actual
 
 def test_body_is_right_in_template_doc_unicode_example():
@@ -108,7 +108,7 @@ def test_raise_response_works():
     assert actual == expected, actual
 
 
-def test_website_is_in_namespace():
+def test_website_is_in_context():
     expected = "It worked."
     actual = check("""\
 assert website.__class__.__name__ == 'Configurable', website
@@ -123,7 +123,7 @@ def test_unknown_mimetype_yields_default_mimetype():
                     , filename="foo.flugbaggity"
                      )
     expected = "text/plain"
-    actual = response.headers.one('Content-Type')
+    actual = response.headers['Content-Type']
     assert actual == expected, actual
 
 def test_templating_skipped_without_script():

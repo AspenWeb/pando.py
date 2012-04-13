@@ -101,11 +101,12 @@ def get(request):
     # =========
 
     if len(parts) == 2:
-        if request.path.raw in __channels__:
-            channel = __channels__[request.path.raw]
+        path = request.line.uri.path.raw
+        if path in __channels__:
+            channel = __channels__[path]
         else:
-            channel = Channel(request.path.raw, request.engine.Buffer)
-            __channels__[request.path.raw] = channel
+            channel = Channel(path, request.engine.Buffer)
+            __channels__[path] = channel
 
         socket = Socket(request, channel)
         assert socket.sid not in __sockets__ # sanity check

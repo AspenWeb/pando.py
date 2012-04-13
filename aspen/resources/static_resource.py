@@ -15,5 +15,6 @@ class StaticResource(Resource):
         response = response or Response()
         # XXX Perform HTTP caching here.
         response.body = self.raw
-        response.headers.set('Content-Type', self.mimetype)
+        response.headers['Content-Type'] = self.mimetype
+        # XXX How do we know what charset to send? Let the browser decide ...
         return response

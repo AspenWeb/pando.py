@@ -37,20 +37,20 @@ class DynamicResource(Resource):
         response = response or Response()
 
        
-        # Populate namespace.
-        # ===================
+        # Populate context.
+        # =================
         
-        namespace = self.one.copy()
-        namespace.update(request.namespace)
-        namespace['request'] = request
-        namespace['response'] = response
+        context = request.context
+        context.update(self.one)
+        context['response'] = response
+        context['resource'] = self
    
 
         # Exec the script.
         # ================
     
         try:
-            exec self.two in namespace
+            exec self.two in context 
         except Response, response:
             response = self.process_raised_response(response)
             raise response
@@ -59,7 +59,7 @@ class DynamicResource(Resource):
         # Hook.
         # =====
 
-        return self.get_response(namespace)
+        return self.get_response(context)
 
 
     def _parse(self, raw):
@@ -111,7 +111,7 @@ class DynamicResource(Resource):
         return pages
        
     def _compile(self, one, two, three, four):
-        """Given fouritems, return a 4-tuple of compiled objects.
+        """Given four items, return a 4-tuple of compiled objects.
 
         All dynamic resources compile the first two pages the same way. It's
         the third page that differs, so we require subclasses to provide a hook
@@ -142,17 +142,17 @@ class DynamicResource(Resource):
 
         # Exec the first page and compile the second.
         # ===========================================
-        # Below in render we take care not to mutate namespace.
+        # Below in render we take care not to mutate context.
 
-        namespace = dict()
-        namespace['__file__'] = self.fs
-        namespace['website'] = self.website
+        context = dict()
+        context['__file__'] = self.fs
+        context['website'] = self.website
         
         one = compile(one, self.fs, 'exec')
         two = compile(two, self.fs, 'exec')
 
-        exec one in namespace
-        one = namespace
+        exec one in context
+        one = context
 
 
         # Third and Fourth
@@ -183,7 +183,7 @@ class DynamicResource(Resource):
         """
         return response
 
-    def get_response(self, namespace):
-        """Given a namespace dictionary, return a Response object.
+    def get_response(self, context):
+        """Given a context dictionary, return a Response object.
         """
         raise NotImplementedError
