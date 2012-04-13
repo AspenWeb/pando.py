@@ -79,7 +79,7 @@ def test_resources_dont_leak_whitespace():
 
 eg = """\
 latinate = chr(181).decode('latin1')
-response.headers.set('Content-Type', 'text/plain; charset=latin1')
+response.headers['Content-Type'] = 'text/plain; charset=latin1'
 ^L
 {{ latinate.encode('latin1') }}"""
 

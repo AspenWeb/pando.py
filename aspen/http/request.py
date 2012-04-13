@@ -89,8 +89,8 @@ def make_franken_headers(environ):
     """Takes a WSGI environ, returns a bytestring.
     """
 
-    # For some reason there are a couple keys that CherryPyWSGIServer 
-    # explicitly doesn't include as HTTP_ keys.
+    # There are a couple keys that CherryPyWSGIServer explicitly doesn't
+    # include as HTTP_ keys. I'm not sure why, but I believe we want them.
     also = ['CONTENT_TYPE', 'CONTENT_LENGTH'] 
 
     headers = []
@@ -109,7 +109,7 @@ def make_franken_headers(environ):
 
     
 def kick_against_goad(environ):
-    """Kick against he goad. Try to squeeze blood from a stone. Do our best. :)
+    """Kick against the goad. Try to squeeze blood from a stone. Do our best.
     """
     method = environ['REQUEST_METHOD']
     uri = make_franken_uri( environ.get('PATH_INFO', '')
@@ -121,9 +121,22 @@ def kick_against_goad(environ):
     return method, uri, version, headers, body
 
 
-# UnicodeWithRaw
-# ==============
-# A few parts of the Request object model use this generic object.
+# *WithRaw
+# ========
+# A few parts of the Request object model use these generic objects.
+
+class IntWithRaw(int):
+    """Generic subclass of int to store the underlying raw bytestring.
+    """
+
+    __slots__ = ['raw']
+
+    def __new__(cls, int):
+        if int is None:
+            int = 0 
+        obj = super(IntWithRaw, cls).__new__(cls, int)
+        obj.raw = str(int)
+        return obj
 
 class UnicodeWithRaw(unicode):
     """Generic subclass of unicode to store the underlying raw bytestring.
@@ -398,8 +411,8 @@ class URI(unicode):
         # host we will decode as IDNA, which may raise UnicodeError
         host = UnicodeWithRaw(no_None(uri.hostname), 'IDNA')
 
-        # port is int or None, which is fine
-        port = uri.port
+        # port is IntWithRaw (will be 0 if absent), which is fine
+        port = IntWithRaw(uri.port)
 
         # path and querystring get bytes and do their own parsing
         path = Path(uri.path)  # further populated in gauntlet

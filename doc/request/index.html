@@ -1,6 +1,5 @@
 doc_title = "Request"
 doc_next = ('Response', '/response/')
-import pdb; pdb.set_trace()
 
 
 {% extends doc.html %}
@@ -21,16 +20,16 @@ inside the second and third simplate pages:</p>
 <table>
 
     <tr><td>body</td><td>request.body</td></tr>
-    <tr><td>cookie</td><td>request.line.url.path</td></tr>
-    <tr><td>headers</td><td>request.headers</td></tr>
-    <tr><td>path</td><td>request.line.url.path</td></tr>
-    <tr><td>qs</td><td>request.line.url.querystring</td></tr>
+    <tr><td>cookie</td><td>request.headers.cookie</td></tr>
+    <tr><td>headers&nbsp;</td><td>request.headers</td></tr>
+    <tr><td>path</td><td>request.line.uri.path</td></tr>
+    <tr><td>qs</td><td>request.line.uri.querystring</td></tr>
 
 </table>
 
 <p>For example, here&rsquo;s how to pull a value out of the querystring:</p>
 
-<pre>foo = qs.one("foo")
+<pre>foo = qs["foo"]
 </pre>
 
 
@@ -45,50 +44,60 @@ inside the second and third simplate pages:</p>
 elif POST:
     pass # handle POST</pre>
 
+<p>There is no API that folds the querystring and body together. It&rsquo;s
+better to be explicit about where you&rsquo;re expecting your values from.</p>
 
 
 <h3>Full API</h3>
 
 <p>The following object model is used to comprehensively represent an HTTP
-Request message. Note that each part has a "raw" attribute; it contains the
-bytes as received on the wire (as an optimization, this attribute is lazily
-computed for request.body.raw and request.raw).</p>
+Request message. Where &ldquo;raw&rdquo; attributes are noted those give the
+bytes as supposedly received on the wire. As an optimization, this attribute is
+lazily computed for request.body.raw. The request, itself a subclass of
+str, is also dealt with lazily.</p>
 
-<table>
+<table style="margin-left: 0;">
 
-    <tr><th>name</th><td>class</td><td>base&nbsp;type</td><td>notes</td></tr>
-    <tr><th>request.line</th><td>Line</td><td>str</td><td></td></tr>
-    <tr><th>request.line.method</th><td>str</td><td></td><td></td></tr>
-    <tr><th>request.line.url</th><td>URL</td><td>unicode</td><td></td></tr>
-    <tr><th>request.line.url.scheme</th><td>UnicodeWithRaw</td><td>unicode</td><td></td></tr>
-    <tr><th>request.line.url.scheme.raw</th><td>str</td><td></td><td></td></tr>
-    <tr><th>request.line.url.username</th><td>UnicodeWithRaw</td><td>unicode</td><td></td></tr>
-    <tr><th>request.line.url.username.raw</th><td>str</td><td></td><td></td></tr>
-    <tr><th>request.line.url.password</th><td>UnicodeWithRaw</td><td>unicode</td><td></td></tr>
-    <tr><th>request.line.url.password.raw</th><td>str</td><td></td><td></td></tr>
-    <tr><th>request.line.url.host</th><td>UnicodeWithRaw</td><td>unicode</td><td></td></tr>
-    <tr><th>request.line.url.host.raw</th><td>str</td><td></td><td></td></tr>
-    <tr><th>request.line.url.port</th><td>int or None</td><td></td><td></td></tr>
-    <tr><th>request.line.url.port.raw</th><td>str</td><td></td><td></td></tr>
-    <tr><th>request.line.url.path</th><td>Path</td><td>dict</td><td></td></tr>
-    <tr><th>request.line.url.path.raw</th><td>str</td><td></td><td></td></tr>
-    <tr><th>request.line.url.path.decoded</th><td>unicode</td><td></td><td></td></tr>
-    <tr><th>request.line.url.querystring</th><td>Querystring</td><td>unicode</td><td></td></tr>
-    <tr><th>request.line.url.querystring.raw</th><td>str</td><td></td></tr>
-    <tr><th>request.line.url.raw</th><td>str</td><td></td><td></td></tr>
-    <tr><th>request.line.version</th><td>Version</td><td>unicode</td><td></td></tr>
-    <tr><th>request.line.raw</th><td>str</td><td></td><td></td></tr>
-    <tr><th>request.headers</th><td><a href="#not-a-dict">Headers</a></td></tr>
-    <tr><th>request.headers.cookie</th><td><a
+    <tr><th><b><u>name</u></b></th><td><b><u>class</u></b></td><td><b><u>base&nbsp;type</u></b>&nbsp;</td><td><b><u>notes</u></b></td></tr>
+    <tr><td>request</td><td>Request</td><td>str</td><td></td></tr>
+    <tr><td>request.line</td><td>Line</td><td>str</td><td></td></tr>
+    <tr><td>request.line.method</td><td>Method</td><td>unicode</td><td></td></tr>
+    <tr><td>request.line.method.raw</td><td>str</td><td></td><td></td></tr>
+    <tr><td>request.line.uri</td><td>URI</td><td>unicode</td><td></td></tr>
+    <tr><td>request.line.uri.scheme</td><td>UnicodeWithRaw</td><td>unicode</td><td></td></tr>
+    <tr><td>request.line.uri.scheme.raw</td><td>str</td><td></td><td></td></tr>
+    <tr><td>request.line.uri.username</td><td>UnicodeWithRaw</td><td>unicode</td><td></td></tr>
+    <tr><td>request.line.uri.username.raw</td><td>str</td><td></td><td></td></tr>
+    <tr><td>request.line.uri.password</td><td>UnicodeWithRaw</td><td>unicode</td><td></td></tr>
+    <tr><td>request.line.uri.password.raw</td><td>str</td><td></td><td></td></tr>
+    <tr><td>request.line.uri.host</td><td>UnicodeWithRaw</td><td>unicode</td><td></td></tr>
+    <tr><td>request.line.uri.host.raw</td><td>str</td><td></td><td></td></tr>
+    <tr><td>request.line.uri.port</td><td>IntWithRaw</td><td>int</td><td>0 if absent</td></tr>
+    <tr><td>request.line.uri.port.raw</td><td>str</td><td></td><td></td></tr>
+    <tr><td>request.line.uri.path</td><td>Path</td><td>Mapping</td><td></td></tr>
+    <tr><td>request.line.uri.path.raw</td><td>str</td><td></td><td></td></tr>
+    <tr><td>request.line.uri.path.decoded</td><td>unicode</td><td></td><td></td></tr>
+    <tr><td>request.line.uri.querystring</td><td>Querystring</td><td>Mapping</td><td></td></tr>
+    <tr><td>request.line.uri.querystring.raw</td><td>str</td><td></td></tr>
+    <tr><td>request.line.uri.querystring.decoded&nbsp;</td><td>unicode</td><td></td><td></td></tr>
+    <tr><td>request.line.uri.raw</td><td>str</td><td></td><td></td></tr>
+    <tr><td>request.line.version</td><td>Version</td><td>unicode</td><td></td></tr>
+    <tr><td>request.line.version.info</td><td>tuple</td><td></td><td></td></tr>
+    <tr><td>request.line.version.major</td><td>int</td><td></td><td></td></tr>
+    <tr><td>request.line.version.minor</td><td>int</td><td></td><td></td></tr>
+    <tr><td>request.line.version.raw</td><td>str</td><td></td><td></td></tr>
+    <tr><td>request.line.raw</td><td>str</td><td></td><td></td></tr>
+    <tr><td>request.headers</td><td><a href="#not-a-dict">Headers</a></td></tr>
+    <tr><td>request.headers.cookie</td><td><a
             href="http://docs.python.org/library/cookie.html#Cookie.SimpleCookie">Cookie.SimpleCookie</a>
             </td></tr>
-            <tr><th>request.headers.host</th><td>unicode</td><td></td><td>X-Forwarded-For if it exists, Host
+            <tr><td>request.headers.host</td><td>unicode</td><td></td><td>X-Forwarded-For if it exists, Host
             otherwise (no Host will raise Response(400))</td></tr>
-    <tr><th>request.headers.scheme</th><td>unicode</td><td></td><td>u"https" or u"http"</td></tr>
-    <tr><th>request.headers.raw</th><td>str</td></tr>
-    <tr><th>request.body</th><td><a href="#not-a-dict">Body</a> or <a href="#uploads">cgi.FieldStorage</a></td><td></td></tr>
-    <tr><th>request.body.raw</th><td>str</td></tr>
-    <tr><th>request.raw</th><td>str</td></tr>
+    <tr><td>request.headers.scheme</td><td>unicode</td><td></td><td>u"https" or u"http"</td></tr>
+    <tr><td>request.headers.raw</td><td>str</td></tr>
+    <tr><td>request.body</td><td><a href="#not-a-dict">Body</a> or <a href="#uploads">cgi.FieldStorage</a></td><td></td></tr>
+    <tr><td>request.body.raw</td><td>str</td></tr>
+    <tr><td>request.raw</td><td>str</td></tr>
 </table>
 
 <p>Here are the methods on the Request object:</p>
@@ -114,39 +123,45 @@ request.redirect(location, code=None, permanent=False):
     """
 </pre>
 
-<a name="not-a-dict"></a>
-<h3>Headers, Querystring, and Body Objects</h3>
+<a name="mapping"></a>
+<h3>Mapping Objects</h3>
 
-<p>The <code>Headers</code>, <code>Querystring</code>, and <code>Body</code>
-objects all have the same API. I decided not to make them overly
-dictionary-ish. You always need to deal with the &ldquo;either list or
-value&rdquo; problem, so I&rsquo;m making you deal with that explicitly up
-front. Likewise, there is no API that folds the querystring and body together.
-It&rsquo;s better to be explicit about where you&rsquo;re expecting your values
-from.</p>
+<p>The <code>Body</code>, <code>Headers</code>, <code>Path</code>, and
+<code>Querystring</code> objects all have the same API. They are asymetric
+dictionaries. With HTTP mappings you always need to deal with the &ldquo;either
+list or value&rdquo; problem. Using them as simple values is much more common
+then using them as lists of values, so the base dictionary access set/get
+operations are tuned for that, and then you get this API for working with them
+as lists of values:</p>
 
 <pre>obj.all(name, default=None):
     """Given a name, return a list of values.
     """
    
-obj.one(name, default=None):
-    """Given a name, return the first known value.
-    """
-
-obj.has(name):
-    """Given a name, return True if it is known in the form/headers.
-    """</pre>
-
-
-<p><code>Headers</code> objects have these additional methods:</p>
-
-<pre>headers.add(name, value):
+obj.add(name, value):
     """Given a name and value, add another entry.
-    """
-
-headers.set(name, value):
-    """Given a header name and value, set the header. Pass None to remove.
     """</pre>
+
+<p>Putting those together, here&rsquo;s what it looks like:</p>
+
+<pre>>>> headers['Content-Type'] = "text/html"
+>>> headers['Content-Type'] = "text/plain" # changed my mind!
+>>> headers['Content-Type']
+text/plain
+>>> headers.all('Content-Type')
+['text/plain']</pre>
+
+<p>Here&rsquo;s another example:</p>
+
+<pre>>>> qs.add('likes', 'cheese!')
+>>> qs.add('likes', 'grommit!')
+>>> qs['likes']
+'grommit!'
+>>> qs.all('likes')
+['cheese!', 'grommit!']</pre>
+
+<p>They&rsquo;re asymetric in that subscript access respects the underlying
+list while subscript assignment clobbers it.</p>
 
 
 <a name="uploads"></a>

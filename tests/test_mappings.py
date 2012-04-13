@@ -8,12 +8,12 @@ from aspen.http.request import Querystring
 
 
 
-def test_mapping_subscript_assignment_appends():
+def test_mapping_subscript_assignment_clobbers():
     m = Mapping()
     m['foo'] = 'bar'
     m['foo'] = 'baz'
     m['foo'] = 'buz'
-    expected = ['bar', 'baz', 'buz']
+    expected = ['buz']
     actual = dict.__getitem__(m, 'foo')
     assert actual == expected, actual
 
@@ -50,8 +50,8 @@ def test_mapping_get_default_default_is_None():
 def test_mapping_all_returns_list_of_all_values():
     m = Mapping()
     m['foo'] = 'bar'
-    m['foo'] = 'baz'
-    m['foo'] = 'buz'
+    m.add('foo', 'baz')
+    m.add('foo', 'buz')
     expected = ['bar', 'baz', 'buz']
     actual = m.all('foo')
     assert actual == expected, actual
@@ -90,8 +90,8 @@ def test_mapping_calling_ones_with_missing_key_raises_Response():
 def test_mapping_pop_returns_the_last_item():
     m = Mapping()
     m['foo'] = 1
-    m['foo'] = 1 
-    m['foo'] = 3
+    m.add('foo', 1)
+    m.add('foo', 3)
     expected = 3
     actual = m.pop('foo')
     assert actual == expected, actual
@@ -99,8 +99,8 @@ def test_mapping_pop_returns_the_last_item():
 def test_mapping_pop_leaves_the_rest():
     m = Mapping()
     m['foo'] = 1
-    m['foo'] = 1 
-    m['foo'] = 3
+    m.add('foo', 1)
+    m.add('foo', 3)
     m.pop('foo')
     expected = [1, 1]
     actual = m.all('foo')
@@ -117,8 +117,8 @@ def test_mapping_pop_removes_the_item_if_that_was_the_last_value():
 def test_mapping_popall_returns_a_list():
     m = Mapping()
     m['foo'] = 1
-    m['foo'] = 1 
-    m['foo'] = 3
+    m.add('foo', 1)
+    m.add('foo', 3)
     expected = [1, 1, 3]
     actual = m.popall('foo')
     assert actual == expected, actual
@@ -165,9 +165,9 @@ def test_case_insensitive_mapping_get_is_case_insensitive():
 def test_case_insensitive_mapping_all_is_case_insensitive():
     m = CaseInsensitiveMapping()
     m['Foo'] = 1
-    m['foo'] = 1
-    m['fOO'] = 1
-    m['FOO'] = 1
+    m.add('foo', 1)
+    m.add('fOO', 1)
+    m.add('FOO', 1)
     expected = [1, 1, 1, 1]
     actual = m.all('foo')
     assert actual == expected, actual
@@ -185,9 +185,9 @@ def test_case_insensitive_mapping_pop_is_case_insensitive():
 def test_case_insensitive_mapping_popall_is_case_insensitive():
     m = CaseInsensitiveMapping()
     m['Foo'] = 1
-    m['foo'] = 99
-    m['fOO'] = 1
-    m['FOO'] = 11
+    m.add('foo', 99)
+    m.add('fOO', 1)
+    m.add('FOO', 11)
     expected = [1, 99, 1, 11]
     actual = m.popall('foo')
     assert actual == expected, actual
@@ -195,12 +195,12 @@ def test_case_insensitive_mapping_popall_is_case_insensitive():
 def test_case_insensitive_mapping_ones_is_case_insensitive():
     m = CaseInsensitiveMapping()
     m['Foo'] = 1
-    m['foo'] = 1
-    m['fOO'] = 1
-    m['FOO'] = 1
+    m.add('foo', 8)
+    m.add('fOO', 9)
+    m.add('FOO', 12)
     m['bar'] = 2
-    m['BAR'] = 2
-    expected = [1, 2]
+    m.add('BAR', 200)
+    expected = [12, 200]
     actual = m.ones('Foo', 'Bar')
     assert actual == expected, actual
 

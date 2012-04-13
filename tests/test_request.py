@@ -76,12 +76,12 @@ def test_is_xhr_false():
     
 def test_is_xhr_true():
     request = StubRequest()
-    request.headers.set('X-Requested-With', 'XmlHttpRequest')
+    request.headers['X-Requested-With'] = 'XmlHttpRequest'
     assert request.is_xhr()
     
 def test_is_xhr_is_case_insensitive():
     request = StubRequest()
-    request.headers.set('X-Requested-With', 'xMLhTTPrEQUEST')
+    request.headers['X-Requested-With'] = 'xMLhTTPrEQUEST'
     assert request.is_xhr()
 
 

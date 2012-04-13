@@ -172,7 +172,7 @@ def index(request):
 def autoindex(request):
     if isdir(request.fs):
         if request.conf.aspen.no('list_directories'):
-            request.headers.set('X-Aspen-AutoIndexDir', request.fs)
+            request.headers['X-Aspen-AutoIndexDir'] = request.fs
             request.fs = request.website.ours_or_theirs('autoindex.html')
             assert request.fs is not None # sanity check
         else:

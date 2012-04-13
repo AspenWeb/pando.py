@@ -37,5 +37,5 @@ class JSONResource(DynamicResource):
         """
         if not isinstance(response.body, basestring):
             response.body = json.dumps(response.body)
-        response.headers.set('Content-Type', self.website.json_content_type)
+        response.headers['Content-Type'] = self.website.json_content_type
         return response

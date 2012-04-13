@@ -85,6 +85,11 @@ class TemplateResource(DynamicResource):
         """
         response = context['response']
         response.body = self.three.generate(**context)
-        if response.headers.get('Content-Type') is None:
+        if 'Content-Type' not in response.headers:
             response.headers['Content-Type'] = self.mimetype
+            if self.mimetype.startswith('text/'):
+                charset = response.charset
+                if charset is not None:
+                    response.headers['Content-Type'] += '; charset=' + charset
+
         return response

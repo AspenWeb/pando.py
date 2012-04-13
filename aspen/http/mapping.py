@@ -1,3 +1,6 @@
+from aspen.utils import ascii_dammit
+
+
 NO_DEFAULT = object()
 
 
@@ -6,8 +9,9 @@ class Mapping(dict):
 
     Mappings in HTTP differ from Python dictionaries in that they may have one
     or more values. This dictionary subclass maintains a list of values for
-    each key. Subscript assignment appends to the list, and subscript access
-    returns the last item.
+    each key. However, access semantics are asymetric: subscript assignment
+    clobbers to the list, while subscript access returns the last item. Think
+    about it.
 
     """
   
@@ -18,15 +22,12 @@ class Mapping(dict):
             return dict.__getitem__(self, name)[-1]
         except KeyError:
             from aspen import Response
-            raise Response(400)
+            raise Response(400, "Missing key: %s" % ascii_dammit(name))
 
     def __setitem__(self, name, value):
-        """Given a name and value, append the value to the list of values.
+        """Given a name and value, clobber any existing values.
         """
-        if name in self:
-            self.all(name).append(value)
-        else:
-            dict.__setitem__(self, name, [value])
+        dict.__setitem__(self, name, [value])
 
     def pop(self, name, default=NO_DEFAULT):
         """Given a name, return a value.
@@ -64,10 +65,13 @@ class Mapping(dict):
         """
         return dict.get(self, name, [default])[-1]
 
-    def set(self, name, value):
-        """Clobber any existing item.
+    def add(self, name, value):
+        """Given a name and value, clobber any existing values with the new one.
         """
-        return dict.__setitem__(self, name, [value])
+        if name in self:
+            self.all(name).append(value)
+        else:
+            dict.__setitem__(self, name, [value])
 
     def ones(self, *names):
         """Given one or more names of keys, return a list of their values.
@@ -91,17 +95,20 @@ class CaseInsensitiveMapping(Mapping):
         for k, v in kw.iteritems():
             self[k] = v
 
+    def __contains__(self, name):
+        return Mapping.__contains__(self, name.title())
+
     def __getitem__(self, name):
         return Mapping.__getitem__(self, name.title())
 
     def __setitem__(self, name, value):
         return Mapping.__setitem__(self, name.title(), value)
 
+    def add(self, name, value):
+        return Mapping.add(self, name.title(), value)
+
     def get(self, name, default=None):
         return Mapping.get(self, name.title(), default)
-
-    def set(self, name, value):
-        return Mapping.set(self, name.title(), value)
 
     def all(self, name):
         return Mapping.all(self, name.title())
