@@ -5,6 +5,7 @@ try:                # 2
 except ImportError: # 3
     from http.cookies import CookieError, SimpleCookie
 
+from aspen.utils import ascii_dammit
 from aspen.http import status_strings
 from aspen.http.baseheaders import BaseHeaders as Headers
 
@@ -93,8 +94,19 @@ class Response(Exception):
             self.headers['Set-Cookie'] = morsel.OutputString()
         wsgi_headers = []
         for k, vals in self.headers.iteritems():
+            try:        # XXX This is a hack. It's red hot, baby.
+                k = k.encode('US-ASCII')
+            except UnicodeEncodeError:
+                k = ascii_dammit(k)
+                raise ValueError("Header key %s must be US-ASCII.")
             for v in vals:
+                try:    # XXX This also is a hack. It is also red hot, baby.
+                    v = v.encode('US-ASCII')
+                except UnicodeEncodeError:
+                    v = ascii_dammit(v)
+                    raise ValueError("Header value %s must be US-ASCII.")
                 wsgi_headers.append((k, v))
+
         start_response(wsgi_status, wsgi_headers)
         body = self.body
         if isinstance(body, basestring):
