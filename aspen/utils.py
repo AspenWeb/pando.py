@@ -27,7 +27,8 @@ def unicode_dammit(s, encoding="UTF-8"):
     """
     if not isinstance(s, str):
         raise TypeError("You gave me something besides a str.")
-    return s.decode(encoding, errors='repr')
+    errors = 'repr'
+    return s.decode(encoding, errors)
 
 def ascii_dammit(s):
     """Given a bytestring, return a bytestring.
