@@ -8,9 +8,6 @@ Here is the class hierarchy:
                \                       \
                 \--> StaticResource     \--> TemplateResource
 
-XXX: There is lots of semantic ambiguity and overlap between Resource and
-Simplate.
-
 """
 import mimetypes
 import os
@@ -53,19 +50,19 @@ class Entry:
 def get_resource_class(raw, mimetype):
     """Given raw file contents and a mimetype, return a Resource subclass.
 
-    This function encodes the algorithm for deciding what kind of Resource (=~
-    simplate) a given file is. Is it a static file or a dynamic JSON simplate
-    or what? Etc. Here is the algorithm:
+    This function encodes the algorithm for deciding what kind of Resource a
+    given file is. Is it a static file or a dynamic JSON resource or what? Etc.
+    Here is the algorithm:
 
-        If mimetype is 'application/x-socket.io' then it's a Socket simplate.
+        If mimetype is 'application/x-socket.io' then it's a Socket resource.
 
         If mimetype is 'text/*' or 'application/json' then we look for page
         breaks (^L). If there aren't any page breaks then it's a static file.
-        If it has at least one page break then it's a dynamic simplate (either
+        If it has at least one page break then it's a dynamic resource (either
         Template or JSON).
 
         For all other mimetypes we sniff the first few bytes of the file. If it
-        looks Python-y then it's a Template simplate, otherwise it's a static
+        looks Python-y then it's a Template resource, otherwise it's a static
         file. What looks Python-y? Triple quotes for a leading docstring, or
         the beginning of an import statement ("from" or "import").
     

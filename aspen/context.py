@@ -1,5 +1,5 @@
 class Context(dict):
-    """Model the execution context for a Simplate.
+    """Model the execution context for a Resource.
     """
 
     def __init__(self, request):

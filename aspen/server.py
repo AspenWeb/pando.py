@@ -21,7 +21,7 @@ def main(argv=None):
 
         # Website
         # =======
-        # User-developers get this website object inside of their simplates and
+        # User-developers get this website object inside of their resources and
         # hooks. It provides access to configuration information in addition to
         # being a WSGI callable and holding the request/response handling
         # logic. See aspen/website.py

@@ -199,6 +199,9 @@ class Configurable(object):
             # PYTHONPATH
             sys.path.insert(0, self.project_root)
 
+        # mime.types
+        mimetypes.init()
+
         # network_engine
         try: 
             cap = {}
@@ -221,9 +224,6 @@ class Configurable(object):
             self.network_port = self.network_address[1]
         else:
             self.network_port = None
-
-        # mime.types
-        mimetypes.init()
 
         # hooks
         self.hooks = Hooks([ 'startup'
