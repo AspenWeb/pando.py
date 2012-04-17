@@ -1,21 +1,18 @@
 import os
-from os.path import dirname, join, realpath
 
 from aspen import gauntlet, Response
 from aspen.http.request import Request
 from aspen.testing import assert_raises, handle, NoException, StubRequest 
-from aspen.testing import attach_teardown, fix, FSFIX, mk
-from aspen.configuration import Configurable
-from aspen.http.mapping import Mapping
+from aspen.testing import attach_teardown, fix, mk
 
 
 # Indices
 # =======
 
-def check_index(path):
+def check_index(path, *a):
     """Given a uripath, return a filesystem path per gauntlet.index.
     """
-    request = StubRequest.from_fs(path)
+    request = StubRequest.from_fs(path, *a)
     gauntlet.run_through(request, gauntlet.index)
     return request
 
@@ -32,24 +29,24 @@ def test_alternate_index_is_not_found():
     assert actual == expected, actual
     
 def test_alternate_index_is_found():
-    mk( ('.aspen/aspen.conf', '[aspen]\ndefault_filenames = default.html')
+    mk( ('.aspen/configure-aspen.py', 'website.indices += ["default.html"]')
       , ('default.html', "Greetings, program!")
        )
     expected = fix('default.html')
     actual = check_index('/').fs
     assert actual == expected, actual
     
-def test_index_conf_setting_overrides_and_doesnt_extend():
-    mk( ('.aspen/aspen.conf', '[aspen]\ndefault_filenames = default.html')
+def test_configure_aspen_py_setting_override_works_too():
+    mk( ('.aspen/configure-aspen.py', 'website.indices = ["default.html"]')
       , ('index.html', "Greetings, program!")
        )
     expected = fix('')
     actual = check_index('/').fs
     assert actual == expected, actual
     
-def test_index_conf_setting_takes_first():
-    mk( ( '.aspen/aspen.conf'
-        , '[aspen]\ndefault_filenames = index.html default.html')
+def test_configure_aspen_py_setting_takes_first():
+    mk( ( '.aspen/configure-aspen.py'
+        , 'website.indices = ["index.html", "default.html"]')
       , ('index.html', "Greetings, program!")
       , ('default.html', "Greetings, program!")
        )
@@ -57,49 +54,40 @@ def test_index_conf_setting_takes_first():
     actual = check_index('/').fs
     assert actual == expected, actual
     
-def test_index_conf_setting_takes_second_if_first_is_missing():
-    mk( ( '.aspen/aspen.conf'
-        , '[aspen]\ndefault_filenames = index.html default.html')
+def test_configure_aspen_py_setting_takes_second_if_first_is_missing():
+    mk( ( '.aspen/configure-aspen.py'
+        , 'website.indices = ["index.html", "default.html"]')
       , ('default.html', "Greetings, program!")
        )
     expected = fix('default.html')
     actual = check_index('/').fs
     assert actual == expected, actual
     
-def test_index_conf_setting_strips_commas():
-    mk( ( '.aspen/aspen.conf'
-        , '[aspen]\ndefault_filenames: index.html, default.html')
+def test_configure_aspen_py_setting_strips_commas():
+    mk( ( '.aspen/configure-aspen.py'
+        , 'website.indices = ["index.html", "default.html"]')
       , ('default.html', "Greetings, program!")
        )
     expected = fix('default.html')
     actual = check_index('/').fs
     assert actual == expected, actual
     
-def test_index_conf_setting_strips_many_commas():
-    mk( ( '.aspen/aspen.conf'
-        , '[aspen]\ndefault_filenames: index.html,,,,,,, default.html')
-      , ('default.html', "Greetings, program!")
-       )
+def test_configure_aspen_py_setting_strips_many_commas():
+    mk(('default.html', "Greetings, program!"))
     expected = fix('default.html')
-    actual = check_index('/').fs
+    actual = check_index('/', '--indices', 'index.html,,default.html').fs
     assert actual == expected, actual
     
-def test_index_conf_setting_ignores_blanks():
-    mk( ( '.aspen/aspen.conf'
-        , '[aspen]\ndefault_filenames: index.html,, ,, ,,, default.html')
-      , ('default.html', "Greetings, program!")
-       )
+def test_configure_aspen_py_setting_ignores_blanks():
+    mk(('default.html', "Greetings, program!"))
     expected = fix('default.html')
-    actual = check_index('/').fs
+    actual = check_index('/', '--indices', 'index.html, ,default.html').fs
     assert actual == expected, actual
 
-def test_index_conf_setting_works_with_only_comma():
-    mk( ( '.aspen/aspen.conf'
-        , '[aspen]\ndefault_filenames: index.html,default.html')
-      , ('default.html', "Greetings, program!")
-       )
+def test_configure_aspen_py_setting_works_with_only_comma():
+    mk(('default.html', "Greetings, program!"))
     expected = fix('default.html')
-    actual = check_index('/').fs
+    actual = check_index('/', '--indices', 'index.html, ,default.html').fs
     assert actual == expected, actual
 
 

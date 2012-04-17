@@ -10,19 +10,13 @@ def main(argv=None):
         # No, I don't care enough to put aspen/__init__.py in here too.
 
         import os
-        import logging
         import socket
         import sys
-        import time
         import traceback
-        from os.path import exists, join
 
         import aspen
         from aspen import restarter
         from aspen.website import Website
-
-        
-        log = logging.getLogger('aspen.cli')
 
 
         # Website
@@ -45,19 +39,19 @@ def main(argv=None):
 
         try:
             if hasattr(socket, 'AF_UNIX'):
-                if website.sockfam == socket.AF_UNIX:
-                    if exists(website.address):
-                        log.info("Removing stale socket.")
-                        os.remove(website.address)
-            if website.port is not None:
-                welcome = "port %d" % website.port
+                if website.network_sockfam == socket.AF_UNIX:
+                    if os.path.exists(website.network_address):
+                        aspen.log("Removing stale socket.")
+                        os.remove(website.network_address)
+            if website.network_port is not None:
+                welcome = "port %d" % website.network_port
             else:
-                welcome = website.address
-            log.info("Starting %s engine." % website.engine.name)
-            website.engine.bind()
-            log.warn("Greetings, program! Welcome to %s." % welcome)
+                welcome = website.network_address
+            aspen.log("Starting %s engine." % website.network_engine.name)
+            website.network_engine.bind()
+            aspen.log("Greetings, program! Welcome to %s." % welcome)
             if website.changes_kill:
-                log.info("Aspen will die when files change.")
+                aspen.log("Aspen will die when files change.")
                 restarter.install(website)
             website.start()
 
@@ -75,9 +69,9 @@ def main(argv=None):
             # the "Greetings, program!" line. They definitely won't see it if
             # using an engine like eventlet that binds to the port early.
 
-            if website.port is not None:
+            if website.network_port is not None:
                 msg = "Is something already running on port %s? Because ..."
-                msg %= website.port
+                msg %= website.network_port
                 if not aspen.WINDOWS:
                     # Assume we can use ANSI color escapes if not on Windows.
                     # XXX Maybe a bad assumption if this is going into a log 
@@ -86,16 +80,16 @@ def main(argv=None):
                 print >> sys.stderr, msg
             raise
 
-        except KeyboardInterrupt, SystemExit:
+        except (KeyboardInterrupt, SystemExit):
             pass
         except:
             traceback.print_exc()
         finally:
             if hasattr(socket, 'AF_UNIX'):
-                if website.sockfam == socket.AF_UNIX:
-                    if exists(website.address):
-                        os.remove(website.address)
+                if website.network_sockfam == socket.AF_UNIX:
+                    if os.path.exists(website.network_address):
+                        os.remove(website.network_address)
             website.stop()
-    except KeyboardInterrupt, SystemExit:
+    except (KeyboardInterrupt, SystemExit):
         pass
 

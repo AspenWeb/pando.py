@@ -20,9 +20,6 @@ Problems with tornado.template:
         {% end %}
 
 """
-import copy 
-
-from aspen import Response
 from aspen.resources.dynamic_resource import DynamicResource
 from aspen._tornado.template import Template
 
@@ -50,7 +47,7 @@ class TemplateResource(DynamicResource):
         """
         return Template( self._trim_initial_newline(three)
                        , name = self.fs
-                       , loader = self.website.template_loader 
+                       , loader = self.website.template_loader
                        , compress_whitespace = False
                         )
 

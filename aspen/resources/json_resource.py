@@ -1,5 +1,3 @@
-import datetime
-
 from aspen import json
 from aspen.resources.dynamic_resource import DynamicResource
 
@@ -37,5 +35,5 @@ class JSONResource(DynamicResource):
         """
         if not isinstance(response.body, basestring):
             response.body = json.dumps(response.body)
-        response.headers['Content-Type'] = self.website.json_content_type
+        response.headers['Content-Type'] = self.website.media_type_json
         return response

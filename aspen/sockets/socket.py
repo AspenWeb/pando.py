@@ -28,12 +28,11 @@ class Socket(object):
         self.sid = uuid.uuid4().hex
         self.endpoint = request.line.uri.path.raw
         self.resource = resources.get(request)
-        request.website.copy_configuration_to(self)
-        request.website.copy_configuration_to(channel)
 
-        self.loop = request.engine.Loop(self)
-        self.incoming = request.engine.Buffer('incoming', self)
-        self.outgoing = request.engine.Buffer('outgoing', self)
+        self.website = request.website
+        self.loop = request.website.network_engine.Loop(self)
+        self.incoming = request.website.network_engine.Buffer('incoming', self)
+        self.outgoing = request.website.network_engine.Buffer('outgoing', self)
         self.channel = channel
         self.channel.add(self)
         self.context = self.resource.exec_second(self, request)

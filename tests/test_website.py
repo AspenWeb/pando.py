@@ -1,10 +1,7 @@
 import os
-from os.path import join
 
-from aspen._tornado.template import Loader
-from aspen.http.request import Request
 from aspen.testing import handle, StubRequest
-from aspen.testing.fsfix import attach_teardown, mk
+from aspen.testing.fsfix import attach_teardown, FSFIX, mk
 from aspen.website import Website
 
 
@@ -14,7 +11,7 @@ from aspen.website import Website
 def test_basic():
     website = Website([])
     expected = os.getcwd()
-    actual = website.root
+    actual = website.www_root
     assert actual == expected, actual
 
 def test_normal_response_is_returned():
@@ -53,10 +50,9 @@ def test_autoindex_response_is_404_by_default():
     assert actual == expected, actual
 
 def test_autoindex_response_is_returned():
-    mk(('.aspen/aspen.conf', '[aspen]\nlist_directories: 1')
-       , ('README', "Greetings, program!"))
+    mk(('README', "Greetings, program!"))
     expected = True
-    actual = 'README' in handle().body
+    actual = 'README' in handle('/', '--list_directories=TrUe').body
     assert actual == expected, actual
 
 def test_simplates_can_import_from_dot_aspen():
@@ -65,10 +61,8 @@ def test_simplates_can_import_from_dot_aspen():
       , ('index.html', "import fooGreetings, {{ foo.bar }}!")
        )
     expected = "Greetings, baz!"
-    actual = handle().body
+    actual = handle('/', '--project_root=.aspen').body
     assert actual == expected, actual
-
-
 
 
 def test_double_failure_still_sets_response_dot_request():
@@ -77,12 +71,14 @@ def test_double_failure_still_sets_response_dot_request():
 def bar(response):
     response.request
 """)
-      , ('.aspen/hooks.conf', 'foo:bar')
+      , ( '.aspen/configure-aspen.py'
+        , 'import foo\nwebsite.hooks.outbound_late.register(foo.bar)'
+         )
       , ('index.html', "raise heck")
        )
 
     # Intentionally break the website object so as to trigger a double failure.
-    website = Website(['fsfix'])
+    website = Website(['--www_root='+FSFIX, '--project_root=.aspen'])
     del website.template_loader
 
     response = website.handle(StubRequest())

@@ -1,6 +1,4 @@
 import collections
-import socket
-import sys
 import time
 
 from aspen.engines import CooperativeEngine
@@ -144,7 +142,7 @@ class Engine(CooperativeEngine):
     def bind(self):
         container = tornado.wsgi.WSGIContainer(self.website)
         http_server = tornado.httpserver.HTTPServer(container)
-        http_server.listen(self.website.address[1])
+        http_server.listen(self.website.network_address[1])
 
     def sleep(self, seconds):
         time.sleep(seconds)

@@ -4,14 +4,10 @@ These functions determine the handelability of a request, and run in the order
 given here.
 
 """
-import logging
 import os
 from os.path import join, isfile, isdir, dirname, exists
 
 from aspen import Response
-
-
-log = logging.getLogger('aspen.gauntlet')
 
 
 def intercept_socket(request):
@@ -34,7 +30,6 @@ def intercept_socket(request):
         path = parts[0] + '.sock'
         socket = parts[1]
     request.line.uri.path.raw, request.socket = path, socket
-    #spam -- log.debug('gauntlet.intercept_socket: ' + request.line.uri.path.raw)
 
 def translate(request):
     """Translate urlpath to fspath, returning urlpath parts.
@@ -44,21 +39,21 @@ def translate(request):
     directories in request.fs.
 
     """
-    parts = [request.root] + request.line.uri.path.decoded.lstrip('/').split('/')
+    parts = [request.website.www_root] 
+    parts += request.line.uri.path.decoded.lstrip('/').split('/')
     request.fs = os.sep.join(parts).rstrip(os.sep)
     request._parts = parts # store for use in processing virtual_paths
-    #spam -- log.debug('gauntlet.translate: ' + request.fs)
 
 def check_sanity(request):
     """Make sure the request is under our root.
     """
-    if not request.fs.startswith(request.root):
-        raise response(404)
+    if not request.fs.startswith(request.website.www_root):
+        raise Response(404)
 
 def hidden_files(request):
     """Protect hidden files.
     """
-    if '/.' in request.fs[len(request.root):]:
+    if '/.' in request.fs[len(request.website.www_root):]:
         raise Response(404)
 
 def virtual_paths(request):
@@ -71,10 +66,10 @@ def virtual_paths(request):
     subdirectory starting with '%' then only the 'first' is used.
 
     """
-    if os.sep + '%' in request.fs[len(request.root):]:  # disallow direct access
-        raise Response(404)
+    if os.sep + '%' in request.fs[len(request.website.www_root):]:
+        raise Response(404)     # disallow direct access
     if not exists(request.fs):
-        matched = request.root
+        matched = request.website.www_root
         parts = request._parts
         del request._parts
         nparts = len(parts)
@@ -128,11 +123,10 @@ def virtual_paths(request):
                             break # Only use the first %match per level.
                     break # don't recurse in os.walk
                 if key is None:
-                    matched = request.root
+                    matched = request.website.www_root
                     break # no match, reset
-        if matched != request.root:
+        if matched != request.website.www_root:
             request.fs = matched.rstrip(os.sep)
-    #spam -- log.debug('gauntlet.virtual_paths: ' + request.fs)
 
 def _typecast(key, value):
     """Given two strings, return a string, and an int or string.
@@ -162,22 +156,20 @@ def trailing_slash(request):
 
 def index(request):
     if isdir(request.fs):
-        for filename in request.default_filenames:
+        for filename in request.website.indices:
             index = join(request.fs, filename)
             if isfile(index):
                 request.fs = index
                 break
-    #spam -- log.debug('gauntlet.index: ' + request.fs)
 
 def autoindex(request):
     if isdir(request.fs):
-        if request.conf.aspen.no('list_directories'):
+        if request.website.list_directories:
             request.headers['X-Aspen-AutoIndexDir'] = request.fs
             request.fs = request.website.ours_or_theirs('autoindex.html')
             assert request.fs is not None # sanity check
         else:
             raise Response(404)
-    #spam -- log.debug('gauntlet.autoindex: ' + request.fs)
 
 def not_found(request):
     if not isfile(request.fs):
@@ -185,7 +177,6 @@ def not_found(request):
             request.fs = request.website.find_ours('favicon.ico')
         else:
             raise Response(404)
-    #spam -- log.debug('gauntlet.not_found: ' + request.fs)
 
 
 gauntlet = [ intercept_socket
@@ -202,7 +193,6 @@ gauntlet = [ intercept_socket
 def run(request):
     """Given a request, run it through the gauntlet.
     """
-    #spam -- log.debug('gauntlet.run: ' + request.line.uri.path.raw)
     for func in gauntlet:
         func(request)
 
@@ -212,7 +202,6 @@ def run_through(request, last):
     Pass in a request object and a gauntlet function, the last to be run.
 
     """
-    #spam -- log.debug('gauntlet.run_through: ' + request.line.uri.path.raw)
     for func in gauntlet:
         func(request)
         if func is last:

@@ -10,7 +10,9 @@ class Engine(ThreadedEngine):
     cp_server = None # a CherryPyWSGIServer instance
 
     def bind(self):
-        self.cp_server = CherryPyWSGIServer(self.website.address, self.website)
+        self.cp_server = CherryPyWSGIServer( self.website.network_address
+                                           , self.website
+                                            )
 
         # Work around a Jython bug.
         # =========================

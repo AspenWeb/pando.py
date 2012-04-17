@@ -27,9 +27,9 @@ class Engine(ThreadedEngine):
         time.sleep(seconds) # We're threaded.
 
     def start(self):
-        twisted.internet.reactor.listenTCP( port=self.website.address[1]
+        twisted.internet.reactor.listenTCP( port=self.website.network_address[1]
                                           , factory=self.twisted_site
-                                          , interface=self.website.address[0]
+                                          , interface=self.website.network_address[0]
                                            )
         twisted.internet.reactor.run()
 

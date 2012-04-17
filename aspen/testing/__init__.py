@@ -1,11 +1,5 @@
-import errno
-import inspect
 import os
 import sys
-import time
-import traceback
-import urllib
-from os.path import dirname, join
 
 import threading
 import collections
@@ -25,7 +19,6 @@ from aspen.configuration import Configurable
 from aspen.http.request import Request
 from aspen.resources import load
 from aspen.website import Website
-from aspen._tornado.template import Loader
 from aspen.testing.fsfix import fix, attach_teardown, FSFIX, mk, teardown
 
 
@@ -51,22 +44,22 @@ def StubWSGIRequest(path='/'):
 
 class StubRequest:
     
-    def __call__(cls, path='/'):
-        return Request.from_wsgi(StubWSGIRequest(path))
+    def __call__(cls, uripath='/'):
+        return Request.from_wsgi(StubWSGIRequest(uripath))
 
     @classmethod
-    def from_fs(cls, fs):
+    def from_fs(cls, fs, *a):
         """Takes a path under FSFIX using / as the path separator.
         """
         fs = os.sep.join(fs.split(os.sep))
         request = Request.from_wsgi(StubWSGIRequest(fs))
-        website = Configurable.from_argv(['--root', FSFIX])
-        website.copy_configuration_to(request)
-        #request.root = join(dirname(__file__), FSFIX)
+        website = Configurable.from_argv([ '--www_root', FSFIX
+                                         , '--project_root', '.aspen'
+                                          ] + list(a))
+        request.www_root = os.path.join(os.path.dirname(__file__), FSFIX)
         request.fs = fs
         request.context = {}
         request.website = website 
-        request.website.template_loader = Stub()
         return request
 
 StubRequest = StubRequest()
@@ -81,29 +74,31 @@ class Handle(object):
         """
         self.argv = argv
 
-    def __call__(self, path='/'):
+    def __call__(self, path='/', *a):
         """Given an URL path, return 
 
         This only allows you to simulate GET requests with no querystring, so
         it's limited. But it's a something. Kind of. Almost.
 
         """
-        website = Website(self.argv)
+        website = Website(self.argv + list(a))
         request = StubRequest(path)
         request.website = website
         response = website.handle(request)
         return response
 
-handle = Handle(['--root', FSFIX])
+handle = Handle(['--www_root', FSFIX])
 
 
 def Resource(fs):
     return load(StubRequest.from_fs(fs), 0)
 
-def check(content, filename="index.html", body=True, aspenconf="", 
-        response=None):
-    mk(('.aspen/aspen.conf', aspenconf), (filename, content))
-    request = StubRequest.from_fs(filename)
+def check(content, filename="index.html", body=True, configure_aspen_py="", 
+        response=None, argv=None):
+    if argv is None:
+        argv = []
+    mk(('.aspen/configure-aspen.py', configure_aspen_py), (filename, content))
+    request = StubRequest.from_fs(filename, *argv)
     response = response or Response()
     resource = load(request, 0)
     response = resource.respond(request, response)

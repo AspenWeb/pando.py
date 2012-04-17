@@ -9,8 +9,8 @@ class Engine(CooperativeEngine):
 
     def bind(self):
         self.diesel_app = wsgi.WSGIApplication( self.website
-                                              , self.website.address[1]
-                                              , self.website.address[0]
+                                              , self.website.network_address[1]
+                                              , self.website.network_address[0]
                                                )
 
     def start(self):

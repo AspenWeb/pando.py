@@ -136,8 +136,8 @@ class Engine(CooperativeEngine):
     eventlet_socket = None # a socket, per eventlet
 
     def bind(self):
-        self.eventlet_socket = eventlet.listen( self.website.address
-                                              , self.website.sockfam
+        self.eventlet_socket = eventlet.listen( self.website.network_address
+                                              , self.website.network_sockfam
                                                )
         if eventlet.version_info <= (0, 9, 15):
             # Work around https://bitbucket.org/which_linden/eventlet/issue/86/

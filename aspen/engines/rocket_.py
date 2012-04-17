@@ -2,7 +2,7 @@ import time
 import threading
 
 import rocket 
-from aspen.engines import BaseEngine
+from aspen.engines import ThreadedEngine
 
 
 class Engine(ThreadedEngine):
@@ -10,7 +10,7 @@ class Engine(ThreadedEngine):
     rocket_server = None # a rocket.CherryPyWSGIServer instance
 
     def bind(self):
-        self.rocket_server = rocket.CherryPyWSGIServer( self.website.address
+        self.rocket_server = rocket.CherryPyWSGIServer( self.website.network_address
                                                       , self.website
                                                        )
 

@@ -1,25 +1,98 @@
 """Define configuration objects.
 """
-import logging
+import errno
 import mimetypes
 import os
 import socket
 import sys
-from os.path import dirname, expanduser, isdir, join, realpath
 
 import aspen
-from aspen.configuration.aspenconf import AspenConf 
+from aspen.utils import ascii_dammit
+from aspen.configuration import parse
 from aspen.configuration.exceptions import ConfigurationError
-from aspen.configuration.hooks import HooksConf
-from aspen.configuration.options import OptionParser, validate_address
+from aspen.configuration.hooks import Hooks
+from aspen.configuration.options import OptionParser, DEFAULT
 from aspen._tornado.template import Loader
-from aspen.configuration.logging_ import configure_logging
-from aspen.configuration.colon import colonize
 
+
+# Defaults
+# ========
+# The from_unicode callable converts from unicode to whatever format is 
+# required by the variable, raising ValueError appropriately. Note that 
+# name is supposed to match the options in our optparser. I like it wet.
+
+KNOBS = \
+    { 'configuration_scripts': (lambda: [], parse.list_)
+    , 'network_engine':     (u'cherrypy', parse.network_engine)
+    , 'network_address':    ( ((u'0.0.0.0', 8080), socket.AF_INET)
+                            , parse.network_address
+                             )
+    , 'project_root':       (None, parse.identity)
+    , 'quiet_level':        (0, int)
+    , 'www_root':           (None, parse.identity)
+
+
+    # Extended Options
+    # 'name':               (default, from_unicode)
+    , 'changes_kill':       (False, parse.yes_no)
+    , 'charset_dynamic':    (u'UTF-8', parse.charset)
+    , 'charset_static':     (None, parse.charset)
+    , 'indices':            ( lambda: [u'index.html', u'index.json']
+                            , parse.list_ 
+                             )
+    , 'list_directories':   (False, parse.yes_no)
+    , 'media_type_default': (u'text/plain', parse.media_type)
+    , 'media_type_json':    (u'application/json', parse.media_type)
+    , 'show_tracebacks':    (False, parse.yes_no)
+     }
+
+
+# Configurable
+# ============
+# Designed as a singleton.
 
 class Configurable(object):
     """Mixin object for aggregating configuration from several sources.
     """
+
+    def _set_and_log(self, name, hydrated, flat, context, name_in_context=''):
+        """Set value at self.name, calling value if it's callable.
+        """
+        if aspen.is_callable(hydrated):
+            hydrated = hydrated()  # Call it if we can.
+        setattr(self, name, hydrated)
+        if name_in_context:
+            assert isinstance(flat, unicode) # sanity check
+            name_in_context = " %s=%s" % (name_in_context, flat)
+        aspen.log("  %-22s %-29s %-24s" 
+                  % (name, hydrated, context + name_in_context))
+
+    def _set(self, name, raw, from_unicode, context, name_in_context):
+        assert isinstance(raw, str), "%s isn't a bytestring" % name
+        try:
+            try:
+                value = raw.decode('US-ASCII')
+            except UnicodeDecodeError:
+                msg = "config values must be US-ASCII"
+                raise ValueError(msg)
+            hydrated = from_unicode(value)
+        except ValueError, err:
+            msg = "The %s %s is malformed: %s."
+            msg %= (context, name_in_context, ascii_dammit(value))
+            if err.args[0]:
+                msg += " " + err.args[0]
+            raise ConfigurationError(msg)
+
+        # special-case lists, so we can layer them
+        if from_unicode is parse.list_:
+            extend, new_value = hydrated
+            if extend:
+                old_value = getattr(self, name)
+                hydrated = old_value + new_value
+            else:
+                hydrated = new_value
+
+        self._set_and_log(name, hydrated, value, context, name_in_context)
 
     def configure(self, argv):
         """Takes an argv list, and gives it straight to optparser.parse_args.
@@ -28,7 +101,17 @@ class Configurable(object):
 
         """
 
-        self.__names = [] # keep track of what configuration we configure
+        # Do some base-line configuration.
+        # ================================
+        # We want to do the following configuration of our Python environment
+        # regardless of the user's configuration preferences
+
+        # mimetypes
+        aspens_mimetypes = os.path.join(os.path.dirname(__file__), 'mime.types')
+        mimetypes.knownfiles += [aspens_mimetypes]
+        # mimetypes.init is called below after the user has a turn.
+
+        # XXX register codecs here
 
 
         # Parse argv.
@@ -37,154 +120,154 @@ class Configurable(object):
         opts, args = OptionParser().parse_args(argv)
 
 
-        # Orient ourselves.
-        # =================
+        # Configure from defaults, environment, and command line.
+        # =======================================================
 
-        self.root = root = opts.root
-        if isinstance(root, ConfigurationError):
-            # It turns out that os.getcwd can raise OSError (I've seen this
-            # happen under supervisord, I swear it). I need to do some
-            # gymnastics to work with the optparse module's handling of
-            # defaults, and this is the gymnastics I'm doing.
-            raise root
-        os.chdir(root)
+        aspen.log("Reading configuration from defaults, environment, and "
+                  "command line.")
+        for name, (default, func) in sorted(KNOBS.items()):
 
-        self.dotaspen = dotaspen = join(root, '.aspen')
-        if isdir(dotaspen):
-            if sys.path[0] != dotaspen:
-                sys.path.insert(0, dotaspen)
+            # set default
+            self._set_and_log(name, default, None, "default")
 
-        self.__names.extend(['root', 'dotaspen'])
+            # set from environment
+            envvar = 'ASPEN_' + name.upper()
+            value = os.environ.get(envvar, '').strip()
+            if value:
+                self._set(name, value, func, "environment variable", envvar)
+
+            # set from command line
+            value = getattr(opts, name)
+            if value is not DEFAULT:
+                self._set(name, value, func, "command line option", "--"+name)
 
 
         # Set some attributes.
         # ====================
 
-        self.conf = load_conf(expanduser, dotaspen)
-        self.template_loader = Loader(dotaspen)
-        self.__names.extend(['conf', 'template_loader'])
+        # www_root
+        if self.www_root is None:
+            try:
 
-        init_mimetypes(mimetypes, dotaspen)
-        self.default_mimetype = load_default_mimetype(self.conf)
-        self.default_filenames = load_default_filenames(self.conf)
-        self.json_content_type = load_json_content_type(self.conf)
-        self.show_tracebacks = self.conf.aspen.no('show_tracebacks')
-        self.__names.extend(['default_mimetype', 'default_filenames', 
-            'json_content_type', 'show_tracebacks'])
+                # If the working directory no longer exists, then the following
+                # will raise OSError: [Errno 2] No such file or directory. I
+                # swear I've seen this under supervisor, though I don't have
+                # steps to reproduce. :-(  To get around this you specify a
+                # www_root explicitly, or you can use supervisor's cwd
+                # facility.
 
-        self.hooks = load_hooks(expanduser, dotaspen)
-        self.__names.append('hooks')
+                self.www_root = os.getcwd()
+            except OSError, err:
+                if err.errno != errno.ENOENT:
+                    raise
+                raise ConfigurationError("Could not get a current working "
+                                         "directory. You can specify "
+                                         "ASPEN_WWW_ROOT in the environment, "
+                                         "or --www_root on the command line.")
 
-        self.engine = load_engine(opts, self)
-        self.changes_kill = self.conf['aspen.cli'].no('changes_kill')
-        self.__names.extend(['engine', 'changes_kill'])
+        self.www_root = os.path.realpath(self.www_root)
+        os.chdir(self.www_root)
 
-        self.address, self.sockfam = load_address_sockfam(opts, self.conf)
-        self.port = load_port(self.address, self.sockfam)
-        self.sock = None
-        self.__names.extend(['address', 'sockfam', 'port', 'sock'])
+        # project root 
+        if self.project_root is None:
+            aspen.log("project_root not configured (no template bases, etc.).")
+            self.template_loader = None
+            configure_aspen_py = None
+        else:
+            # canonicalize it
+            if not os.path.isabs(self.project_root):
+                aspen.log("project_root is relative: %s." % self.project_root)
+                self.project_root = os.path.join( self.www_root
+                                                , self.project_root
+                                                 )
+            self.project_root = os.path.realpath(self.project_root)
+            aspen.log("project_root set to %s." % self.project_root)
 
-        r = configure_logging(opts, dotaspen, self.conf)
-        self.log_filename, self.log_filter, self.log_format, self.log_level = r
-        self.__names.extend(['log_filename', 'log_filter', 'log_format', 
-            'log_level'])
+            # template loader
+            self.template_loader = Loader(self.project_root)
+            
+            # mime.types
+            users_mimetypes = os.path.join(self.project_root, 'mime.types')
+            mimetypes.knownfiles += [users_mimetypes]
 
-    
+            # configure-aspen.py
+            configure_aspen_py = os.path.join( self.project_root
+                                             , 'configure-aspen.py'
+                                              )
+            self.configuration_scripts.insert(0, configure_aspen_py)
+
+            # PYTHONPATH
+            sys.path.insert(0, self.project_root)
+
+        # network_engine
+        try: 
+            cap = {}
+            python_syntax = 'from aspen.engines.%s_ import Engine' 
+            exec python_syntax % self.network_engine in cap
+            Engine = cap['Engine']
+        except ImportError:
+            # ANSI colors: 
+            #   http://stackoverflow.com/questions/287871/
+            #   http://en.wikipedia.org/wiki/ANSI_escape_code#CSI_codes
+            #   XXX consider http://pypi.python.org/pypi/colorama
+            msg = "\033[1;31mImportError loading the %s engine:\033[0m%s" 
+            aspen.log(msg % (self.network_engine, os.sep))
+            raise
+        self.network_engine = Engine(self.network_engine, self)
+
+        # network_address, network_sockfam, network_port
+        self.network_address, self.network_sockfam = self.network_address
+        if self.network_sockfam == socket.AF_INET:
+            self.network_port = self.network_address[1]
+        else:
+            self.network_port = None
+
+        # mime.types
+        mimetypes.init()
+
+        # hooks
+        self.hooks = Hooks([ 'startup'
+                           , 'inbound_early'
+                           , 'inbound_late'
+                           , 'outbound_early'
+                           , 'outbound_late'
+                           , 'shutdown'
+                            ])
+
+
+        # Finally, exec any configuration scripts.
+        # ========================================
+        # The user gets self as 'website' inside their configuration scripts.
+       
+        for filepath in self.configuration_scripts:
+            filepath = os.path.realpath(filepath)
+            try:
+                execfile(filepath, {'website': self})
+            except IOError, err:
+                # I was checking os.path.isfile for these, but then we have a 
+                # race condition that smells to me like a potential security 
+                # vulnerability.
+                if err.errno == errno.ENOENT:
+                    msg = ("The configuration script %s doesn't seem to "
+                           "exist.")
+                elif err.errno == errno.EACCES:
+                    msg = ("It appears that you don't have permission to read "
+                           "the configuration script %s.")
+                else:
+                    import traceback
+                    msg = ("There was a problem reading the configuration "
+                           "script %s:")
+                    msg += os.sep + traceback.format_exc()
+                if configure_aspen_py is not None:
+                    if filepath != configure_aspen_py:
+                        # Special-case this magically-named configuration file.
+                        aspen.log("Default configuration script not found: %s."
+                                  % filepath)
+                        raise ConfigurationError(msg % filepath)
+
+
     @classmethod
     def from_argv(cls, argv):
         o = cls()
         o.configure(argv)
         return o
-
-    def copy_configuration_to(self, other):
-        """Given another object, shallow copy attributes to it.
-        """
-        for name in self.__names:
-            setattr(other, name, getattr(self, name))
-
-def load_conf(expanduser, dotaspen):
-    return AspenConf( '/etc/aspen/aspen.conf'
-                    , '/usr/local/etc/aspen/aspen.conf'
-                    , expanduser('~/.aspen/aspen.conf') 
-                    , join(dotaspen, 'aspen.conf')
-                     ) # later overrides earlier
-
-def init_mimetypes(mimetypes, dotaspen):
-    mimetypes.knownfiles = [ join(dirname(__file__), 'mime.types')
-                           , '/etc/mime.types'
-                           , '/usr/local/etc/mime.types'
-                           , join(dotaspen, 'mime.types')
-                            ] # later overrides earlier
-    mimetypes.init()
-
-def load_engine(opts, configuration):
-    conf = configuration.conf
-    if opts.engine is not None:     # use command line if present
-        engine_name = opts.engine
-    else:                           # fall back to aspen.conf
-        engine_name = conf['aspen.cli'].get('engine', aspen.ENGINES[1])
-        if engine_name not in aspen.ENGINES:
-            msg = "engine is not one of {%s}: %%s" % (','.join(aspen.ENGINES))
-            raise ConfigurationError(msg % engine)
-    try: 
-        exec 'from aspen.engines.%s_ import Engine' % engine_name
-    except ImportError:
-        # ANSI colors: 
-        #   http://stackoverflow.com/questions/287871/
-        #   http://en.wikipedia.org/wiki/ANSI_escape_code#CSI_codes
-        print >> sys.stderr
-        print >> sys.stderr, ( "\033[1;31mImportError loading the "
-                             + "%s engine:\033[0m" % engine_name
-                              )
-        print >> sys.stderr
-        raise
-
-    engine = Engine(engine_name, configuration)
-    return engine
-
-def load_default_mimetype(conf):
-    return conf.aspen.get('default_mimetype', 'text/plain')
-
-def load_default_filenames(conf):
-    default_filenames = conf.aspen.get('default_filenames', 'index.html')
-    default_filenames = default_filenames.split()
-    default_filenames = [x.strip(',') for x in default_filenames]
-    default_filenames = [x for x in default_filenames if x]
-    default_filenames = [x.split(',') for x in default_filenames]
-    out = []
-    for nested in default_filenames:
-        out.extend(nested)
-    return out
-
-def load_json_content_type(conf):
-    return conf.aspen.get('json_content_type', 'application/json')
-
-def load_hooks(expanduser, dotaspen):
-    return HooksConf( join(dirname(__file__), 'hooks.conf')
-                    , '/etc/aspen/hooks.conf'
-                    , '/usr/local/etc/aspen/hooks.conf'
-                    , expanduser('~/.aspen/hooks.conf')
-                    , join(dotaspen, 'hooks.conf')
-                     ) # later comes after earlier, per section
-
-def load_address_sockfam(opts, conf):
-    """These can be set either on the command line or in the conf file.
-    """
-    if getattr(opts, 'have_address', False):        # first check CLI
-        address = opts.address
-        sockfam = opts.sockfam
-    elif 'address' in conf['aspen.cli']:            # then check conf
-        address, sockfam = validate_address(conf['aspen.cli']['address'])
-    else:                                           # default from optparse
-        address = opts.address
-        sockfam = socket.AF_INET
-
-    return address, sockfam
-
-def load_port(address, sockfam):
-    if sockfam == socket.AF_INET:
-        port = address[1]
-    else:
-        port = None
-    return port
-
