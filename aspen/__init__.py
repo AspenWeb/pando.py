@@ -49,8 +49,8 @@ def thrash():
 LOG_LEVEL = 0
 
 _pid = os.getpid()
-def log(message, _level=0):
-    if _level >= LOG_LEVEL:
+def log(message, level=0):
+    if level >= LOG_LEVEL:
         t = threading.current_thread()
         for line in message.splitlines():  # doesn't include linebreaks 
             print "pid-%d thread-%d (%s) %s" % (_pid, t.ident, t.name, line)
