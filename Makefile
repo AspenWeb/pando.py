@@ -6,7 +6,7 @@ dev: env
 	./env/bin/pip install -e ./
 
 env:
-	python2.7 ./vendor/virtualenv-1.6.4.py \
+	python ./vendor/virtualenv-1.6.4.py \
 		--distribute \
 		--unzip-setuptools \
 		--prompt="[aspen] " \
