@@ -143,35 +143,41 @@ class Website(Configurable):
         return None
 
     def log_access(self, request, response):
-        """Log access.
+        """Log access. With our own format (not Apache).
         """
+
+        if self.quiet_level > 0:
+            return
+
 
         # What was the URL path translated to?
         # ====================================
 
-        fs = request.fs[len(self.www_root):]
-        if fs:
-            fs = '.'+fs
+        fs = request.fs
+        if fs.startswith(self.www_root):
+            fs = fs[len(self.www_root):]
+            if fs:
+                fs = '.'+fs
         else:
-            fs = request.fs
-        aspen.log("%s => %s" % (request.line.uri.path.raw, fs))
+            fs = '...' + fs[-21:]
+        msg = "%-24s %s" % (request.line.uri.path.raw, fs)
 
 
         # Where was response raised from?
         # ===============================
 
         tb = sys.exc_info()[2]
-        if tb is None:
-            aspen.log("%33s" % '<%s>' % response)
-        else:
+        if tb is not None:
             while tb.tb_next is not None:
                 tb = tb.tb_next
             frame = tb.tb_frame
-            co = tb.tb_frame.f_code
-            filename = tb.tb_frame.f_code.co_filename
-            if filename.startswith(self.www_root):
-                filename = '.'+filename[len(self.www_root):]
-            aspen.log("%33s  %s:%d" % ( '<%s>' % response
-                                     , filename
-                                     , frame.f_lineno
-                                      ))
+            filename = tb.tb_frame.f_code.co_filename.split(os.sep)[-1]
+            response = "%s (%s:%d)" % (response, filename, frame.f_lineno)
+        else:
+            response = str(response)
+
+
+        # Log it.
+        # =======
+
+        aspen.log("%-36s %s" % (response, msg))
