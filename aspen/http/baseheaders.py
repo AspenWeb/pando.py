@@ -1,5 +1,3 @@
-from collections import defaultdict
-
 from aspen.http.mapping import CaseInsensitiveMapping
 
 
