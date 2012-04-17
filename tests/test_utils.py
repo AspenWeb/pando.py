@@ -10,7 +10,8 @@ def test_garbage_is_garbage():
     assert_raises(UnicodeDecodeError, lambda s: s.decode('utf8'), GARBAGE)
 
 def test_repr_error_strategy_works():
-    actual = "\xef\xf9".decode('utf8', errors='repr')
+    errors = 'repr'
+    actual = "\xef\xf9".decode('utf8', errors)
     assert actual == r"\xef\xf9", actual
 
 def test_unicode_dammit_works():
