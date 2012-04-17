@@ -76,12 +76,11 @@ the normal <a href="/mime.types/"><code>mime.types</code></a> configuration
 file. Aspen uses the <code>mime.types</code> mapping to determine that a
 simplate is a JSON simplate (actually, any file with an extension that you
 configure to have a mimetype of <code>application/json</code> will be treated
-as a JSON simplate).  Instead, you should set the
-<code>json_content_type</code> key in <code><a
-        href="/aspen.conf/">aspen.conf</a></code>, like so:</p>
+as a JSON simplate).  Instead, you should set the <code>media_type_json</code>
+key in <code><a
+        href="/configure-aspen.py/">configure-aspen.py</a></code>, like so:</p>
 
-<pre>[aspen]
-json_content_type: application/javascript</pre>
+<pre>website.media_type_json = "application/javascript"</pre>
 
 <p>If you need to bypass special JSON simplate handling altogether, you can use
 <a href="/mime.types/"><code>mime.types</code></a> to set the <code>json</code>

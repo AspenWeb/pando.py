@@ -1,5 +1,5 @@
 doc_title = "Hooks"
-doc_next = ("Testing", "/testing/")
+doc_next = ("Unicode", "/unicode/")
 
 {% extends doc.html %}
 {% block doc %}
@@ -39,57 +39,9 @@ translated to the filesystem, with the result at <code>request.fs</code>.</p>
 
 <p>Hooks are global, meaning every hook touches every request/response.</p>
 
-
-<h3>hooks.conf</h3>
-
-<p>Hooks are specified in a <code>hooks.conf</code> file, with <a
-    href="/page-break/">ASCII page breaks</a> (or caret-Ls) to delineate pages.
-There is one page for each kind of hook. You can use <code>#</code> for
-comments. Also, any additional page beyond the sixth is ignored, so you could
-put documentation in there too as needed. Hooks are specified using colon
-notation. For example,</p>
-
-<pre>mypackage.sub.another:blah</pre>
-
-<p>becomes</p>
-
-<pre>from mypackage.sub import another</pre>
-
-<p>The <code>blah</code> attribute of <code>another</code> would then be
-used.</p>
-
-<h4>Example</h4>
-
-<p>Here is an example <code>hooks.conf</code> file:</p>
-
-<pre># I don't have anything to run on startup.
-
-&#94;L
-
-# do authentication; adds a 'user' attribute to request
-mypackage.auth:inbound
-
-# this adds a 'blah' attribute to the request object
-mypackage.sub.another:blah
-</pre>
-
-
-<h4>Layering</h4>
-
-<p>The <code>hooks.conf</code> file is taken from four locations:</p>
-
-<ol>
-    <li><code>/etc/aspen/hooks.conf</code></li>
-    <li><code>/usr/local/etc/aspen/hooks.conf</code></li>
-    <li><code>~/.aspen/hooks.conf</code></li>
-    <li><code>./.aspen/hooks.conf</code></li>
-</ol>
-
-<p>Hooks are run top to bottom in each file, in the order given above. So, for
-example, the last inbound_late hook defined in
-<code>./.aspen/etc/hooks.conf</code> is your last chance to touch the request
-object. The first outbound_early hook in <code>/etc/aspen/hooks.conf</code> is
-your first chance to touch the response object.</p>
+<p>Hooks are registered using API on <a href="/api/website/">the website
+    object</a> that is placed in the namespace of your configuration files and
+simplates.</p>
 
 
 {% end %}

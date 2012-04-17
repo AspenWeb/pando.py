@@ -1,0 +1,102 @@
+doc_title = "Website"
+doc_next = ""
+^L
+{% extends "doc.html" %}
+{% block doc %}
+
+<p>Aspen creates an instance of <code>aspen.website.Website</code> when it
+starts up. It holds all of the global configuration for your application. It is
+placed in the namespace of your configuration scripts and <a
+    href="/simplates/">simplates</a>, where it is available from the first page
+onwards. It is also the object passed to your "startup" and "shutdown" <a
+    href="/hooks/">hooks</a>.</p>
+
+<p>The following attributes are defined when aspen starts up based on
+configuration in the environment (<code>ASPEN_NAME</code>) and on the command
+line (<code>--name</code>):</p>
+
+<table>
+    <tr><td><b><u>attribute</u></b></td><td><b><u>default</u></b></td> </tr>
+    <tr><td>changes_kill</td><td>False</td> </tr>
+    <tr><td>charset_dynamic</td><td>UTF-8</td> </tr>
+    <tr><td>charset_static</td><td>None</td> </tr>
+    <tr><td>configuration_scripts&nbsp;</td><td>[]</td> </tr>
+    <tr><td>indices</td><td>['index.html', 'index.json']</td> </tr>
+    <tr><td>list_directories</td><td>False</td> </tr>
+    <tr><td>media_type_default</td><td>text/plain</td> </tr>
+    <tr><td>media_type_json</td><td>application/json</td> </tr>
+    <tr><td>network_engine</td><td>cherrypy</td> </tr>
+    <tr><td>network_address</td><td>(u'0.0.0.0', 8080), socket.AF_INET)</td> </tr>
+    <tr><td>project_root</td><td>None</td> </tr>
+    <tr><td>show_tracebacks</td><td>False</td> </tr>
+    <tr><td>quiet_level</td><td>0</td> </tr>
+    <tr><td>www_root</td><td>None</td> </tr>
+</table>
+
+
+<h3>Computations</h3>
+
+<p>The following computations are performed after environment and command line
+configuration is processed:</p>
+
+<ul>
+
+    <li>If <b>www_root</b> isn&rsquo;t set, then it&rsquo;s set to the current
+    working directory If that is unavailable then aspen exits with a
+    ConfigurationError. If the current working directory differs from www_root,
+    it is changed to match www_root.</li>
+
+    <li>If <b>project_root</b> is set, then the directory it points to is used
+    to resolve <code>{&#37; extends %}</code> and {&#37; incude %} <a
+        href="/simplates/template/">templates</a> tags; any <a
+        href="/mime.types/">mime.types</a> file in there will be loaded; any
+    configure-aspen.py script in there will be executed; and it will be placed
+    at the front of sys.path, so you can import Python modules from there</li>
+
+    <li>The <b>network_engine</b> attribute is hydrated into an Engine object.
+    If you haven&rsquo;t installed the necessary underlying library
+    you&rsquo;ll get an ImportError to this effect.</li>
+
+    <li>The <b>network_address</b> attribute is broken out into
+    network_address, network_sockfam, and network_port attributes. These are
+    used by the <code>aspen.server</code> machinery and the Engines to connect
+    to the network.</b>
+
+</ul>
+
+
+<h3>Hooks</h3>
+
+<p>The website object has a <a href="/hooks/">hooks</a> attribute with six
+sub-attributes:</p>
+
+<ul>
+    <li>website.hooks.startup</li>
+    <li>website.hooks.inbound_early</li>
+    <li>website.hooks.inbound_late</li>
+    <li>website.hooks.outbound_early</li>
+    <li>website.hooks.outbound_late</li>
+    <li>website.hooks.shutdown</li>
+</ul>
+
+<p>The <code>aspen.configuration.hooks.Hooks</code> object is a slightly
+stunted dict. You have to use attribute access instead of subscript access, but
+otherwise you can use it like a dict.  Likewise each individual
+<code>aspen.configuration.hooks.Hook</code> object is a slightly-stunted list.
+You can&rsquo;t append to it, you have to use register, but beyond the basic
+case you are free to iterate, insert, pop, etc.</p>
+
+
+
+<h4>Example</h4>
+
+<p>Here&rsquo;s an example of registering an inbound_early callback in
+${website.project_root}/configure-aspen.py.</p>
+
+<pre>def glurpy_callback(request):
+    print "Greetings, program!"
+
+website.hooks.inbound_early.register(glurpy_callback)
+</pre>
+
+{% end %}

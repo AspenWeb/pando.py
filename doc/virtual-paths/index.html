@@ -1,5 +1,5 @@
 doc_title = "Virtual Paths"
-doc_next = ('Hooks', '/hooks/')
+doc_next = ''
 
 {% extends doc.html %}
 {% block doc %}
@@ -18,7 +18,7 @@ directories and files on your filesystem.</p>
 there with this content:</p>
 
 <pre>&#94;L
-Greetings, {&#123; request.path['name'] }}!</pre>
+Greetings, {&#123; path['name'] }}!</pre>
 
 <p>Now hit <a
     href="http://localhost:8080/aspen/">http://localhost:8080/aspen/</a>. You
@@ -42,7 +42,7 @@ Make a simplate in <code>%name</code> named <code>%cheese.txt</code>, with this
 content:</p>
 
 <pre>&#94;L
-{&#123; request.path['name'].title() }} likes {&#123; request.path['cheese'] }} cheese.
+{&#123; path['name'].title() }} likes {&#123; path['cheese'] }} cheese.
 </pre>
 
 <p>Now <a href="http://localhost:8080/chad/cheddar.txt">test it out</a>:</p>
@@ -69,7 +69,7 @@ before the file extension, like <code>%month.int.html</code>).</p>
 <p>Then put an <code>index.html</code> in there with this content:
 
 <pre>&#94;L
-Tonight we're going to party like it's {&#123; request.path['year'] }}!</pre>
+Tonight we're going to party like it's {&#123; path['year'] }}!</pre>
 
 <p>Now hit <a
     href="http://localhost:8080/1999/">http://localhost:8080/1999/</a>.  What
