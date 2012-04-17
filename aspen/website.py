@@ -15,7 +15,7 @@ class Website(Configurable):
 
     This object holds configuration information, and also knows how to start
     and stop a server, *and* how to handle HTTP requests (per WSGI). It is
-    available to user-developers inside of their simplates and hooks.
+    available to user-developers inside of their resources and hooks.
 
     """
 
