@@ -11,7 +11,7 @@ class Engine(ThreadedEngine):
 
     def bind(self):
         name = "Aspen! Cheroot!"
-        self.cheroot_server = cheroot.wsgi.WSGIServer( self.website.address
+        self.cheroot_server = cheroot.wsgi.WSGIServer( self.website.network_address
                                                      , server_name=name
                                                      , wsgi_app=self.website
                                                       )

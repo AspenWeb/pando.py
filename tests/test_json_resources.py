@@ -1,4 +1,3 @@
-from aspen.exceptions import LoadError
 from aspen.testing import assert_raises, check
 from aspen.testing.fsfix import attach_teardown
 
@@ -30,22 +29,31 @@ def test_json_defaults_to_application_json_for_dynamic_json():
     assert actual == expected, actual
 
 def test_json_content_type_is_configurable_for_static_json():
-    aspenconf = '[aspen]\njson_content_type: floober/blah'
+    configure_aspen_py = 'website.media_type_json = "floober/blah"'
     expected = 'floober/blah'
     actual = check( '{"Greetings": "program!"}'
                   , filename="foo.json"
                   , body=False
-                  , aspenconf=aspenconf
+                  , configure_aspen_py=configure_aspen_py
+                   ).headers['Content-Type']
+    assert actual == expected, actual
+
+def test_json_content_type_is_configurable_from_the_command_line():
+    expected = 'floober/blah'
+    actual = check( '{"Greetings": "program!"}'
+                  , filename="foo.json"
+                  , body=False
+                  , argv=['--media_type_json=floober/blah']
                    ).headers['Content-Type']
     assert actual == expected, actual
 
 def test_json_content_type_is_configurable_for_dynamic_json():
-    aspenconf = '[aspen]\njson_content_type: floober/blah'
+    configure_aspen_py = 'website.media_type_json = "floober/blah"'
     expected = 'floober/blah'
     actual = check( "response.body = {'Greetings': 'program!'}"
                   , filename="foo.json"
                   , body=False
-                  , aspenconf=aspenconf
+                  , configure_aspen_py=configure_aspen_py
                    ).headers['Content-Type']
     assert actual == expected, actual
 

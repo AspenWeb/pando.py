@@ -105,7 +105,7 @@ def get(request):
         if path in __channels__:
             channel = __channels__[path]
         else:
-            channel = Channel(path, request.engine.Buffer)
+            channel = Channel(path, request.website.network_engine.Buffer)
             __channels__[path] = channel
 
         socket = Socket(request, channel)
@@ -124,7 +124,7 @@ def get(request):
 
     if transport not in TRANSPORTS:
         msg = "Expected transport in {%s}, got %s."
-        msg %= (",".join(transports), transport)
+        msg %= (",".join(TRANSPORTS), transport)
         raise Response(400, msg)
 
     if sid not in __sockets__:

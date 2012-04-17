@@ -1,10 +1,8 @@
-import logging
 import os
-import re
 import sys
 import tempfile
 import traceback
-from os.path import dirname, isdir, isfile, join, realpath
+from os.path import dirname, isdir, join, realpath
 
 import aspen
 from aspen import resources, sockets
@@ -90,7 +88,6 @@ def teardown():
     - reset Aspen's global state
     - remove '.aspen' from sys.path
     - remove 'foo' from sys.modules
-    - remove logging handlers
 
     """
     os.chdir(CWD)
@@ -103,7 +100,6 @@ def teardown():
         sys.path = sys.path[1:]
     if 'foo' in sys.modules:
         del sys.modules['foo']
-    logging.getLogger().handlers = []
 
 teardown() # start clean
 

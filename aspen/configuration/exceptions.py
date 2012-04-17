@@ -8,10 +8,3 @@ class ConfigurationError(StandardError):
 
     def __str__(self):
         return self.msg
-
-
-class ConfFileError(ConfigurationError):
-
-    def __init__(self, msg, filename, lineno):
-        msg = "%s [%s, line %s]" % (msg, lineno, filename)
-        ConfigurationError.__init__(self, msg)

@@ -11,7 +11,6 @@ from aspen.testing import fix
 def make_request(filename='echo.sock'):
     request = Request(uri='/echo.sock')
     request.website = Website([])
-    request.website.copy_configuration_to(request)
     request.fs = fix(filename)
     return request
 

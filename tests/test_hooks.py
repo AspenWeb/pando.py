@@ -1,258 +1,44 @@
-import os
-import sys
-
-from aspen.testing import assert_raises, attach_teardown, fix, FSFIX, mk
-from aspen.configuration.exceptions import *
-from aspen.configuration.hooks import HooksConf
+from aspen.configuration.hooks import Hooks
+from aspen.testing import assert_raises, attach_teardown
 
 
 # Fixture
 # =======
 
 import random
-import string
-
-lib_python = os.path.join('.aspen', 'lib', 'python%s' % sys.version[:3])
-sys.path.insert(0, os.path.join(FSFIX, lib_python))
-
-class Paths:
-    pass
-
-def load(*also):
-    also = ['.aspen/hooks.conf'] + list(also)
-    also = [fix(p) for p in also]
-    return HooksConf(chr(12), *also)
 
 
-# No hooks configured
-# ===================
+def test_hooks_is_barely_instantiable():
+    actual = Hooks([])
+    assert actual == {}, actual
+    
+def test_hooks_is_instantiable_with_one_section():
+    actual = Hooks(['foo'])
+    assert actual == {'foo': []}, actual
+    
+def test_hooks_is_not_instantiable_with_str():
+    assert_raises(TypeError, Hooks, 'foo')
+    
+def test_hooks_is_not_instantiable_with_unicode():
+    assert_raises(TypeError, Hooks, 'foo')
 
-def test_no_aspen_directory():
-    expected = [[], [], [], [], [], []]
-    actual = load()
-    assert actual == expected, actual
+def test_hooks_cant_be_subscripted():
+    hooks = Hooks(['foo'])
+    assert_raises(NotImplementedError, lambda s: hooks[s], 'foo')
 
-def test_no_file():
-    mk('.aspen')
-    expected = [[], [], [], [], [], []]
-    actual = load()
-    assert actual == expected, actual
+def test_hooks_can_be_registered():
+    hooks = Hooks(['inbound_early'])
+    hooks.inbound_early.register(random.random)
+    actual = hooks
+    assert actual == {'inbound_early': [random.random]}, actual
 
-def test_empty_file():
-    mk('.aspen', ('.aspen/hooks.conf', ''))
-    expected = [[], [], [], [], [], []]
-    actual = load()
-    assert actual == expected, actual
+def test_non_callables_cant_be_registered():
+    hooks = Hooks(['inbound_early'])
+    assert_raises(TypeError, hooks.inbound_early.register, None)
 
+def test_hooks_cant_be_appended():
+    hooks = Hooks(['inbound_early'])
+    assert_raises(NotImplementedError, hooks.inbound_early.append, None)
 
-# Hooks configured
-# ================
-
-def test_something():
-    mk('.aspen', ('.aspen/hooks.conf', 'random:choice'))
-    expected = [[random.choice], [], [], [], [], []]
-    actual = load()
-    assert actual == expected, actual
-
-def test_must_be_callable():
-    mk('.aspen', ('.aspen/hooks.conf', 'string:digits'))
-    err = assert_raises(ConfFileError, load)
-    assert err.msg.startswith("'string:digits' is not callable. ["), err.msg
-    assert err.msg.endswith("fsfix/.aspen/hooks.conf, line 1]"), err.msg
-
-def test_order():
-    mk('.aspen', ('.aspen/hooks.conf', 'random:choice\nrandom:seed'))
-    expected = [[random.choice, random.seed], [], [], [], [], []]
-    actual = load()
-    assert actual == expected, actual
-
-
-# Basics
-# ======
-
-def test_blank_lines_skipped():
-    mk('.aspen', ('.aspen/hooks.conf', '\n\nrandom:choice\n\n'))
-    expected = [[random.choice], [], [], [], [], []]
-    actual = load()
-    assert actual == expected, actual
-
-def test_comments_ignored():
-    mk('.aspen', ('.aspen/hooks.conf', """
-
-        #comment
-        random:choice#comment
-        random:sample # comments
-
-        """))
-    expected = [[random.choice, random.sample], [], [], [], [], []]
-    actual = load()
-    assert actual == expected, actual
-
-
-# Outbound
-# ========
-
-def test_outbound_section():
-    mk('.aspen', ('.aspen/hooks.conf', """
-
-        
-
-        random:choice
-        random:sample
-
-        
-
-        random:randint
-
-
-        """))
-    expected = [ []
-               , [random.choice, random.sample]
-               , [random.randint]
-               , []
-               , []
-               , []
-                ]
-    actual = load()
-    assert actual == expected, actual
-
-
-def test_caret_L_converted_to_page_break():
-    mk('.aspen', ('.aspen/hooks.conf', """
-
-        ^L 
-
-        random:choice
-        random:sample
-
-        ^L
-
-        random:randint
-
-
-        """))
-    expected = [ []
-               , [random.choice, random.sample]
-               , [random.randint]
-               , []
-               , []
-               , []
-                ]
-    actual = load()
-    assert actual == expected, actual
-
-
-# Layering
-# ========
-
-def test_layering():
-    mk(('first.conf', """
-
-        
-        random:choice
-        random:sample
-        random:randint
-
-        """),
-       ('second.conf', """
-
-        
-        random:random
-        random:gauss
-        random:choice
-        random:shuffle
-
-        """) )
-    expected = [ []
-               , [random.choice, random.sample, random.random, random.gauss]
-               , [random.randint, random.choice, random.shuffle]
-               , []
-               , []
-               , []
-                ]
-    actual = load('first.conf', 'second.conf')
-    assert actual == expected, actual
-
-
-# All Six Sections
-# =================
-
-def test_form_feeds_on_same_line():
-    mk(('foo.conf', """
-
-        random:choice
-        random:sample 
-        random:randint
-        
-        random:random
-        random:choice
-
-        random:gauss   random:shuffle  
-
-        Ignored!
-
-        """) )
-    expected = [ [random.choice, random.sample]
-               , [random.randint]
-               , [random.random]
-               , [random.choice]
-               , [random.gauss]
-               , [random.shuffle]
-                ]
-    actual = load('foo.conf')
-    assert actual == expected, actual
-
-
-def test_all_six():
-    mk(('foo.conf', """
-
-        random:choice
-        random:sample 
-        random:randint
-        
-        random:random
-        random:gauss
-        random:choice
-        random:shuffle
-
-        
-
-        Ignored!
-
-        """) )
-    expected = [ [random.choice, random.sample]
-               , [random.randint]
-               , [random.random, random.gauss]
-               , [random.choice, random.shuffle]
-               , []
-               , []
-                ]
-    actual = load('foo.conf')
-    assert actual == expected, actual
-
-
-def test_equal_sections_dont_screw_up_parsing():
-    # https://github.com/whit537/aspen/issues/9
-    mk(('hooks.conf', """
-        ^L
-        # inbound_early
-        
-        ^L
-        # inbound_late
-        
-        ^L
-        # outbound_early
-        
-        ^L
-        # outbound_late
-        random:shuffle 
-        """))
-    expected = [[],[],[],[],[random.shuffle],[]]
-    actual = load('hooks.conf')
-    assert actual == expected, actual
-
-
-# Remove the filesystem fixture after each test.
-# ==============================================
 
 attach_teardown(globals())

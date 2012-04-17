@@ -1,5 +1,14 @@
 doc_title = "mime.types"
 doc_next = []
+
+
+"""
+Here's how to configure mimetypes:
+
+import mimetypes
+mimetypes.knownfiles = ['mymime.types']
+mimetypes.init()
+"""
 
 {% extends doc.html %}
 {% block doc %}

@@ -1,19 +1,13 @@
-import datetime
-import logging
 import os
-import re
 import sys
 import traceback
-import urlparse
 from os.path import join, isfile
 
-from aspen import http, gauntlet, resources, sockets
+import aspen
+from aspen import gauntlet, resources, sockets
 from aspen.http.request import Request
 from aspen.http.response import Response
 from aspen.configuration import Configurable
-
-
-log = logging.getLogger('aspen.website')
 
 
 class Website(Configurable):
@@ -29,7 +23,6 @@ class Website(Configurable):
         """Takes an argv list, without the initial executable name.
         """
         self.configure(argv)
-        log.info("Aspen website loaded from %s." % self.root)
     
     def __call__(self, environ, start_response):
         """WSGI interface.
@@ -41,17 +34,14 @@ class Website(Configurable):
         return response(environ, start_response)
 
     def start(self):
-        log.info("Starting up Aspen website.")
-        self.run_hook('startup')
-        self.engine.start()
+        aspen.log("Starting up Aspen website.")
+        self.hooks.startup.run(self)
+        self.network_engine.start()
 
     def stop(self):
-        log.info("Shutting down Aspen website.")
-        self.run_hook('shutdown')
-        self.engine.stop()
-
-    def run_hook(self, name):
-        self.hooks.run(name, self)
+        aspen.log("Shutting down Aspen website.")
+        self.hooks.shutdown.run(self)
+        self.network_engine.stop()
 
     def handle(self, request):
         """Given an Aspen request, return an Aspen response.
@@ -62,13 +52,13 @@ class Website(Configurable):
         """
         try:
             try:
-                self.copy_configuration_to(request)
+                #self.copy_configuration_to(request)
                 request.website = self
 
-                self.hooks.run('inbound_early', request)
+                self.hooks.inbound_early.run(request)
                 gauntlet.run(request) # sets request.fs
                 request.socket = sockets.get(request)
-                self.hooks.run('inbound_late', request)
+                self.hooks.inbound_late.run(request)
 
                 # Look for a Socket.IO socket (http://socket.io/).
                 if isinstance(request.socket, Response):    # handshake
@@ -91,9 +81,9 @@ class Website(Configurable):
             # have already been run. If it fell off the edge un-exceptionally,
             # we need to take care of those two things.
             response.request = request
-            self.hooks.run('outbound_early', response)
+            self.hooks.outbound_early.run(response)
 
-        self.hooks.run('outbound_late', response)
+        self.hooks.outbound_late.run(response)
         self.log_access(request, response) # TODO is this at the right level?
         return response
 
@@ -104,12 +94,12 @@ class Website(Configurable):
             tb_1 = traceback.format_exc()
             response = sys.exc_info()[1]
             if not isinstance(response, Response):
-                log.error(tb_1)
+                aspen.log_dammit(tb_1)
                 response = Response(500, tb_1)
             elif 200 <= response.code < 300:
                 return response
             response.request = request
-            self.hooks.run('outbound_early', response)
+            self.hooks.outbound_early.run(response)
             fs = self.ours_or_theirs(str(response.code) + '.html')
             if fs is None:
                 fs = self.ours_or_theirs('error.html')
@@ -125,7 +115,7 @@ class Website(Configurable):
         except:                     # last chance for tracebacks in the browser
             tb_2 = traceback.format_exc().strip()
             tbs = '\n\n'.join([tb_2, "... while handling ...", tb_1])
-            log.error(tbs)
+            aspen.log_dammit(tbs)
             if self.show_tracebacks:
                 response = Response(500, tbs)
             else:
@@ -141,15 +131,16 @@ class Website(Configurable):
     def ours_or_theirs(self, filename):
         """Given a filename, return a filepath or None.
         """
+        if self.project_root is not None:
+            theirs = join(self.project_root, filename)
+            if isfile(theirs):
+                return theirs
+
         ours = self.find_ours(filename)
-        theirs = join(self.root, '.aspen', filename)
-        if isfile(theirs):
-            out = theirs
-        elif isfile(ours):
-            out = ours
-        else:
-            out = None
-        return out
+        if isfile(ours):
+            return ours
+
+        return None
 
     def log_access(self, request, response):
         """Log access.
@@ -158,12 +149,12 @@ class Website(Configurable):
         # What was the URL path translated to?
         # ====================================
 
-        fs = request.fs[len(self.root):]
+        fs = request.fs[len(self.www_root):]
         if fs:
             fs = '.'+fs
         else:
             fs = request.fs
-        log.info("%s => %s" % (request.line.uri.path.raw, fs))
+        aspen.log("%s => %s" % (request.line.uri.path.raw, fs))
 
 
         # Where was response raised from?
@@ -171,16 +162,16 @@ class Website(Configurable):
 
         tb = sys.exc_info()[2]
         if tb is None:
-            log.info("%33s" % '<%s>' % response)
+            aspen.log("%33s" % '<%s>' % response)
         else:
             while tb.tb_next is not None:
                 tb = tb.tb_next
             frame = tb.tb_frame
             co = tb.tb_frame.f_code
             filename = tb.tb_frame.f_code.co_filename
-            if filename.startswith(self.root):
-                filename = '.'+filename[len(self.root):]
-            log.info("%33s  %s:%d" % ( '<%s>' % response
+            if filename.startswith(self.www_root):
+                filename = '.'+filename[len(self.www_root):]
+            aspen.log("%33s  %s:%d" % ( '<%s>' % response
                                      , filename
                                      , frame.f_lineno
                                       ))

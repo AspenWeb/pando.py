@@ -1,5 +1,3 @@
-import socket
-import sys
 import time
 
 import gevent
@@ -133,7 +131,7 @@ class Engine(CooperativeEngine):
     wsgi_server = None # a WSGI server, per gevent
 
     def bind(self):
-        self.gevent_server = gevent.wsgi.WSGIServer( listener=self.website.address
+        self.gevent_server = gevent.wsgi.WSGIServer( listener=self.website.network_address
                                                    , application=self.website
                                                    , log=None
                                                     )

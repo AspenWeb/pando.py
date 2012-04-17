@@ -12,26 +12,19 @@ XXX: There is lots of semantic ambiguity and overlap between Resource and
 Simplate.
 
 """
-import datetime
-import logging
 import mimetypes
 import os
 import stat
 import sys
 import traceback
-from os.path import join
 
 PAGE_BREAK = chr(12) # used in the following imports
 
-from aspen import json
 from aspen.exceptions import LoadError
 from aspen.resources.json_resource import JSONResource
 from aspen.resources.template_resource import TemplateResource
 from aspen.resources.socket_resource import SocketResource
 from aspen.resources.static_resource import StaticResource
-
-
-log = logging.getLogger('aspen.resources')
 
 
 # Cache helpers
@@ -134,7 +127,7 @@ def load(request, modtime):
 
     mimetype = mimetypes.guess_type(request.fs, strict=False)[0]
     if mimetype is None:
-        mimetype = request.default_mimetype
+        mimetype = request.website.media_type_default
 
 
     # Compute and instantiate a class.

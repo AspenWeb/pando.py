@@ -1,5 +1,5 @@
-from aspen.engines import ThreadEngine
 import pants
+from aspen.engines import CooperativeEngine
 from pants.contrib.http import HTTPServer
 from pants.contrib.wsgi import WSGIConnector
 
@@ -9,8 +9,8 @@ class Engine(CooperativeEngine):
     def bind(self):
         connector = WSGIConnector(self.website)
         self.server = HTTPServer(connector)
-        self.server.listen( host=self.website.address[0]
-                          , port=self.website.address[1]
+        self.server.listen( host=self.website.network_address[0]
+                          , port=self.website.network_address[1]
                            )
 
     def start(self):
