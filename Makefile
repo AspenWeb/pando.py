@@ -1,4 +1,4 @@
-default:
+env:
 	python ./vendor/virtualenv-1.6.4.py \
 		--distribute \
 		--unzip-setuptools \
