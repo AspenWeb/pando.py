@@ -312,8 +312,8 @@ class Line(unicode):
 # Request -> Method
 # -----------------
 
-STANDARD_METHODS = {"OPTIONS", "GET", "HEAD", "POST", "PUT", "DELETE", "TRACE",
-                    "CONNECT"}
+STANDARD_METHODS = set(["OPTIONS", "GET", "HEAD", "POST", "PUT", "DELETE", "TRACE",
+                    "CONNECT"])
 
 SEPARATORS = ("(", ")", "<", ">", "@", ",", ";", ":", "\\", '"', "/", "[", "]",
               "?", "=", "{", "}", " ", "\t")
