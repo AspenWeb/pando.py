@@ -22,15 +22,10 @@ module in the Python standard library to use the following mappings to
 determine which <code>Content-Type</code> to use for which file extension.</p>
 
 <ul>
-
     <li>The default <code>type_map</code> in your Python installation's 
     <code>mimetypes</code> module</li>
-
     <li>a <code>mime.types</code> file bundled with Aspen</li>
-    <li><code>/etc/mime.types</code></li>
-    <li><code>/usr/local/etc/mime.types</code></li>
-    <li><code>./.aspen/mime.types</code></li>
-
+    <li><code>${<a href="/api/website/">website</a>.project_root}/mime.types</code></li>
 </ul>
 
 <p>Later definitions override earlier ones.</p>
