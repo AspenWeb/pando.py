@@ -50,6 +50,7 @@ LOG_LEVEL = 0
 
 _pid = os.getpid()
 def log(message, level=0):
+    message = unicode(message).encode('UTF-8', 'backslashreplace') # XXX buggy?
     if level >= LOG_LEVEL:
         t = threading.current_thread()
         for line in message.splitlines():  # doesn't include linebreaks 
