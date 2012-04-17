@@ -18,7 +18,7 @@ def inbound(request):
 
     def translate(src):
         if src[0] != '/':
-            rel = dirname(request.fs)[len(request.root):]
+            rel = dirname(request.fs)[len(request.website.www_root):]
             src = '/'.join([rel, src])
         src = opts['base'] + src 
         return src
