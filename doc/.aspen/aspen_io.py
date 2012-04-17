@@ -7,10 +7,8 @@ system.
 """
 from os.path import dirname
 
-opts = {}
-def startup(website):
-    opts['base'] = website.conf.aspen_io.get('img_base', '')
-    opts['version'] = open('../version.txt').read().strip('+')
+
+opts = {} # populate this in configure-aspen.py
 
 
 def inbound(request):
@@ -49,6 +47,7 @@ def inbound(request):
     request.context['translate'] = translate
     request.context['version'] = opts['version']
     request.context['homepage'] = False
+    request.context['show_ga'] = opts['show_ga']
 
 
 # TODO Redirect direct requests to the CDN.
