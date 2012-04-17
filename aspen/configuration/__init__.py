@@ -194,7 +194,7 @@ class Configurable(object):
             configure_aspen_py = os.path.join( self.project_root
                                              , 'configure-aspen.py'
                                               )
-            self.configuration_scripts.insert(0, configure_aspen_py)
+            self.configuration_scripts.append(configure_aspen_py)  # last word
 
             # PYTHONPATH
             sys.path.insert(0, self.project_root)
