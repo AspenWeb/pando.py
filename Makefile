@@ -1,11 +1,4 @@
-default: env
-	./env/bin/pip install -r requirements.txt
-
-dev: env
-	./env/bin/pip install -r requirements.dev.txt
-	./env/bin/pip install -e ./
-
-env:
+default:
 	python ./vendor/virtualenv-1.6.4.py \
 		--distribute \
 		--unzip-setuptools \
@@ -13,12 +6,14 @@ env:
 		--never-download \
 		--extra-search-dir=./vendor/ \
 		env/
+	./env/bin/pip install -r requirements.txt
+	./env/bin/pip install -e ./
 
 clean:
 	rm -rf env
 
-run: env
+docs: env
 	./env/bin/thrash ./env/bin/aspen -a:5370 -wdoc/ -p.aspen
 
-test:
+test: env
 	./env/bin/nosetests -sx tests/
