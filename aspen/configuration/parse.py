@@ -8,6 +8,7 @@ import os
 import socket
 
 import aspen
+from aspen.utils import ascii_dammit
 from aspen.http.response import charset_re
 from aspen.configuration.exceptions import ConfigurationError
 
@@ -75,7 +76,8 @@ def network_address(address):
         # must be between 0 and 65535, inclusive.
 
 
-        err = ConfigurationError("Bad address %s" % str(address))
+        err = lambda msg: ConfigurationError("Bad address %s: %s." 
+                                             % (ascii_dammit(address), msg))
 
 
         # Break out IP and port.
@@ -83,22 +85,22 @@ def network_address(address):
 
         if isinstance(address, (tuple, list)):
             if len(address) != 2:
-                raise err
+                raise err("Wrong number of parts")
             ip, port = address
         elif isinstance(address, basestring):
             if address.count(':') != 1:
-                raise err
+                raise err("Wrong number of :'s. Should be exactly 1")
             ip_port = address.split(':')
             ip, port = [i.strip() for i in ip_port]
         else:
-            raise err
+            raise err("Wrong arg type")
 
 
         # IP
         # ==
 
         if not isinstance(ip, basestring):
-            raise err
+            raise err("IP isn't a string")
         elif ip == '':
             ip = '0.0.0.0' # IP defaults to INADDR_ANY for AF_INET; specified
                            # explicitly to avoid accidentally binding to
@@ -110,7 +112,7 @@ def network_address(address):
                 if ip == 'localhost':
                     ip = '127.0.0.1'
                 else:
-                    raise err
+                    raise err("Invalid IP")
 
 
         # port
@@ -119,17 +121,17 @@ def network_address(address):
 
         if isinstance(port, basestring):
             if not port.isdigit():
-                raise err
+                raise err("Invalid port (non-numeric)")
             else:
                 port = int(port)
         elif isinstance(port, int) and not (port is False):
             # already an int for some reason (called interactively?)
             pass
         else:
-            raise err
+            raise err("Invalid port (wrong type)")
 
         if not(0 <= port <= 65535):
-            raise err
+            raise err("Invalid port (out of range)")
 
 
         # Success!
