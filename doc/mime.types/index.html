@@ -49,11 +49,11 @@ browser:</p>
 You get a <code>text/plain</code> response, because the <code>.smpl</code>
 extension is unknown to Aspen, and <code>text/plain</code> is Aspen&rsquo;s
 default (you can change this default in <code><a
-        href="/aspen.conf/">aspen.conf</a></code>).</p>
+        href="/configure-aspen.py/">configure-aspen.py</a></code>).</p>
 
 <p>Now put the following line in a file named <code>mime.types</code> in your
-site&rsquo;s <code><a href="/dotaspen/">.aspen</a></code> directory (note the
-lack of a period before <code>smpl</code>).</p>
+site&rsquo;s <code><a href="/project_root/">project_root</a></code> directory
+(note the lack of a period before <code>smpl</code>).</p>
 
 <pre>text/html  smpl</pre>
 
@@ -68,8 +68,9 @@ file:</p>
 
 <p>Aspen has special support for <a href="/simplates/json/">JSON simplates</a>.
 If you want to send something besides <code>application/json</code> for JSON
-files, use the <code>json_content_type</code> knob in <a
-    href="/aspen.conf/"><code>aspen.conf</code></a>.</p>
+files, use the <code>media_type_json</code> <a
+    href="/configuration/">configuration
+    knob</a>.</p>
 
 {% end %}
 
