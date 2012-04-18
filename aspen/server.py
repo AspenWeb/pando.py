@@ -71,6 +71,11 @@ def main(argv=None):
 
             if website.network_port is not None:
                 msg = "Is something already running on port %s? Because ..."
+                if not aspen.WINDOWS:
+                    if website.network_port < 1024:
+                        if os.geteuid() > 0:
+                            msg = ("Do you have permission to bind to port %s?"
+                                   " Because ...")
                 msg %= website.network_port
                 if not aspen.WINDOWS:
                     # Assume we can use ANSI color escapes if not on Windows.
