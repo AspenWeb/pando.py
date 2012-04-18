@@ -56,11 +56,11 @@ def log(message, level=0):
         # Be sure to use Python 2.5-compatible threading API.
         t = threading.currentThread()
         for line in message.splitlines():
-            print "pid-%s thread-%s%s %s" % ( _pid
-                                            , thread.get_ident()
-                                            , t.getName()
-                                            , line
-                                             )
+            print "pid-%s thread-%s (%s) %s" % ( _pid
+                                               , thread.get_ident()
+                                               , t.getName()
+                                               , line
+                                                )
         sys.stdout.flush()
 
 def log_dammit(message):

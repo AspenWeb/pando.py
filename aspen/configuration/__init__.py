@@ -64,7 +64,7 @@ class Configurable(object):
         if name_in_context:
             assert isinstance(flat, unicode) # sanity check
             name_in_context = " %s=%s" % (name_in_context, flat)
-        aspen.log("  %-22s %-29s %-24s" 
+        aspen.log("  %-22s %-30s %-24s" 
                   % (name, hydrated, context + name_in_context))
 
     def _set(self, name, raw, from_unicode, context, name_in_context):

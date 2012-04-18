@@ -57,7 +57,7 @@ def network_address(address):
 
     """
 
-    if address[0] in ('/','.'):
+    if address[0] in ('/', '.'):
         if aspen.WINDOWS:
             raise ConfigurationError("Can't use an AF_UNIX socket on Windows.")
             # but what about named pipes?
@@ -113,6 +113,8 @@ def network_address(address):
                     ip = '127.0.0.1'
                 else:
                     raise err("Invalid IP")
+
+        ip = ip.decode('US-ASCII')
 
 
         # port
