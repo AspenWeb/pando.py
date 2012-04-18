@@ -1,5 +1,6 @@
 import os
 import sys
+import thread
 import threading
 import time
 
@@ -52,9 +53,14 @@ _pid = os.getpid()
 def log(message, level=0):
     message = unicode(message).encode('UTF-8', 'backslashreplace') # XXX buggy?
     if level >= LOG_LEVEL:
-        t = threading.current_thread()
-        for line in message.splitlines():  # doesn't include linebreaks 
-            print "pid-%d thread-%d (%s) %s" % (_pid, t.ident, t.name, line)
+        # Be sure to use Python 2.5-compatible threading API.
+        t = threading.currentThread()
+        for line in message.splitlines():
+            print "pid-%s thread-%s%s %s" % ( _pid
+                                            , thread.get_ident()
+                                            , t.getName()
+                                            , line
+                                             )
         sys.stdout.flush()
 
 def log_dammit(message):
