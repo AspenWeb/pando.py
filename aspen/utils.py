@@ -26,7 +26,7 @@ def unicode_dammit(s, encoding="UTF-8"):
 
     """
     if not isinstance(s, str):
-        raise TypeError("You gave me something besides a str.")
+        raise TypeError("I got %s, but I want <type 'str'>." % s.__class__)
     errors = 'repr'
     return s.decode(encoding, errors)
 

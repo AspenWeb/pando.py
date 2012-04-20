@@ -56,7 +56,7 @@ def OptionParser():
                             )
                     , default=DEFAULT
                      )
-    basic.add_option( "-q", "--quiet_level"
+    basic.add_option( "-l", "--logging_threshold"
                     , help=("a small integer; 1 will suppress most of aspen's "
                             "internal logging, 2 will suppress all it [0]")
                     , default=DEFAULT

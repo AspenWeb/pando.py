@@ -28,7 +28,7 @@ KNOBS = \
                             , parse.network_address
                              )
     , 'project_root':       (None, parse.identity)
-    , 'quiet_level':        (0, int)
+    , 'logging_threshold':  (0, int)
     , 'www_root':           (None, parse.identity)
 
 
@@ -55,7 +55,7 @@ class Configurable(object):
     """Mixin object for aggregating configuration from several sources.
     """
 
-    def _set_and_log(self, name, hydrated, flat, context, name_in_context=''):
+    def _set(self, name, hydrated, flat, context, name_in_context):
         """Set value at self.name, calling value if it's callable.
         """
         if aspen.is_callable(hydrated):
@@ -64,23 +64,27 @@ class Configurable(object):
         if name_in_context:
             assert isinstance(flat, unicode) # sanity check
             name_in_context = " %s=%s" % (name_in_context, flat)
-        aspen.log("  %-22s %-30s %-24s" 
-                  % (name, hydrated, context + name_in_context))
+        out = "  %-22s %-30s %-24s" 
+        return out % (name, hydrated, context + name_in_context)
 
-    def _set(self, name, raw, from_unicode, context, name_in_context):
+    def set(self, name, raw, from_unicode, context, name_in_context):
         assert isinstance(raw, str), "%s isn't a bytestring" % name
+
+        error = None
         try:
-            try:
-                value = raw.decode('US-ASCII')
-            except UnicodeDecodeError:
-                msg = "config values must be US-ASCII"
-                raise ValueError(msg)
+            value = raw.decode('US-ASCII')
             hydrated = from_unicode(value)
-        except ValueError, err:
-            msg = "The %s %s is malformed: %s."
-            msg %= (context, name_in_context, ascii_dammit(value))
-            if err.args[0]:
-                msg += " " + err.args[0]
+        except UnicodeDecodeError, error:
+            value = ascii_dammit(value)
+            error_detail = "Configuration values must be US-ASCII."
+        except ValueError, error:
+            error_detail = error.args[0]
+
+        if error is not None:
+            msg = "Got a bad value '%s' for %s %s:"
+            msg %= (value, context, name_in_context)
+            if error_detail:
+                msg += " " + error_detail + "."
             raise ConfigurationError(msg)
 
         # special-case lists, so we can layer them
@@ -92,7 +96,8 @@ class Configurable(object):
             else:
                 hydrated = new_value
 
-        self._set_and_log(name, hydrated, value, context, name_in_context)
+        args = (name, hydrated, value, context, name_in_context)
+        return self._set(*args)
 
     def configure(self, argv):
         """Takes an argv list, and gives it straight to optparser.parse_args.
@@ -123,27 +128,44 @@ class Configurable(object):
         # Configure from defaults, environment, and command line.
         # =======================================================
 
-        aspen.log("Reading configuration from defaults, environment, and "
-                  "command line.")
+        msgs = ["Reading configuration from defaults, environment, and "
+                "command line."] # can't actually log until configured
+
         for name, (default, func) in sorted(KNOBS.items()):
 
             # set default
-            self._set_and_log(name, default, None, "default")
+            msgs.append(self._set(name, default, None, "default", ''))
 
             # set from environment
             envvar = 'ASPEN_' + name.upper()
             value = os.environ.get(envvar, '').strip()
             if value:
-                self._set(name, value, func, "environment variable", envvar)
+                msgs.append(self.set( name
+                                    , value
+                                    , func
+                                    , "environment variable"
+                                    , envvar
+                                     ))
 
             # set from command line
             value = getattr(opts, name)
             if value is not DEFAULT:
-                self._set(name, value, func, "command line option", "--"+name)
+                msgs.append(self.set( name
+                                    , value
+                                    , func
+                                    , "command line option"
+                                    , "--"+name
+                                     ))
 
 
         # Set some attributes.
         # ====================
+
+        # LOGGING_THRESHOLD
+        aspen.LOGGING_THRESHOLD = self.logging_threshold
+        # Now that we know the user's desires, we can log appropriately.
+        aspen.log_dammit(os.linesep.join(msgs))
+        
 
         # www_root
         if self.www_root is None:
@@ -170,18 +192,20 @@ class Configurable(object):
 
         # project root 
         if self.project_root is None:
-            aspen.log("project_root not configured (no template bases, etc.).")
+            aspen.log_dammit("project_root not configured (no template bases, "
+                             "etc.).")
             self.template_loader = None
             configure_aspen_py = None
         else:
             # canonicalize it
             if not os.path.isabs(self.project_root):
-                aspen.log("project_root is relative: %s." % self.project_root)
+                aspen.log_dammit("project_root is relative: %s." 
+                                 % self.project_root)
                 self.project_root = os.path.join( self.www_root
                                                 , self.project_root
                                                  )
             self.project_root = os.path.realpath(self.project_root)
-            aspen.log("project_root set to %s." % self.project_root)
+            aspen.log_dammit("project_root set to %s." % self.project_root)
 
             # template loader
             self.template_loader = Loader(self.project_root)
@@ -214,7 +238,7 @@ class Configurable(object):
             #   http://en.wikipedia.org/wiki/ANSI_escape_code#CSI_codes
             #   XXX consider http://pypi.python.org/pypi/colorama
             msg = "\033[1;31mImportError loading the %s engine:\033[0m%s" 
-            aspen.log(msg % (self.network_engine, os.sep))
+            aspen.log_dammit(msg % (self.network_engine, os.sep))
             raise
         self.network_engine = Engine(self.network_engine, self)
 

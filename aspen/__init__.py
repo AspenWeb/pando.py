@@ -43,16 +43,16 @@ def thrash():
 
 # Logging. It's simple.
 # =====================
-# The level attribute is set in configuration/__init__.py. If you pass -q level
-# will be set to 1 and only really important things (tracebacks) will be
-# logged. If you pass -qq it will be set to 2 and nothing will be logged.
 
-LOG_LEVEL = 0
+# set to 1 and only really important things (startup/shutdown and tracebacks)
+# will be logged. If you pass -q2 nothing will be logged by aspen.
+
+LOGGING_THRESHOLD = 0
 
 _pid = os.getpid()
 def log(message, level=0):
     message = unicode(message).encode('UTF-8', 'backslashreplace') # XXX buggy?
-    if level >= LOG_LEVEL:
+    if level >= LOGGING_THRESHOLD:
         # Be sure to use Python 2.5-compatible threading API.
         t = threading.currentThread()
         for line in message.splitlines():
@@ -64,4 +64,4 @@ def log(message, level=0):
         sys.stdout.flush()
 
 def log_dammit(message):
-    log(message, 1)
+    log(message, level=1)
