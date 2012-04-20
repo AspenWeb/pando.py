@@ -199,7 +199,7 @@ class Configurable(object):
         else:
             # canonicalize it
             if not os.path.isabs(self.project_root):
-                aspen.log_dammit("project_root is relative: %s." 
+                aspen.log_dammit("project_root is relative: '%s'." 
                                  % self.project_root)
                 self.project_root = os.path.join( self.www_root
                                                 , self.project_root
