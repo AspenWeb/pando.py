@@ -49,7 +49,7 @@ def main(argv=None):
                 welcome = website.network_address
             aspen.log("Starting %s engine." % website.network_engine.name)
             website.network_engine.bind()
-            aspen.log("Greetings, program! Welcome to %s." % welcome)
+            aspen.log_dammit("Greetings, program! Welcome to %s." % welcome)
             if website.changes_kill:
                 aspen.log("Aspen will die when files change.")
                 restarter.install(website)
@@ -59,15 +59,17 @@ def main(argv=None):
 
             # Be friendly about port conflicts.
             # =================================
-            # The traceback one gets from a port conflict is not that friendly.
-            # Here's a helper to let the user know (in color?!) that a port
-            # conflict is the probably the problem. But in case it isn't
-            # (website.start fires the start hook, and maybe the user tries to
-            # connect to a network service in there?), don't fully swallow the
-            # exception. Also, be explicit about the port number. What if they
-            # have logging turned off? Then they won't see the port number in
-            # the "Greetings, program!" line. They definitely won't see it if
-            # using an engine like eventlet that binds to the port early.
+
+            # The traceback one gets from a port conflict or permission error
+            # is not that friendly. Here's a helper to let the user know (in
+            # color?!) that a port conflict or a permission error is probably
+            # the problem. But in case it isn't (website.start fires the start
+            # hook, and maybe the user tries to connect to a network service in
+            # there?), don't fully swallow the exception. Also, be explicit
+            # about the port number. What if they have logging turned off? Then
+            # they won't see the port number in the "Greetings, program!" line.
+            # They definitely won't see it if using an engine like eventlet
+            # that binds to the port early.
 
             if website.network_port is not None:
                 msg = "Is something already running on port %s? Because ..."
@@ -80,15 +82,15 @@ def main(argv=None):
                 if not aspen.WINDOWS:
                     # Assume we can use ANSI color escapes if not on Windows.
                     # XXX Maybe a bad assumption if this is going into a log 
-                    # file?
+                    # file? See also: colorama
                     msg = '\033[01;33m%s\033[00m' % msg
-                print >> sys.stderr, msg
+                aspen.log_dammit(msg)
             raise
 
         except (KeyboardInterrupt, SystemExit):
             pass
         except:
-            traceback.print_exc()
+            aspen.log_dammit(traceback.format_exc())
         finally:
             if hasattr(socket, 'AF_UNIX'):
                 if website.network_sockfam == socket.AF_UNIX:
@@ -97,4 +99,5 @@ def main(argv=None):
             website.stop()
     except (KeyboardInterrupt, SystemExit):
         pass
-
+    except:
+        aspen.log_dammit(traceback.format_exc())

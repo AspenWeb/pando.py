@@ -12,7 +12,7 @@ def test_everything_defaults_to_empty_string():
     actual = ( opts.configuration_scripts
              , opts.network_address
              , opts.network_engine
-             , opts.quiet_level
+             , opts.logging_threshold
              , opts.project_root
              , opts.www_root
 
@@ -28,17 +28,17 @@ def test_everything_defaults_to_empty_string():
     expected += (DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT)
     assert actual == expected, actual
 
-def test_quiet_goes_to_one():
+def test_logging_threshold_goes_to_one():
     o = OptionParser()
-    opts, args = o.parse_args(['-q1'])
-    actual = opts.quiet_level
+    opts, args = o.parse_args(['-l1'])
+    actual = opts.logging_threshold
     expected = '1'
     assert actual == expected, actual
 
-def test_quiet_goes_to_eleven():
+def test_logging_threshold_goes_to_eleven():
     o = OptionParser()
-    opts, args = o.parse_args(['--quiet_level=11'])
-    actual = opts.quiet_level
+    opts, args = o.parse_args(['--logging_threshold=11'])
+    actual = opts.logging_threshold
     expected = '11'
     assert actual == expected, actual
 

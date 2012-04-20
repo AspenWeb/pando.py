@@ -34,12 +34,12 @@ class Website(Configurable):
         return response(environ, start_response)
 
     def start(self):
-        aspen.log("Starting up Aspen website.")
+        aspen.log_dammit("Starting up Aspen website.")
         self.hooks.startup.run(self)
         self.network_engine.start()
 
     def stop(self):
-        aspen.log("Shutting down Aspen website.")
+        aspen.log_dammit("Shutting down Aspen website.")
         self.hooks.shutdown.run(self)
         self.network_engine.stop()
 
@@ -143,10 +143,10 @@ class Website(Configurable):
         return None
 
     def log_access(self, request, response):
-        """Log access. With our own format (not Apache).
+        """Log access. With our own format (not Apache's).
         """
 
-        if self.quiet_level > 0:
+        if self.logging_threshold > 0: # short-circuit
             return
 
 
