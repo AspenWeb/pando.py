@@ -27,7 +27,7 @@ setup( author = 'Chad Whitacre'
      , description = ('Aspen is a Python web framework. '
                       'Simplates are the main attraction.')
      , entry_points = { 'console_scripts': [ 'aspen = aspen.server:main'
-                                           , 'thrash = aspen:thrash'
+                                           , 'thrash = thrash:main'
                                             ] }
      , name = 'aspen'
      , packages = find_packages(exclude=[ 'aspen.tests'

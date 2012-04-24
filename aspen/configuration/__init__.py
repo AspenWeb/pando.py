@@ -15,6 +15,24 @@ from aspen.configuration.options import OptionParser, DEFAULT
 from aspen._tornado.template import Loader
 
 
+
+# Monkey-patch Loader
+# ===================
+# This is used when follow_filesystem is True.
+
+class NonCachingLoader(Loader):
+    """Subclass Tornado's Loader to immediately forget everything it loads.
+    """
+
+    def load(self, name, parent_path=None):
+        """Load the template then clear the cache.
+        """
+        out = Loader.load(self, name, parent_path)
+        self.reset() # oops!
+        return out
+
+
+
 # Defaults
 # ========
 # The from_unicode callable converts from unicode to whatever format is 
@@ -34,7 +52,7 @@ KNOBS = \
 
     # Extended Options
     # 'name':               (default, from_unicode)
-    , 'changes_kill':       (False, parse.yes_no)
+    , 'changes_reload':     (False, parse.yes_no)
     , 'charset_dynamic':    (u'UTF-8', parse.charset)
     , 'charset_static':     (None, parse.charset)
     , 'indices':            ( lambda: [u'index.html', u'index.json']
@@ -133,10 +151,10 @@ class Configurable(object):
 
         for name, (default, func) in sorted(KNOBS.items()):
 
-            # set default
+            # set the default value for this variable
             msgs.append(self._set(name, default, None, "default", ''))
 
-            # set from environment
+            # set from the environment
             envvar = 'ASPEN_' + name.upper()
             value = os.environ.get(envvar, '').strip()
             if value:
@@ -147,7 +165,7 @@ class Configurable(object):
                                     , envvar
                                      ))
 
-            # set from command line
+            # set from the command line
             value = getattr(opts, name)
             if value is not DEFAULT:
                 msgs.append(self.set( name
@@ -165,8 +183,7 @@ class Configurable(object):
         aspen.LOGGING_THRESHOLD = self.logging_threshold
         # Now that we know the user's desires, we can log appropriately.
         aspen.log_dammit(os.linesep.join(msgs))
-        
-
+       
         # www_root
         if self.www_root is None:
             try:
@@ -208,7 +225,10 @@ class Configurable(object):
             aspen.log_dammit("project_root set to %s." % self.project_root)
 
             # template loader
-            self.template_loader = Loader(self.project_root)
+            if self.changes_reload:
+                self.template_loader = NonCachingLoader(self.project_root)
+            else:
+                self.template_loader = Loader(self.project_root)
             
             # mime.types
             users_mimetypes = os.path.join(self.project_root, 'mime.types')
@@ -264,7 +284,13 @@ class Configurable(object):
         # The user gets self as 'website' inside their configuration scripts.
        
         for filepath in self.configuration_scripts:
-            filepath = os.path.realpath(filepath)
+            if not filepath.startswith(os.sep):
+                if self.project_root is None:
+                    raise ConfigurationError("You must set project_root in "
+                                             "order to specify a configuratio"
+                                             "n_script relatively.")
+                filepath = os.path.join(self.project_root, filepath)
+                filepath = os.path.realpath(filepath)
             try:
                 execfile(filepath, {'website': self})
             except IOError, err:
@@ -283,10 +309,11 @@ class Configurable(object):
                            "script %s:")
                     msg += os.sep + traceback.format_exc()
                 if configure_aspen_py is not None:
-                    if filepath != configure_aspen_py:
+                    if filepath == configure_aspen_py:
                         # Special-case this magically-named configuration file.
                         aspen.log("Default configuration script not found: %s."
                                   % filepath)
+                    else:
                         raise ConfigurationError(msg % filepath)
 
 

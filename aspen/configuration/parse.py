@@ -25,9 +25,9 @@ def charset(value):
 
 def yes_no(s):
     s = s.lower()
-    if s in [u'yes', u'true', 1]:
+    if s in [u'yes', u'true', u'1']:
         return True
-    if s in [u'no', u'false', 0]:
+    if s in [u'no', u'false', u'0']:
         return False
     raise ValueError("must be either yes/true/1 or no/false/0")
 

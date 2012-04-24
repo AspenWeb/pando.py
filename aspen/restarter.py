@@ -1,45 +1,125 @@
+"""Implement a fairly naive restart-when-files-change strategy.
+
+For thoughts on a more sophisticated approach, see:
+
+    http://sync.in/aspen-reloading
+
+"""
 import os
+import signal
 import sys
-import time
-import threading
-from os.path import join, isfile
 
 import aspen
 
 
-extras = []
+extras = set()
 mtimes = {}
 
 
+###############################################################################
+# Thanks, Bob. :) #############################################################
+# https://bitbucket.org/cherrypy/magicbus/src/41f5dfb95479/magicbus/wspbus.py #
+
+
+# Here he saves the value of os.getcwd(), which, if he is imported early
+# enough, will be the directory from which the startup script was run. This is
+# needed by _do_execv(), to change back to the original directory before
+# execv()ing a new process. This is a defense against the application having
+# changed the current working directory (which could make sys.executable "not
+# found" if sys.executable is a relative-path, and/or cause other problems).
+_startup_cwd = os.getcwd()
+
+
+try:
+    import fcntl
+except ImportError:
+    max_cloexec_files = 0
+else:
+    try:
+        max_cloexec_files = os.sysconf('SC_OPEN_MAX')
+    except AttributeError:
+        max_cloexec_files = 1024
+
+
+def _do_execv():
+    """Re-execute the current process.
+    
+    This must be called from the main thread, because certain platforms
+    (OS X) don't allow execv to be called in a child thread very well.
+    """
+    args = sys.argv[:]
+    aspen.log_dammit("Restarting %s." % ' '.join(args))
+    
+    if sys.platform[:4] == 'java':
+        from _systemrestart import SystemRestart
+        raise SystemRestart
+    else:
+        args.insert(0, sys.executable)
+        if sys.platform == 'win32':
+            args = ['"%s"' % arg for arg in args]
+
+        os.chdir(_startup_cwd)
+        if max_cloexec_files:
+            _set_cloexec()
+        os.execv(sys.executable, args)
+
+
+def _set_cloexec():
+    """Set the CLOEXEC flag on all open files (except stdin/out/err).
+    
+    If self.max_cloexec_files is an integer (the default), then on
+    platforms which support it, it represents the max open files setting
+    for the operating system. This function will be called just before
+    the process is restarted via os.execv() to prevent open files
+    from persisting into the new process.
+    
+    Set self.max_cloexec_files to 0 to disable this behavior.
+    """
+    for fd in range(3, max_cloexec_files):  # skip stdin/out/err
+        try:
+            flags = fcntl.fcntl(fd, fcntl.F_GETFD)
+        except IOError:
+            continue
+        fcntl.fcntl(fd, fcntl.F_SETFD, flags | fcntl.FD_CLOEXEC)
+
+#
+###############################################################################
+
+
+restart = _do_execv
+
+
 def add(filename):
-    extras.append(filename)
+    extras.add(filename)
+
 
 def check_one(filename):
-    """Given a filename, return None or exit.
+    """Given a filename, return None or restart.
     """
 
     # The file may have been removed from the filesystem.
     # ===================================================
 
-    if not isfile(filename):
+    if not os.path.isfile(filename):
         if filename in mtimes:
             aspen.log("file deleted: %s" % filename)
-            sys.exit(1) # trigger restart
+            restart()
         else:
             # We haven't seen the file before. It has probably been loaded 
             # from a zip (egg) archive.
             return
 
 
-    # Or not, in which case, check the mod time.
-    # ==========================================
+    # Or not, in which case, check the modification time.
+    # ===================================================
 
     mtime = os.stat(filename).st_mtime
     if filename not in mtimes: # first time we've seen it
         mtimes[filename] = mtime
     if mtime > mtimes[filename]:
         aspen.log("file changed: %s" % filename)
-        sys.exit(1) # trigger restart
+        restart() 
+
 
 def check_all():
     """See if any of our available modules have changed on the filesystem.
@@ -62,14 +142,16 @@ def check_all():
 # Setup
 # =====
 
+def SIGHUP(signum, frame):
+    aspen.log_dammit("Received HUP, restarting.")
+    restart()
+
+signal.signal(signal.SIGHUP, SIGHUP)
+
+
 def install(website):
     """Given a Website instance, start a loop over check_all.
     """
-    # This is not ideal. See http://sync.in/aspen-reloading
-
-    if website.dotaspen is not None:
-        for root, dirs, files in os.walk(website.dotaspen):
-            for filename in files:
-                add(join(root, filename))
-
-    website.engine.start_restarter(check_all)
+    for script_path in website.configuration_scripts:
+        add(script_path)
+    website.network_engine.start_restarter(check_all)
