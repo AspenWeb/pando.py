@@ -16,7 +16,7 @@ def test_everything_defaults_to_empty_string():
              , opts.project_root
              , opts.www_root
 
-             , opts.changes_kill
+             , opts.changes_reload
              , opts.charset_dynamic
              , opts.charset_static
              , opts.indices

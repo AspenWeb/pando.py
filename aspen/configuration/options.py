@@ -83,7 +83,7 @@ def OptionParser():
     extended.add_option( "--changes_reload"
                        , help=("if set to yes/true/1, changes to configuration"
                                " files and Python modules will cause aspen to "
-                               "re-exec, and template bases won't be cached"
+                               "re-exec, and template bases won't be cached "
                                "[no]")
 
                        , default=DEFAULT
