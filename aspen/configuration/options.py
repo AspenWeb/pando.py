@@ -80,10 +80,12 @@ def OptionParser():
                                      "often configured from the command "
                                      "line. But who knows?"
                                     )
-    extended.add_option( "--changes_kill"
-                       , help=("if set to yes/true/1, changes to files in "
-                               "$ASPEN_PROJECT_ROOT will cause aspen to exit "
+    extended.add_option( "--changes_reload"
+                       , help=("if set to yes/true/1, changes to configuration"
+                               " files and Python modules will cause aspen to "
+                               "re-exec, and template bases won't be cached"
                                "[no]")
+
                        , default=DEFAULT
                         )
     extended.add_option( "--charset_dynamic"

@@ -5,41 +5,26 @@ doc_next = []
 {% block doc %}
 
 <p>Aspen comes with a utility called <code>thrash</code> that restarts a
-process whenever it dies. It is installed along with the <code>aspen</code>
-executable, via setuptools. This is how Aspen supports the common case of
-restarting the <code>aspen</code> server in development when files change. In
-production you should use something like <a
+process whenever it dies. If the child exits with code 75 then thrash exits;
+aspen does this if it receives INT. <code>thrash</code> is installed along with
+the <code>aspen</code> executable, via setuptools. This is part of how Aspen
+supports the common case of restarting the <code>aspen</code> server in
+development when Python files change. In production you should use something
+like <a
     href="http://cr.yp.to/daemontools.html">daemontools</a> or <a
-    href="http://www.supervisord.org">supervisord</a>. Note that <a
-    href="/simplates/">simplate</a> files (but not template bases and
-includes!) are automatically reloaded without a server restart whenever they
-change, both in development and production.</p>
+    href="http://www.supervisord.org">supervisor</a>. Note that <a
+    href="/simplates/">simplate</a> files are always automatically reloaded
+without a server restart whenever they change. Template bases and includes are
+also reloaded if you use --changes_reload.</p>
 
-<p>To set this up, create an <a href="/aspen.conf/"><code>aspen.conf</code></a>
-file in <code>~/.aspen/</code>. It&rsquo;s good to put it in your home
-directory so that it affects all instances of <code>aspen</code> on your
-development machine, but doesn&rsquo;t accidentally end up in production. Put
-this content in <code>~/.aspen/aspen.conf</code>:</p>
+<p>To use this, run <code>aspen</code> under <code>thrash</code> like so:</p>
 
-<pre>[aspen.cli]
-changes_kill = yes</pre>
+<pre>$ thrash aspen --changes_reload=yes</pre>
 
-<p>Then run <code>aspen</code> under <code>thrash</code>:</p>
-
-<pre>$ thrash aspen
-Aspen website loaded from /path/to/my/website.
-Greetings, program! Welcome to port 8080.</pre>
-
-<p>Now whenever you change any Python module files or any files in <a
-    href="/dotaspen/"><code>.aspen</code></a>, you should see
-<code>aspen</code> die, and <code>thrash</code> restart it:</p>
-
-<pre>Shutting down Aspen website.
-Aspen website loaded from /path/to/my/website.
-Greetings, program! Welcome to port 8080.</pre>
-
-<p>You do need to bounce the server manually in order to pick up <i>new</i>
-modules and files.
+<p>Now whenever you change any Python module files or configuration scripts you
+should see <code>aspen</code> die, and <code>thrash</code> restart it. You do
+need to bounce the server manually in order to pick up <i>new</i> modules and
+configuration script.</p>
 
 
 <h4>SIGINT</h4>

@@ -13,7 +13,7 @@ clean:
 	rm -rf env
 
 docs: env
-	./env/bin/thrash ./env/bin/aspen -a:5370 -wdoc/ -p.aspen
+	./env/bin/thrash ./env/bin/aspen -a:5370 -wdoc/ -p.aspen --changes_reload=1
 
 test: env
 	./env/bin/nosetests -sx tests/
