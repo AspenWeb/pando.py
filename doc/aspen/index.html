@@ -50,9 +50,10 @@ Options:
     I judge these variables to be less-often configured from the command
     line. But who knows?
 
-    --changes_kill=CHANGES_KILL
-                        if set to yes/true/1, changes to files in
-                        $ASPEN_PROJECT_ROOT will cause aspen to exit [no]
+    --changes_reload=CHANGES_RELOAD
+                        if set to yes/true/1, changes to configuration files
+                        and Python modules will cause aspen to re-exec, and
+                        template bases won't be cached [no]
     --charset_dynamic=CHARSET_DYNAMIC
                         this is set as the charset for template resources of
                         Content-Type text/* [UTF-8]

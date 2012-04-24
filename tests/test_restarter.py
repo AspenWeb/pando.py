@@ -7,12 +7,12 @@ class Foo:
 def test_startup_basically_works():
     website = Foo()
     website.changes_kill = True
-    website.dotaspen = 'bar'
     website.root = 'foo'
-    website.engine = Foo()
-    website.engine.start_restarter = lambda x: x
+    website.network_engine = Foo()
+    website.network_engine.start_restarter = lambda x: x
+    website.configuration_scripts = []
     restarter.install(website)
-    expected = []
+    expected = set()
     actual = restarter.extras
     assert actual == expected, actual
 
