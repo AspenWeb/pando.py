@@ -31,8 +31,8 @@ class TemplateResource(DynamicResource):
     min_pages = 2
     max_pages = 4
 
-    def compile_third(self, one, two, three, padding):
-        """Given three bytestrings, return a Template instance.
+    def compile_page(self, page, padding):
+        """Given a bytestrings, return a Template instance.
 
         This method depends on fs and website attributes on self.
         
@@ -45,19 +45,11 @@ class TemplateResource(DynamicResource):
             browser with tons of whitespace at the beginning of them.
 
         """
-        return Template( self._trim_initial_newline(three)
+        return Template( self._trim_initial_newline(page)
                        , name = self.fs
                        , loader = self.website.template_loader
                        , compress_whitespace = False
                         )
-
-    def compile_fourth(self, one, two, three, four, padding):
-        """Given None, return None. Template resources have a noop fourth page.
-        """
-        four = four.replace('\r\n', '\n')
-        four = padding + four
-        four = compile(four, self.fs, 'exec')
-        return four
 
     def _trim_initial_newline(self, template):
         """Trim any initial newline from page three.
@@ -77,11 +69,22 @@ class TemplateResource(DynamicResource):
         return template
 
 
+    def parse(self, raw):
+        """if there's only two pages, there's only one logic page, so insert a blank one up front"""
+
+        pages = DynamicResource.parse(self, raw)
+
+        if len(pages) < 3:
+            pages = [''] + pages
+
+        return pages
+
+
     def get_response(self, context):
         """Given a context dict, return a response object.
         """
         response = context['response']
-        response.body = self.three.generate(**context)
+        response.body = self.pages[0].generate(**context)
         if 'Content-Type' not in response.headers:
             response.headers['Content-Type'] = self.mimetype
             if self.mimetype.startswith('text/'):
