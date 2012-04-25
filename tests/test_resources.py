@@ -72,6 +72,10 @@ def test_resources_dont_leak_whitespace():
     expected = "[1, 2, 3, 4]"
     assert actual == expected, repr(actual)
 
+def test_negotiated_resource_doesnt_break():
+    expected = "Greetings, bar!"
+    actual = check("^L\nfoo = 'bar'^L text/plain\nGreetings, {{ foo }}!^L text/html\n<h1>Greetings, {{ foo }}!</h1>",filename='index')
+    assert actual == expected, "Expected " + repr(expected) + " but got " + repr(actual)
 
 # Unicode example in the /templating/ doc.
 # ========================================

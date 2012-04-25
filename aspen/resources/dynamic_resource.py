@@ -6,7 +6,7 @@ PAGE_BREAK = chr(12)
 
 # Global page limits. There are further limits per-resource-type.
 MIN_PAGES = 2
-MAX_PAGES = 4
+MAX_PAGES = 99
 
 class StringDefaultingList(list):
     def __getitem__(self, key):
@@ -28,8 +28,8 @@ class DynamicResource(Resource):
     def __init__(self, *a, **kw):
         assert MIN_PAGES <= self.max_pages <= MAX_PAGES # sanity check
         super(DynamicResource, self).__init__(*a, **kw)
-        pages = self._parse(self.raw)
-        self.one, self.two, self.three, self.four = self._compile(*pages)
+        pages = self.parse(self.raw)
+        self.one, self.two, self.pages = self._compile(*pages)
 
     def respond(self, request, response=None):
         """Given a Request and maybe a Response, return or raise a Response.
@@ -42,6 +42,7 @@ class DynamicResource(Resource):
         
         context = request.context
         context.update(self.one)
+        context['request'] = request
         context['response'] = response
         context['resource'] = self
    
@@ -62,20 +63,8 @@ class DynamicResource(Resource):
         return self.get_response(context)
 
 
-    def _parse(self, raw):
-        """Given a bytestring, return a list of four items.
-        
-        If there are too few pages, raise AssertionError. Any resource with
-        only one page should land in StaticResource, not here.
-        
-        If there are too many pages, raise SyntaxError. 
-
-        If there are fewer than self.max_pages, then pad the front of the list
-        with up to two empty strings, and the end with up to one.
-
-        If self.max_pages is less than four (i.e., three or two), pad the end
-        of the list with None.
-        
+    def parse(self, raw):
+        """Given a bytestring, return a list of N pages, the first two of which are python code.
         """
 
         # Support caret-L in addition to .
@@ -87,7 +76,7 @@ class DynamicResource(Resource):
         assert npages >= self.min_pages # sanity check; bug if False
 
         # Check for too many pages.
-        if npages > self.max_pages:     # user error if True
+        if self.max_pages is not None and npages > self.max_pages:     # user error if True
             type_name = self.__class__.__name__[:-len('resource')]
             msg = "%s resources must have exactly %s pages; %s has %s."
             msg %= ( type_name
@@ -97,20 +86,10 @@ class DynamicResource(Resource):
                     )
             raise SyntaxError(msg)
 
-        # Pad front (and back?) with empty strings.
-        while len(pages) < (self.max_pages - 1):
-            pages.insert(0, '')
-        if len(pages) < self.max_pages:
-            pages.append('')
-
-
-        # Pad the back with None.
-        while len(pages) < MAX_PAGES:
-            pages.append(None)
-
         return pages
+
        
-    def _compile(self, one, two, three, four):
+    def _compile(self, one, two, *in_pages):
         """Given four items, return a 4-tuple of compiled objects.
 
         All dynamic resources compile the first two pages the same way. It's
@@ -125,8 +104,11 @@ class DynamicResource(Resource):
 
         one = one.replace('\r\n', '\n')
         two = two.replace('\r\n', '\n')
-        if three is not None:
-            three = three.replace('\r\n', '\n')
+
+	pages = list(in_pages)
+        for i, page in enumerate(pages):
+            if page:
+                pages[i] = page.replace('\r\n', '\n')
 
 
         # Compute paddings and pad the second and third pages.
@@ -134,10 +116,11 @@ class DynamicResource(Resource):
         # This is so we get accurate tracebacks. We will pass padding_* to the
         # compile_* hooks in case subclasses want to use them.
         
-        padding = lambda s: ''.join(['\n' for n in range(s.count('\n'))])
-        padding_two = padding(one)
-        padding_three = padding_two + padding(two)
-        two = padding_two + two 
+        linesin = lambda s: '\n' * s.count('\n')
+        two = linesin(one) + two 
+        padding = [ linesin(two) ]
+        for page in pages[:-1]:
+            padding += [ padding[-1] + linesin(page) ]
 
 
         # Exec the first page and compile the second.
@@ -158,22 +141,16 @@ class DynamicResource(Resource):
         # Third and Fourth
         # ================
 
-        three = self.compile_third(one, two, three, padding_two)
-        four = self.compile_fourth(one, two, three, four, padding_three)
+        for i, page in enumerate(pages):
+            pages[i] = self.compile_page(page, padding[i])
 
-
-        return one, two, three, four
+        return one, two, pages
 
 
     # Hooks
     # =====
 
-    def compile_third(self, *a):
-        """Given a bytestring, return an object.
-        """
-        raise NotImplementedError
-
-    def compile_fourth(self, *a):
+    def compile_page(self, *a):
         """Given a bytestring, return an object.
         """
         raise NotImplementedError
