@@ -26,7 +26,8 @@ class DynamicResource(Resource):
     max_pages = None
     
     def __init__(self, *a, **kw):
-        assert MIN_PAGES <= self.max_pages <= MAX_PAGES # sanity check
+        if self.max_pages:
+            assert MIN_PAGES <= self.max_pages <= MAX_PAGES # sanity check
         super(DynamicResource, self).__init__(*a, **kw)
         pages = self.parse(self.raw)
         self.one, self.two, self.pages = self._compile(*pages)
