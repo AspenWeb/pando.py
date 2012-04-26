@@ -81,7 +81,7 @@ class NegotiatedResource(DynamicResource):
     """
 
     min_pages = 3
-    max_pages = 99
+    max_pages = None
 
     def compile_page(self, page, padding):
         """Given a bytestring, return a Template instance.
