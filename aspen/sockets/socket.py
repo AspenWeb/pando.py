@@ -54,11 +54,12 @@ class Socket(object):
         other mechanism, like reading a remote TCP socket.
 
         """
-        exec self.resource.three in self.context
+        exec self.resource.pages[0] in self.context
 
     def disconnect(self):
         self.loop.stop()
-        exec self.resource.four in self.context
+	if len(self.resource.pages) > 1:
+            exec self.resource.pages[1] in self.context
         self.channel.remove(self)
 
 

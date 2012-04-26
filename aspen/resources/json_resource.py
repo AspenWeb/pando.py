@@ -7,17 +7,11 @@ class JSONResource(DynamicResource):
     min_pages = 2
     max_pages = 2
 
-    def compile_third(self, one, two, three, padding):
+    def compile_page(self, page, padding):
         """Given None, return None. JSON resources have no third page.
         """
-        assert three is None # sanity check
-        return three 
-
-    def compile_fourth(self, one, two, three, four, padding):
-        """Given None, return None. Socket resources have no fourth page.
-        """
-        assert four is None # sanity check
-        return four 
+        assert page is None # sanity check
+        return page 
 
     def process_raised_response(self, response):
         """Given a response, return a response.
