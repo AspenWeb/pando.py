@@ -23,6 +23,7 @@ Problems with tornado.template:
 from aspen.resources.dynamic_resource import DynamicResource
 from aspen._tornado.template import Template
 
+PAGE_BREAK = chr(12)
 
 class TemplateResource(DynamicResource):
     """This is a template resource. It has two or three pages.
@@ -31,57 +32,56 @@ class TemplateResource(DynamicResource):
     min_pages = 2
     max_pages = 4
 
-    def compile_third(self, one, two, three, padding):
-        """Given three bytestrings, return a Template instance.
-
-        This method depends on fs and website attributes on self.
-        
-        We used to take advantage of padding, but:
-
-            a) Tornado templates have some weird error handling that we haven't
-            exposed yet.
-            
-            b) It's counter-intuitive if your template resources show up in the
-            browser with tons of whitespace at the beginning of them.
-
+    def compile_page(self, page, padding):
+        """Parse out the specline between ^L and \n, figure out the renderer and use it
         """
-        return Template( self._trim_initial_newline(three)
-                       , name = self.fs
-                       , loader = self.website.template_loader
-                       , compress_whitespace = False
-                        )
+        if '\n' in page:
+            specline, input = page.split('\n',1)
+        else:
+            specline, input = '', page
+        renderer_name = self._parse_specline(specline)
+        if renderer_name is None:
+            renderer_name = self.website.template_loader_default
+        if not renderer_name in self.website.template_loaders:
+            raise TypeError("No renderer named '%s'." % renderer_name)
+        renderer = self.website.template_loaders[renderer_name]
+        template_root = self.website.project_root or self.website.www_root
+        return renderer( template_root, self.fs, input )
 
-    def compile_fourth(self, one, two, three, four, padding):
-        """Given None, return None. Template resources have a noop fourth page.
+
+    def _parse_specline(self, line):
+        """parse out the specline
+
+            ^L #!renderer
+
+            return None for any parts unspecified on the specline
         """
-        four = four.replace('\r\n', '\n')
-        four = padding + four
-        four = compile(four, self.fs, 'exec')
-        return four
+        # TODO: enforce order
+        line = line.strip('\n ' + PAGE_BREAK)
+        renderer, content_type = None, None
+        for arg in line.split(' '):
+            if arg.startswith('#!'):
+                renderer = arg[2:]
+        return renderer
 
-    def _trim_initial_newline(self, template):
-        """Trim any initial newline from page three.
-        
-        This is a convenience. It's nice to put ^L on a line by itself, but
-        really you want the template to start on the next line.
 
-        """
-        try:
-            if template[0] == '\r':     # Windows
-                if template[1] == '\n':
-                    template = template[2:]
-            elif template[0] == '\n':   # Unix
-                template = template[1:]
-        except IndexError:              # empty template
-            pass
-        return template
+    def parse(self, raw):
+        """if there's only two pages, there's only one logic page, so insert a blank one up front"""
+
+        pages = DynamicResource.parse(self, raw)
+
+        if len(pages) < 3:
+            pages = [''] + pages
+
+        return pages
 
 
     def get_response(self, context):
         """Given a context dict, return a response object.
         """
         response = context['response']
-        response.body = self.three.generate(**context)
+        renderer = self.pages[0]
+        response.body = renderer(**context)
         if 'Content-Type' not in response.headers:
             response.headers['Content-Type'] = self.mimetype
             if self.mimetype.startswith('text/'):

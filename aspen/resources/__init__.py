@@ -20,6 +20,7 @@ PAGE_BREAK = chr(12) # used in the following imports
 from aspen.exceptions import LoadError
 from aspen.resources.json_resource import JSONResource
 from aspen.resources.template_resource import TemplateResource
+from aspen.resources.negotiated_resource import NegotiatedResource
 from aspen.resources.socket_resource import SocketResource
 from aspen.resources.static_resource import StaticResource
 
@@ -47,7 +48,7 @@ class Entry:
 # Core loaders
 # ============
 
-def get_resource_class(raw, mimetype):
+def get_resource_class(filename, raw, mimetype):
     """Given raw file contents and a mimetype, return a Resource subclass.
 
     This function encodes the algorithm for deciding what kind of Resource a
@@ -100,8 +101,10 @@ def get_resource_class(raw, mimetype):
         Class = JSONResource
     elif mimetype == 'application/x-socket.io':
         Class = SocketResource
-    else:
+    elif '.' in os.path.basename(filename):
         Class = TemplateResource
+    else:
+        Class = NegotiatedResource
 
     return Class
 
@@ -131,7 +134,7 @@ def load(request, modtime):
     # ================================
     # An instantiated resource is compiled as far as we can take it.
  
-    Class = get_resource_class(raw, mimetype)
+    Class = get_resource_class(request.fs, raw, mimetype)
     resource = Class(request.website, request.fs, raw, mimetype, modtime)
     return resource
 
