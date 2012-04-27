@@ -13,29 +13,22 @@ class SocketResource(DynamicResource):
         """
         raise NotImplemented
 
-    def compile_third(self, one, two, three, padding):
-        """Given four bytestrings, return a code object.
+    def parse(self, raw):
+        pages = DynamicResource.parse(self, raw)
+        while len(pages) < 3: pages = [''] + pages
+        return pages
+
+    def compile_page(self, page, padding):
+        """Given a bytestrings, return a code object.
 
         This method depends on self.fs.
 
         """
         # See DyanmicResource._compile for comments on this algorithm.
-        three = three.replace('\r\n', '\n')
-        three = padding + three
-        three = compile(three, self.fs, 'exec')
-        return three
-
-    def compile_fourth(self, one, two, three, four, padding):
-        """Given five bytestrings, return a code object.
-
-        This method depends on self.fs.
-
-        """
-        # See DyanmicResource._compile for comments on this algorithm.
-        four = four.replace('\r\n', '\n')
-        four = padding + four
-        four = compile(four, self.fs, 'exec')
-        return four
+        page = page.replace('\r\n', '\n')
+        page = padding + page
+        page = compile(page, self.fs, 'exec')
+        return page
 
     def exec_second(self, socket, request):
         """Given a Request, return a context dictionary.

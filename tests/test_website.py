@@ -79,7 +79,7 @@ def bar(response):
 
     # Intentionally break the website object so as to trigger a double failure.
     website = Website(['--www_root='+FSFIX, '--project_root=.aspen'])
-    del website.template_loader
+    del website.template_loaders
 
     response = website.handle(StubRequest())
 
