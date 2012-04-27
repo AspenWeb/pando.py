@@ -39,12 +39,9 @@ def main():
             # Log restart attempts after the initial launch.
 
             n += 1
-            backoff = _backoff = min(backoff * 2, BACKOFF_MAX)
-            if n == 1:
-                _backoff = INITIAL_WAIT
+            backoff = min(backoff * 2, BACKOFF_MAX)
             if n > 1:
-                m = "---- Restart #%s " 
-                m %= (n, _backoff)
+                m = "---- Restart #%s " % n
                 print
                 print m + ('-' * (79-len(m)))
 
