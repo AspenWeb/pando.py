@@ -12,25 +12,18 @@ from aspen.configuration import parse
 from aspen.configuration.exceptions import ConfigurationError
 from aspen.configuration.hooks import Hooks
 from aspen.configuration.options import OptionParser, DEFAULT
-from aspen._tornado.template import Loader
+from aspen.renderers.tornado import renderer as tornado_renderer
 
 
 
-# Monkey-patch Loader
-# ===================
+# Non-caching Renderer
+# ====================
 # This is used when follow_filesystem is True.
 
-class NonCachingLoader(Loader):
-    """Subclass Tornado's Loader to immediately forget everything it loads.
-    """
-
-    def load(self, name, parent_path=None):
-        """Load the template then clear the cache.
-        """
-        out = Loader.load(self, name, parent_path)
-        self.reset() # oops!
-        return out
-
+def RecompilingRenderer(renderer):
+    def _(*a):
+        return renderer(*a)
+    return _
 
 
 # Defaults
@@ -207,11 +200,13 @@ class Configurable(object):
         self.www_root = os.path.realpath(self.www_root)
         os.chdir(self.www_root)
 
+        self.template_loaders = { 'tornado': tornado_renderer }
+        self.template_loader_default = 'tornado'
+
         # project root 
         if self.project_root is None:
             aspen.log_dammit("project_root not configured (no template bases, "
                              "etc.).")
-            self.template_loader = None
             configure_aspen_py = None
         else:
             # canonicalize it
@@ -226,9 +221,8 @@ class Configurable(object):
 
             # template loader
             if self.changes_reload:
-                self.template_loader = NonCachingLoader(self.project_root)
-            else:
-                self.template_loader = Loader(self.project_root)
+                for k, v in self.template_loaders.items():
+                    self.template_loaders[k] = RecompilingRenderer(v)
             
             # mime.types
             users_mimetypes = os.path.join(self.project_root, 'mime.types')

@@ -75,6 +75,7 @@ from aspen import Response
 from aspen.resources.dynamic_resource import DynamicResource
 from aspen._tornado.template import Template
 
+PAGE_BREAK = chr(12)
 
 class NegotiatedResource(DynamicResource):
     """This is a negotiated resource. It has three or more pages
@@ -84,19 +85,7 @@ class NegotiatedResource(DynamicResource):
     max_pages = None
 
     def compile_page(self, page, padding):
-        """Given a bytestring, return a Template instance.
-
-        This method depends on fs and website attributes on self.
-        
-        We used to take advantage of padding, but:
-
-            a) Tornado templates have some weird error handling that we haven't
-            exposed yet.
-            
-            b) It's counter-intuitive if your template resources show up in the
-            browser with tons of whitespace at the beginning of them.
-
-        """
+        """Given a bytestring, return a (type, renderer) pair """
 	if '\n' in page:
             # use the specified specline
             specline, input = page.split('\n',1)
@@ -104,31 +93,38 @@ class NegotiatedResource(DynamicResource):
             # no specline specifed - default to the default media type
             specline, input = self.website.media_type_default, page
         specline = specline.strip()
-        print "specline: " + repr(specline)
-        return (specline,
-                Template( input
-                       , name = self.fs
-                       , loader = self.website.template_loader 
-                       , compress_whitespace = False
-                        )
-               )
 
-    def _trim_initial_newline(self, template):
-        """Trim any initial newline from page three.
+        # figure out which type this is and which renderer to use
+        renderer_name, content_type = self._parse_specline(specline)
+        if renderer_name is None:
+            renderer_name = self.website.template_loader_default
+        if content_type is None:
+            content_type = self.website.media_type_default
+
+        # get the render engine
+        renderer = self.website.template_loaders[renderer_name]
+
+        # return a tuple of (content_type,  page render function)
+	template_root = self.website.project_root or self.website.www_root
+        return (content_type, renderer( template_root, self.fs, input ))
+
+
+    def _parse_specline(self, line):
+        """parse out the specline 
+
+            ^L #!renderer content/type
         
-        This is a convenience. It's nice to put ^L on a line by itself, but
-        really you want the template to start on the next line.
-
+            return None for any parts unspecified on the specline
         """
-        try:
-            if template[0] == '\r':     # Windows
-                if template[1] == '\n':
-                    template = template[2:]
-            elif template[0] == '\n':   # Unix
-                template = template[1:]
-        except IndexError:              # empty template
-            pass
-        return template
+        # TODO: enforce order
+        line = line.strip('\n ' + PAGE_BREAK)
+        renderer, content_type = None, None
+        for arg in line.split(' '):
+            if arg.startswith('#!'):
+                renderer = arg[2:]
+            elif arg:
+                content_type = arg
+        return renderer, content_type
 
 
     def get_response(self, namespace):
@@ -144,7 +140,7 @@ class NegotiatedResource(DynamicResource):
             r_type, responder = self.pages[0]
 
         response = namespace['response']
-        response.body = responder.generate(**namespace)
+        response.body = responder(**namespace)
         if response.headers.get('Content-Type') is None:
             response.headers['Content-Type'] = r_type
         return response

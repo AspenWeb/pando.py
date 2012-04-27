@@ -89,7 +89,7 @@ class DynamicResource(Resource):
 
         return pages
 
-       
+
     def _compile(self, one, two, *in_pages):
         """Given four items, return a 4-tuple of compiled objects.
 
