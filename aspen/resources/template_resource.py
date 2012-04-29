@@ -21,9 +21,10 @@ Problems with tornado.template:
 
 """
 from aspen.resources.dynamic_resource import DynamicResource
-from aspen._tornado.template import Template
+
 
 PAGE_BREAK = chr(12)
+
 
 class TemplateResource(DynamicResource):
     """This is a template resource. It has two or three pages.
@@ -36,17 +37,18 @@ class TemplateResource(DynamicResource):
         """Parse out the specline between ^L and \n, figure out the renderer and use it
         """
         if '\n' in page:
-            specline, input = page.split('\n',1)
+            specline, raw = page.split('\n',1)
         else:
-            specline, input = '', page
+            specline, raw = '', page
         renderer_name = self._parse_specline(specline)
         if renderer_name is None:
-            renderer_name = self.website.template_loader_default
-        if not renderer_name in self.website.template_loaders:
-            raise TypeError("No renderer named '%s'." % renderer_name)
-        renderer = self.website.template_loaders[renderer_name]
-        template_root = self.website.project_root or self.website.www_root
-        return renderer( template_root, self.fs, input )
+            # XXX should come from media type
+            renderer_name = "tornado"
+        try:
+            make_renderer = self.website.renderer_factories[renderer_name]
+        except KeyError:
+            raise ValueError("No renderer named '%s'." % renderer_name)
+        return make_renderer(self.fs, raw)
 
 
     def _parse_specline(self, line):
@@ -81,7 +83,7 @@ class TemplateResource(DynamicResource):
         """
         response = context['response']
         renderer = self.pages[0]
-        response.body = renderer(**context)
+        response.body = renderer(context)
         if 'Content-Type' not in response.headers:
             response.headers['Content-Type'] = self.mimetype
             if self.mimetype.startswith('text/'):

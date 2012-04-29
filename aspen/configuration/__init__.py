@@ -12,18 +12,7 @@ from aspen.configuration import parse
 from aspen.configuration.exceptions import ConfigurationError
 from aspen.configuration.hooks import Hooks
 from aspen.configuration.options import OptionParser, DEFAULT
-from aspen.renderers.tornado import renderer as tornado_renderer
-
-
-
-# Non-caching Renderer
-# ====================
-# This is used when follow_filesystem is True.
-
-def RecompilingRenderer(renderer):
-    def _(*a):
-        return renderer(*a)
-    return _
+from aspen.rendering import PystacheFactory, TornadoFactory
 
 
 # Defaults
@@ -65,6 +54,13 @@ KNOBS = \
 class Configurable(object):
     """Mixin object for aggregating configuration from several sources.
     """
+
+    def from_argv(cls, argv):
+        configurable = cls()
+        configurable.configure(argv)
+        return configurable
+    from_argv = classmethod(from_argv)
+
 
     def _set(self, name, hydrated, flat, context, name_in_context):
         """Set value at self.name, calling value if it's callable.
@@ -205,10 +201,6 @@ class Configurable(object):
         self.www_root = os.path.realpath(self.www_root)
         os.chdir(self.www_root)
 
-        # template loaders
-        self.template_loaders = { 'tornado': tornado_renderer }
-        self.template_loader_default = 'tornado'
-
         # project root 
         if self.project_root is None:
             aspen.log_dammit("project_root not configured (no template bases, "
@@ -225,11 +217,6 @@ class Configurable(object):
             self.project_root = os.path.realpath(self.project_root)
             aspen.log_dammit("project_root set to %s." % self.project_root)
 
-            # template loader
-            if self.changes_reload:
-                for k, v in self.template_loaders.items():
-                    self.template_loaders[k] = RecompilingRenderer(v)
-            
             # mime.types
             users_mimetypes = os.path.join(self.project_root, 'mime.types')
             mimetypes.knownfiles += [users_mimetypes]
@@ -242,6 +229,11 @@ class Configurable(object):
 
             # PYTHONPATH
             sys.path.insert(0, self.project_root)
+
+        # renderer factories
+        self.renderer_factories = { 'pystache': PystacheFactory(self)
+                                  , 'tornado': TornadoFactory(self)
+                                   }
 
         # mime.types
         mimetypes.init()
