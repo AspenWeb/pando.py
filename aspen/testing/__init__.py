@@ -15,7 +15,9 @@ def _log(*a):
 
 
 import aspen
-aspen.LOGGING_THRESHOLD = sys.maxint
+if aspen.LOGGING_THRESHOLD == -1:
+    # Suppress aspen's logging during tests.
+    aspen.LOGGING_THRESHOLD = 3
 from aspen import Response
 from aspen.configuration import Configurable
 from aspen.http.request import Request
