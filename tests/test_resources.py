@@ -1,12 +1,9 @@
-from os.path import join
 from textwrap import dedent
 
 from aspen import Response
-from aspen.configuration import Configurable
-from aspen.exceptions import LoadError
 from aspen.testing import assert_raises, check
 from aspen.testing.fsfix import attach_teardown
-from aspen._tornado.template import Template, Loader
+from aspen._tornado.template import Template
 
 
 
@@ -74,8 +71,17 @@ def test_resources_dont_leak_whitespace():
 
 def test_negotiated_resource_doesnt_break():
     expected = "Greetings, bar!"
-    actual = check("^L\nfoo = 'bar'^L text/plain\nGreetings, {{ foo }}!^L text/html\n<h1>Greetings, {{ foo }}!</h1>",filename='index')
-    assert actual == expected, "Expected " + repr(expected) + " but got " + repr(actual)
+    actual = check("""
+^L
+foo = 'bar'
+^L text/plain
+Greetings, {{ foo }}!
+^L text/html
+<h1>Greetings, {{ foo }}!</h1>
+"""
+, filename='index')
+    assert actual == expected, actual
+
 
 # Unicode example in the /templating/ doc.
 # ========================================

@@ -22,6 +22,18 @@ def test_index_is_found():
     actual = check_index('/').fs
     assert actual == expected, actual
     
+def test_negotiated_index_is_found():
+    mk(( 'index'
+       , """\
+^L text/html
+<h1>Greetings, program!</h1>
+^L text/plain
+Greetings, program!
+"""))
+    expected = fix('index')
+    actual = check_index('/').fs
+    assert actual == expected, actual
+    
 def test_alternate_index_is_not_found():
     mk(('default.html', "Greetings, program!"))
     expected = fix('')
