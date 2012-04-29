@@ -2,11 +2,13 @@
 
 Here is the class hierarchy:
 
-    Resource ------> DynamicResource ------> JSONResource
+    Resource ------> DynamicResource --------> JSONResource
              \                       \ 
-              \                       \----> SocketResource
+              \                       \------> NegotiatedResource 
                \                       \
-                \--> StaticResource     \--> TemplateResource
+                \--> StaticResource     \----> SocketResource
+                                         \
+                                          \--> TemplateResource
 
 """
 import mimetypes
@@ -19,8 +21,8 @@ PAGE_BREAK = chr(12) # used in the following imports
 
 from aspen.exceptions import LoadError
 from aspen.resources.json_resource import JSONResource
-from aspen.resources.template_resource import TemplateResource
 from aspen.resources.negotiated_resource import NegotiatedResource
+from aspen.resources.template_resource import TemplateResource
 from aspen.resources.socket_resource import SocketResource
 from aspen.resources.static_resource import StaticResource
 
@@ -53,21 +55,28 @@ def get_resource_class(filename, raw, mimetype):
 
     This function encodes the algorithm for deciding what kind of Resource a
     given file is. Is it a static file or a dynamic JSON resource or what? Etc.
-    Here is the algorithm:
+    The first step is to decide whether it's static or dynamic:
 
-        If mimetype is 'application/x-socket.io' then it's a Socket resource.
+        If mimetype is 'application/x-socket.io' then we know it's dynamic.
 
         If mimetype is 'text/*' or 'application/json' then we look for page
         breaks (^L). If there aren't any page breaks then it's a static file.
-        If it has at least one page break then it's a dynamic resource (either
-        Template or JSON).
+        If it has at least one page break then it's a dynamic resource.
 
         For all other mimetypes we sniff the first few bytes of the file. If it
-        looks Python-y then it's a Template resource, otherwise it's a static
-        file. What looks Python-y? Triple quotes for a leading docstring, or
-        the beginning of an import statement ("from" or "import").
+        looks Python-y then it's dynamic, otherwise it's a static file. What
+        looks Python-y? Triple quotes for a leading docstring, or the beginning
+        of an import statement ("from" or "import").
+
+    Step two is to decide what kind of dynamic resource it is. JSON and Socket
+    are based on mimetype. Otherwise it's a Template if there is a file
+    extension and Negotiated if not.
     
     """
+
+    # XXX What is mimetype coming in for a negotiated resource? Is it None?
+    # application/octet-stream? text/plain? Are we going to look for ^L or
+    # sniff the first few bytes?
 
     is_dynamic = True
 
@@ -115,9 +124,7 @@ def load(request, modtime):
 
     # Load bytes.
     # ===========
-    # We work with resources exclusively as bytestrings. Any unicode objects
-    # passed in by the user as {{ expressions }} in Resources will be encoded
-    # with UTF-8 by Tornado.
+    # We work with resources exclusively as bytestrings. Renderers take note.
 
     raw = open(request.fs, 'rb').read()
     

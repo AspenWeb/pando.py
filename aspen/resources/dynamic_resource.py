@@ -106,7 +106,7 @@ class DynamicResource(Resource):
         one = one.replace('\r\n', '\n')
         two = two.replace('\r\n', '\n')
 
-	pages = list(in_pages)
+        pages = list(in_pages)
         for i, page in enumerate(pages):
             if page:
                 pages[i] = page.replace('\r\n', '\n')
