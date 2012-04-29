@@ -1,4 +1,4 @@
-"""Template resources.
+"""Implements templated resources.
 
 Problems with tornado.template:
 
@@ -26,8 +26,8 @@ from aspen.resources.dynamic_resource import DynamicResource
 PAGE_BREAK = chr(12)
 
 
-class TemplateResource(DynamicResource):
-    """This is a template resource. It has two or three pages.
+class TemplatedResource(DynamicResource):
+    """This is a templated resource. It has two or three pages.
     """
 
     min_pages = 2
