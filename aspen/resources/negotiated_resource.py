@@ -20,10 +20,13 @@ resource with a mimetype computed from the file extension. It is a SyntaxError
 for a file to have both an extension *and* multiple content pages.
 
 """
+import re
 from aspen.resources.dynamic_resource import DynamicResource
 
 
 PAGE_BREAK = chr(12)
+renderer_re = re.compile(r'#![a-z_]+')
+media_type_re = re.compile(r'[a-z]+/[a-z]+')
 
 
 class NegotiatedResource(DynamicResource):
@@ -59,21 +62,48 @@ class NegotiatedResource(DynamicResource):
 
 
     def _parse_specline(self, line):
-        """parse out the specline 
+        """Given a bytestring, return a two-tuple.
 
-            ^L #!renderer content/type
+        The incoming string is expected to be of the form:
+
+            ^L #!renderer media/type
+       
+        Either part is optional but there must be at least one part. The return
+        two-tuple contains None or a bytestring for each part. SyntaxError is
+        raised if there aren't one or two parts or if either of the parts is
+        malformed. If only one part is passed it's interpreted as a renderer if
+        it starts with a hashbang, media type otherwise.
         
-            return None for any parts unspecified on the specline
         """
-        # TODO: enforce order
         line = line.strip('\n ' + PAGE_BREAK)
-        renderer, content_type = None, None
-        for arg in line.split(' '):
+        renderer, media_type = None, None
+        parts = line.split()
+        nparts = len(parts)
+        if nparts not in (1, 2):
+            raise SyntaxError("A negotiated resource specline must have one "
+                              "or two parts: #!renderer media/type. Yours is: "
+                              "%s." % line)
+        if nparts == 1:
+            arg = parts[0]
             if arg.startswith('#!'):
-                renderer = arg[2:]
-            elif arg:
-                content_type = arg
-        return renderer, content_type
+                renderer = arg
+            else:
+                media_type = arg
+        else:
+            assert nparts == 2, nparts
+            renderer, media_type = parts
+
+        if renderer is not None:
+            if renderer_re.match(renderer) is None:
+                raise SyntaxError("Malformed renderer %s in specline %s." 
+                                  % (renderer, line))
+            renderer = renderer[2:]  # strip off the hashbang 
+        if media_type is not None:
+            if media_type_re.match(media_type) is None:
+                raise SyntaxError("Malformed media_type %s in specline %s." 
+                                  % (media_type, line))
+
+        return renderer, media_type
 
 
     def get_response(self, namespace):
