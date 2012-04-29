@@ -1,81 +1,30 @@
-"""Negotiated resources
+"""Negotiated resources.
 
-One not uncommon desire is to multiplex content types on a single HTTP
-endpoint via content negotiation. Aspen should support this. Here's how
-we want to do it.
+Aspen supports multiplexing content types on a single HTTP endpoint via content
+negotiation. If a file has no file extension, then it will be handled as a
+"negotiated resource".  The format of the file is like this:
 
-If a file has no file extension, then it will be handled as a
-"negotiated resource" ("simplate" is the file format, "resource" is the
-thing defined by a simplate).
+    import foo, json
+    ^L
+    data = foo.bar(request)
+    ^L text/plain
+    {{ data }}
+    ^L text/json
+    {{ json.dumps(data) }}
 
-Negotiated resources should degrade such that a file is transparently
-served as the first mime-type specified in the simplate
-
-The format of the file is like this:
-
-import foo
-^L
-data = foo.bar(request)
-^L text/plain
-{{ data }}
-^L text/json
-{{ json.dumps(data) }}
-
-We have vendored in Joe Gregorio's content negotiation library ( http://code.google.com/p/mimeparse/source/browse/trunk/mimeparse.py ) to do the heavy lifting. This is in parallel to how we handle _cherrypy and _tornado vendoring.
-
-This should also satisfy those who don't like inferring mimetypes from
-file extensions. This would render as html:
-
-/foo/bar
-
-import foo
-^L
-hey = foo.bar(request)
-^L text/html
-<h1>{{ hey }}</h1>
-
-Later:
+We have vendored in Joe Gregorio's content negotiation library to do the heavy
+lifting (parallel to how we handle _cherrypy and _tornado vendoring).
 
 If a file *does* have a file extension (foo.html), then it is a template
-resource with a mimetype that matches the file extension
-
-It is an error for a file to have both an extension *and* multiple template sections.
-
-Given:
-
-content 'single':
-
-"global section"
-import example
-^L
-"per-hit section"
-data = "foo"
-^L
-{{ data }}
-
-
-content 'multi':
-"global section"
-import example
-^L
-"per-hit section"
-data = "foo"
-^L text/plain
-{{ data }}
-^L text/html
-HTML {{ data }}
-^L application/json
-{ 'json': '{{ data }}' }
+resource with a mimetype computed from the file extension. It is a SyntaxError
+for a file to have both an extension *and* multiple content pages.
 
 """
-
-import copy 
-
-from aspen import Response
 from aspen.resources.dynamic_resource import DynamicResource
-from aspen._tornado.template import Template
+
 
 PAGE_BREAK = chr(12)
+
 
 class NegotiatedResource(DynamicResource):
     """This is a negotiated resource. It has three or more pages
@@ -86,7 +35,7 @@ class NegotiatedResource(DynamicResource):
 
     def compile_page(self, page, padding):
         """Given a bytestring, return a (type, renderer) pair """
-	if '\n' in page:
+        if '\n' in page:
             # use the specified specline
             specline, input = page.split('\n',1)
         else:
@@ -105,7 +54,7 @@ class NegotiatedResource(DynamicResource):
         renderer = self.website.template_loaders[renderer_name]
 
         # return a tuple of (content_type,  page render function)
-	template_root = self.website.project_root or self.website.www_root
+        template_root = self.website.project_root or self.website.www_root
         return (content_type, renderer( template_root, self.fs, input ))
 
 

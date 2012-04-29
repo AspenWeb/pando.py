@@ -58,7 +58,7 @@ class Socket(object):
 
     def disconnect(self):
         self.loop.stop()
-	if len(self.resource.pages) > 1:
+        if len(self.resource.pages) > 1:
             exec self.resource.pages[1] in self.context
         self.channel.remove(self)
 

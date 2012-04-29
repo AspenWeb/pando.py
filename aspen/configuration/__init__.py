@@ -200,6 +200,7 @@ class Configurable(object):
         self.www_root = os.path.realpath(self.www_root)
         os.chdir(self.www_root)
 
+        # template loaders
         self.template_loaders = { 'tornado': tornado_renderer }
         self.template_loader_default = 'tornado'
 
@@ -309,6 +310,7 @@ class Configurable(object):
                                   % filepath)
                     else:
                         raise ConfigurationError(msg % filepath)
+                # XXX smelly ... bug here? second else pls?
 
 
     @classmethod
