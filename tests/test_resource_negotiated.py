@@ -47,7 +47,7 @@ def test_parse_specline_parses_specline():
 
 def test_parse_specline_doesnt_require_renderer():
     actual = get()._parse_specline('media/type')
-    assert actual == ('None', 'media/type'), actual
+    assert actual == (None, 'media/type'), actual
 
 def test_parse_specline_doesnt_require_media_type():
     actual = get()._parse_specline('#!renderer')
