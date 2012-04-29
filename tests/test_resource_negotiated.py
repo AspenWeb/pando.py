@@ -1,17 +1,17 @@
-from aspen import Response
+from aspen import resources, Response
 from aspen.http.request import Request
 from aspen.resources.negotiated_resource import NegotiatedResource
-from aspen.testing import assert_raises, attach_teardown, mk
+from aspen.testing import assert_raises, attach_teardown, mk, StubRequest
 from aspen.website import Website
 
 
 def get(**_kw):
     kw = dict( website = Website([])
-                   , fs = ''
-                   , raw = '^L^L'
-                   , mimetype = ''
-                   , modtime = 0
-                    )
+             , fs = ''
+             , raw = '^L^L'
+             , mimetype = ''
+             , modtime = 0
+              )
     kw.update(_kw)
     return NegotiatedResource(**kw)
 
@@ -30,12 +30,12 @@ def test_negotiated_resource_is_instantiable():
 
 def test_compile_page_compiles_empty_page():
     page = get().compile_page('', '')
-    actual = page[0], page[1]()
+    actual = page[0], page[1]({})
     assert actual == ('text/plain', ''), actual
 
 def test_compile_page_compiles_page():
     page = get().compile_page('foo bar', '')
-    actual = page[0], page[1]()
+    actual = page[0], page[1]({})
     assert actual == ('text/plain', 'foo bar'), actual
 
 
@@ -49,9 +49,8 @@ def test_parse_specline_doesnt_require_renderer():
     actual = get()._parse_specline('media/type')
     assert actual == (None, 'media/type'), actual
 
-def test_parse_specline_doesnt_require_media_type():
-    actual = get()._parse_specline('#!renderer')
-    assert actual == ('renderer', None), actual
+def test_parse_specline_requires_media_type():
+    assert_raises(SyntaxError, get()._parse_specline, '#!renderer')
 
 def test_parse_specline_raises_SyntaxError_if_renderer_is_malformed():
     assert_raises(SyntaxError, get()._parse_specline, 'renderer media/type')
@@ -72,12 +71,14 @@ def test_parse_specline_enforces_order():
 # get_response
 
 def get_response(request, response):
-    namespace = { 'request': request
-                , 'response': response
-                 }
-    return get().get_response(namespace)
+    context = { 'request': request
+              , 'response': response
+               }
+    resource = resources.load(request, 0)
+    return resource.get_response(context)
 
 NEGOTIATED_RESOURCE = """\
+^L
 ^L text/plain
 Greetings, program!
 ^L text/html
@@ -85,47 +86,51 @@ Greetings, program!
 """
 
 def test_get_response_gets_response():
+    mk(('index', NEGOTIATED_RESOURCE))
     response = Response()
-    actual = get_response(Request(), response)
+    request = StubRequest.from_fs('index')
+    actual = get_response(request, response)
     assert actual is response, actual
 
 
 def test_get_response_is_happy_not_to_negotiate():
     mk(('index', NEGOTIATED_RESOURCE))
-    request = Request()
+    request = StubRequest.from_fs('index')
     actual = get_response(request, Response()).body
-    assert actual == "Greetings, program!", actual
+    assert actual == "Greetings, program!\n", actual
 
 def test_get_response_sets_content_type_when_it_doesnt_negotiate():
     mk(('index', NEGOTIATED_RESOURCE))
-    actual = get_response(Request(), Response()).headers['Content-Type']
+    request = StubRequest.from_fs('index')
+    actual = get_response(request, Response()).headers['Content-Type']
     assert actual == "text/plain", actual
 
 def test_get_response_doesnt_reset_content_type_when_not_negotiating():
     mk(('index', NEGOTIATED_RESOURCE))
+    request = StubRequest.from_fs('index')
     response = Response()
     response.headers['Content-Type'] = 'never/mind'
-    actual = get_response(Request(), response).headers['Content-Type']
+    actual = get_response(request, response).headers['Content-Type']
     assert actual == "never/mind", actual
 
 
 def test_get_response_negotiates():
     mk(('index', NEGOTIATED_RESOURCE))
-    request = Request()
+    request = StubRequest.from_fs('index')
     request.headers['Accept'] = 'text/html'
     actual = get_response(request, Response()).body
-    assert actual == "<h1>Greetings, program!</h1>", actual
+    assert actual == "<h1>Greetings, program!</h1>\n", actual
 
 def test_get_response_sets_content_type_when_it_negotiates():
     mk(('index', NEGOTIATED_RESOURCE))
-    request = Request()
+    request = StubRequest.from_fs('index')
     request.headers['Accept'] = 'text/html'
     actual = get_response(request, Response()).headers['Content-Type']
     assert actual == "text/html", actual
 
 def test_get_response_doesnt_reset_content_type_when_negotiating():
     mk(('index', NEGOTIATED_RESOURCE))
-    request = Request()
+    request = StubRequest.from_fs('index')
     request.headers['Accept'] = 'text/html'
     response = Response()
     response.headers['Content-Type'] = 'never/mind'

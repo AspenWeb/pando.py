@@ -70,7 +70,7 @@ def test_resources_dont_leak_whitespace():
     assert actual == expected, repr(actual)
 
 def test_negotiated_resource_doesnt_break():
-    expected = "Greetings, bar!"
+    expected = "Greetings, bar!\n"
     actual = check("""
 ^L
 foo = 'bar'

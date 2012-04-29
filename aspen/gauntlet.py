@@ -5,7 +5,7 @@ given here.
 
 """
 import os
-from os.path import join, isfile, isdir, dirname, exists
+from os.path import join, isfile, isdir, exists
 
 from aspen import Response
 
