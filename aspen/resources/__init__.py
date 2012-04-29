@@ -8,7 +8,7 @@ Here is the class hierarchy:
                \                       \
                 \--> StaticResource     \----> SocketResource
                                          \
-                                          \--> TemplateResource
+                                          \--> TemplatedResource
 
 """
 import mimetypes
@@ -22,7 +22,7 @@ PAGE_BREAK = chr(12) # used in the following imports
 from aspen.exceptions import LoadError
 from aspen.resources.json_resource import JSONResource
 from aspen.resources.negotiated_resource import NegotiatedResource
-from aspen.resources.template_resource import TemplateResource
+from aspen.resources.templated_resource import TemplatedResource
 from aspen.resources.socket_resource import SocketResource
 from aspen.resources.static_resource import StaticResource
 
@@ -111,7 +111,7 @@ def get_resource_class(filename, raw, mimetype):
     elif mimetype == 'application/x-socket.io':
         Class = SocketResource
     elif '.' in os.path.basename(filename):
-        Class = TemplateResource
+        Class = TemplatedResource
     else:
         Class = NegotiatedResource
 
