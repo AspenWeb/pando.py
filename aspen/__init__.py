@@ -24,11 +24,12 @@ ENGINES = ['cheroot', 'cherrypy', 'diesel', 'eventlet', 'gevent', 'pants',
 
 # Logging. It's simple.
 # =====================
+# Set to 1 and only really important things (startup/shutdown and tracebacks)
+# will be logged. If you pass -q2 nothing will be logged by aspen. The
+# configuration module will only change this value if it hasn't already been
+# changed from it's default value of -1.
 
-# set to 1 and only really important things (startup/shutdown and tracebacks)
-# will be logged. If you pass -q2 nothing will be logged by aspen.
-
-LOGGING_THRESHOLD = 0
+LOGGING_THRESHOLD = -1
 
 _pid = os.getpid()
 def log(message, level=0):

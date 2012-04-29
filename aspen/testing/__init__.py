@@ -14,6 +14,8 @@ def _log(*a):
     print
 
 
+import aspen
+aspen.LOGGING_THRESHOLD = sys.maxint
 from aspen import Response
 from aspen.configuration import Configurable
 from aspen.http.request import Request
