@@ -110,7 +110,7 @@ class Website(Configurable):
             request.resource = resources.get(request)
             response = request.resource.respond(request, response)
             return response
-        except Response, response:  # no nice error template available
+        except Response, response:  # no nice error simplate available
             raise
         except:                     # last chance for tracebacks in the browser
             tb_2 = traceback.format_exc().strip()

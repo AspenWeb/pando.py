@@ -20,7 +20,7 @@ class ThreadedLoop(threading.Thread):
     def __init__(self, socket):
         """Takes a socket object.
         """
-        super(ThreadedLoop, self).__init__()
+        threading.Thread.__init__(self)
         self.socket = socket 
         self.please_stop = threading.Event()
         self.daemon = True

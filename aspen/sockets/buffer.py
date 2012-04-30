@@ -1,4 +1,3 @@
-import collections
 import Queue
 import sys
 import threading

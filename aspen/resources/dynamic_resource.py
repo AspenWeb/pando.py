@@ -1,36 +1,31 @@
 from aspen import Response
+from aspen.resources import PAGE_BREAK
 from aspen.resources.resource import Resource
 
-
-PAGE_BREAK = chr(12)
-
-# Global page limits. There are further limits per-resource-type.
-MIN_PAGES = 2
-MAX_PAGES = 99
 
 class StringDefaultingList(list):
     def __getitem__(self, key):
         try:
-            return super(StringDefaultingList, self).__getitem__(key)
+            return list.__getitem__(self, key)
         except KeyError:
             return str(key)
+
 ORDINALS = StringDefaultingList([ 'zero' , 'one' , 'two', 'three', 'four'
-                                , 'five', 'six', 'seven', 'eight', 'nine'])
+                                , 'five', 'six', 'seven', 'eight', 'nine'
+                                 ])
 
 
 class DynamicResource(Resource):
-    """This is a base class for json, socket, and template resources.
+    """This is the base for JSON, negotiating, socket, and rendered resources.
     """
 
-    min_pages = None # set on subclass
+    min_pages = None  # set on subclass
     max_pages = None
     
     def __init__(self, *a, **kw):
-        if self.max_pages:
-            assert MIN_PAGES <= self.max_pages <= MAX_PAGES # sanity check
-        super(DynamicResource, self).__init__(*a, **kw)
-        pages = self.parse(self.raw)
-        self.one, self.two, self.pages = self._compile(*pages)
+        Resource.__init__(self, *a, **kw)
+        self.pages = self.parse_into_pages(self.raw)
+        self.pages = self.compile_pages(self.pages)
 
     def respond(self, request, response=None):
         """Given a Request and maybe a Response, return or raise a Response.
@@ -42,7 +37,7 @@ class DynamicResource(Resource):
         # =================
         
         context = request.context
-        context.update(self.one)
+        context.update(self.pages[0])
         context['request'] = request
         context['response'] = response
         context['resource'] = self
@@ -52,7 +47,7 @@ class DynamicResource(Resource):
         # ================
     
         try:
-            exec self.two in context 
+            exec self.pages[1] in context 
         except Response, response:
             response = self.process_raised_response(response)
             raise response
@@ -60,12 +55,21 @@ class DynamicResource(Resource):
 
         # Hook.
         # =====
+        
+        try:
+            response = self.get_response(context)
+        except Response, response:
+            response = self.process_raised_response(response)
+            raise response
+        else:
+            return response
 
-        return self.get_response(context)
 
+    def parse_into_pages(self, raw):
+        """Given a bytestring, return a list of pages.
 
-    def parse(self, raw):
-        """Given a bytestring, return a list of N pages, the first two of which are python code.
+        Subclasses extend this to implement additional semantics.
+
         """
 
         # Support caret-L in addition to .
@@ -73,13 +77,14 @@ class DynamicResource(Resource):
         pages = uncareted.split(PAGE_BREAK)
         npages = len(pages)
 
-        # Check for too few pages.
-        assert npages >= self.min_pages # sanity check; bug if False
+        # Check for too few pages. This is a sanity check as get_resource_class
+        # should guarantee this. Bug if it fails.
+        assert npages >= self.min_pages, npages
 
-        # Check for too many pages.
-        if self.max_pages is not None and npages > self.max_pages:     # user error if True
+        # Check for too many pages. This is user error.
+        if self.max_pages is not None and npages > self.max_pages:
             type_name = self.__class__.__name__[:-len('resource')]
-            msg = "%s resources must have exactly %s pages; %s has %s."
+            msg = "%s resources must have at most %s pages; %s has %s."
             msg %= ( type_name
                    , ORDINALS[self.max_pages]
                    , self.fs
@@ -90,62 +95,81 @@ class DynamicResource(Resource):
         return pages
 
 
-    def _compile(self, one, two, *in_pages):
-        """Given four items, return a 4-tuple of compiled objects.
+    def compile_pages(self, pages):
+        """Given a list of bytestrings, replace the bytestrings with objects.
 
         All dynamic resources compile the first two pages the same way. It's
-        the third page that differs, so we require subclasses to provide a hook
-        for that.
+        the third and following pages that differ, so we require subclasses to
+        supply a method for that: compile_page.
 
         """
 
         # Standardize newlines.
         # =====================
-        # compile requires \n, and doing it now makes the next line easier.
+        # compile requires \n, and doing it now makes the next line easier. In
+        # general it's nice to standardize this, I think. XXX Should we be
+        # going back to \r\n for the wire? That's HTTP, right?
 
-        one = one.replace('\r\n', '\n')
-        two = two.replace('\r\n', '\n')
-
-        pages = list(in_pages)
         for i, page in enumerate(pages):
-            if page:
-                pages[i] = page.replace('\r\n', '\n')
+            pages[i] = page.replace('\r\n', '\n')
+
+        one = pages[0]
+        two = pages[1]
 
 
         # Compute paddings and pad the second and third pages.
         # ====================================================
-        # This is so we get accurate tracebacks. We will pass padding_* to the
-        # compile_* hooks in case subclasses want to use them.
-        
-        linesin = lambda s: '\n' * s.count('\n')
-        two = linesin(one) + two 
-        padding = [ linesin(two) ]
-        for page in pages[:-1]:
-            padding += [ padding[-1] + linesin(page) ]
+
+        # This is so we get accurate tracebacks. We pass padding to the
+        # compile_page hook; the SocketResource subclass uses it, since it has
+        # an additional logic page that it wants to pad. We don't simply pad
+        # all pages because then for content pages the user would view source
+        # in their browser and see nothing but whitespace until they scroll way
+        # down.
+   
+        paddings = self._compute_paddings(pages)
+        two = paddings[1] + two
 
 
         # Exec the first page and compile the second.
         # ===========================================
-        # Below in render we take care not to mutate context.
 
         context = dict()
         context['__file__'] = self.fs
         context['website'] = self.website
         
         one = compile(one, self.fs, 'exec')
+        exec one in context    # mutate context
+        one = context          # store it
+
         two = compile(two, self.fs, 'exec')
 
-        exec one in context
-        one = context
+        pages[0] = one
+        pages[1] = two
 
 
-        # Third and Fourth
-        # ================
+        # Subclasses are responsible for the rest.
+        # ========================================
 
-        for i, page in enumerate(pages):
-            pages[i] = self.compile_page(page, padding[i])
+        for i, page in enumerate(pages[2:], start=2):
+            pages[i] = self.compile_page(page, paddings[i])
 
-        return one, two, pages
+        return pages
+
+
+    def _compute_paddings(pages):
+        """Given a list of bytestrings, return a 1-shorter list of bytestrings.
+        """
+        if not pages:
+            return []
+        
+        # A file with many, many lines would flog this algorithm. 
+        lines_in = lambda s: '\n' * s.count('\n')
+        paddings = ['']  # first page doesn't need padding
+        paddings += [paddings[-1] + lines_in(page) for page in pages[:-1]]
+        return paddings
+
+    _compute_paddings = staticmethod(_compute_paddings)
 
 
     # Hooks

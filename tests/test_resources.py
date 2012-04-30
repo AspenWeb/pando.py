@@ -4,6 +4,7 @@ from aspen import Response
 from aspen.testing import assert_raises, check
 from aspen.testing.fsfix import attach_teardown
 from aspen._tornado.template import Template
+from aspen.resources.dynamic_resource import DynamicResource
 
 
 
@@ -141,6 +142,23 @@ def test_templating_skipped_without_script():
     expected = "{{ foo }}"
     actual = check("{{ foo }}", response=response)
     assert actual == expected, actual
+
+
+# _compute_paddings
+
+def test_compute_paddings_computes_paddings():
+    actual = DynamicResource._compute_paddings(['\n\n\n', '\n'])
+    assert actual == ['', '\n\n\n'], actual
+
+def test_compute_paddings_computes_paddings_for_empty_list():
+    actual = DynamicResource._compute_paddings([])
+    assert actual == [], actual
+
+def test_compute_paddings_computes_paddings_for_more():
+    func = DynamicResource._compute_paddings
+    actual = func(['\n\n\n', 'cheese', '\n\n\n\n\n\n', 'Monkey\nHead'])
+    assert actual == ['', '\n\n\n', '', '\n\n\n\n\n\n'], actual
+
 
 
 # Teardown

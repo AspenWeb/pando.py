@@ -1,11 +1,8 @@
 from __future__ import with_statement # for Python 2.5
-import os
 import time
 
-from aspen.http.request import Request
 from aspen.sockets import FFFD
 from aspen.sockets.socket import Socket
-from aspen.sockets.message import Message
 from aspen.testing.fsfix import mk, attach_teardown
 from aspen.testing.sockets import make_socket, SocketInThread
 

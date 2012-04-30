@@ -55,7 +55,7 @@ def test_autoindex_response_is_returned():
     actual = 'README' in handle('/', '--list_directories=TrUe').body
     assert actual == expected, actual
 
-def test_simplates_can_import_from_dot_aspen():
+def test_resources_can_import_from_dot_aspen():
     mk( '.aspen'
       , ('.aspen/foo.py', 'bar = "baz"')
       , ('index.html', "import fooGreetings, {{ foo.bar }}!")

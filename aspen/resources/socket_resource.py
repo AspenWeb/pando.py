@@ -13,18 +13,22 @@ class SocketResource(DynamicResource):
         """
         raise NotImplemented
 
-    def parse(self, raw):
-        pages = DynamicResource.parse(self, raw)
-        while len(pages) < 3: pages = [''] + pages
+    def parse_into_pages(self, raw):
+        """Extend to add empty pages to the front if there are less than three.
+        """
+        pages = DynamicResource.parse_into_pages(self, raw)
+        while len(pages) < 3:
+            pages = [''] + pages
         return pages
 
     def compile_page(self, page, padding):
-        """Given a bytestrings, return a code object.
+        """Given two bytestrings, return a code object.
 
         This method depends on self.fs.
 
         """
-        # See DyanmicResource._compile for comments on this algorithm.
+        # See DynamicResource.compile_pages for an explanation of this
+        # algorithm.
         page = page.replace('\r\n', '\n')
         page = padding + page
         page = compile(page, self.fs, 'exec')
@@ -34,8 +38,8 @@ class SocketResource(DynamicResource):
         """Given a Request, return a context dictionary.
         """
         context = request.context
-        context.update(self.one)
+        context.update(self.pages[0])
         context['socket'] = socket
         context['channel'] = socket.channel
-        exec self.two in context
+        exec self.pages[1] in context
         return context 
