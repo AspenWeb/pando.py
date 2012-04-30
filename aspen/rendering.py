@@ -1,4 +1,19 @@
-"""Implement pluggable content rendering.
+"""Pluggable content rendering.
+
+
+###############################################################################
+#                                                                             #
+                                                                              #
+See user docs here:
+
+    http://aspen.io/simplates/rendered/
+
+$5 on Amazon to anyone who sends me a pull request with a shim for your
+favorite language. Think LESS, CoffeeScript, Markdown, etc.
+                                                                              #
+#                                                                             #
+###############################################################################
+
 
 Negotiated and rendered resources have content pages the bytes for which are
 transformed based on context. The user may explicitly choose a renderer per
