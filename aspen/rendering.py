@@ -1,6 +1,6 @@
 """Implement pluggable content rendering.
 
-Negotiated and template resources have content pages the bytes for which are
+Negotiated and rendered resources have content pages the bytes for which are
 transformed based on context. The user may explicitly choose a renderer per
 content page. The default renderer for a page is computed from its media type.
 Template resources derive their media type from the file extension. Negotiated
@@ -40,7 +40,8 @@ Here's how to implement and register your own renderer:
     website.renderer_factories['excited-about-cheese'] = CheeseFactory(website)
 
 
-Now you can use it in a negotiated or template resource:
+You could put that in configure-aspen.py in your --project_root, for example.
+Now you can use it in a negotiated or rendered resource:
 
     ^L #!excited-about-cheese
     I like cheese!
