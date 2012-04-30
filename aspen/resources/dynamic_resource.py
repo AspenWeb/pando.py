@@ -119,7 +119,6 @@ class DynamicResource(Resource):
 
         # Compute paddings and pad the second and third pages.
         # ====================================================
-
         # This is so we get accurate tracebacks. We pass padding to the
         # compile_page hook; the SocketResource subclass uses it, since it has
         # an additional logic page that it wants to pad. We don't simply pad
