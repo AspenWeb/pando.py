@@ -33,6 +33,7 @@ setup( author = 'Chad Whitacre'
      , packages = find_packages(exclude=[ 'aspen.tests'
                                         , 'aspen.tests.*'
                                          ])
+     , py_modules = ['thrash']
      , url = 'http://aspen.io/'
      , version = version
      , zip_safe = False
