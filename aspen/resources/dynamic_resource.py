@@ -151,7 +151,8 @@ class DynamicResource(Resource):
         # Subclasses are responsible for the rest.
         # ========================================
 
-        for i, page in enumerate(pages[2:], start=2):
+        for i, page in enumerate(pages[2:]):
+            i += 2  # no start kw to enumerate in Python 2.5
             pages[i] = self.compile_page(page, paddings[i])
 
         return pages
