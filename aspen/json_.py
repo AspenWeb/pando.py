@@ -1,7 +1,5 @@
 import datetime
 
-from aspen.exceptions import LoadError
-
 
 # Find a json module.
 # ===================
@@ -56,8 +54,8 @@ register_encoder(datetime.time, lambda obj: obj.isoformat())
 
 # Be lazy.
 # ========
-# Allow Aspen to run without json support. In practice that means that Python
-# 2.5 users won't be able to use json resources.
+# Allow Aspen to run without JSON support. In practice that means that Python
+# 2.5 users won't be able to use JSON resources.
 
 if _json is not None:
     class FriendlyEncoder(_json.JSONEncoder):
@@ -67,7 +65,7 @@ if _json is not None:
             cls = obj.__class__ # Use this instead of type(obj) because that 
                                 # isn't consistent between new- and old-style 
                                 # classes, and this is.
-            encode = encoders.get(cls, super(FriendlyEncoder, self).default)
+            encode = encoders.get(cls, _json.JSONEncoder.default)
             return encode(obj)
 
 def lazy_check(): 

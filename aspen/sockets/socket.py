@@ -1,9 +1,7 @@
-import time
 import uuid
 
 from aspen import json, resources, Response
 from aspen.sockets import HEARTBEAT, TIMEOUT, TRANSPORTS
-from aspen.sockets.event import Event
 from aspen.sockets.message import Message
 from aspen.sockets.packet import Packet
 
@@ -54,12 +52,12 @@ class Socket(object):
         other mechanism, like reading a remote TCP socket.
 
         """
-        exec self.resource.pages[0] in self.context
+        exec self.resource.pages[2] in self.context
 
     def disconnect(self):
         self.loop.stop()
-        if len(self.resource.pages) > 1:
-            exec self.resource.pages[1] in self.context
+        if len(self.resource.pages) > 3:
+            exec self.resource.pages[3] in self.context
         self.channel.remove(self)
 
 

@@ -1,11 +1,11 @@
 """Implement pluggable content rendering.
 
-Negotiated and template simplates have content pages the bytes for which are
+Negotiated and template resources have content pages the bytes for which are
 transformed based on context. The user may explicitly choose a renderer per
-content page. The default renderer for a page is computed from it's media type.
+content page. The default renderer for a page is computed from its media type.
 Template resources derive their media type from the file extension. Negotiated
 resources have no file extension by definition, so they specify the media type
-of their content pages in the simplate itself, on the so-called "specline" of
+of their content pages in the resource itself, on the so-called "specline" of
 each content page.
 
 A Renderer is instantiated by a Factory, which is a class that is itself
@@ -18,8 +18,8 @@ Instances of each Renderer subclass are callables that take three arguments and
 return a function (confused yet?). The three arguments are:
 
     factory         the Factory creating this object
-    filepath        the filesystem path of the simplate in question
-    raw             the bytestring of the page of the simplate in question
+    filepath        the filesystem path of the resource in question
+    raw             the bytestring of the page of the resource in question
 
 
 Each Renderer instance is a callable that takes a context dictionary and
@@ -68,10 +68,10 @@ class Factory(object):
     def __call__(self, filepath, raw):
         """Given two bytestrings, return a callable.
         """
-        self.update_meta()
+        self._update_meta()
         return self.Renderer(self, filepath, raw)
 
-    def update_meta(self):
+    def _update_meta(self):
         if self._changes_reload:
             self.meta = self.compile_meta(self._configuration)
         return self.meta  # used in our child, Renderer
@@ -101,7 +101,7 @@ class Renderer(object):
 
     def __call__(self, context):
         if self._changes_reload:
-            self.meta = self._factory.update_meta()
+            self.meta = self._factory._update_meta()
             self.compiled = self.compile(self._filepath, self._raw)
         return self.render_content(self.compiled, context)
 

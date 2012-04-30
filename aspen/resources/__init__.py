@@ -1,14 +1,27 @@
-"""Aspen uses Resource classes to model HTTP resources.
+"""Aspen uses resources to model HTTP resources.
 
 Here is the class hierarchy:
 
-    Resource ------> DynamicResource --------> JSONResource
-             \                       \ 
-              \                       \------> NegotiatedResource 
-               \                       \
-                \--> StaticResource     \----> SocketResource
-                                         \
-                                          \--> TemplatedResource
+    Resource                            Logic Pages     Content Pages
+     +-- DynamicResource                -----------------------------
+     |    +-- JSONResource                  1 or 2          0
+     |    +-- NegotiatedResource            1 or 2          1 or more
+     |    |    +-- RenderedResource         1 or 2          1
+     |    +-- SocketResource                1, 2, or 3      0
+     +-- StaticResource                     0               1
+
+
+The call chain looks like this for static resources:
+
+    StaticResource.respond(request, response)
+
+
+It's more complicate for dynamic resources:
+
+    DynamicResource.respond
+        DynamicResource.parse
+
+
 
 """
 import mimetypes
@@ -22,7 +35,7 @@ PAGE_BREAK = chr(12) # used in the following imports
 from aspen.exceptions import LoadError
 from aspen.resources.json_resource import JSONResource
 from aspen.resources.negotiated_resource import NegotiatedResource
-from aspen.resources.templated_resource import TemplatedResource
+from aspen.resources.rendered_resource import RenderedResource
 from aspen.resources.socket_resource import SocketResource
 from aspen.resources.static_resource import StaticResource
 
@@ -37,56 +50,56 @@ class Entry:
     """
 
     fspath = ''         # The filesystem path [string]
-    modtime = None      # The timestamp of the last change [int]
+    mtime = None      # The timestamp of the last change [int]
     quadruple = None    # A post-processed version of the data [4-tuple]
     exc = None          # Any exception in reading or compilation [Exception]
 
     def __init__(self):
         self.fspath = ''
-        self.modtime = 0
+        self.mtime = 0
         self.quadruple = ()
 
 
 # Core loaders
 # ============
 
-def get_resource_class(filename, raw, mimetype):
-    """Given raw file contents and a mimetype, return a Resource subclass.
+def get_resource_class(filename, raw, media_type):
+    """Given raw file contents and a media type, return a Resource subclass.
 
     This function encodes the algorithm for deciding what kind of Resource a
     given file is. Is it a static file or a dynamic JSON resource or what? Etc.
     The first step is to decide whether it's static or dynamic:
 
-        If mimetype is 'application/x-socket.io' then we know it's dynamic.
+        If media type is 'application/x-socket.io' then we know it's dynamic.
 
-        If mimetype is 'text/*' or 'application/json' then we look for page
+        If media type is 'text/*' or 'application/json' then we look for page
         breaks (^L). If there aren't any page breaks then it's a static file.
         If it has at least one page break then it's a dynamic resource.
 
-        For all other mimetypes we sniff the first few bytes of the file. If it
-        looks Python-y then it's dynamic, otherwise it's a static file. What
+        For all other media types we sniff the first few bytes of the file. If
+        it looks Python-y then it's dynamic, otherwise it's a static file. What
         looks Python-y? Triple quotes for a leading docstring, or the beginning
         of an import statement ("from" or "import").
 
     Step two is to decide what kind of dynamic resource it is. JSON and Socket
-    are based on mimetype. Otherwise it's a Template if there is a file
+    are based on media type. Otherwise it's Rendered if there is a file
     extension and Negotiated if not.
     
     """
 
-    # XXX What is mimetype coming in for a negotiated resource? Is it None?
+    # XXX What is media_type coming in for a negotiated resource? Is it None?
     # application/octet-stream? text/plain? Are we going to look for ^L or
     # sniff the first few bytes?
 
     is_dynamic = True
 
-    if mimetype == 'application/x-socket.io':
+    if media_type == 'application/x-socket.io':
         
         # *.sock files are always dynamic.
 
         pass
 
-    elif mimetype.startswith('text/') or mimetype == 'application/json':
+    elif media_type.startswith('text/') or media_type == 'application/json':
 
         # For text formats we can perform a highly accurate test for
         # dynamicity.
@@ -106,20 +119,20 @@ def get_resource_class(filename, raw, mimetype):
 
     if not is_dynamic:
         Class = StaticResource
-    elif mimetype == 'application/json':
+    elif media_type == 'application/json':
         Class = JSONResource
-    elif mimetype == 'application/x-socket.io':
+    elif media_type == 'application/x-socket.io':
         Class = SocketResource
     elif '.' in os.path.basename(filename):
-        Class = TemplatedResource
+        Class = RenderedResource
     else:
         Class = NegotiatedResource
 
     return Class
 
 
-def load(request, modtime):
-    """Given a Request and a modtime, return a Resource object (w/o caching).
+def load(request, mtime):
+    """Given a Request and a mtime, return a Resource object (w/o caching).
     """
 
     # Load bytes.
@@ -129,27 +142,27 @@ def load(request, modtime):
     raw = open(request.fs, 'rb').read()
     
    
-    # Compute a mimetype.
-    # ===================
+    # Compute a media type.
+    # =====================
 
-    mimetype = mimetypes.guess_type(request.fs, strict=False)[0]
-    if mimetype is None:
-        mimetype = request.website.media_type_default
+    media_type = mimetypes.guess_type(request.fs, strict=False)[0]
+    if media_type is None:
+        media_type = request.website.media_type_default
 
 
     # Compute and instantiate a class.
     # ================================
     # An instantiated resource is compiled as far as we can take it.
  
-    Class = get_resource_class(request.fs, raw, mimetype)
-    resource = Class(request.website, request.fs, raw, mimetype, modtime)
+    Class = get_resource_class(request.fs, raw, media_type)
+    resource = Class(request.website, request.fs, raw, media_type, mtime)
     return resource
 
 
 def get(request):
     """Given a Request, return a Resource object (with caching).
 
-    We need the request because it carries default_mimetype.
+    We need the request because it carries media_type_default.
 
     """
 
@@ -170,13 +183,13 @@ def get(request):
     # Process the resource.
     # =====================
 
-    modtime = os.stat(request.fs)[stat.ST_MTIME]
-    if entry.modtime == modtime:                            # cache hit
+    mtime = os.stat(request.fs)[stat.ST_MTIME]
+    if entry.mtime == mtime:                                # cache hit
         if entry.exc is not None:
             raise entry.exc
     else:                                                   # cache miss
         try:
-            entry.resource = load(request, modtime)
+            entry.resource = load(request, mtime)
         except:     # capture any Exception
             entry.exc = ( LoadError(traceback.format_exc())
                         , sys.exc_info()[2]
@@ -184,7 +197,7 @@ def get(request):
         else:       # reset any previous Exception
             entry.exc = None 
 
-        entry.modtime = modtime
+        entry.mtime = mtime
         if entry.exc is not None:
             raise entry.exc[0] # TODO Why [0] here, and not above?
 

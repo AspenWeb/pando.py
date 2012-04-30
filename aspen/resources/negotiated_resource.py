@@ -1,8 +1,8 @@
-"""Negotiated resources.
+"""Implements negotiated resources.
 
-Aspen supports multiplexing content types on a single HTTP endpoint via content
-negotiation. If a file has no file extension, then it will be handled as a
-"negotiated resource".  The format of the file is like this:
+Aspen supports content negotiation. If a file has no file extension, then it
+will be handled as a "negotiated resource". The format of the file is like
+this:
 
     import foo, json
     ^L
@@ -13,56 +13,60 @@ negotiation. If a file has no file extension, then it will be handled as a
     {{ json.dumps(data) }}
 
 We have vendored in Joe Gregorio's content negotiation library to do the heavy
-lifting (parallel to how we handle _cherrypy and _tornado vendoring).
-
-If a file *does* have a file extension (foo.html), then it is a template
-resource with a mimetype computed from the file extension. It is a SyntaxError
-for a file to have both an extension *and* multiple content pages.
+lifting (parallel to how we handle _cherrypy and _tornado vendoring). If a file
+*does* have a file extension (foo.html), then it is a rendered resource with a
+mimetype computed from the file extension. It is a SyntaxError for a file to
+have both an extension *and* multiple content pages.
 
 """
 import re
 
+from aspen import Response
 from aspen._mimeparse import mimeparse
+from aspen.resources import PAGE_BREAK
 from aspen.resources.dynamic_resource import DynamicResource
 
 
-PAGE_BREAK = chr(12)
 renderer_re = re.compile(r'#![a-z0-9.-]+')
 media_type_re = re.compile(r'[A-Za-z0-9.+-]+/[A-Za-z0-9.+-]+')
 
 
 class NegotiatedResource(DynamicResource):
-    """This is a negotiated resource. It has three or more pages
+    """This is a negotiated resource. It has three or more pages.
     """
 
-    min_pages = 3
+    min_pages = 3 
     max_pages = None
 
-    def compile_page(self, page, padding):
-        """Given a bytestring, return a (type, renderer) pair """
 
-        # parse specline
+    def __init__(self, *a, **kw):
+        self.renderers = {}         # mapping of media type to render function
+        self.available_types = []   # ordered sequence of media types
+        DynamicResource.__init__(self, *a, **kw)
+
+
+    def compile_page(self, page, __ignored):
+        """Given a bytestring, return a (media type, renderer) pair.
+        """
         if '\n' in page:
-            # use the specified specline
-            specline, raw = page.split('\n',1)
+            specline, raw = page.split('\n', 1)
         else:
-            # no specline specifed - default to the default media type
-            specline, raw = self.website.media_type_default, page
-            specline = specline.encode('US-ASCII') # XXX hack, rethink defaults
-        specline = specline.strip()
+            specline = ''
+            raw = page
+        specline = specline.strip(PAGE_BREAK + ' \n')
+        make_renderer, media_type = self._parse_specline(specline)
+        render = make_renderer(self.fs, raw)
+        if media_type in self.renderers:
+            raise SyntaxError("Two content pages defined for %s." % media_type)
 
-        # hydrate
-        renderer, media_type = self._parse_specline(specline)
-        if renderer is None:
-            renderer = "tornado" # XXX hack, compute from media type
-        assert media_type is not None, media_type
-        renderer = self.website.renderer_factories[renderer]
-        render = renderer(self.fs, raw)
+        # update internal data structures
+        self.renderers[media_type] = render
+        self.available_types.append(media_type)
 
-        return (media_type, render)
+        return (render, media_type)  # back to parent class
 
 
-    def _parse_specline(self, line):
+    def _parse_specline(self, specline):
         """Given a bytestring, return a two-tuple.
 
         The incoming string is expected to be of the form:
@@ -70,66 +74,88 @@ class NegotiatedResource(DynamicResource):
             ^L #!renderer media/type
        
         The renderer is optional. It will be computed based on media type if
-        absent. The return two-tuple contains None or a unicode for each part.
-        SyntaxError is raised if there aren't one or two parts or if either of
-        the parts is malformed. If only one part is passed in it's interpreted
-        as a media type.
+        absent. The return two-tuple contains a render function and a media
+        type (as unicode). SyntaxError is raised if there aren't one or two
+        parts or if either of the parts is malformed. If only one part is
+        passed in it's interpreted as a media type.
         
         """
-        assert isinstance(line, str), type(line)
+        assert isinstance(specline, str), type(specline)
+        if specline == "":
+            raise SyntaxError("Content pages in negotiated resources must "
+                              "have a specline.")
 
         # Parse into one or two parts.
-        line = line.strip('\n ' + PAGE_BREAK)
-        parts = line.split()
+        parts = specline.split()
         nparts = len(parts)
         if nparts not in (1, 2):
-            raise SyntaxError("A negotiated simplate specline must have one "
+            raise SyntaxError("A negotiated resource specline must have one "
                               "or two parts: #!renderer media/type. Yours is: "
-                              "%s." % line)
+                              "%s." % specline)
        
         # Assign parts.
         renderer = None
         if nparts == 1:
+            renderer = "#!tornado"  # XXX compute from media type
             media_type = parts[0]
         else:
             assert nparts == 2, nparts
             renderer, media_type = parts
 
-        # Validate renderer.
-        if renderer is not None:
-            if renderer_re.match(renderer) is None:
-                msg = "Malformed renderer %s in specline %s. It must match %s."
-                raise SyntaxError(msg % (renderer, line, renderer_re.pattern))
-            renderer = renderer[2:]  # strip off the hashbang 
-            renderer = renderer.decode('US-ASCII')
-
         # Validate media type.
         if media_type_re.match(media_type) is None:
             msg = ("Malformed media type %s in specline %s. It must match "
                    "%s.")
-            msg %= (media_type, line, media_type_re.pattern)
+            msg %= (media_type, specline, media_type_re.pattern)
             raise SyntaxError(msg)
         media_type = media_type.decode('US-ASCII')
 
+        # Hydrate and validate renderer.
+        make_renderer = self._get_renderer_factory(renderer)
+        if make_renderer is None:
+            raise ValueError("Unknown renderer for %s: %s."
+                             % (media_type, renderer))
+
         # Return.
-        return renderer, media_type
+        return (make_renderer, media_type)
+
+    
+    def _get_renderer_factory(self, renderer):
+        """Given a bytestring, return a renderer factory or None.
+        """
+        make_renderer = None
+        if renderer is not None:
+            if renderer_re.match(renderer) is None:
+                msg = "Malformed renderer %s. It must match %s."
+                raise SyntaxError(msg % (renderer, renderer_re.pattern))
+            renderer = renderer[2:]  # strip off the hashbang 
+            renderer = renderer.decode('US-ASCII')
+            make_renderer = self.website.renderer_factories.get(renderer)
+        return make_renderer
 
 
     def get_response(self, context):
-        """Given a namespace dict, return a response object.
+        """Given a context dict, return a response object.
         """
         request = context['request']
-        accepts = request.headers.get('Accept')
-        if accepts:
-            available_types = [ t for t, p in self.pages ] # order is important!
-            media_type = mimeparse.best_match(available_types, accepts)
-            render = dict(self.pages)[media_type]
+        accept = request.headers.get('Accept')
+        if accept:
+            media_type = mimeparse.best_match(self.available_types, accept)
+            if not media_type:
+                msg = "The following media types are available: %s."
+                msg %= ', '.join(self.available_types)
+                raise Response(406, msg.encode('US-ASCII'))
+            render = self.renderers[media_type]
         else:
-            media_type, render = self.pages[0]
+            render, media_type = self.pages[2]  # default to first content page
 
         response = context['response']
         response.body = render(context)
-        if response.headers.get('Content-Type') is None:
+        if 'Content-Type' not in response.headers:
             response.headers['Content-Type'] = media_type
-        return response
+            if media_type.startswith('text/'):
+                charset = response.charset
+                if charset is not None:
+                    response.headers['Content-Type'] += '; charset=' + charset
 
+        return response
