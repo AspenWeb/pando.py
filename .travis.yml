@@ -5,3 +5,9 @@ python:
   - 2.7
 install: python setup.py -q install
 script: nosetests tests
+notifications:
+  email: false
+  irc: "irc.freenode.org#aspen"
+branches:
+  only:
+    - master 
