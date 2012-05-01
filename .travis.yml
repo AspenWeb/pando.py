@@ -3,7 +3,9 @@ python:
   - 2.5
   - 2.6
   - 2.7
-install: python setup.py -q install
+install:
+  - python setup.py -q install
+  - pip install --use-mirrors simplejson
 script: nosetests tests
 notifications:
   email: false
