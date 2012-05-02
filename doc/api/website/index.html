@@ -6,10 +6,11 @@ doc_next = ""
 
 <p>Aspen creates an instance of <code>aspen.website.Website</code> when it
 starts up. It holds all of the global configuration for your application. It is
-placed in the namespace of your configuration scripts and <a
+placed in the namespace of your <a 
+    href="/configure-aspen.py/">configuration scripts</a> and <a
     href="/simplates/">simplates</a>, where it is available from the first page
-onwards. It is also the object passed to your "startup" and "shutdown" <a
-    href="/hooks/">hooks</a>.</p>
+onwards. It is also the object passed to your &ldquo;startup&rdquo; and
+&ldquo;shutdown&rdquo; <a href="/hooks/">hooks</a>.</p>
 
 <p>The following attributes are defined when aspen starts up based on
 configuration in the environment (<code>ASPEN_NAME</code>) and on the command
@@ -37,7 +38,9 @@ line (<code>--name</code>):</p>
 <h3>Computations</h3>
 
 <p>The following computations are performed after environment and command line
-configuration is processed:</p>
+configuration is processed, and before your <a
+    href="/configure-aspen.py/">configuration
+    scripts</a> run.</p>
 
 <ul>
 
@@ -52,6 +55,11 @@ configuration is processed:</p>
         href="/mime.types/">mime.types</a> file in there will be loaded; any
     configure-aspen.py script in there will be executed; and it will be placed
     at the front of sys.path, so you can import Python modules from there</li>
+
+    <li>Two dictionaries associated with resolving <a
+        href="/simplates/rendered/">renderers</a> are instantiated and
+    populated: <b>renderer_factories</b> and
+    <b>default_renderers_by_media_type</b>.</li>
 
     <li>The <b>network_engine</b> attribute is hydrated into an Engine object.
     If you haven&rsquo;t installed the necessary underlying library
