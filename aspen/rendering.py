@@ -8,7 +8,7 @@ See user docs here:
 
     http://aspen.io/simplates/rendered/
 
-$5 on Amazon to anyone who sends me a pull request with a shim for your
+$5.37 on Amazon to anyone who sends me a pull request with a shim for your
 favorite language. Think LESS, CoffeeScript, Markdown, etc.
                                                                               #
 #                                                                             #

@@ -25,6 +25,7 @@ from aspen import Response
 from aspen._mimeparse import mimeparse
 from aspen.resources import PAGE_BREAK
 from aspen.resources.dynamic_resource import DynamicResource
+from aspen.utils import typecheck
 
 
 renderer_re = re.compile(r'#![a-z0-9.-]+')
@@ -80,7 +81,7 @@ class NegotiatedResource(DynamicResource):
         passed in it's interpreted as a media type.
         
         """
-        assert isinstance(specline, str), type(specline)
+        typecheck(specline, str)
         if specline == "":
             raise SyntaxError("Content pages in negotiated resources must "
                               "have a specline.")
@@ -94,10 +95,10 @@ class NegotiatedResource(DynamicResource):
                               "%s." % specline)
        
         # Assign parts.
-        renderer = None
         if nparts == 1:
-            renderer = "#!tornado"  # XXX compute from media type
             media_type = parts[0]
+            renderer = self.website.default_renderers_by_media_type[media_type]
+            renderer = "#!" + renderer
         else:
             assert nparts == 2, nparts
             renderer, media_type = parts
@@ -111,26 +112,25 @@ class NegotiatedResource(DynamicResource):
         media_type = media_type.decode('US-ASCII')
 
         # Hydrate and validate renderer.
-        make_renderer = self._get_renderer_factory(renderer)
-        if make_renderer is None:
-            raise ValueError("Unknown renderer for %s: %s."
-                             % (media_type, renderer))
+        make_renderer = self._get_renderer_factory(media_type, renderer)
 
         # Return.
         return (make_renderer, media_type)
 
     
-    def _get_renderer_factory(self, renderer):
+    def _get_renderer_factory(self, media_type, renderer):
         """Given a bytestring, return a renderer factory or None.
         """
-        make_renderer = None
-        if renderer is not None:
-            if renderer_re.match(renderer) is None:
-                msg = "Malformed renderer %s. It must match %s."
-                raise SyntaxError(msg % (renderer, renderer_re.pattern))
-            renderer = renderer[2:]  # strip off the hashbang 
-            renderer = renderer.decode('US-ASCII')
-            make_renderer = self.website.renderer_factories.get(renderer)
+        typecheck(renderer, str)
+        if renderer_re.match(renderer) is None:
+            msg = "Malformed renderer %s. It must match %s."
+            raise SyntaxError(msg % (renderer, renderer_re.pattern))
+        renderer = renderer[2:]  # strip off the hashbang 
+        renderer = renderer.decode('US-ASCII')
+        make_renderer = self.website.renderer_factories.get(renderer, None)
+        if make_renderer is None:
+            raise ValueError("Unknown renderer for %s: %s."
+                             % (media_type, renderer))
         return make_renderer
 
 

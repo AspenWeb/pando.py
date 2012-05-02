@@ -32,6 +32,15 @@ Greetings, {&#123; program }}!</pre>
     href="https://github.com/whit537/aspen/blob/master/aspen/rendering.py">new
     renderers</a>.</p>
 
+<p>You can set the default renderer for a given media type in <a
+    href="/configure-aspen.py/">configure-aspen.py</a> like so:</p>
+
+<pre>website.default_renderers_by_media_type['text/html'] = 'pystache'</pre>
+
+<p>Here&rsquo;s how to set the default renderer for all media types:</p>
+
+<pre>website.default_renderers_by_media_type.default = 'pystache'</pre>
+
 
 <h2>Tornado Templating Language</h2>
 
