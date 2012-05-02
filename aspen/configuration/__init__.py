@@ -1,5 +1,6 @@
 """Define configuration objects.
 """
+import collections
 import errno
 import mimetypes
 import os
@@ -13,6 +14,31 @@ from aspen.configuration.exceptions import ConfigurationError
 from aspen.configuration.hooks import Hooks
 from aspen.configuration.options import OptionParser, DEFAULT
 from aspen.rendering import PystacheFactory, TornadoFactory
+
+
+# Nicer defaultdict
+# =================
+
+NO_DEFAULT = object()
+
+
+class NicerDefaultDict(collections.defaultdict):
+    """Subclass to support .default assignment.
+    """
+    
+    __default = ''
+    def _get_default(self, name):
+        return self.__default
+    def _set_default(self, value):
+        self.default_factory = lambda: value
+        self.__default = value
+    default = property(_get_default, _set_default)
+
+
+    def get(self, name, default=NO_DEFAULT):
+        if default is NO_DEFAULT:
+            default = self.default 
+        collections.defaultdict.get(self, name, default)
 
 
 # Defaults
@@ -230,10 +256,12 @@ class Configurable(object):
             # PYTHONPATH
             sys.path.insert(0, self.project_root)
 
-        # renderer factories
+        # renderers
         self.renderer_factories = { 'pystache': PystacheFactory(self)
                                   , 'tornado': TornadoFactory(self)
                                    }
+        self.default_renderers_by_media_type = NicerDefaultDict()
+        self.default_renderers_by_media_type.default = 'tornado'
 
         # mime.types
         mimetypes.init()

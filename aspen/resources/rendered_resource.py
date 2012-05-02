@@ -20,6 +20,7 @@ Problems with tornado.template:
 
 """
 from aspen.resources.negotiated_resource import NegotiatedResource
+from aspen.utils import typecheck
 
 
 class RenderedResource(NegotiatedResource):
@@ -55,14 +56,15 @@ class RenderedResource(NegotiatedResource):
         They don't have a media type, and the renderer is optional.
         
         """
-        assert isinstance(specline, str), type(specline)
+        typecheck(specline, str)
 
         renderer = specline
-        if not renderer:
-            renderer = None
-        make_renderer = self._get_renderer_factory(renderer)
-        if make_renderer is None:
-            # XXX compute from the media type
-            make_renderer = self.website.renderer_factories['tornado'] # XXX
+        media_type = self.media_type
 
-        return (make_renderer, self.media_type)
+        if not renderer:
+            renderer = self.website.default_renderers_by_media_type[media_type]
+            renderer = "#!" + renderer
+
+        make_renderer = self._get_renderer_factory(media_type, renderer)
+
+        return (make_renderer, media_type)

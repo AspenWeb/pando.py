@@ -72,6 +72,20 @@ def test_parse_specline_cant_mistake_malformed_renderer_for_media_type():
 def test_parse_specline_enforces_order():
     assert_raises(SyntaxError, get()._parse_specline, 'media/type #!tornado')
 
+def test_parse_specline_obeys_default_by_media_type():
+    resource = get()
+    resource.website.default_renderers_by_media_type['media/type'] = 'glubber'
+    err = assert_raises(ValueError, resource._parse_specline, 'media/type')
+    actual = err.args[0]
+    assert actual == "Unknown renderer for media/type: glubber.", actual
+
+def test_parse_specline_obeys_default_by_media_type_default():
+    resource = get()
+    resource.website.default_renderers_by_media_type.default = 'glubber'
+    err = assert_raises(ValueError, resource._parse_specline, 'media/type')
+    actual = err.args[0]
+    assert actual == "Unknown renderer for media/type: glubber.", actual
+
 
 # get_response
 
@@ -159,6 +173,46 @@ def test_get_response_406_gives_list_of_acceptable_types():
     actual = assert_raises(Response, get_response, request, Response()).body
     expected ="The following media types are available: text/plain, text/html."
     assert actual == expected, actual
+
+def test_can_override_default_renderers_by_mimetype():
+    mk(('.aspen/configure-aspen.py', """\
+from aspen.rendering import Renderer, Factory
+
+class Glubber(Renderer):
+    def render_content(self, compiled, context):
+        return "glubber"
+
+class GlubberFactory(Factory):
+    Renderer = Glubber
+
+website.renderer_factories['glubber'] = GlubberFactory(website)
+website.default_renderers_by_media_type['text/plain'] = 'glubber'
+
+"""), ('index', NEGOTIATED_RESOURCE))
+    request = StubRequest.from_fs('index')
+    request.headers['Accept'] = 'text/plain'
+    actual = get_response(request, Response()).body
+    assert actual == "glubber", actual
+
+def test_can_override_default_renderer_entirely():
+    mk(('.aspen/configure-aspen.py', """\
+from aspen.rendering import Renderer, Factory
+
+class Glubber(Renderer):
+    def render_content(self, compiled, context):
+        return "glubber"
+
+class GlubberFactory(Factory):
+    Renderer = Glubber
+
+website.renderer_factories['glubber'] = GlubberFactory(website)
+website.default_renderers_by_media_type.default = 'glubber'
+
+"""), ('index', NEGOTIATED_RESOURCE))
+    request = StubRequest.from_fs('index')
+    request.headers['Accept'] = 'text/plain'
+    actual = get_response(request, Response()).body
+    assert actual == "glubber", actual
 
 
 attach_teardown(globals())
