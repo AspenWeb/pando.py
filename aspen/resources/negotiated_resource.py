@@ -47,7 +47,7 @@ class NegotiatedResource(DynamicResource):
 
 
     def compile_page(self, page, __ignored):
-        """Given a bytestring, return a (media type, renderer) pair.
+        """Given a bytestring, return a (renderer, media type) pair.
         """
         if '\n' in page:
             specline, raw = page.split('\n', 1)
