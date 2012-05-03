@@ -35,6 +35,8 @@ class Stub:
 class StubBody:
     def read(self):
         return ''
+    def __iter__(self):
+        yield ''
 
 def StubWSGIRequest(path='/'):
     environ = {}
@@ -64,6 +66,7 @@ class StubRequest:
         request.fs = fs
         request.context = {}
         request.website = website 
+        request._media_type = None
         return request
 
 StubRequest = StubRequest()

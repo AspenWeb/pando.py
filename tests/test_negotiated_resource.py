@@ -1,6 +1,6 @@
 from aspen import resources, Response
 from aspen.resources.negotiated_resource import NegotiatedResource
-from aspen.testing import assert_raises, attach_teardown, mk, StubRequest
+from aspen.testing import assert_raises, attach_teardown, handle,mk,StubRequest
 from aspen.website import Website
 from aspen.rendering import TornadoFactory
 
@@ -213,6 +213,37 @@ website.default_renderers_by_media_type.default = 'glubber'
     request.headers['Accept'] = 'text/plain'
     actual = get_response(request, Response()).body
     assert actual == "glubber", actual
+
+
+# indirect
+
+INDIRECTLY_NEGOTIATED_RESOURCE = """\
+^L
+foo = "program"
+^L text/html
+<h1>Greetings, {{ foo }}!</h1>
+^L text/plain
+Greetings, {{ foo }}!"""
+
+def test_indirect_negotiation_sets_media_type():
+    mk(('/foo', INDIRECTLY_NEGOTIATED_RESOURCE))
+    response = handle('/foo.html')
+    expected = "<h1>Greetings, program!</h1>\n"
+    actual = response.body
+    assert actual == expected, actual
+
+def test_indirect_negotiation_sets_media_type_to_secondary():
+    mk(('/foo', INDIRECTLY_NEGOTIATED_RESOURCE))
+    response = handle('/foo.txt')
+    expected = "Greetings, program!"
+    actual = response.body
+    assert actual == expected, actual
+
+def test_indirect_negotiation_with_unsupported_media_type_is_404():
+    mk(('/foo', INDIRECTLY_NEGOTIATED_RESOURCE))
+    response = handle('/foo.jpg')
+    actual = response.code
+    assert actual == 404, actual
 
 
 attach_teardown(globals())
