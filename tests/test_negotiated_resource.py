@@ -77,14 +77,18 @@ def test_parse_specline_obeys_default_by_media_type():
     resource.website.default_renderers_by_media_type['media/type'] = 'glubber'
     err = assert_raises(ValueError, resource._parse_specline, 'media/type')
     actual = err.args[0]
-    assert actual == "Unknown renderer for media/type: glubber.", actual
+    assert actual == ("Unknown renderer for media/type: glubber. "
+                      "Possible renderers (might need third-party libs): "
+                      "pystache, tornado."), actual
 
 def test_parse_specline_obeys_default_by_media_type_default():
     resource = get()
     resource.website.default_renderers_by_media_type.default = 'glubber'
     err = assert_raises(ValueError, resource._parse_specline, 'media/type')
     actual = err.args[0]
-    assert actual == "Unknown renderer for media/type: glubber.", actual
+    assert actual == ("Unknown renderer for media/type: glubber. "
+                      "Possible renderers (might need third-party libs): "
+                      "pystache, tornado."), actual
 
 
 # get_response
