@@ -103,6 +103,57 @@ def test_configure_aspen_py_setting_works_with_only_comma():
     assert actual == expected, actual
 
 
+# Negotiated Fall-through 
+# =======================
+
+def check_indirect_negotiation(path):
+    """Given an urlpath, return a filesystem path per gauntlet.virtual_paths.
+    """
+    request = StubRequest.from_fs(path)
+    gauntlet.run_through(request, gauntlet.indirect_negotiation)
+    return request
+
+def test_indirect_negotiation_can_passthrough_renderered():
+    mk(('foo.html', "Greetings, program!"))
+    expected = fix('foo.html')
+    actual = check_indirect_negotiation('foo.html').fs
+    assert actual == expected, actual
+
+def test_indirect_negotiation_can_passthrough_negotiated():
+    mk(('foo', "Greetings, program!"))
+    expected = fix('foo')
+    actual = check_indirect_negotiation('foo').fs
+    assert actual == expected, actual
+
+def test_indirect_negotiation_modifies_one_dot():
+    mk(('foo', "Greetings, program!"))
+    expected = fix('foo')
+    actual = check_indirect_negotiation('foo.html').fs
+    assert actual == expected, actual
+
+def test_indirect_negotiation_skips_two_dots():
+    mk(('foo.bar', "Greetings, program!"))
+    expected = fix('foo.bar.html')
+    actual = check_indirect_negotiation('foo.bar.html').fs
+    assert actual == expected, actual
+
+def test_indirect_negotiation_prefers_rendered():
+    mk( ('foo.html', "Greetings, program!")
+      , ('foo', "blah blah blah")
+       )
+    expected = fix('foo.html')
+    actual = check_indirect_negotiation('foo.html').fs
+    assert actual == expected, actual
+
+def test_indirect_negotiation_really_prefers_rendered():
+    mk( ('foo.html', "Greetings, program!")
+      , ('foo.', "blah blah blah")
+       )
+    expected = fix('foo.html')
+    actual = check_indirect_negotiation('foo.html').fs
+    assert actual == expected, actual
+
+
 # Virtual Paths
 # =============
 
@@ -392,5 +443,6 @@ def test_file_with_no_extension_matches():
     expected = {'value': [u'baz']}
     actual = check_virtual_paths('/baz').line.uri.path
     assert actual == expected, actual
+
 
 attach_teardown(globals())

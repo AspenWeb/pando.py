@@ -138,15 +138,28 @@ class NegotiatedResource(DynamicResource):
         """Given a context dict, return a response object.
         """
         request = context['request']
-        accept = request.headers.get('Accept')
-        if accept:
+
+        # find an Accept header
+        accept = request.headers.get('X-Aspen-Accept')
+        if accept is not None:      # indirect negotiation
+            failure = 404
+        else:                       # direct negotiation
+            accept = request.headers.get('Accept')
+            failure = 406
+
+        # negotiate or punt
+        if accept is not None:
             media_type = mimeparse.best_match(self.available_types, accept)
-            if not media_type:
-                msg = "The following media types are available: %s."
-                msg %= ', '.join(self.available_types)
-                raise Response(406, msg.encode('US-ASCII'))
-            render = self.renderers[media_type]
-        else:
+            if media_type == '':    # breakdown in negotiations
+                if failure == 404:
+                    failure = Response(404)
+                elif failure == 406:
+                    msg = "The following media types are available: %s."
+                    msg %= ', '.join(self.available_types)
+                    failure = Response(406, msg.encode('US-ASCII'))
+                raise failure
+            render = self.renderers[media_type] # KeyError is a bug
+        else:  # punt
             render, media_type = self.pages[2]  # default to first content page
 
         response = context['response']

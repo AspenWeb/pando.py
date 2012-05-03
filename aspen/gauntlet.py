@@ -5,7 +5,7 @@ given here.
 
 """
 import os
-from os.path import join, isfile, isdir, exists
+from os.path import basename, join, isfile, isdir, exists
 
 from aspen import Response
 
@@ -55,6 +55,32 @@ def hidden_files(request):
     """
     if '/.' in request.fs[len(request.website.www_root):]:
         raise Response(404)
+
+def indirect_negotiation(request):
+    """Requests for /foo.html should be servable by /foo.
+
+    Negotiate resources are those that have no file extension. One way to
+    multiplex requests onto a single such file is to use the Accept request
+    header to specify a media type preference. This method implements support
+    for indexing into negotiated resources using the file extension in the URL
+    path as well. Note that this only works if there is exactly one dot (.) in
+    the URL, as otherwise direct requests for the same resource would get
+    convoluted.
+    
+    """
+    if not isfile(request.fs):
+        path = request.fs.rsplit('.', 1)[0]
+        filename = basename(path)
+        if '.' not in filename:
+            if isfile(path):
+                media_type = request._infer_media_type()
+                request.headers['X-Aspen-Accept'] = media_type
+                # We look for X-Aspen-Accept before Accept.
+                # "The default value is q=1."
+                #   http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html
+                # That means that setting to 'text/html' will enforce only
+                # that one media type and fail if it's not available.
+                request.fs = path
 
 def virtual_paths(request):
     """Support /foo/bar.html => ./%blah/bar.html and /blah.html => ./%flah.html
@@ -183,6 +209,7 @@ gauntlet = [ intercept_socket
            , translate
            , check_sanity
            , hidden_files
+           , indirect_negotiation
            , virtual_paths
            , trailing_slash
            , index

@@ -26,6 +26,7 @@ XXX TODO
 
 """
 import cgi
+import mimetypes
 import re
 import sys
 import urllib
@@ -223,7 +224,7 @@ class Request(str):
     # to read bytes off the wire if we can avoid it, though, because for mega
     # file uploads and such this could have a big impact. 
 
-    _raw = "" # XXX We should reset this then subobjects are mutated.
+    _raw = "" # XXX We should reset this when subobjects are mutated.
     def __str__(self):
         """Lazily load the body and return the whole message.
         """
@@ -280,7 +281,23 @@ class Request(str):
         if code is None:
             code = permanent is True and 301 or 302
         raise Response(code, headers={'Location': location})
-    
+   
+
+    def _infer_media_type(self):
+        """Guess a media type based on our filesystem path.
+
+        The gauntlet function indirect_negotiation modifies the filesystem
+        path, and we want to infer a media type from the path before that
+        change. However, we're not ready at that point to infer a media type
+        for *all* requests. So we need to perform this inference in a couple
+        places, and hence it's factored out here.
+
+        """
+        media_type = mimetypes.guess_type(self.fs, strict=False)[0]
+        if media_type is None:
+            media_type = self.website.media_type_default
+        return media_type
+
 
 # Request -> Line
 # ---------------

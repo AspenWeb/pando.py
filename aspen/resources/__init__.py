@@ -50,7 +50,7 @@ class Entry:
     """
 
     fspath = ''         # The filesystem path [string]
-    mtime = None      # The timestamp of the last change [int]
+    mtime = None        # The timestamp of the last change [int]
     quadruple = None    # A post-processed version of the data [4-tuple]
     exc = None          # Any exception in reading or compilation [Exception]
 
@@ -89,7 +89,7 @@ def get_resource_class(filename, raw, media_type):
 
     # XXX What is media_type coming in for a negotiated resource? Is it None?
     # application/octet-stream? text/plain? Are we going to look for ^L or
-    # sniff the first few bytes?
+    # sniff the first few bytes? The answer is media_type_default. See .load.
 
     is_dynamic = True
 
@@ -144,7 +144,8 @@ def load(request, mtime):
    
     # Compute a media type.
     # =====================
-
+    # For a negotiated resource we will ignore this.
+   
     media_type = mimetypes.guess_type(request.fs, strict=False)[0]
     if media_type is None:
         media_type = request.website.media_type_default
