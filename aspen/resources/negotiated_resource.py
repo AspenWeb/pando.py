@@ -123,16 +123,18 @@ class NegotiatedResource(DynamicResource):
         """
         typecheck(renderer, str)
         if renderer_re.match(renderer) is None:
-            msg = "Malformed renderer %s. It must match %s."
-            raise SyntaxError(msg % (renderer, renderer_re.pattern))
+            possible =', '.join(sorted(self.website.renderer_factories.keys()))
+            msg = ("Malformed renderer %s. It must match %s. Possible "
+                   "renderers (might need third-party libs): %s.")
+            raise SyntaxError(msg % (renderer, renderer_re.pattern, possible))
         renderer = renderer[2:]  # strip off the hashbang 
         renderer = renderer.decode('US-ASCII')
         make_renderer = self.website.renderer_factories.get(renderer, None)
         if make_renderer is None:
-            avail = ', '.join(sorted(self.website.renderer_factories.keys()))
+            possible =', '.join(sorted(self.website.renderer_factories.keys()))
             raise ValueError("Unknown renderer for %s: %s. Possible "
                              "renderers (might need third-party libs): %s."
-                             % (media_type, renderer, avail))
+                             % (media_type, renderer, possible))
         return make_renderer
 
 
