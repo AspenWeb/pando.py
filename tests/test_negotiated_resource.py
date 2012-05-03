@@ -90,6 +90,19 @@ def test_parse_specline_obeys_default_by_media_type_default():
                       "Possible renderers (might need third-party libs): "
                       "pystache, tornado."), actual
 
+def test_get_renderer_factory_can_raise_syntax_error():
+    resource = get()
+    resource.website.default_renderers_by_media_type['media/type'] = 'glubber'
+    err = assert_raises( SyntaxError
+                       , resource._get_renderer_factory
+                       , 'media/type'
+                       , 'oo*gle'
+                        )
+    actual = err.args[0]
+    assert actual == ("Malformed renderer oo*gle. It must match #![a-z0-9.-]+."
+                      " Possible renderers (might need third-party libs): "
+                      "pystache, tornado."), actual
+
 
 # get_response
 
