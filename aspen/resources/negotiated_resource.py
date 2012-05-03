@@ -129,8 +129,10 @@ class NegotiatedResource(DynamicResource):
         renderer = renderer.decode('US-ASCII')
         make_renderer = self.website.renderer_factories.get(renderer, None)
         if make_renderer is None:
-            raise ValueError("Unknown renderer for %s: %s."
-                             % (media_type, renderer))
+            avail = ', '.join(sorted(self.website.renderer_factories.keys()))
+            raise ValueError("Unknown renderer for %s: %s. Possible "
+                             "renderers (might need third-party libs): %s."
+                             % (media_type, renderer, avail))
         return make_renderer
 
 
