@@ -4,7 +4,6 @@ import tempfile
 import traceback
 from os.path import dirname, isdir, join, realpath
 
-import aspen
 from aspen import resources, sockets
 try:
     from nose.tools import with_setup
@@ -27,7 +26,7 @@ def convert_paths(paths):
     """
     return tuple([convert_path(p) for p in paths])
 
-def mk(*treedef, **kw):
+def mk(*treedef):
     """Given a treedef, build a filesystem fixture in FSFIX.
 
     treedef is a sequence of strings and tuples. If a string, it is interpreted
@@ -35,11 +34,7 @@ def mk(*treedef, **kw):
     element is a path to a file, the second is the contents of the file. We do
     it this way to ease cross-platform testing.
 
-    The one meaningful keyword argument is configure. If True, mk will call
-    aspen.configure with FSFIX as the root.
-
     """
-    configure = kw.get('configure', False)
     root = FSFIX
     os.mkdir(root)
     for item in treedef:
@@ -55,8 +50,6 @@ def mk(*treedef, **kw):
             if not isdir(parent):
                 os.makedirs(parent)
             file(path, 'w').write(contents)
-    if configure is True:
-        aspen.configure(['--root', root])
 
 def fix(path=''):
     """Given a relative path, return an absolute path under FSFIX.
@@ -88,6 +81,7 @@ def teardown():
     - reset Aspen's global state
     - remove '.aspen' from sys.path
     - remove 'foo' from sys.modules
+    - clear out sys.path_importer_cache
 
     """
     os.chdir(CWD)
@@ -96,7 +90,8 @@ def teardown():
     resources.__cache__ = {}
     sockets.__sockets__ = {}
     sockets.__channels__ = {}
-    if '.aspen' in sys.path[0]:
+    sys.path_importer_cache = {}
+    if 'fsfix' in sys.path[0]:
         sys.path = sys.path[1:]
     if 'foo' in sys.modules:
         del sys.modules['foo']

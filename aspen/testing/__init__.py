@@ -1,19 +1,6 @@
 import os
 import sys
 
-import threading
-import collections
-def _log(*a):
-    things = collections.deque(a)
-    things.appendleft(threading.current_thread().name.ljust(12))
-    while things:
-        thing = things.popleft()
-        sys.stdout.write(str(thing))
-        if things:
-            sys.stdout.write(" ")
-    print
-
-
 import aspen
 if aspen.LOGGING_THRESHOLD == -1:
     # Suppress aspen's logging during tests.

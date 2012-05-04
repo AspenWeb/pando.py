@@ -19,6 +19,7 @@ mimetype computed from the file extension. It is a SyntaxError for a file to
 have both an extension *and* multiple content pages.
 
 """
+import os
 import re
 
 from aspen import Response
@@ -129,12 +130,29 @@ class NegotiatedResource(DynamicResource):
             raise SyntaxError(msg % (renderer, renderer_re.pattern, possible))
         renderer = renderer[2:]  # strip off the hashbang 
         renderer = renderer.decode('US-ASCII')
-        make_renderer = self.website.renderer_factories.get(renderer, None)
-        if make_renderer is None:
-            possible =', '.join(sorted(self.website.renderer_factories.keys()))
+
+        factories = self.website.renderer_factories
+        make_renderer = factories.get(renderer, None)
+        if isinstance(make_renderer, str):
+            error = make_renderer
+            raise ValueError("ImportError for renderer %s (used for %s):%s%s"
+                             % (renderer, media_type, os.linesep, error))
+        elif make_renderer is None:
+            possible = []
+            want_legend = False
+            for k, v in sorted(factories.iteritems()):
+                if isinstance(v, str):
+                    k = '*' + k 
+                    want_legend = True
+                possible.append(k)
+            possible = ', '.join(possible)
+            if want_legend:
+                legend = " (starred are missing third-party libraries)"
+            else:
+                legend = ''
             raise ValueError("Unknown renderer for %s: %s. Possible "
-                             "renderers (might need third-party libs): %s."
-                             % (media_type, renderer, possible))
+                             "renderers%s: %s." 
+                             % (media_type, renderer, legend, possible))
         return make_renderer
 
 

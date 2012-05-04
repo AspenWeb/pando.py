@@ -1,5 +1,5 @@
 from aspen.configuration import Configurable
-from aspen.rendering import TornadoFactory
+from aspen.renderers.tornado_ import Factory as TornadoFactory
 from aspen.testing import assert_raises, attach_teardown, fix, FSFIX, mk
 from aspen._tornado.template import ParseError
 
@@ -92,7 +92,7 @@ def test_tornado_obeys_changes_reload_for_meta():
 
 def test_cheese_example():
     mk(('configure-aspen.py', """\
-from aspen.rendering import Renderer, Factory
+from aspen.renderers import Renderer, Factory
 
 class Cheese(Renderer):
     def render_content(self, compiled, context):
@@ -108,7 +108,6 @@ website.renderer_factories['excited-about-cheese'] = CheeseFactory(website)
     render = make_renderer("", "I like cheese!")  # test specline elsewhere
     actual = render({})
     assert actual == "I like CHEESE!!!!!!!", actual
-
 
 
 attach_teardown(globals())

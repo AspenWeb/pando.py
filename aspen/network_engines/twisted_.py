@@ -6,7 +6,7 @@ import twisted.internet
 import twisted.internet.task
 import twisted.web.server 
 import twisted.web.wsgi 
-from aspen.engines import ThreadedEngine
+from aspen.network_engines import ThreadedEngine
 
 
 class Engine(ThreadedEngine):

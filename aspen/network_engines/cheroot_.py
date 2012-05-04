@@ -2,7 +2,7 @@ import time
 import threading
 
 import cheroot.wsgi
-from aspen.engines import ThreadedEngine
+from aspen.network_engines import ThreadedEngine
 
 
 class Engine(ThreadedEngine):

@@ -1,6 +1,4 @@
-import os
-
-from aspen.engines import ThreadedBuffer
+from aspen.network_engines import ThreadedBuffer
 from aspen.http.request import Request
 from aspen.sockets.channel import Channel
 from aspen.sockets.socket import Socket

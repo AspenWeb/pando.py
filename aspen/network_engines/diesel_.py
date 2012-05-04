@@ -1,5 +1,5 @@
 import diesel
-from aspen.engines import CooperativeEngine
+from aspen.network_engines import CooperativeEngine
 from diesel.protocols import wsgi
 
 

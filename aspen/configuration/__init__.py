@@ -6,6 +6,7 @@ import mimetypes
 import os
 import socket
 import sys
+import traceback
 
 import aspen
 from aspen.utils import ascii_dammit
@@ -13,7 +14,6 @@ from aspen.configuration import parse
 from aspen.configuration.exceptions import ConfigurationError
 from aspen.configuration.hooks import Hooks
 from aspen.configuration.options import OptionParser, DEFAULT
-from aspen.rendering import PystacheFactory, TornadoFactory
 
 
 # Nicer defaultdict
@@ -257,9 +257,16 @@ class Configurable(object):
             sys.path.insert(0, self.project_root)
 
         # renderers
-        self.renderer_factories = { 'pystache': PystacheFactory(self)
-                                  , 'tornado': TornadoFactory(self)
-                                   }
+        self.renderer_factories = {}
+        for name in aspen.RENDERERS:
+            try:
+                capture = {}
+                python_syntax = 'from aspen.renderers.%s_ import Factory' 
+                exec python_syntax % name in capture
+                make_renderer = capture['Factory'](self)
+            except ImportError:
+                make_renderer = traceback.format_exc()
+            self.renderer_factories[name] = make_renderer 
         self.default_renderers_by_media_type = NicerDefaultDict()
         self.default_renderers_by_media_type.default = 'tornado'
 
@@ -268,10 +275,10 @@ class Configurable(object):
 
         # network_engine
         try: 
-            cap = {}
-            python_syntax = 'from aspen.engines.%s_ import Engine' 
-            exec python_syntax % self.network_engine in cap
-            Engine = cap['Engine']
+            capture = {}
+            python_syntax = 'from aspen.network_engines.%s_ import Engine' 
+            exec python_syntax % self.network_engine in capture
+            Engine = capture['Engine']
         except ImportError:
             # ANSI colors: 
             #   http://stackoverflow.com/questions/287871/
@@ -324,7 +331,6 @@ class Configurable(object):
                     msg = ("It appears that you don't have permission to read "
                            "the configuration script %s.")
                 else:
-                    import traceback
                     msg = ("There was a problem reading the configuration "
                            "script %s:")
                     msg += os.sep + traceback.format_exc()
