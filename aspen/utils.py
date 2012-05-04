@@ -1,4 +1,5 @@
 import codecs
+import re
 
 
 # Register a 'repr' error strategy.
