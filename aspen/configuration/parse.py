@@ -1,29 +1,31 @@
 """Define parser/validators for configuration system
 
-Each of these takes a unicode object as read from the environment or the
-command line.
+Each of these is guaranteed to be passed a unicode object as read from the
+environment or the command line.
 
 """
 import os
 import socket
 
 import aspen
-from aspen.utils import ascii_dammit
+from aspen.utils import typecheck
 from aspen.http.response import charset_re
-from aspen.configuration.exceptions import ConfigurationError
 
 
 def identity(value):
+    typecheck(value, unicode)
     return value 
 
 media_type = identity  # XXX for now. Read a spec
 
 def charset(value):
+    typecheck(value, unicode)
     if charset_re.match(value) is None:
         raise ValueError("charset not to spec")
     return value
 
 def yes_no(s):
+    typecheck(s, unicode)
     s = s.lower()
     if s in [u'yes', u'true', u'1']:
         return True
@@ -38,16 +40,25 @@ def list_(value):
     replace it.
 
     """
+    typecheck(value, unicode)
     extend = False
     if value.startswith('+'):
         extend = True
         value = value[1:]
-    return (extend, list(set([x.strip() for x in value.split(',')])))
+    stripped = [x.strip() for x in value.split(',')]
+    seen = set()
+    out = []
+    for x in stripped:
+        if x not in seen:
+            out.append(x)
+            seen.add(x)
+    return (extend, out)
 
 def network_engine(value):
+    typecheck(value, unicode)
     if value not in aspen.ENGINES:
         msg = "not one of {%s}" % (','.join(aspen.ENGINES))
-        raise ValueError(msg % value)
+        raise ValueError(msg)
     return value
 
 def network_address(address):
@@ -56,16 +67,17 @@ def network_address(address):
     This is called from a couple places, and is a bit complex.
 
     """
+    typecheck(address, unicode)
 
-    if address[0] in ('/', '.'):
+    if address[0] in (u'/', u'.'):
         if aspen.WINDOWS:
-            raise ConfigurationError("Can't use an AF_UNIX socket on Windows.")
+            raise ValueError("can't use an AF_UNIX socket on Windows")
             # but what about named pipes?
         sockfam = socket.AF_UNIX
         # We could test to see if the path exists or is creatable, etc.
         address = os.path.realpath(address)
 
-    elif address.count(':') > 1:
+    elif address.count(u':') > 1:
         sockfam = socket.AF_INET6
         # @@: validate this, eh?
 
@@ -76,64 +88,47 @@ def network_address(address):
         # must be between 0 and 65535, inclusive.
 
 
-        err = lambda msg: ConfigurationError("Bad address %s: %s." 
-                                             % (ascii_dammit(address), msg))
-
-
         # Break out IP and port.
         # ======================
 
-        if isinstance(address, (tuple, list)):
-            if len(address) != 2:
-                raise err("Wrong number of parts")
-            ip, port = address
-        elif isinstance(address, basestring):
-            if address.count(':') != 1:
-                raise err("Wrong number of :'s. Should be exactly 1")
-            ip_port = address.split(':')
-            ip, port = [i.strip() for i in ip_port]
-        else:
-            raise err("Wrong arg type")
+        if address.count(u':') != 1:
+            raise ValueError("Wrong number of :'s. Should be exactly 1")
+        ip_port = address.split(u':')
+        ip, port = [i.strip() for i in ip_port]
 
 
         # IP
         # ==
 
-        if not isinstance(ip, basestring):
-            raise err("IP isn't a string")
-        elif ip == '':
-            ip = '0.0.0.0' # IP defaults to INADDR_ANY for AF_INET; specified
-                           # explicitly to avoid accidentally binding to
-                           # INADDR_ANY for AF_INET6.
+        if ip == u'':
+            ip = u'0.0.0.0' # IP defaults to INADDR_ANY for AF_INET; specified
+                            # explicitly to avoid accidentally binding to
+                            # INADDR_ANY for AF_INET6.
+        elif ip == u'localhost':
+            ip = u'127.0.0.1'  # special case for nicer user experience
         else:
             try:
-                socket.inet_aton(ip)
-            except socket.error:
-                if ip == 'localhost':
-                    ip = '127.0.0.1'
-                else:
-                    raise err("Invalid IP")
-
-        ip = ip.decode('US-ASCII')
+                # socket.inet_aton is more permissive than we'd like
+                parts = ip.split('.')
+                assert len(parts) == 4
+                for p in parts:
+                    assert p.isdigit()
+                    assert 0 <= int(p) <= 255
+            except AssertionError:
+                raise ValueError("invalid IP")
 
 
         # port
         # ====
         # Coerce to int. Must be between 0 and 65535, inclusive.
 
-        if isinstance(port, basestring):
-            if not port.isdigit():
-                raise err("Invalid port (non-numeric)")
-            else:
-                port = int(port)
-        elif isinstance(port, int) and not (port is False):
-            # already an int for some reason (called interactively?)
-            pass
-        else:
-            raise err("Invalid port (wrong type)")
+        try:
+            port = int(port)
+        except ValueError:
+            raise ValueError("invalid port (non-numeric)")
 
         if not(0 <= port <= 65535):
-            raise err("Invalid port (out of range)")
+            raise ValueError("invalid port (out of range)")
 
 
         # Success!
