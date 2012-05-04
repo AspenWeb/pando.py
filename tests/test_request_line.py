@@ -1,7 +1,7 @@
 from aspen import Response
 from aspen.http.mapping import Mapping
 from aspen.http.request import Line, Method, URI, Version, Path, Querystring
-from aspen.testing import assert_raises
+from aspen.testing import assert_raises, attach_teardown
 
 
 # Line
@@ -405,3 +405,6 @@ def test_querystring_chokes_on_bad_unicode():
 def test_querystring_unquotes_plus():
     querystring = Querystring("baz=+%2B")
     assert querystring.decoded == u"baz= +", querystring.decoded
+
+
+attach_teardown(globals())

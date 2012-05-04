@@ -18,8 +18,9 @@ Response, json, is_callable  # Shut up, PyFlakes. I know I'm addicted to you.
 
 __version__ = "~~VERSION~~"
 WINDOWS = sys.platform[:3] == 'win'
-ENGINES = ['cheroot', 'cherrypy', 'diesel', 'eventlet', 'gevent', 'pants', 
-           'rocket', 'tornado', 'twisted']
+NETWORK_ENGINES = ['cheroot', 'cherrypy', 'diesel', 'eventlet', 'gevent',
+                   'pants', 'rocket', 'tornado', 'twisted']
+RENDERERS = ['pystache', 'tornado']
 
 
 # Logging. It's simple.

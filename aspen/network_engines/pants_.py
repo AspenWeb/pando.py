@@ -1,5 +1,5 @@
 import pants
-from aspen.engines import CooperativeEngine
+from aspen.network_engines import CooperativeEngine
 from pants.contrib.http import HTTPServer
 from pants.contrib.wsgi import WSGIConnector
 

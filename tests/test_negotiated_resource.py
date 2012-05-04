@@ -2,7 +2,7 @@ from aspen import resources, Response
 from aspen.resources.negotiated_resource import NegotiatedResource
 from aspen.testing import assert_raises, attach_teardown, handle,mk,StubRequest
 from aspen.website import Website
-from aspen.rendering import TornadoFactory
+from aspen.renderers.tornado_ import Factory as TornadoFactory
 
 
 def get(**_kw):
@@ -78,8 +78,8 @@ def test_parse_specline_obeys_default_by_media_type():
     err = assert_raises(ValueError, resource._parse_specline, 'media/type')
     actual = err.args[0]
     assert actual == ("Unknown renderer for media/type: glubber. "
-                      "Possible renderers (might need third-party libs): "
-                      "pystache, tornado."), actual
+                      "Possible renderers (starred are missing third-party "
+                      "libraries): *pystache, tornado."), actual
 
 def test_parse_specline_obeys_default_by_media_type_default():
     resource = get()
@@ -87,8 +87,8 @@ def test_parse_specline_obeys_default_by_media_type_default():
     err = assert_raises(ValueError, resource._parse_specline, 'media/type')
     actual = err.args[0]
     assert actual == ("Unknown renderer for media/type: glubber. "
-                      "Possible renderers (might need third-party libs): "
-                      "pystache, tornado."), actual
+                      "Possible renderers (starred are missing third-party "
+                      "libraries): *pystache, tornado."), actual
 
 def test_get_renderer_factory_can_raise_syntax_error():
     resource = get()
@@ -193,7 +193,7 @@ def test_get_response_406_gives_list_of_acceptable_types():
 
 def test_can_override_default_renderers_by_mimetype():
     mk(('.aspen/configure-aspen.py', """\
-from aspen.rendering import Renderer, Factory
+from aspen.renderers import Renderer, Factory
 
 class Glubber(Renderer):
     def render_content(self, compiled, context):
@@ -213,7 +213,7 @@ website.default_renderers_by_media_type['text/plain'] = 'glubber'
 
 def test_can_override_default_renderer_entirely():
     mk(('.aspen/configure-aspen.py', """\
-from aspen.rendering import Renderer, Factory
+from aspen.renderers import Renderer, Factory
 
 class Glubber(Renderer):
     def render_content(self, compiled, context):

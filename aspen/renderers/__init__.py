@@ -1,4 +1,4 @@
-"""Pluggable content rendering.
+"""This module implements pluggable content rendering.
 
 
 ###############################################################################
@@ -21,7 +21,14 @@ content page. The default renderer for a page is computed from its media type.
 Template resources derive their media type from the file extension. Negotiated
 resources have no file extension by definition, so they specify the media type
 of their content pages in the resource itself, on the so-called "specline" of
-each content page.
+each content page, like so:
+
+    ^L
+    ^L text/plain
+    Greetings, program!
+    ^L text/html
+    <h1>Greetings, program!</h1>
+
 
 A Renderer is instantiated by a Factory, which is a class that is itself
 instantied with one argument:
@@ -43,7 +50,7 @@ render_content method. Subclass methods may raise ImportError.
 
 Here's how to implement and register your own renderer:
 
-    from aspen.rendering import Renderer, Factory
+    from aspen.renderers import Renderer, Factory
 
     class Cheese(Renderer):
         def render_content(self, compiled, context):
@@ -71,37 +78,7 @@ Out will come:
 
 # abstract bases
 # ==============
-
-class Factory(object):
-
-    Renderer = None
-
-    def __init__(self, configuration):
-        self._configuration = configuration
-        self._changes_reload = configuration.changes_reload
-        self.meta = self.compile_meta(configuration)
-
-    def __call__(self, filepath, raw):
-        """Given two bytestrings, return a callable.
-        """
-        self._update_meta()
-        return self.Renderer(self, filepath, raw)
-
-    def _update_meta(self):
-        if self._changes_reload:
-            self.meta = self.compile_meta(self._configuration)
-        return self.meta  # used in our child, Renderer
-
-    def compile_meta(self, configuration):
-        """Takes a configuration object. Override as needed.
-
-        Whatever you return from this will be set on self.meta the first time
-        the factory is called, or every time if changes_reload is True. You can
-        then use self.meta in your Renderer class as needed.
-
-        """
-        return None
-
+# The base is actually functional. It's a pass-through.
 
 class Renderer(object):
 
@@ -135,44 +112,35 @@ class Renderer(object):
     def render_content(self, compiled, context):
         """Override. Compiled is whatever compile returns, context is a dict.
         """
-        raise NotImplementedError
+        return compiled  # pass-through
 
 
-# tornado
-# =======
+class Factory(object):
 
-class TornadoRenderer(Renderer):
+    Renderer = Renderer
 
-    def compile(self, filepath, raw):
-        from aspen._tornado.template import Template
-        loader = self.meta
-        return Template(raw, filepath, loader, compress_whitespace=False)
+    def __init__(self, configuration):
+        self._configuration = configuration
+        self._changes_reload = configuration.changes_reload
+        self.meta = self.compile_meta(configuration)
 
-    def render_content(self, compiled, context):
-        return compiled.generate(**context)
+    def __call__(self, filepath, raw):
+        """Given two bytestrings, return a callable.
+        """
+        self._update_meta()
+        return self.Renderer(self, filepath, raw)
 
-
-class TornadoFactory(Factory):
-
-    Renderer = TornadoRenderer
+    def _update_meta(self):
+        if self._changes_reload:
+            self.meta = self.compile_meta(self._configuration)
+        return self.meta  # used in our child, Renderer
 
     def compile_meta(self, configuration):
-        from aspen._tornado.template import Loader
-        bases_dir = configuration.project_root
-        if bases_dir is None:
-            loader = None
-        else:
-            loader = Loader(bases_dir)
-        return loader
+        """Takes a configuration object. Override as needed.
 
+        Whatever you return from this will be set on self.meta the first time
+        the factory is called, or every time if changes_reload is True. You can
+        then use self.meta in your Renderer class as needed.
 
-# pystache
-# ========
-
-class PystacheRenderer(Renderer):
-    def render_content(self, compiled, context):
-        import pystache
-        return pystache.render(compiled, context)
-
-class PystacheFactory(Factory):
-    Renderer = PystacheRenderer
+        """
+        return None

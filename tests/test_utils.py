@@ -1,5 +1,5 @@
 import aspen.utils # this happens to install the 'repr' error strategy
-from aspen.testing import assert_raises
+from aspen.testing import assert_raises, attach_teardown
 from aspen.utils import ascii_dammit, unicode_dammit
 
 
@@ -29,3 +29,6 @@ def test_unicode_dammit_takes_encoding():
 def test_ascii_dammit_works():
     actual = ascii_dammit("comet: \xe2\x98\x84")
     assert actual == r"comet: \xe2\x98\x84", actual
+
+
+attach_teardown(globals())

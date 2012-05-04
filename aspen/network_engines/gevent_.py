@@ -4,7 +4,7 @@ import gevent
 import gevent.socket
 import gevent.queue
 import gevent.wsgi
-from aspen.engines import CooperativeEngine
+from aspen.network_engines import CooperativeEngine
 from aspen.sockets import packet
 from aspen.sockets.loop import Die
 

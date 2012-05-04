@@ -1,7 +1,7 @@
 from aspen.sockets import FFFD
 from aspen.sockets.packet import Packet 
 from aspen.sockets.message import Message
-from aspen.testing import assert_raises
+from aspen.testing import assert_raises, attach_teardown
 
 
 def test_packet_Packetable_with_unframed_bytes():
@@ -30,3 +30,6 @@ def test_packet_with_odd_frames_tells_you_that():
     expected = "There are an odd number of frames in this packet: %s" % packet
     actual = exc.args[0]
     assert actual == expected, actual
+
+
+attach_teardown(globals())

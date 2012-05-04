@@ -4,7 +4,7 @@ import time
 
 import eventlet
 import eventlet.wsgi
-from aspen.engines import CooperativeEngine
+from aspen.network_engines import CooperativeEngine
 from aspen.sockets import packet
 from aspen.sockets.loop import Die
 from eventlet.queue import LightQueue

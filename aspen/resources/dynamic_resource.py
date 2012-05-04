@@ -43,8 +43,8 @@ class DynamicResource(Resource):
         context['resource'] = self
    
 
-        # Exec the script.
-        # ================
+        # Exec page two.
+        # ==============
     
         try:
             exec self.pages[1] in context 

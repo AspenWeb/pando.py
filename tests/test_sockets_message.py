@@ -1,5 +1,5 @@
-from aspen.testing import assert_raises
 from aspen.sockets.message import Message
+from aspen.testing import assert_raises, attach_teardown
 
 
 def test_message_can_be_instantiated_from_bytes():
@@ -119,3 +119,5 @@ def test_event_data_with_reserved_name_raises_ValueError():
     actual = exc.args[0]
     assert actual == expected, actual
 
+
+attach_teardown(globals())

@@ -56,8 +56,8 @@ def list_(value):
 
 def network_engine(value):
     typecheck(value, unicode)
-    if value not in aspen.ENGINES:
-        msg = "not one of {%s}" % (','.join(aspen.ENGINES))
+    if value not in aspen.NETWORK_ENGINES:
+        msg = "not one of {%s}" % (','.join(aspen.NETWORK_ENGINES))
         raise ValueError(msg)
     return value
 
