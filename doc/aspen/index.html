@@ -55,8 +55,8 @@ Options:
                         and Python modules will cause aspen to re-exec, and
                         template bases won't be cached [no]
     --charset_dynamic=CHARSET_DYNAMIC
-                        this is set as the charset for template resources of
-                        Content-Type text/* [UTF-8]
+                        this is set as the charset for rendered and negotiated
+                        resources of Content-Type text/* [UTF-8]
     --charset_static=CHARSET_STATIC
                         if set, this will be sent as the charset for static
                         resources of Content-Type text/*; if you want to punt
@@ -74,6 +74,9 @@ Options:
     --media_type_json=MEDIA_TYPE_JSON
                         this is set as the Content-Type of JSON resources
                         [application/json]
+    --renderer_default=RENDERER_DEFAULT
+                        the renderer to use by default; one of
+                        {pystache,tornado} [tornado]
     --show_tracebacks=SHOW_TRACEBACKS
                         if set to {yes,true,1}, 500s will have a traceback in
                         the browser [no]

@@ -67,8 +67,9 @@ KNOBS = \
                             , parse.list_ 
                              )
     , 'list_directories':   (False, parse.yes_no)
-    , 'media_type_default': (u'text/plain', parse.media_type)
-    , 'media_type_json':    (u'application/json', parse.media_type)
+    , 'media_type_default': ('text/plain', parse.media_type)
+    , 'media_type_json':    ('application/json', parse.media_type)
+    , 'renderer_default':   ('tornado', parse.renderer)
     , 'show_tracebacks':    (False, parse.yes_no)
      }
 
@@ -259,16 +260,38 @@ class Configurable(object):
         # renderers
         self.renderer_factories = {}
         for name in aspen.RENDERERS:
+            # Pre-populate renderers so we can report on ImportErrors early
             try:
                 capture = {}
                 python_syntax = 'from aspen.renderers.%s_ import Factory' 
                 exec python_syntax % name in capture
                 make_renderer = capture['Factory'](self)
-            except ImportError:
-                make_renderer = traceback.format_exc()
-            self.renderer_factories[name] = make_renderer 
+            except ImportError, err:
+                make_renderer = err
+            self.renderer_factories[name] = make_renderer
+
+        default_renderer = self.renderer_factories[self.renderer_default]
+        if isinstance(default_renderer, ImportError):
+            msg = "\033[1;31mImportError loading the default renderer, %s:\033[0m" 
+            aspen.log_dammit(msg % self.renderer_default)
+            raise default_renderer
+
+        aspen.log_dammit("Renderers (*ed are unavailable, CAPS is default):")
+        width = max(map(len, self.renderer_factories))
+        for name, factory in self.renderer_factories.items():
+            star = " "
+            if isinstance(factory, ImportError):
+                star = "*"
+                error = "ImportError: " + factory.args[0]
+            else:
+                error = ""
+            if name == self.renderer_default:
+                name = name.upper()
+            name = name.ljust(width + 2)
+            aspen.log_dammit(" %s%s%s" % (star, name, error))
+
         self.default_renderers_by_media_type = NicerDefaultDict()
-        self.default_renderers_by_media_type.default = 'tornado'
+        self.default_renderers_by_media_type.default = self.renderer_default
 
         # mime.types
         mimetypes.init()
@@ -284,8 +307,8 @@ class Configurable(object):
             #   http://stackoverflow.com/questions/287871/
             #   http://en.wikipedia.org/wiki/ANSI_escape_code#CSI_codes
             #   XXX consider http://pypi.python.org/pypi/colorama
-            msg = "\033[1;31mImportError loading the %s engine:\033[0m%s" 
-            aspen.log_dammit(msg % (self.network_engine, os.sep))
+            msg = "\033[1;31mImportError loading the %s network engine:\033[0m" 
+            aspen.log_dammit(msg % self.network_engine)
             raise
         self.network_engine = Engine(self.network_engine, self)
 

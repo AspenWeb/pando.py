@@ -21,6 +21,7 @@ have both an extension *and* multiple content pages.
 """
 import os
 import re
+import traceback
 
 from aspen import Response
 from aspen._mimeparse import mimeparse
@@ -110,7 +111,6 @@ class NegotiatedResource(DynamicResource):
                    "%s.")
             msg %= (media_type, specline, media_type_re.pattern)
             raise SyntaxError(msg)
-        media_type = media_type.decode('US-ASCII')
 
         # Hydrate and validate renderer.
         make_renderer = self._get_renderer_factory(media_type, renderer)
@@ -120,9 +120,9 @@ class NegotiatedResource(DynamicResource):
 
     
     def _get_renderer_factory(self, media_type, renderer):
-        """Given a bytestring, return a renderer factory or None.
+        """Given two bytestrings, return a renderer factory or None.
         """
-        typecheck(renderer, str)
+        typecheck(media_type, str, renderer, str)
         if renderer_re.match(renderer) is None:
             possible =', '.join(sorted(self.website.renderer_factories.keys()))
             msg = ("Malformed renderer %s. It must match %s. Possible "
@@ -133,15 +133,15 @@ class NegotiatedResource(DynamicResource):
 
         factories = self.website.renderer_factories
         make_renderer = factories.get(renderer, None)
-        if isinstance(make_renderer, str):
-            error = make_renderer
+        if isinstance(make_renderer, ImportError):
+            error = traceback.format_exc(make_renderer)
             raise ValueError("ImportError for renderer %s (used for %s):%s%s"
                              % (renderer, media_type, os.linesep, error))
         elif make_renderer is None:
             possible = []
             want_legend = False
             for k, v in sorted(factories.iteritems()):
-                if isinstance(v, str):
+                if isinstance(v, ImportError):
                     k = '*' + k 
                     want_legend = True
                 possible.append(k)
