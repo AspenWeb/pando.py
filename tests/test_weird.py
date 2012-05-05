@@ -44,7 +44,7 @@ def __dump():
 
 def test_weirdness():
     try:
-        print
+        #print
         foo = os.path.join(FSFIX, 'foo')
         foo = os.path.realpath(foo)
         if foo not in sys.path:
@@ -86,7 +86,7 @@ def test_weirdness():
     finally:
         rm()
 
-    print
+    #print
 
 if __name__ == '__main__':
     test_weirdness()
