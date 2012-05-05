@@ -111,6 +111,14 @@ class Renderer(object):
 
     def render_content(self, context):
         """Override. Context is a dict.
+
+        You can use these attributes:
+
+            self.raw        the raw bytes of the content page
+            self.compiled   the result of self.compile (generally a template in
+                             compiled object form)
+            self.meta       the result of Factory.compile_meta
+
         """
         return self.raw  # pass-through
 
