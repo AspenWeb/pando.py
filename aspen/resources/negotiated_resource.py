@@ -19,9 +19,7 @@ mimetype computed from the file extension. It is a SyntaxError for a file to
 have both an extension *and* multiple content pages.
 
 """
-import os
 import re
-import traceback
 
 from aspen import Response
 from aspen._mimeparse import mimeparse

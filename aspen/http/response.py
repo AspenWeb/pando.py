@@ -109,7 +109,7 @@ class Response(Exception):
 
         start_response(wsgi_status, wsgi_headers)
         body = self.body
-        if isinstance(body, basestring):
+        if isinstance(body, str):
             body = [body]
         return CloseWrapper(self.request, body)
 

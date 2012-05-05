@@ -18,6 +18,22 @@ def test_barely_working():
     actual = response.headers['Content-Type']
     assert actual == expected, actual
 
+def test_charset_static_barely_working():
+    response = check( "Greetings, program!", 'index.html', False
+                    , argv=['--charset_static=OOG'] 
+                     )
+    expected = 'text/html; charset=OOG'
+    actual = response.headers['Content-Type']
+    assert actual == expected, actual
+
+def test_charset_dynamic_barely_working():
+    response = check( "^LGreetings, program!", 'index.html', False
+                    , argv=['--charset_dynamic=CHEESECODE'] 
+                     )
+    expected = 'text/html; charset=CHEESECODE'
+    actual = response.headers['Content-Type']
+    assert actual == expected, actual
+
 def test_resource_pages_work():
     expected = "Greetings, bar!"
     actual = check("foo = 'bar'Greetings, {{ foo }}!")

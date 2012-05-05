@@ -30,7 +30,7 @@ class DynamicResource(Resource):
     def respond(self, request, response=None):
         """Given a Request and maybe a Response, return or raise a Response.
         """
-        response = response or Response()
+        response = response or Response(charset=self.website.charset_dynamic)
 
        
         # Populate context.
