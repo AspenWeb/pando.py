@@ -24,10 +24,12 @@ def test_everything_defaults_to_empty_string():
              , opts.indices
              , opts.media_type_default
              , opts.media_type_json
+             , opts.renderer_default
              , opts.show_tracebacks
               )
-    expected = (DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT)
-    expected += (DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT)
+    expected = ( DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT
+               , DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT
+                )
     assert actual == expected, actual
 
 def test_logging_threshold_goes_to_one():
@@ -171,6 +173,14 @@ def test_parse_list_uniquifies():
 def test_parse_list_extends():
     actual = parse.list_(u'+foo')
     assert actual == (True, ['foo']), actual
+
+
+def test_parse_renderer_good():
+    actual = parse.renderer(u'pystache')
+    assert actual == u'pystache', actual
+
+def test_parse_renderer_bad():
+    assert_raises(ValueError, parse.renderer, u'floober')
 
 
 def test_parse_network_engine_good():

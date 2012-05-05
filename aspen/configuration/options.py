@@ -89,8 +89,9 @@ def OptionParser():
                        , default=DEFAULT
                         )
     extended.add_option( "--charset_dynamic"
-                       , help=("this is set as the charset for template "
-                               "resources of Content-Type text/* [UTF-8]")
+                       , help=("this is set as the charset for rendered and "
+                               "negotiated resources of Content-Type text/* "
+                               "[UTF-8]")
                        , default=DEFAULT
                         )
     extended.add_option( "--charset_static"
@@ -124,6 +125,13 @@ def OptionParser():
                                "resources [application/json]")
                        , default=DEFAULT
                         )
+    extended.add_option( "--renderer_default"
+                    , help=( "the renderer to use by default; one of "
+                           + "{%s}" % ','.join(aspen.RENDERERS)
+                           + " [tornado]"
+                            )
+                    , default=DEFAULT
+                     )
     extended.add_option( "--show_tracebacks"
                        , help=("if set to {yes,true,1}, 500s will have a "
                                "traceback in the browser [no]")

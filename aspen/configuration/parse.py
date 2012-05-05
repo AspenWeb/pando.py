@@ -16,7 +16,9 @@ def identity(value):
     typecheck(value, unicode)
     return value 
 
-media_type = identity  # XXX for now. Read a spec
+def media_type(media_type):
+    # XXX for now. Read a spec
+    return media_type.encode('US-ASCII')
 
 def charset(value):
     typecheck(value, unicode)
@@ -60,6 +62,13 @@ def network_engine(value):
         msg = "not one of {%s}" % (','.join(aspen.NETWORK_ENGINES))
         raise ValueError(msg)
     return value
+
+def renderer(value):
+    typecheck(value, unicode)
+    if value not in aspen.RENDERERS:
+        msg = "not one of {%s}" % (','.join(aspen.RENDERERS))
+        raise ValueError(msg)
+    return value.encode('US-ASCII')
 
 def network_address(address):
     """Given a socket address string, return a tuple (sockfam, address).
