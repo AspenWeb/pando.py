@@ -196,7 +196,7 @@ def test_can_override_default_renderers_by_mimetype():
 from aspen.renderers import Renderer, Factory
 
 class Glubber(Renderer):
-    def render_content(self, compiled, context):
+    def render_content(self, context):
         return "glubber"
 
 class GlubberFactory(Factory):
@@ -216,7 +216,7 @@ def test_can_override_default_renderer_entirely():
 from aspen.renderers import Renderer, Factory
 
 class Glubber(Renderer):
-    def render_content(self, compiled, context):
+    def render_content(self, context):
         return "glubber"
 
 class GlubberFactory(Factory):
