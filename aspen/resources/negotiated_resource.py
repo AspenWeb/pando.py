@@ -134,9 +134,7 @@ class NegotiatedResource(DynamicResource):
         factories = self.website.renderer_factories
         make_renderer = factories.get(renderer, None)
         if isinstance(make_renderer, ImportError):
-            error = traceback.format_exc(make_renderer)
-            raise ValueError("ImportError for renderer %s (used for %s):%s%s"
-                             % (renderer, media_type, os.linesep, error))
+            raise make_renderer
         elif make_renderer is None:
             possible = []
             want_legend = False
