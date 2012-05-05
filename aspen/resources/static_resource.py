@@ -21,5 +21,6 @@ class StaticResource(Resource):
             if charset is None:
                 pass # Let the browser guess.
             else:
+                response.charset = charset
                 response.headers['Content-Type'] += '; charset=' + charset
         return response

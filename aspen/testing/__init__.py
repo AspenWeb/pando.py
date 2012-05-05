@@ -93,7 +93,6 @@ def check(content, filename="index.html", body=True, configure_aspen_py="",
         argv = []
     mk(('.aspen/configure-aspen.py', configure_aspen_py), (filename, content))
     request = StubRequest.from_fs(filename, *argv)
-    response = response or Response()
     resource = load(request, 0)
     response = resource.respond(request, response)
     if body:
