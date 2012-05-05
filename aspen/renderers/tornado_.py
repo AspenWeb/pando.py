@@ -8,8 +8,8 @@ class Renderer(renderers.Renderer):
         loader = self.meta
         return Template(raw, filepath, loader, compress_whitespace=False)
 
-    def render_content(self, compiled, context):
-        return compiled.generate(**context)
+    def render_content(self, context):
+        return self.compiled.generate(**context)
 
 
 class Factory(renderers.Factory):

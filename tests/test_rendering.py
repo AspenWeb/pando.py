@@ -95,8 +95,8 @@ def test_cheese_example():
 from aspen.renderers import Renderer, Factory
 
 class Cheese(Renderer):
-    def render_content(self, compiled, context):
-        return compiled.replace("cheese", "CHEESE!!!!!!")
+    def render_content(self, context):
+        return self.compiled.replace("cheese", "CHEESE!!!!!!")
 
 class CheeseFactory(Factory):
     Renderer = Cheese

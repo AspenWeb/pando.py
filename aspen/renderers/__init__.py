@@ -46,15 +46,15 @@ return a function (confused yet?). The three arguments are:
 
 Each Renderer instance is a callable that takes a context dictionary and
 returns a bytestring of rendered content. The heavy lifting is done in the
-render_content method. Subclass methods may raise ImportError.
+render_content method.
 
 Here's how to implement and register your own renderer:
 
     from aspen.renderers import Renderer, Factory
 
     class Cheese(Renderer):
-        def render_content(self, compiled, context):
-            return compiled.replace("cheese", "CHEESE!!!!!!")
+        def render_content(self, context):
+            return self.raw.replace("cheese", "CHEESE!!!!!!")
 
     class CheeseFactory(Factory):
         Renderer = Cheese
@@ -86,17 +86,17 @@ class Renderer(object):
         """Takes a Factory and two bytestrings.
         """
         self._filepath = filepath
-        self._raw = raw
         self._factory = factory
         self._changes_reload = factory._changes_reload
         self.meta = self._factory.meta
-        self.compiled = self.compile(self._filepath, self._raw)
+        self.raw = raw
+        self.compiled = self.compile(self._filepath, self.raw)
 
     def __call__(self, context):
         if self._changes_reload:
             self.meta = self._factory._update_meta()
-            self.compiled = self.compile(self._filepath, self._raw)
-        return self.render_content(self.compiled, context)
+            self.compiled = self.compile(self._filepath, self.raw)
+        return self.render_content(context)
 
     def compile(self, filepath, raw):
         """Override.
@@ -109,10 +109,10 @@ class Renderer(object):
         """
         return raw
 
-    def render_content(self, compiled, context):
-        """Override. Compiled is whatever compile returns, context is a dict.
+    def render_content(self, context):
+        """Override. Context is a dict.
         """
-        return compiled  # pass-through
+        return self.raw  # pass-through
 
 
 class Factory(object):

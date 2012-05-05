@@ -3,8 +3,8 @@ from aspen import renderers
 
 
 class Renderer(renderers.Renderer):
-    def render_content(self, compiled, context):
-        return pystache.render(compiled, context)
+    def render_content(self, context):
+        return pystache.render(self.compiled, context)
 
 
 class Factory(renderers.Factory):
