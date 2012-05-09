@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from aspen.renderers import Renderer, Factory
+from aspen import renderers
 
 from jinja2 import BaseLoader, TemplateNotFound, Environment, FileSystemLoader, ChoiceLoader, Template
 
@@ -27,7 +27,7 @@ class SimplateLoader(FileSystemLoader):
             header, contents = simplate[-1].split('\n', 1)
         return contents, filename, uptodate
 
-class Jinja2Renderer(Renderer):
+class Renderer(renderers.Renderer):
     
     def compile(self, filepath, raw):
         """
@@ -40,18 +40,18 @@ class Jinja2Renderer(Renderer):
     def render_content(self, context):
         return self.compiled.render(context).encode(self.meta['configuration'].charset_dynamic)
 
-class Jinja2Factory(Factory):
+class Factory(renderers.Factory):
 
-    Renderer = Jinja2Renderer
+    Renderer = Renderer
 
     def __init__(self, configuration):
-        self.env = Environment(loader=ChoiceLoader([
+        self.jinja2_env = Environment(loader=ChoiceLoader([
             SimplateLoader(configuration.www_root, encoding=configuration.charset_dynamic), # Simplate splittin' loader
             FileSystemLoader(configuration.project_root, encoding=configuration.charset_dynamic) # For base templates use the regular loader
             ]))
-        super(Jinja2Factory, self).__init__(configuration)
+        super(Factory, self).__init__(configuration)
 
     def compile_meta(self, configuration):
         return {
             'configuration' : configuration,
-            'env' : self.jinja2_env}
+            'jinja2_env' : self.jinja2_env}
