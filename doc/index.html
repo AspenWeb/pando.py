@@ -212,10 +212,10 @@ homepage = True
             margin-top: -25px;
             width: 212px;
         }
+        IMG#travis { width: auto; }
     }
     @media screen and (max-width: 319px) {
         BODY { padding: 5px; }
-
     }
 </style>
 {% end %}
@@ -227,6 +227,7 @@ homepage = True
     <div id="col1" class="col"><div class="pad">
 
         <h2>Downloads</h2>
+        
         <p>
             <a class="highlighted" href="http://pypi.python.org/packages/source/a/aspen/aspen-{{ version }}.tar.bz2">
                 <strong>aspen-{{ version }}.tar.bz2</strong></a>,
@@ -235,6 +236,16 @@ homepage = True
             <a href="http://pypi.python.org/pypi/aspen/">pypi</a>,
             <a href="https://github.com/whit537/aspen/">github</a>
         </p>
+
+
+        <h2>Continuous Integration</h2>
+
+        <ul>
+            <li><a href="http://travis-ci.org/whit537/aspen">Travis CI</a>&mdash;
+                <img id="travis" src="https://secure.travis-ci.org/whit537/aspen.png?branch=master" alt="Build Status" /></li>
+            <li><a href="https://aspen.ci.cloudbees.com/">Jenkins</a> (registration required)</li>
+        </ul>
+
 
         <h2>Support</h2>
 
