@@ -1,3 +1,5 @@
+from Cookie import CookieError, SimpleCookie
+
 from aspen.http.mapping import CaseInsensitiveMapping
 
 
@@ -13,6 +15,17 @@ class BaseHeaders(CaseInsensitiveMapping):
                 k, v = line.split(':', 1)
                 yield k.strip(), v.strip()
         CaseInsensitiveMapping.__init__(self, genheaders)
+      
+
+        # Cookie
+        # ======
+
+        self.cookie = SimpleCookie()
+        try:
+            self.cookie.load(self.get('Cookie', ''))
+        except CookieError:
+            pass # XXX really?
+
 
     def raw(self):
         """Return the headers as a string, formatted for an HTTP message.
