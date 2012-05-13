@@ -82,15 +82,11 @@ class Response(Exception):
                 headers = headers.items()
             for k, v in headers:
                 self.headers[k] = v
-        self.cookie = SimpleCookie()
-        try:
-            self.cookie.load(self.headers.get('Cookie', ''))
-        except CookieError:
-            pass
+        self.headers.cookie.load(self.headers.get('Cookie', ''))
 
     def __call__(self, environ, start_response):
         wsgi_status = str(self)
-        for morsel in self.cookie.values():
+        for morsel in self.headers.cookie.values():
             self.headers['Set-Cookie'] = morsel.OutputString()
         wsgi_headers = []
         for k, vals in self.headers.iteritems():
@@ -132,4 +128,3 @@ class Response(Exception):
             body = body.replace('\n', '\r\n')
             body = body.replace('\r\r', '\r')
         return '\r\n'.join([status_line, headers, '', body])
-

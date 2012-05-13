@@ -31,7 +31,6 @@ import re
 import sys
 import urllib
 import urlparse
-from Cookie import CookieError, SimpleCookie
 
 from aspen import Response
 from aspen.http.baseheaders import BaseHeaders
@@ -532,16 +531,6 @@ class Headers(BaseHeaders):
         """Extend BaseHeaders to add extra attributes.
         """
         BaseHeaders.__init__(self, raw)
-      
-
-        # Cookie
-        # ======
-
-        self.cookie = SimpleCookie()
-        try:
-            self.cookie.load(self.get('Cookie', ''))
-        except CookieError:
-            pass # XXX really?
 
 
         # Host
