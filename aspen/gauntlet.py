@@ -94,6 +94,11 @@ def virtual_paths(request):
     """
     if os.sep + '%' in request.fs[len(request.website.www_root):]:
         raise Response(404)     # disallow direct access
+    if request.line.uri.path.raw in ('/favicon.ico', '/robots.txt'):
+        # Special case. Aspen bundles its own favicon.ico, and it wants to
+        # serve that if it can rather then letting it fall through to a virtual
+        # path. For robots.txt we just want to avoid spam in a common case.
+        return
     if not exists(request.fs):
         matched = request.website.www_root
         parts = request._parts
