@@ -15,7 +15,7 @@ notifications:
     on_success: never
     on_failure: always
     template:
-      - "%{build_url} WAT"
+      - "Failed build: %{build_url}"
     skip_join: true
 branches:
   only:
