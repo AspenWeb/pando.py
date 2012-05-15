@@ -9,7 +9,15 @@ install:
 script: nosetests --with-coverage tests
 notifications:
   email: false
-  irc: "irc.freenode.org#aspen"
+  irc: 
+    channels:
+      - "irc.freenode.org#aspen"
+    on_success: never
+    on_failure: always
+    template:
+      - "%{build_url}"
+    use_notice: true
+    skip_join: true
 branches:
   only:
     - master 
