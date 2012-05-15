@@ -5,7 +5,6 @@ import aspen
 if aspen.LOGGING_THRESHOLD == -1:
     # Suppress aspen's logging during tests.
     aspen.LOGGING_THRESHOLD = 3
-from aspen import Response
 from aspen.configuration import Configurable
 from aspen.http.request import Request
 from aspen.resources import load
@@ -46,9 +45,9 @@ class StubRequest:
         """
         fs = os.sep.join(fs.split(os.sep))
         request = Request.from_wsgi(StubWSGIRequest(fs))
-        website = Configurable.from_argv([ '--www_root', FSFIX
-                                         , '--project_root', '.aspen'
-                                          ] + list(a))
+        website = Website([ '--www_root', FSFIX
+                          , '--project_root', '.aspen'
+                           ] + list(a))
         request.www_root = os.path.join(os.path.dirname(__file__), FSFIX)
         request.fs = fs
         request.context = {}

@@ -445,4 +445,19 @@ def test_file_with_no_extension_matches():
     assert actual == expected, actual
 
 
+def test_aspen_favicon_doesnt_get_clobbered_by_virtual_path():
+    mk('%value')
+    request = StubRequest.from_fs('/favicon.ico')
+    gauntlet.run_through(request, gauntlet.not_found)
+    expected = {}
+    actual = request.line.uri.path
+    assert actual == expected, actual
+
+def test_robots_txt_also_shouldnt_be_redirected():
+    mk('%value')
+    request = StubRequest.from_fs('/robots.txt')
+    err = assert_raises(Response, gauntlet.run_through, request, gauntlet.not_found)
+    actual = err.code
+    assert actual == 404, actual 
+
 attach_teardown(globals())

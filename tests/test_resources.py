@@ -138,7 +138,7 @@ def test_raise_response_works():
 def test_website_is_in_context():
     expected = "It worked."
     actual = check("""\
-assert website.__class__.__name__ == 'Configurable', website
+assert website.__class__.__name__ == 'Website', website
 
 
 It worked.""")
