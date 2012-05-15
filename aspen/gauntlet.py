@@ -18,7 +18,7 @@ def intercept_socket(request):
     /foo.sock/blah/blah/blah/.
 
     """
-    path = request.line.uri.path.raw
+    path = request.line.uri.path.decoded
     if path.endswith('.sock'):
         # request.line.uri.path.raw does not include querystring.
         raise Response(404)
@@ -29,7 +29,7 @@ def intercept_socket(request):
     else:
         path = parts[0] + '.sock'
         socket = parts[1]
-    request.line.uri.path.raw, request.socket = path, socket
+    request.line.uri.path.decoded, request.socket = path, socket
 
 def translate(request):
     """Translate urlpath to fspath, returning urlpath parts.
