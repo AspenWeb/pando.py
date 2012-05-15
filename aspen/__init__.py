@@ -20,7 +20,7 @@ __version__ = "~~VERSION~~"
 WINDOWS = sys.platform[:3] == 'win'
 NETWORK_ENGINES = ['cheroot', 'cherrypy', 'diesel', 'eventlet', 'gevent',
                    'pants', 'rocket', 'tornado', 'twisted']
-RENDERERS = ['pystache', 'tornado', 'jinja2']
+RENDERERS = ['jinja2', 'pystache', 'tornado']
 
 
 # Logging. It's simple.
