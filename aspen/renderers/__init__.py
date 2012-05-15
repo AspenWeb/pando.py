@@ -9,7 +9,14 @@ See user docs here:
     http://aspen.io/simplates/rendered/
 
 $5.37 on Amazon to anyone who sends me a pull request with a shim for your
-favorite language. Think LESS, CoffeeScript, Markdown, etc.
+favorite language. So far:
+
+    pystache        pjz (Paul Jimenez)
+    jinja2          jarpineh (Jussi Arpalahti)
+    LESS            ???
+    CoffeeScript    ???
+    Markdown        ???
+    etc.            ???
                                                                               #
 #                                                                             #
 ###############################################################################
@@ -17,7 +24,7 @@ favorite language. Think LESS, CoffeeScript, Markdown, etc.
 
 Negotiated and rendered resources have content pages the bytes for which are
 transformed based on context. The user may explicitly choose a renderer per
-content page. The default renderer for a page is computed from its media type.
+content page, with the default renderer per page computed from its media type.
 Template resources derive their media type from the file extension. Negotiated
 resources have no file extension by definition, so they specify the media type
 of their content pages in the resource itself, on the so-called "specline" of
@@ -72,6 +79,13 @@ Now you can use it in a negotiated or rendered resource:
 Out will come:
 
     I like CHEESE!!!!!!!
+
+
+If you write a new renderer for inclusion in the base Aspen distribution,
+please work with Aspen's existing reloading machinery, etc. as much as
+possible. Use the existing template shims as guidelines, and if Aspen's
+machinery is inadequate for some reason let's evolve the machinery so all 
+renderers behave consistently for users. Thanks.
 
 """
 

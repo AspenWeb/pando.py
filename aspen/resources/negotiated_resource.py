@@ -67,6 +67,46 @@ class NegotiatedResource(DynamicResource):
         return (render, media_type)  # back to parent class
 
 
+    def get_response(self, context):
+        """Given a context dict, return a response object.
+        """
+        request = context['request']
+
+        # find an Accept header
+        accept = request.headers.get('X-Aspen-Accept', None)
+        if accept is not None:      # indirect negotiation
+            failure = 404
+        else:                       # direct negotiation
+            accept = request.headers.get('Accept', None)
+            failure = 406
+
+        # negotiate or punt
+        if accept is not None:
+            media_type = mimeparse.best_match(self.available_types, accept)
+            if media_type == '':    # breakdown in negotiations
+                if failure == 404:
+                    failure = Response(404)
+                elif failure == 406:
+                    msg = "The following media types are available: %s."
+                    msg %= ', '.join(self.available_types)
+                    failure = Response(406, msg.encode('US-ASCII'))
+                raise failure
+            render = self.renderers[media_type] # KeyError is a bug
+        else:  # punt
+            render, media_type = self.pages[2]  # default to first content page
+
+        response = context['response']
+        response.body = render(context)
+        if 'Content-Type' not in response.headers:
+            response.headers['Content-Type'] = media_type
+            if media_type.startswith('text/'):
+                charset = response.charset
+                if charset is not None:
+                    response.headers['Content-Type'] += '; charset=' + charset
+
+        return response
+
+
     def _parse_specline(self, specline):
         """Given a bytestring, return a two-tuple.
 
@@ -150,43 +190,3 @@ class NegotiatedResource(DynamicResource):
                              "renderers%s: %s." 
                              % (media_type, renderer, legend, possible))
         return make_renderer
-
-
-    def get_response(self, context):
-        """Given a context dict, return a response object.
-        """
-        request = context['request']
-
-        # find an Accept header
-        accept = request.headers.get('X-Aspen-Accept')
-        if accept is not None:      # indirect negotiation
-            failure = 404
-        else:                       # direct negotiation
-            accept = request.headers.get('Accept')
-            failure = 406
-
-        # negotiate or punt
-        if accept is not None:
-            media_type = mimeparse.best_match(self.available_types, accept)
-            if media_type == '':    # breakdown in negotiations
-                if failure == 404:
-                    failure = Response(404)
-                elif failure == 406:
-                    msg = "The following media types are available: %s."
-                    msg %= ', '.join(self.available_types)
-                    failure = Response(406, msg.encode('US-ASCII'))
-                raise failure
-            render = self.renderers[media_type] # KeyError is a bug
-        else:  # punt
-            render, media_type = self.pages[2]  # default to first content page
-
-        response = context['response']
-        response.body = render(context)
-        if 'Content-Type' not in response.headers:
-            response.headers['Content-Type'] = media_type
-            if media_type.startswith('text/'):
-                charset = response.charset
-                if charset is not None:
-                    response.headers['Content-Type'] += '; charset=' + charset
-
-        return response

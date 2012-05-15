@@ -79,7 +79,7 @@ def test_parse_specline_obeys_default_by_media_type():
     actual = err.args[0]
     assert actual == ("Unknown renderer for media/type: glubber. "
                       "Possible renderers (starred are missing third-party "
-                      "libraries): *pystache, tornado."), actual
+                      "libraries): *jinja2, *pystache, tornado."), actual
 
 def test_parse_specline_obeys_default_by_media_type_default():
     resource = get()
@@ -88,7 +88,7 @@ def test_parse_specline_obeys_default_by_media_type_default():
     actual = err.args[0]
     assert actual == ("Unknown renderer for media/type: glubber. "
                       "Possible renderers (starred are missing third-party "
-                      "libraries): *pystache, tornado."), actual
+                      "libraries): *jinja2, *pystache, tornado."), actual
 
 def test_get_renderer_factory_can_raise_syntax_error():
     resource = get()
@@ -101,7 +101,7 @@ def test_get_renderer_factory_can_raise_syntax_error():
     actual = err.args[0]
     assert actual == ("Malformed renderer oo*gle. It must match #![a-z0-9.-]+."
                       " Possible renderers (might need third-party libs): "
-                      "pystache, tornado."), actual
+                      "jinja2, pystache, tornado."), actual
 
 
 # get_response

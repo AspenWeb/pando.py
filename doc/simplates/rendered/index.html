@@ -19,17 +19,19 @@ bar = "<b>foo</b>"
 <p>Rendered simplates are the main kind of <a href="/simplates/">simplate</a>.
 The third page of a rendered simplate uses a templating language to transform
 the bytes in your file into content to send out over the wire. Aspen bundles
-the Tornado templating language and includes a shim for <a
-    href="https://github.com/defunkt/pystache">Pystache</a>. The way to specify
-a renderer is with a so-called &ldquo;specline&rdquo; at the start of the
-content page of a rendered simplate.</p>
+the Tornado templating language and includes support for <a
+    href="http://jinja.pocoo.org/">Jinja2</a> and <a
+    href="https://github.com/defunkt/pystache">Pystache</a> if those libraries
+are installed. The way to specify a renderer is with a so-called
+&ldquo;specline&rdquo; at the start of the content page of a rendered
+simplate.</p>
 
 <pre>program = "program"
 &#94;L #!pystache
 Greetings, {&#123; program }}!</pre>
 
 <p>Pull requests are especially welcome for <a
-    href="https://github.com/whit537/aspen/blob/master/aspen/rendering.py">new
+    href="https://github.com/whit537/aspen/blob/master/aspen/renderers/__init__.py">new
     renderers</a>.</p>
 
 <p>You can set the default renderer for a given media type in <a

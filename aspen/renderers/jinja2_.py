@@ -1,57 +1,50 @@
-# -*- coding: utf-8 -*-
+"""Implement a Jinja2 renderer.
 
+Jinja2 insists on unicode, and explicit loader objects. We assume with Jinja2
+that your templates on the filesystem be encoded in UTF-8 (the result of the
+template will be encoded to bytes for the wire per response.charset). We shim a
+loader that returns the decoded content page and instructs Jinja2 not to
+perform auto-reloading.
+
+"""
 from aspen import renderers
 
-from jinja2 import BaseLoader, TemplateNotFound, Environment, FileSystemLoader, ChoiceLoader, Template
+from jinja2 import BaseLoader, Environment, FileSystemLoader
 
-"""
-Jinja2 renderer
 
-Supports template inheritance from www_root and project_root
+class SimplateLoader(BaseLoader):
+    """Jinja2 really wants to get templates via a Loader object.
 
-Templates are cached by Jinja2 
-"""
+    See: http://jinja.pocoo.org/docs/api/#loaders
 
-class SimplateLoader(FileSystemLoader):
+    """
+
+    def __init__(self, filepath, raw):
+        self.filepath = filepath
+        self.decoded = raw.decode('UTF-8')
 
     def get_source(self, environment, template):
-        """
-        TODO: more reliable simplate splitting
-        """
-        contents, filename, uptodate = super(SimplateLoader, self).get_source(environment, template)
-        if contents.find('\f') != -1:
-            simplate = contents.split('\f')
-            header, contents = simplate[-1].split('\n', 1)
-        elif contents.find('^L') != -1:
-            simplate = contents.split('^L')
-            header, contents = simplate[-1].split('\n', 1)
-        return contents, filename, uptodate
+        return self.decoded, self.filepath, True
+
 
 class Renderer(renderers.Renderer):
     
     def compile(self, filepath, raw):
-        """
-        TODO: more reliable filepath normalization (changing filepath to be relative to root and not absolute)
-        """
-        filepath = filepath.replace(self.meta['configuration'].www_root, '')
-        filepath = filepath.replace(self.meta['configuration'].project_root, '')
-        return self.meta['jinja2_env'].get_template(filepath)
+        environment = self.meta
+        return SimplateLoader(filepath, raw).load(environment, filepath)
 
     def render_content(self, context):
-        return self.compiled.render(context).encode(self.meta['configuration'].charset_dynamic)
+        charset = context['response'].charset
+        return self.compiled.render(context).encode(charset)
+
 
 class Factory(renderers.Factory):
 
     Renderer = Renderer
 
-    def __init__(self, configuration):
-        self.jinja2_env = Environment(loader=ChoiceLoader([
-            SimplateLoader(configuration.www_root, encoding=configuration.charset_dynamic), # Simplate splittin' loader
-            FileSystemLoader(configuration.project_root, encoding=configuration.charset_dynamic) # For base templates use the regular loader
-            ]))
-        super(Factory, self).__init__(configuration)
-
     def compile_meta(self, configuration):
-        return {
-            'configuration' : configuration,
-            'jinja2_env' : self.jinja2_env}
+        loader = None
+        if configuration.project_root is not None:
+            # Instantiate a loader that will be used to resolve template bases.
+            loader = FileSystemLoader(configuration.project_root)
+        return Environment(loader=loader)
