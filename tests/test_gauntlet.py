@@ -377,7 +377,7 @@ def test_intercept_socket_intercepts_handshake():
     gauntlet.intercept_socket(request)
     
     expected = ('/foo.sock', '1')
-    actual = (request.line.uri.path.raw, request.socket)
+    actual = (request.line.uri.path.decoded, request.socket)
     assert actual == expected, actual
 
 def test_intercept_socket_intercepts_transported():
@@ -385,7 +385,7 @@ def test_intercept_socket_intercepts_transported():
     gauntlet.intercept_socket(request)
 
     expected = ('/foo.sock', '1/websocket/46327hfjew3')
-    actual = (request.line.uri.path.raw, request.socket)
+    actual = (request.line.uri.path.decoded, request.socket)
     assert actual == expected, actual
 
 
