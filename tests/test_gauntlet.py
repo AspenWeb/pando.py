@@ -386,7 +386,6 @@ def test_intercept_socket_intercepts_transported():
 
     expected = ('/foo.sock', '1/websocket/46327hfjew3')
     actual = (request.line.uri.path.decoded, request.socket)
-    raise heck
     assert actual == expected, actual
 
 
