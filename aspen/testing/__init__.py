@@ -5,7 +5,6 @@ import aspen
 if aspen.LOGGING_THRESHOLD == -1:
     # Suppress aspen's logging during tests.
     aspen.LOGGING_THRESHOLD = 3
-from aspen.configuration import Configurable
 from aspen.http.request import Request
 from aspen.resources import load
 from aspen.website import Website
@@ -59,7 +58,7 @@ StubRequest = StubRequest()
 
 
 class Handle(object):
-    """Stub out website.handle with set configuration.
+    """Stub out website.handle_safely with set configuration.
     """
 
     def __init__(self, argv):
@@ -77,7 +76,7 @@ class Handle(object):
         website = Website(self.argv + list(a))
         request = StubRequest(path)
         request.website = website
-        response = website.handle(request)
+        response = website.handle_safely(request)
         return response
 
 handle = Handle(['--www_root', FSFIX])

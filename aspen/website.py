@@ -28,7 +28,7 @@ class Website(Configurable):
         """WSGI interface.
         """
         request = Request.from_wsgi(environ) # too big to fail :-/
-        response = self.handle(request)
+        response = self.handle_safely(request)
         response.request = request # Stick this on here at the last minute
                                    # in order to support close hooks.
         return response(environ, start_response)
@@ -43,32 +43,47 @@ class Website(Configurable):
         self.hooks.shutdown.run(self)
         self.network_engine.stop()
 
-    def handle(self, request):
+    def handler(self, request):
         """Given an Aspen request, return an Aspen response.
 
-        Aspen uses Resource subclasses to generate responses. See
-        aspen/resources/__init__.py.
+        The default handler uses Resource subclasses to generate responses from
+        simplates on the filesystem. See aspen/resources/__init__.py.
 
+        You can monkey-patch this method to implement single-page web apps or
+        other things in configure-aspen.py:
+
+            from aspen import Response
+
+            def greetings_program(website, request):
+                return Response(200, "Greetings, program!")
+
+            website.handler = greetings_program
+
+        """
+        self.hooks.inbound_early.run(request)
+        gauntlet.run(request)  # sets request.fs
+        request.socket = sockets.get(request)
+        self.hooks.inbound_late.run(request)
+
+        # Look for a Socket.IO socket (http://socket.io/).
+        if isinstance(request.socket, Response):    # handshake
+            response = request.socket
+            request.socket = None
+        elif request.socket is None:                # non-socket
+            request.resource = resources.get(request)
+            response = request.resource.respond(request)
+        else:                                       # socket
+            response = request.socket.respond(request)
+        return response
+
+    def handle_safely(self, request):
+        """Given an Aspen request, return an Aspen response.
         """
         try:
             try:
                 #self.copy_configuration_to(request)
                 request.website = self
-
-                self.hooks.inbound_early.run(request)
-                gauntlet.run(request) # sets request.fs
-                request.socket = sockets.get(request)
-                self.hooks.inbound_late.run(request)
-
-                # Look for a Socket.IO socket (http://socket.io/).
-                if isinstance(request.socket, Response):    # handshake
-                    response = request.socket
-                    request.socket = None
-                elif request.socket is None:                # non-socket
-                    request.resource = resources.get(request)
-                    response = request.resource.respond(request)
-                else:                                       # socket
-                    response = request.socket.respond(request)
+                response = self.handler(request)
             except:
                 response = self.handle_error_nicely(request)
         except Response, response:
@@ -153,7 +168,7 @@ class Website(Configurable):
         # What was the URL path translated to?
         # ====================================
 
-        fs = request.fs
+        fs = getattr(request, 'fs', '')
         if fs.startswith(self.www_root):
             fs = fs[len(self.www_root):]
             if fs:

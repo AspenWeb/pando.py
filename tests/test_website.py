@@ -81,7 +81,7 @@ def bar(response):
     website = Website(['--www_root='+FSFIX, '--project_root=.aspen'])
     del website.renderer_factories
 
-    response = website.handle(StubRequest())
+    response = website.handle_safely(StubRequest())
 
     expected = 500
     actual = response.code
