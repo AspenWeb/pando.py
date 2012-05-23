@@ -131,11 +131,11 @@ class IntWithRaw(int):
 
     __slots__ = ['raw']
 
-    def __new__(cls, int):
-        if int is None:
-            int = 0 
-        obj = super(IntWithRaw, cls).__new__(cls, int)
-        obj.raw = str(int)
+    def __new__(cls, i):
+        if i is None:
+            i = 0 
+        obj = super(IntWithRaw, cls).__new__(cls, i)
+        obj.raw = str(i)
         return obj
 
 class UnicodeWithRaw(unicode):
