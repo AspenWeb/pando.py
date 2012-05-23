@@ -33,7 +33,7 @@ def stringify(o):
     if isinstance(o, str):
         o = o
     elif isinstance(o, unicode):
-        o = o.encode('UTF-8', errors='backslashreplace')
+        o = o.encode('UTF-8', 'backslashreplace')
     else:
         o = pprint.pformat(o)
     return o
@@ -56,4 +56,5 @@ def log(*messages, **kw):
 
 
 def log_dammit(*messages):
-    log(*messages, level=1)
+    log(*messages, **{'level': 1})
+    #log(*messages, level=1) SyntaxError in Python 2.5
