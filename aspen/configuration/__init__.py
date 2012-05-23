@@ -82,11 +82,11 @@ class Configurable(object):
     """Mixin object for aggregating configuration from several sources.
     """
 
+    @classmethod
     def from_argv(cls, argv):
         configurable = cls()
         configurable.configure(argv)
         return configurable
-    from_argv = classmethod(from_argv)
 
 
     def _set(self, name, hydrated, flat, context, name_in_context):
@@ -365,10 +365,3 @@ class Configurable(object):
                     else:
                         raise ConfigurationError(msg % filepath)
                 # XXX smelly ... bug here? second else pls?
-
-
-    @classmethod
-    def from_argv(cls, argv):
-        o = cls()
-        o.configure(argv)
-        return o
