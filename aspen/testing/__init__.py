@@ -1,10 +1,10 @@
 import os
 import sys
 
-import aspen
-if aspen.LOGGING_THRESHOLD == -1:
+import aspen.logging
+if aspen.logging.LOGGING_THRESHOLD == -1:
     # Suppress aspen's logging during tests.
-    aspen.LOGGING_THRESHOLD = 3
+    aspen.logging.LOGGING_THRESHOLD = 3
 from aspen.http.request import Request
 from aspen.resources import load
 from aspen.website import Website
