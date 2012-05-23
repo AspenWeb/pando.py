@@ -9,6 +9,7 @@ import sys
 import traceback
 
 import aspen
+import aspen.logging
 from aspen.utils import ascii_dammit
 from aspen.configuration import parse
 from aspen.configuration.exceptions import ConfigurationError
@@ -200,8 +201,8 @@ class Configurable(object):
         # This is initially set to -1 and not 0 so that we can tell if the user
         # changed it programmatically directly before we got here. I do this in
         # the testing module, that's really what this is about.
-        if aspen.LOGGING_THRESHOLD == -1:
-            aspen.LOGGING_THRESHOLD = self.logging_threshold
+        if aspen.logging.LOGGING_THRESHOLD == -1:
+            aspen.logging.LOGGING_THRESHOLD = self.logging_threshold
         # Now that we know the user's desires, we can log appropriately.
         aspen.log_dammit(os.linesep.join(msgs))
        
