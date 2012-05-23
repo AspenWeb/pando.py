@@ -32,7 +32,7 @@ else
         git push
         git push --tags
 
-        ./env/bin/python setup.py sdist --formats=zip,gztar,bztar upload
+        python2.7 setup.py sdist --formats=zip,gztar,bztar upload
 
         printf "+" >> version.txt
         git commit version.txt -m"Version bump post-release."
