@@ -24,7 +24,8 @@ import threading
 
 
 LOGGING_THRESHOLD = -1
-_PID = os.getpid()
+PID = os.getpid()
+LOCK = threading.Lock()
 
 
 def stringify(o):
@@ -44,17 +45,21 @@ def log(*messages, **kw):
     if level >= LOGGING_THRESHOLD:
         # Be sure to use Python 2.5-compatible threading API.
         t = threading.currentThread()
-        fmt = "pid-%s thread-%s (%s) %%s" % ( _PID
+        fmt = "pid-%s thread-%s (%s) %%s" % ( PID
                                             , thread.get_ident()
                                             , t.getName()
                                              )
         for message in messages:
             message = stringify(message)
             for line in message.splitlines():
-                print fmt % line
-                sys.stdout.flush()
+                with LOCK:
+                    # Log lines can get interleaved, but that's okay, because 
+                    # we prepend lines with thread identifiers that can be used
+                    # to reassemble log messages per-thread.
+                    print fmt % line
+                    sys.stdout.flush()
 
 
 def log_dammit(*messages):
     log(*messages, **{'level': 1})
-    #log(*messages, level=1) SyntaxError in Python 2.5
+    #log(*messages, level=1)  <-- SyntaxError in Python 2.5
