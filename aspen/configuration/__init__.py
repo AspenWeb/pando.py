@@ -10,6 +10,7 @@ import traceback
 
 import aspen
 import aspen.logging
+from aspen import execution
 from aspen.utils import ascii_dammit
 from aspen.configuration import parse
 from aspen.configuration.exceptions import ConfigurationError
@@ -366,3 +367,5 @@ class Configurable(object):
                     else:
                         raise ConfigurationError(msg % filepath)
                 # XXX smelly ... bug here? second else pls?
+            else:
+                execution.if_changes(filepath)

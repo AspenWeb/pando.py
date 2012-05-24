@@ -20,7 +20,7 @@ class Engine(ThreadedEngine):
     def stop(self):
         self.rocket_server.stop()
 
-    def start_restarter(self, check_all):
+    def start_checking(self, check_all):
 
         def loop():
             while True:

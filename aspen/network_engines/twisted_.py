@@ -33,9 +33,9 @@ class Engine(ThreadedEngine):
                                            )
         twisted.internet.reactor.run()
 
-    def start_restarter(self, check_all):
-        self.restarter = twisted.internet.task.LoopingCall(check_all)
-        deferred = self.restarter.start(0.5)
+    def start_checking(self, check_all):
+        self.checker = twisted.internet.task.LoopingCall(check_all)
+        deferred = self.checker.start(0.5)
 
         # Set up twisted error handling.
         # ==============================
@@ -67,10 +67,10 @@ class Engine(ThreadedEngine):
 
         def error(failure):
             failure.trap(SystemExit)
-            if failure.type is SystemExit and self.restarter.running:
-                self.restarter.stop()
+            if failure.type is SystemExit and self.checker.running:
+                self.checker.stop()
 
         deferred.addErrback(error)
 
-    def stop_restarter(self):
-        self.restarter.stop()
+    def stop_checking(self):
+        self.checker.stop()

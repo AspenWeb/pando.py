@@ -7,13 +7,33 @@ def _main(argv):
     # No, I don't care enough to put aspen/__init__.py in here too.
 
     import os
+    import signal
     import socket
     import sys
     import traceback
 
     import aspen
-    from aspen import restarter
+    from aspen import execution
     from aspen.website import Website
+
+
+    # Set up signal handling.
+    # =======================
+
+    def SIGHUP(signum, frame):
+        aspen.log_dammit("Received HUP, re-executing.")
+        execution.execute()
+    signal.signal(signal.SIGHUP, SIGHUP)
+
+    def SIGINT(signum, frame):
+        aspen.log_dammit("Received INT, exiting.")
+        raise SystemExit
+    signal.signal(signal.SIGINT, SIGINT)
+
+    def SIGQUIT(signum, frame):
+        aspen.log_dammit("Received QUIT, exiting.")
+        raise SystemExit
+    signal.signal(signal.SIGQUIT, SIGQUIT)
 
 
     # Website
@@ -50,7 +70,7 @@ def _main(argv):
         if website.changes_reload:
             aspen.log("Aspen will restart when configuration scripts or "
                       "Python modules change.")
-            restarter.install(website)
+            execution.install(website)
         website.start()
 
     except socket.error:
@@ -95,18 +115,20 @@ def _main(argv):
                     os.remove(website.network_address)
         website.stop()
 
-
 def main(argv=None):
     """http://aspen.io/cli/
     """
     try:
         _main(argv)
-    except KeyboardInterrupt:
-        raise SystemExit(75)    # 75 == INT
     except SystemExit:
         pass
     except:
-        import aspen, traceback
-        aspen.log_dammit("Oh no! Server crashed!")
+        import aspen, aspen.execution, traceback
+        aspen.log_dammit("Oh no! Aspen crashed!")
         aspen.log_dammit(traceback.format_exc())
-        raise SystemExit(1)     #  1 == Other
+        try:
+            raw_input("Press Enter to re-execute.")
+        except KeyboardInterrupt:
+            raise SystemExit
+        else:
+            aspen.execution.execute()

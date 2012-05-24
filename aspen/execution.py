@@ -1,4 +1,7 @@
-"""Implement a fairly naive restart-when-files-change strategy.
+"""Implement re-execution of the aspen process.
+
+When files change on the filesystem or we receive HUP, we want to re-execute
+ourselves.
 
 For thoughts on a more sophisticated approach, see:
 
@@ -6,7 +9,6 @@ For thoughts on a more sophisticated approach, see:
 
 """
 import os
-import signal
 import sys
 
 import aspen
@@ -46,10 +48,11 @@ def _do_execv():
     
     This must be called from the main thread, because certain platforms
     (OS X) don't allow execv to be called in a child thread very well.
+
     """
     args = sys.argv[:]
-    aspen.log_dammit("Restarting %s." % ' '.join(args))
-    
+    aspen.log_dammit("Re-executing %s." % ' '.join(args))
+
     if sys.platform[:4] == 'java':
         from _systemrestart import SystemRestart
         raise SystemRestart
@@ -74,6 +77,7 @@ def _set_cloexec():
     from persisting into the new process.
     
     Set self.max_cloexec_files to 0 to disable this behavior.
+
     """
     for fd in range(3, max_cloexec_files):  # skip stdin/out/err
         try:
@@ -86,10 +90,10 @@ def _set_cloexec():
 ###############################################################################
 
 
-restart = _do_execv
+execute = _do_execv
 
 
-def add(filename):
+def if_changes(filename):
     extras.add(filename)
 
 
@@ -102,8 +106,8 @@ def check_one(filename):
 
     if not os.path.isfile(filename):
         if filename in mtimes:
-            aspen.log("file deleted: %s" % filename)
-            restart()
+            aspen.log("File deleted: %s" % filename)
+            execute()
         else:
             # We haven't seen the file before. It has probably been loaded 
             # from a zip (egg) archive.
@@ -117,8 +121,8 @@ def check_one(filename):
     if filename not in mtimes: # first time we've seen it
         mtimes[filename] = mtime
     if mtime > mtimes[filename]:
-        aspen.log("file changed: %s" % filename)
-        restart() 
+        aspen.log("File changed: %s" % filename)
+        execute() 
 
 
 def check_all():
@@ -142,16 +146,9 @@ def check_all():
 # Setup
 # =====
 
-def SIGHUP(signum, frame):
-    aspen.log_dammit("Received HUP, restarting.")
-    restart()
-
-signal.signal(signal.SIGHUP, SIGHUP)
-
-
 def install(website):
     """Given a Website instance, start a loop over check_all.
     """
     for script_path in website.configuration_scripts:
-        add(script_path)
-    website.network_engine.start_restarter(check_all)
+        if_changes(script_path)
+    website.network_engine.start_checking(check_all)
