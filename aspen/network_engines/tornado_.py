@@ -137,7 +137,7 @@ class TornadoLoop(object):
 
 class Engine(CooperativeEngine):
 
-    restarter = None
+    checker = None
 
     def bind(self):
         container = tornado.wsgi.WSGIContainer(self.website)
@@ -153,12 +153,12 @@ class Engine(CooperativeEngine):
         except SystemExit:
             pass
 
-    def start_restarter(self, check_all):
-        self.restarter = tornado.ioloop.PeriodicCallback(check_all, 500)
-        self.restarter.start()
+    def start_checking(self, check_all):
+        self.checker = tornado.ioloop.PeriodicCallback(check_all, 500)
+        self.checker.start()
 
-    def stop_restarter(self):
-        self.restarter.stop()
+    def stop_checking(self):
+        self.checker.stop()
 
     Buffer = TornadoBuffer
     Loop = TornadoLoop

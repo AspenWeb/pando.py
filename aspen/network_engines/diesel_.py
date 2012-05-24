@@ -23,7 +23,7 @@ class Engine(CooperativeEngine):
         except diesel.app.ApplicationEnd:
             pass # Only you can prevent log spam.
 
-    def start_restarter(self, check_all):
+    def start_checking(self, check_all):
         def loop():
             while True:
                 check_all()

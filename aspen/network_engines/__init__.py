@@ -31,11 +31,11 @@ class BaseEngine(object):
         """Stop listening on the socket.
         """
 
-    def start_restarter(self, check_all):
+    def start_checking(self, check_all):
         """Start a loop that runs check_all every half-second.
         """
 
-    def stop_restarter(self):
+    def stop_checking(self):
         """Stop the loop that runs check_all (optional).
         """
 

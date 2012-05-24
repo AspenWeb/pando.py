@@ -142,7 +142,7 @@ class Engine(CooperativeEngine):
     def start(self):
         self.gevent_server.serve_forever()
 
-    def start_restarter(self, check_all):
+    def start_checking(self, check_all):
         def loop():
             while True:
                 check_all()

@@ -19,5 +19,5 @@ class Engine(CooperativeEngine):
     def stop(self):
         pants.engine.stop()
 
-    def start_restarter(self, check_all):
+    def start_checking(self, check_all):
         pants.cycle(check_all, 0.5)

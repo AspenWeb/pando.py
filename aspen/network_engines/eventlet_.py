@@ -152,7 +152,7 @@ class Engine(CooperativeEngine):
     def start(self):
         eventlet.wsgi.server(self.eventlet_socket, self.website, log=DevNull())
 
-    def start_restarter(self, check_all):
+    def start_checking(self, check_all):
         def loop():
             while True:
                 check_all()
