@@ -30,7 +30,7 @@ nosetests.xml coverage.xml: -coverage-env
 pylint.out: -pylint-env
 	./env/bin/pylint --rcfile=.pylintrc aspen | tee pylint.out
 
-analyse: pylint.out coverage.xml
+analyse: pylint.out coverage.xml nosetests.xml
 	@echo done!
 
 vendor/jython-installer.jar:
