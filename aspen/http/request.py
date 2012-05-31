@@ -49,7 +49,7 @@ from aspen.utils import ascii_dammit
 quoted_slash_re = re.compile("%2F", re.IGNORECASE)
 
 
-def make_franken_uri(path, qs):
+def make_franken_uri(path, querystr):
     """Given two bytestrings, return a bytestring.
     
     We want to pass ASCII to Request. However, our friendly neighborhood WSGI
@@ -74,15 +74,15 @@ def make_franken_uri(path, qs):
             parts = [urllib.quote(x) for x in quoted_slash_re.split(path)]
             path = "%2F".join(parts)
 
-    if qs:
+    if querystr:
         try:
-            qs.decode('ASCII')
+            querystr.decode('ASCII')
         except UnicodeDecodeError:
             # Cross our fingers and hope we have UTF-8 bytes from MSIE.
-            qs = urllib.quote_plus(qs)
-        qs = '?' + qs
+            querystr = urllib.quote_plus(querystr)
+        querystr = '?' + querystr
 
-    return path + qs
+    return path + querystr
 
 
 def make_franken_headers(environ):
@@ -585,7 +585,7 @@ class Body(Mapping):
                                    , environ = {} # XXX?
                                    , strict_parsing = True 
                                     )
-
+"""
     if 0: # XXX What I do wif it?
         if not environ.get('SERVER_SOFTWARE', '').startswith('Rocket'):
             # normal case
@@ -626,3 +626,4 @@ class Body(Mapping):
                     raise
                 self._raw_body = ""
             environ['wsgi.input']._sock.settimeout(_tmp)
+"""
