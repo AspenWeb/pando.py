@@ -80,13 +80,38 @@ def typecheck(*checks):
     Traceback (most recent call last):
         ...
     TypeError: 'foo' is of type str, not one of: basestring, NoneType.
+    >>> class Foo(object):
+    ...   def __repr__(self):
+    ...     return "<Foo>"
+    ...
+    >>> typecheck(Foo(), dict)
+    Traceback (most recent call last):
+        ...
+    TypeError: <Foo> is of type __main__.Foo, but dict was expected.
+    >>> class Bar:
+    ...   def __repr__(self):
+    ...     return "<Bar>"
+    ...
+    >>> typecheck(Bar(), dict)
+    Traceback (most recent call last):
+        ...
+    TypeError: <Bar> is of type instance, but dict was expected.
 
     """
     assert type(checks) is tuple, checks
     assert len(checks) % 2 == 0, "typecheck takes an even number of arguments."
 
     def nice(t):
-        return re.findall("<type '(.+)'>", str(t))[0]
+        found = re.findall("<type '(.+)'>", str(t))
+        if found:
+            out = found[0]
+        else:
+            found = re.findall("<class '(.+)'>", str(t))
+            if found:
+                out = found[0]
+            else:
+                out = str(t)
+        return out
 
     checks = list(checks)
     checks.reverse()
