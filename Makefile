@@ -11,6 +11,7 @@ env:
 
 clean:
 	rm -rf env .coverage coverage.xml nosetests.xml pylint.out
+	find . -name \*.pyc -delete
 
 docs: env
 	./env/bin/thrash ./env/bin/aspen -a:5370 -wdoc/ -p.aspen --changes_reload=1
