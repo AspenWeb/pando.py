@@ -16,6 +16,7 @@ that your application will have its own wrapper(s).
 Unicode objects are encoded as UTF-8. Bytestrings are passed through as-is.
 
 """
+from __future__ import with_statement
 import os
 import pprint
 import sys
