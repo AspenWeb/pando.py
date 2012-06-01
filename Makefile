@@ -1,5 +1,7 @@
+PYTHON=python2.5
+
 env:
-	python2.5 ./vendor/virtualenv-1.7.1.2.py \
+	$(PYTHON) ./vendor/virtualenv-1.7.1.2.py \
 		--distribute \
 		--unzip-setuptools \
 		--prompt="[aspen] " \
