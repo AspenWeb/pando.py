@@ -123,12 +123,12 @@ def main(argv=None):
     except SystemExit:
         pass
     except:
-        import aspen, aspen.execution, traceback
+        import aspen, aspen.execution, time, traceback
         aspen.log_dammit("Oh no! Aspen crashed!")
         aspen.log_dammit(traceback.format_exc())
         try:
-            raw_input("Press Enter to re-execute.")
+            while 1:
+                aspen.execution.check_all()
+                time.sleep(1)
         except KeyboardInterrupt:
             raise SystemExit
-        else:
-            aspen.execution.execute()
