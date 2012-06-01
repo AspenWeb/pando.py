@@ -1,4 +1,4 @@
-PYTHON=python2.5
+PYTHON=python
 
 env:
 	$(PYTHON) ./vendor/virtualenv-1.7.1.2.py \
