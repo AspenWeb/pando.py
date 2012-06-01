@@ -11,11 +11,11 @@ import traceback
 import aspen
 import aspen.logging
 from aspen import execution
-from aspen.utils import ascii_dammit
+from aspen.hooks import Hooks
 from aspen.configuration import parse
 from aspen.configuration.exceptions import ConfigurationError
-from aspen.configuration.hooks import Hooks
 from aspen.configuration.options import OptionParser, DEFAULT
+from aspen.utils import ascii_dammit
 
 
 # Nicer defaultdict

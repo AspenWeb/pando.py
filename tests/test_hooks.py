@@ -1,4 +1,4 @@
-from aspen.configuration.hooks import Hooks
+from aspen.hooks import Hooks
 from aspen.testing import assert_raises, attach_teardown
 
 
