@@ -5,3 +5,4 @@ env
 distribute-*
 __pycache__
 *\$py.class
+.tox
