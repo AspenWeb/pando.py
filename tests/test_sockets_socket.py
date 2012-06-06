@@ -39,7 +39,9 @@ def test_socket_can_barely_function():
     socket.tick()
 
     expected = FFFD+'33'+FFFD+'3::/echo.sock:Greetings, program!'
-    actual = socket._recv().next()
+    actual = socket._recv()
+    if actual is not None:
+        actual = actual.next()
     assert actual == expected, actual
 
 def test_socket_can_echo():
@@ -50,7 +52,9 @@ def test_socket_can_echo():
         time.sleep(0.05) # give the resource time to tick
 
         expected = FFFD+'33'+FFFD+'3::/echo.sock:Greetings, program!'
-        actual = socket._recv().next()
+        actual = socket._recv()
+        if actual is not None:
+            actual = actual.next()
         assert actual == expected, actual
 
 attach_teardown(globals())
