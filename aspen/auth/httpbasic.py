@@ -18,7 +18,7 @@ def inbound_responder(*args, **kwargs):
 
 class BAWrapper(object):
     """A wrapper for BasicAuth handler that is a nice object to put on the request object
-       so the user can do 'request.auth.userName()' instead of 'request.auth.userName(request)'
+       so the user can do 'request.auth.username()' instead of 'request.auth.username(request)'
        """
     def __init__(self, basicauth, request):
         self.auth = basicauth
@@ -27,8 +27,8 @@ class BAWrapper(object):
     def authorized(self):
         return self.auth.authorized(self.request)
 
-    def userName(self):
-        return self.auth.userName(self.request)
+    def username(self):
+        return self.auth.username(self.request)
 
     def logout(self):
         return self.auth.logout(self.request)
@@ -54,30 +54,34 @@ class BasicAuth(object):
         """Returns whether this request passes BASIC auth or not, and the Response to raise if not"""
         header = request.headers.get('Authorization', '')
         if not header:
-            print("no auth header.")
+            #print("no auth header.")
             # no auth header at all
             return False, self.fail_401
         if not header.startswith('Basic'):
-            print("not a Basic auth header.")
-            # no auth header at all
+            #print("not a Basic auth header.")
+            # not a basic auth header at all
             return False, self.fail_400
-        userpass = base64.b64decode(header[len('Basic '):])
+        try:
+            userpass = base64.b64decode(header[len('Basic '):])
+        except TypeError:
+            # malformed user:pass
+            return False, self.fail_400
         if not ':' in userpass:
             # malformed user:pass
             return False, self.fail_400
         user, passwd = userpass.split(':',1)
         if user in self.logging_out:
-            print("logging out, so failing once.")
+            #print("logging out, so failing once.")
             self.logging_out.discard(user)
             return False, self.fail_401
         if not self.verify_password(user, passwd):
-            print("wrong password.")
+            #print("wrong password.")
             # wrong password
             # TODO: add a max attempts per timespan to slow down bot attacks
             return False, self.fail_401
         return True, None
 
-    def userName(self, request):
+    def username(self, request):
         """Returns the username in the current Auth header"""
         header = request.headers.get('Authorization', '')
         if not header.startswith('Basic'):
@@ -90,6 +94,6 @@ class BasicAuth(object):
 
     def logout(self, request):
         """Will force the next auth request (ie. HTTP request) to fail, thereby prompting the user for their username/password again"""
-        self.logging_out.add(self.userName(request))
+        self.logging_out.add(self.username(request))
         return request
 
