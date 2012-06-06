@@ -44,32 +44,37 @@ class BasicAuth(object):
         :html - The HTML page to reutrn along with a 401 'Not Authorized' response. Has a reasonable default
         :realm - the name of the auth realm 
         """
-        failhtml =  html or '''Not Authorized. <a href="#">Try again.</a>'''
+        failhtml = html or '''Not Authorized. <a href="#">Try again.</a>'''
         self.verify_password = verify_password
-        self.fail_response = Response(401, failhtml, { 'WWW-Authenticate': 'Basic realm="%s"' % realm })
+        self.fail_401 = Response(401, failhtml, { 'WWW-Authenticate': 'Basic realm="%s"' % realm })
+        self.fail_400 = Response(400, failhtml, { 'WWW-Authenticate': 'Basic realm="%s"' % realm })
         self.logging_out = set([])
 
     def authorized(self, request):
         """Returns whether this request passes BASIC auth or not, and the Response to raise if not"""
         header = request.headers.get('Authorization', '')
-        if not header.startswith('Basic'):
+        if not header:
             print("no auth header.")
             # no auth header at all
-            return False, self.fail_response
+            return False, self.fail_401
+        if not header.startswith('Basic'):
+            print("not a Basic auth header.")
+            # no auth header at all
+            return False, self.fail_400
         userpass = base64.b64decode(header[len('Basic '):])
         if not ':' in userpass:
             # malformed user:pass
-            return False, self.fail_response
+            return False, self.fail_400
         user, passwd = userpass.split(':',1)
         if user in self.logging_out:
             print("logging out, so failing once.")
             self.logging_out.discard(user)
-            return False, self.fail_response
+            return False, self.fail_401
         if not self.verify_password(user, passwd):
             print("wrong password.")
             # wrong password
             # TODO: add a max attempts per timespan to slow down bot attacks
-            return False, self.fail_response
+            return False, self.fail_401
         return True, None
 
     def userName(self, request):
