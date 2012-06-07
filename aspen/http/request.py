@@ -31,12 +31,13 @@ import re
 import sys
 import urllib
 import urlparse
+from cStringIO import StringIO
 
 from aspen import Response
 from aspen.http.baseheaders import BaseHeaders
 from aspen.http.mapping import Mapping
 from aspen.context import Context
-from aspen.utils import ascii_dammit
+from aspen.utils import ascii_dammit, typecheck
 
 
 # WSGI Do Our Best
@@ -115,10 +116,11 @@ def kick_against_goad(environ):
     uri = make_franken_uri( environ.get('PATH_INFO', '')
                           , environ.get('QUERY_STRING', '')
                            )
+    server = environ.get('SERVER_SOFTWARE', '')
     version = environ['SERVER_PROTOCOL']
     headers = make_franken_headers(environ) 
     body = environ['wsgi.input']
-    return method, uri, version, headers, body
+    return method, uri, server, version, headers, body
 
 
 # *WithRaw
@@ -161,27 +163,32 @@ class Request(str):
     socket = None
     resource = None
     original_resource = None
+    server_software = ''
 
     # NB: no __slots__ for str:
     #   http://docs.python.org/reference/datamodel.html#__slots__
 
 
-    def __new__(cls, method='GET', uri='/', version='HTTP/1.1', headers='', 
-                body=None):
-        """Takes four bytestrings and an iterable of bytestrings.
+    def __new__(cls, method='GET', uri='/', server_software='', 
+                version='HTTP/1.1', headers='', body=None):
+        """Takes five bytestrings and an iterable of bytestrings.
         """
         obj = str.__new__(cls, '') # start with an empty string, see below for 
                                    # laziness
+        obj.server_software = server_software
         try:
             obj.line = Line(method, uri, version)
             if not headers:
                 headers = 'Host: localhost'
             obj.headers = Headers(headers)
             if body is None:
-                body = ['']
-            obj.body = Body(obj.headers, body)
+                body = StringIO('')
+            obj.body = Body( obj.headers
+                           , body
+                           , obj.server_software
+                            )
             obj.context = Context(obj)
-        except UnicodeError, err:
+        except UnicodeError:
 
             # Figure out where the error occurred.
             # ====================================
@@ -193,7 +200,6 @@ class Request(str):
             while tb.tb_next is not None:
                 tb = tb.tb_next
             frame = tb.tb_frame
-            co = tb.tb_frame.f_code
             filename = tb.tb_frame.f_code.co_filename
 
             raise Response(400, "Request is undecodable. "
@@ -203,7 +209,7 @@ class Request(str):
 
     @classmethod
     def from_wsgi(cls, environ):
-        """Given a WSGI environ, return 
+        """Given a WSGI environ, return an instance of cls.
 
         The conversion from HTTP to WSGI is lossy. This method does its best to
         go the other direction, but we can't guarantee that we've reconstructed
@@ -212,8 +218,7 @@ class Request(str):
         their gunicorn. :-/
 
         """
-        method, uri, version, headers, body = kick_against_goad(environ)
-        return cls(method, uri, version, headers, body)
+        return cls(*kick_against_goad(environ))
 
 
     # Extend str to lazily load bytes.
@@ -557,41 +562,38 @@ class Body(Mapping):
     """Represent the body of an HTTP request.
     """
 
-    def __init__(self, content_type, s_iter):
-        """Takes an encoding type and an iterable of bytestrings.
+    def __init__(self, headers, fp, server_software):
+        """Takes a str, a file-like object, and another str.
         
         If the Mapping API is used (in/one/all/has), then the iterable will be
         read and parsed as media of type application/x-www-form-urlencoded or
-        multipart/form-data, according to enctype.
+        multipart/form-data, according to content_type.
 
         """
-        self.content_type = content_type 
-        self.s_iter = s_iter
-
-    _raw = ""
-    def raw(self):
-        if not self._raw:
-            self._raw = "".join(self.s_iter)
-        return self._raw
-    raw = property(raw) # lazy
-
-
-    # Extend Mapping to parse.
-    # ========================
-
-    def _parse(self):
-        if self.content_type.startswith('multipart/form-data'):
-            return cgi.FieldStorage( fp = cgi.StringIO(self.raw)
-                                   , environ = {} # XXX?
-                                   , strict_parsing = True 
-                                    )
-"""
-    if 0: # XXX What I do wif it?
-        if not environ.get('SERVER_SOFTWARE', '').startswith('Rocket'):
-            # normal case
-            self._body = environ['wsgi.input'].read()
+        typecheck(headers, Headers, server_software, str)
+        self.raw = self._read_raw(server_software, fp)  # XXX lazy!
+        parsed = self._parse(headers, self.raw)
+        if parsed is None:
+            # There was no content-type. Use self.raw.
+            pass
         else:
-            # rocket engine
+            for k in parsed.keys():
+                v = parsed[k]
+                if isinstance(v, cgi.MiniFieldStorage):
+                    v = v.value.decode("UTF-8")  # XXX Really? Always UTF-8?
+                else:
+                    assert isinstance(v, cgi.FieldStorage), v
+                    if v.filename is None:
+                        v = v.value.decode("UTF-8")
+                self[k] = v
+
+
+    def _read_raw(self, server_software, fp):
+        """Given str and a file-like object, return a bytestring.
+        """
+        if not server_software.startswith('Rocket'):  # normal
+            raw = fp.read()
+        else:                                                       # rocket
 
             # Email from Rocket guy: While HTTP stipulates that you shouldn't
             # read a socket unless you are specifically expecting data to be
@@ -617,13 +619,54 @@ class Body(Mapping):
             #
             # Here's the "hacky solution":
 
-            _tmp = environ['wsgi.input']._sock.timeout
-            environ['wsgi.input']._sock.settimeout(0) # equiv. to non-blocking
+            _tmp = fp._sock.timeout
+            fp._sock.settimeout(0) # equiv. to non-blocking
             try:
-                self._raw_body = environ['wsgi.input'].read()
+                raw = fp.read()
             except Exception, exc:
                 if exc.errno != 35:
                     raise
-                self._raw_body = ""
-            environ['wsgi.input']._sock.settimeout(_tmp)
-"""
+                raw = ""
+            fp._sock.settimeout(_tmp)
+
+        return raw
+
+    
+    def _parse(self, headers, raw):
+        """Takes a dict and a bytestring.
+
+        http://www.w3.org/TR/html401/interact/forms.html#h-17.13.4
+
+        """
+        typecheck(headers, Headers, raw, str)
+
+
+        # Switch on content type.
+
+        content_type = headers.get("Content-Type", "")
+        if content_type == "application/x-www-form-urlencoded":
+            # Decode.
+            pass
+        elif content_type.startswith("multipart/form-data"):  # ; boundary=
+            # Deal with bytes.
+            pass
+        else:
+            # Bail.
+            return None
+
+
+        # Force the cgi module to parse as we want. If it doesn't find
+        # something besides GET or HEAD here then it ignores the fp
+        # argument and instead uses environ['QUERY_STRING'] or even
+        # sys.stdin(!). We want it to parse request bodies even if the 
+        # method is GET (we already parsed the querystring elsewhere).
+        
+        environ = {"REQUEST_METHOD": "POST"}
+
+
+        return cgi.FieldStorage( fp = cgi.StringIO(raw)  # Ack.
+                               , environ = environ
+                               , headers = headers
+                               , keep_blank_values = True
+                               , strict_parsing = True 
+                                )

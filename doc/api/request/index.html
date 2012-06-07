@@ -47,7 +47,7 @@ inside of simplate:</p>
     style</a> will end up looking like this:</p>
 
 <pre>if GET:
-    pass # handle GET 
+    pass # handle GET )
 elif POST:
     pass # handle POST</pre>
 
@@ -94,7 +94,7 @@ str, is also dealt with lazily.</p>
     <tr><td>request.line.version.minor</td><td>int</td><td></td><td></td></tr>
     <tr><td>request.line.version.raw</td><td>str</td><td></td><td></td></tr>
     <tr><td>request.line.raw</td><td>str</td><td></td><td></td></tr>
-    <tr><td>request.headers</td><td><a href="#not-a-dict">Headers</a></td></tr>
+    <tr><td>request.headers</td><td><a href="#mapping">Headers</a></td></tr>
     <tr><td>request.headers.cookie</td><td><a
             href="http://docs.python.org/library/cookie.html#Cookie.SimpleCookie">Cookie.SimpleCookie</a>
             </td></tr>
@@ -102,7 +102,7 @@ str, is also dealt with lazily.</p>
             otherwise (no Host will raise Response(400))</td></tr>
     <tr><td>request.headers.scheme</td><td>unicode</td><td></td><td>u"https" or u"http"</td></tr>
     <tr><td>request.headers.raw</td><td>str</td></tr>
-    <tr><td>request.body</td><td><a href="#not-a-dict">Body</a> or <a href="#uploads">cgi.FieldStorage</a></td><td></td></tr>
+    <tr><td>request.body</td><td><a href="#mapping">Body</a></td><td></td></tr>
     <tr><td>request.body.raw</td><td>str</td></tr>
 </table>
 
@@ -174,12 +174,12 @@ list while subscript assignment clobbers it.</p>
 <h3>File Uploads</h3>
 
 <p>If a request is of <code>Content-Type</code>
-<code>multipart/form-data</code>, then <code>request.body</code> will actually
-be an instance of the standard library&rsquo;s <a
+<code>multipart/form-data</code>, then <code>request.body</code> values that
+are file uploads will be instances of the standard library&rsquo;s <a
     href="http://docs.python.org/library/cgi.html">cgi.FieldStorage</a> class.
-This is a mapping of field names to additional <code>FieldStorage</code>
-objects. Each such object has <code>filename</code> and <code>value</code>
-attributes with the name and content of the file you uploaded.</p>
+Each such object has <code>filename</code>, <code>value</code>, and
+<code>type</code> attributes with the name, bytes, and advertised Content-Type
+of the file that was uploaded.</p>
 
 {% end %}
 

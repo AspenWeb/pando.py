@@ -1,12 +1,11 @@
 from aspen import Response
-from aspen.http.mapping import Mapping
-from aspen.http.request import kick_against_goad, Method, Request
+from aspen.http.request import kick_against_goad, Request
 from aspen.http.baseheaders import BaseHeaders
 from aspen.testing import assert_raises, StubRequest
 from aspen.testing.fsfix import attach_teardown
 
 
-def test_request_line_version_raw_works():
+def test_request_line_raw_works():
     request = StubRequest()
     actual = request.line.raw
     expected = u"GET / HTTP/1.1"
@@ -112,7 +111,7 @@ def test_goad_passes_method_through():
     environ['SERVER_PROTOCOL'] = ''
     environ['wsgi.input'] = None
 
-    expected = ('\xdead\xbeef', '', '', '', None)
+    expected = ('\xdead\xbeef', '', '', '', '', None)
     actual = kick_against_goad(environ)
     assert actual == expected, actual
 
@@ -124,7 +123,7 @@ def test_goad_makes_franken_uri():
     environ['QUERY_STRING'] = 'foo=bar'
     environ['wsgi.input'] = ''
 
-    expected = ('', '/cheese?foo=bar', '', '', '')
+    expected = ('', '/cheese?foo=bar', '', '', '', '')
     actual = kick_against_goad(environ)
     assert actual == expected, actual
 
@@ -134,7 +133,7 @@ def test_goad_passes_version_through():
     environ['SERVER_PROTOCOL'] = '\xdead\xbeef'
     environ['wsgi.input'] = None
 
-    expected = ('', '', '\xdead\xbeef', '', None)
+    expected = ('', '', '', '\xdead\xbeef', '', None)
     actual = kick_against_goad(environ)
     assert actual == expected, actual
 
@@ -145,7 +144,7 @@ def test_goad_makes_franken_headers():
     environ['HTTP_FOO_BAR'] = 'baz=buz'
     environ['wsgi.input'] = ''
 
-    expected = ('', '', '', 'FOO-BAR: baz=buz', '')
+    expected = ('', '', '', '', 'FOO-BAR: baz=buz', '')
     actual = kick_against_goad(environ)
     assert actual == expected, actual
 
@@ -155,7 +154,7 @@ def test_goad_passes_body_through():
     environ['SERVER_PROTOCOL'] = ''
     environ['wsgi.input'] = '\xdead\xbeef'
 
-    expected = ('', '', '', '', '\xdead\xbeef')
+    expected = ('', '', '', '', '', '\xdead\xbeef')
     actual = kick_against_goad(environ)
     assert actual == expected, actual
 
