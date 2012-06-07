@@ -51,6 +51,8 @@ def test_wrong_auth():
 
 def test_malformed_password():
     auth = lambda u, p: u == "username" and p == "password"
+    response = assert_raises(Response, _request_with, auth, "Basic " + base64.b64encode("usernamepassword"))
+    assert response.code == 400, response
     response = assert_raises(Response, _request_with, auth, "Basic xxx")
     assert response.code == 400, response
 
