@@ -1,5 +1,6 @@
 import time
 from collections import deque
+from cStringIO import StringIO
 
 from aspen import Response
 from aspen.http.request import Request
@@ -67,7 +68,7 @@ def test_transport_POST_gives_data_to_socket():
 
     request = Request( 'POST'
                      , '/echo.sock'
-                     , body='3::/echo.sock:Greetings, program!'
+                     , body=StringIO('3::/echo.sock:Greetings, program!')
                       )
     transport.respond(request)
    
@@ -102,7 +103,7 @@ def test_transport_GET_blocks_for_empty_socket():
 def test_transport_handles_roundtrip():
     transport = make_transport(state=1, content="socket.send(socket.recv())")
     
-    request = Request('POST', '/echo.sock', body="3::/echo.sock:ping")
+    request = Request('POST', '/echo.sock', body=StringIO("3::/echo.sock:ping"))
     transport.respond(request)
     transport.socket.tick() # do it manually
  
