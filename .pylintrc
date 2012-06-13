@@ -133,7 +133,7 @@ variable-rgx=[a-z_][a-z0-9_]{1,30}$
 inlinevar-rgx=[A-Za-z_][A-Za-z0-9_]*$
 
 # Good variable names which should always be accepted, separated by a comma
-good-names=i,j,k,v,ex,Run,_
+good-names=i,j,k,v,s,ex,Run,_,HA1,HA2,A2
 
 # Bad variable names which should always be refused, separated by a comma
 bad-names=foo,bar,baz,toto,tutu,tata
@@ -203,7 +203,7 @@ ignored-argument-names=_.*
 max-locals=15
 
 # Maximum number of return / yield for function / method body
-max-returns=6
+max-returns=14
 
 # Maximum number of branch for function / method body
 max-branchs=12
@@ -215,7 +215,7 @@ max-statements=50
 max-parents=7
 
 # Maximum number of attributes for a class (see R0902).
-max-attributes=7
+max-attributes=14
 
 # Minimum number of public methods for a class (see R0903).
 min-public-methods=1
