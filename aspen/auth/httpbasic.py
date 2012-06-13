@@ -1,3 +1,17 @@
+"""
+HTTP BASIC Auth module for Aspen.
+
+To use:
+
+    # import it
+    from aspen.auth import httpbasic
+    
+    # configure it - see the docs on the BasicAuth object for args to inbound_responder()
+    auth = httpbasic.inbound_responder(my_password_verifier)
+
+    # install it
+    website.hooks.inbound_early.register(auth)
+"""
 
 import base64
 
@@ -8,6 +22,7 @@ def inbound_responder(*args, **kwargs):
     """ see BasicAuth object for args; they're passed through """
     auth = BasicAuth(*args, **kwargs)
     def _(request):
+        """generated request-handling method"""
         request.auth = BAWrapper(auth, request)
         authed, response = auth.authorized(request)
         if not authed:
@@ -17,9 +32,11 @@ def inbound_responder(*args, **kwargs):
 
 
 class BAWrapper(object):
-    """A wrapper for BasicAuth handler that is a nice object to put on the request object
-       so the user can do 'request.auth.username()' instead of 'request.auth.username(request)'
-       """
+    """A convenience wrapper for BasicAuth handler to put on the request
+    object so the user can do 'request.auth.username()' 
+    instead of 'request.auth.username(request)' 
+    """
+
     def __init__(self, basicauth, request):
         self.auth = basicauth
         self.request = request
@@ -40,18 +57,24 @@ class BasicAuth(object):
     def __init__(self, verify_password, html=None, realm='protected'):
         """Constructor for an HTTP BASIC AUTH handler.
 
-        :verify_password - a function that, when passed the args (user, password), will return True iff the password is correct for the specified user
-        :html - The HTML page to reutrn along with a 401 'Not Authorized' response. Has a reasonable default
+        :verify_password - a function that, when passed the args 
+            (user, password), will return True iff the password is
+            correct for the specified user
+        :html - The HTML page to return along with a 401 'Not
+            Authorized' response. Has a reasonable default
         :realm - the name of the auth realm 
         """
         failhtml = html or '''Not Authorized. <a href="#">Try again.</a>'''
         self.verify_password = verify_password
-        self.fail_401 = Response(401, failhtml, { 'WWW-Authenticate': 'Basic realm="%s"' % realm })
-        self.fail_400 = Response(400, failhtml, { 'WWW-Authenticate': 'Basic realm="%s"' % realm })
+        fail_header = { 'WWW-Authenticate': 'Basic realm="%s"' % realm }
+        self.fail_401 = Response(401, failhtml, fail_header)
+        self.fail_400 = Response(400, failhtml, fail_header)
         self.logging_out = set([])
 
     def authorized(self, request):
-        """Returns whether this request passes BASIC auth or not, and the Response to raise if not"""
+        """Returns whether this request passes BASIC auth or not, and
+           the Response to raise if not
+        """
         header = request.headers.get('Authorization', '')
         if not header:
             #print("no auth header.")
@@ -69,7 +92,7 @@ class BasicAuth(object):
         if not ':' in userpass:
             # malformed user:pass
             return False, self.fail_400
-        user, passwd = userpass.split(':',1)
+        user, passwd = userpass.split(':', 1)
         if user in self.logging_out:
             #print("logging out, so failing once.")
             self.logging_out.discard(user)
@@ -89,11 +112,13 @@ class BasicAuth(object):
         userpass = base64.b64decode(header[len('Basic '):])
         if not ':' in userpass:
             return None
-        user, passwd = userpass.split(':',1)
-        return user        
+        user, _ = userpass.split(':', 1)
+        return user
 
     def logout(self, request):
-        """Will force the next auth request (ie. HTTP request) to fail, thereby prompting the user for their username/password again"""
+        """Will force the next auth request (ie. HTTP request) to fail,
+            thereby prompting the user for their username/password again
+        """
         self.logging_out.add(self.username(request))
         return request
 
