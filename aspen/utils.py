@@ -75,11 +75,11 @@ def typecheck(*checks):
     >>> typecheck('foo', unicode)
     Traceback (most recent call last):
         ...
-    TypeError: 'foo' is of type str, but unicode was expected.
+    TypeError: Check #1: 'foo' is of type str, but unicode was expected.
     >>> typecheck('foo', (basestring, None))
     Traceback (most recent call last):
         ...
-    TypeError: 'foo' is of type str, not one of: basestring, NoneType.
+    TypeError: Check #1: 'foo' is of type str, not one of: basestring, NoneType.
     >>> class Foo(object):
     ...   def __repr__(self):
     ...     return "<Foo>"
@@ -87,7 +87,7 @@ def typecheck(*checks):
     >>> typecheck(Foo(), dict)
     Traceback (most recent call last):
         ...
-    TypeError: <Foo> is of type __main__.Foo, but dict was expected.
+    TypeError: Check #1: <Foo> is of type __main__.Foo, but dict was expected.
     >>> class Bar:
     ...   def __repr__(self):
     ...     return "<Bar>"
@@ -95,7 +95,11 @@ def typecheck(*checks):
     >>> typecheck(Bar(), dict)
     Traceback (most recent call last):
         ...
-    TypeError: <Bar> is of type instance, but dict was expected.
+    TypeError: Check #1: <Bar> is of type instance, but dict was expected.
+    >>> typecheck('foo', str, 'bar', unicode)
+    Traceback (most recent call last):
+        ...
+    TypeError: Check #2: 'bar' is of type str, but unicode was expected.
 
     """
     assert type(checks) is tuple, checks
@@ -116,7 +120,9 @@ def typecheck(*checks):
     checks = list(checks)
     checks.reverse()
 
+    nchecks = 0
     while checks:
+        nchecks += 1
         obj = checks.pop()
         expected = checks.pop()
         actual = type(obj)
@@ -131,7 +137,8 @@ def typecheck(*checks):
                 expected[i] = type(t)
         
         if actual not in expected: 
-            msg = "%s is of type %s, " % (repr(obj), nice(actual))
+            msg = "Check #%d: %s is of type %s, " 
+            msg %= (nchecks, repr(obj), nice(actual))
             if len(expected) > 1:
                 niced = [nice(t) for t in expected]
                 msg += ("not one of: %s." % ', '.join(niced))
