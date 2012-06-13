@@ -1,4 +1,4 @@
-""
+"""
 HTTP BASIC Auth module for Aspen.
 
 To use:
