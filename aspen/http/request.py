@@ -643,11 +643,20 @@ class Body(Mapping):
 
         # Switch on content type.
 
-        content_type = headers.get("Content-Type", "")
+        parts = [p.strip() for p in headers.get("Content-Type", "").split(';')]
+        content_type = parts.pop(0)
+
+        # XXX Do something with charset.
+        params = {}
+        for part in parts:
+            if '=' in part:
+                key, val = part.split('=', 1)
+                params[key] = val
+
         if content_type == "application/x-www-form-urlencoded":
             # Decode.
             pass
-        elif content_type.startswith("multipart/form-data"):  # ; boundary=
+        elif content_type == "multipart/form-data":
             # Deal with bytes.
             pass
         else:
