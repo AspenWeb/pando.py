@@ -2,12 +2,14 @@ from StringIO import StringIO
 
 from aspen.http.request import Body, Headers
 
+FORMDATA = object()
+WWWFORM = object()
 
-def make_body(raw, headers=None, formdata=False):
+def make_body(raw, headers=None, content_type=WWWFORM):
     if headers is None:
-        if formdata:
+        if content_type is FORMDATA:
             content_type = "multipart/form-data; boundary=AaB03x"
-        else:
+        elif content_type is WWWFORM:
             content_type = "application/x-www-form-urlencoded"
         headers = {"Content-Type": content_type}
     headers['Host'] = 'Blah'
@@ -46,11 +48,18 @@ Content-Type: text/plain
 """
 
 def test_body_barely_works_for_form_data():
-    body = make_body(UPLOAD, formdata=True)
+    body = make_body(UPLOAD, content_type=FORMDATA)
     actual = body['files'].filename
     assert actual == "file1.txt", actual
 
 def test_simple_values_are_simple():
-    body = make_body(UPLOAD, formdata=True)
+    body = make_body(UPLOAD, content_type=FORMDATA)
     actual = body['submit-name']
     assert actual == "Larry", actual
+
+def test_params_doesnt_break_www_form():
+    body = make_body("statement=foo"
+                    , content_type="application/x-www-form-urlencoded; charset=UTF-8; cheese=yummy"
+                     )
+    actual = body['statement']
+    assert actual == "foo", actual
