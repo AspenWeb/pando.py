@@ -1,3 +1,7 @@
+"""
+Exceptions used by Aspen
+"""
+
 class LoadError(Exception):
     """Represent a problem loading a resource.
     """

@@ -20,4 +20,10 @@ __version__ = "~~VERSION~~"
 WINDOWS = sys.platform[:3] == 'win'
 NETWORK_ENGINES = ['cheroot', 'cherrypy', 'diesel', 'eventlet', 'gevent',
                    'pants', 'rocket', 'tornado', 'twisted']
-RENDERERS = ['jinja2', 'pystache', 'tornado']
+RENDERERS = ['jinja2', 
+            'pystache', 
+            'tornado',
+            'stdlib_format',
+            'stdlib_percent',
+            'stdlib_template'
+            ]

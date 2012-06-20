@@ -7,6 +7,7 @@ loader that returns the decoded content page and instructs Jinja2 not to
 perform auto-reloading.
 
 """
+from __future__ import absolute_import
 from aspen import renderers
 
 from jinja2 import BaseLoader, Environment, FileSystemLoader

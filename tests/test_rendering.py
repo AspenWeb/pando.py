@@ -1,5 +1,5 @@
 from aspen.configuration import Configurable
-from aspen.renderers.tornado_ import Factory as TornadoFactory
+from aspen.renderers.tornado import Factory as TornadoFactory
 from aspen.testing import assert_raises, attach_teardown, fix, FSFIX, mk
 from aspen._tornado.template import ParseError
 

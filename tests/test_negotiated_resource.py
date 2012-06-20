@@ -2,7 +2,7 @@ from aspen import resources, Response
 from aspen.resources.negotiated_resource import NegotiatedResource
 from aspen.testing import assert_raises, attach_teardown, handle,mk,StubRequest
 from aspen.website import Website
-from aspen.renderers.tornado_ import Factory as TornadoFactory
+from aspen.renderers.tornado import Factory as TornadoFactory
 
 
 def get(**_kw):
@@ -76,19 +76,15 @@ def test_parse_specline_obeys_default_by_media_type():
     resource = get()
     resource.website.default_renderers_by_media_type['media/type'] = 'glubber'
     err = assert_raises(ValueError, resource._parse_specline, 'media/type')
-    actual = err.args[0]
-    assert actual == ("Unknown renderer for media/type: glubber. "
-                      "Possible renderers (starred are missing third-party "
-                      "libraries): *jinja2, *pystache, tornado."), actual
+    msg = err.args[0]
+    assert msg.startswith("Unknown renderer for media/type: glubber."), msg
 
 def test_parse_specline_obeys_default_by_media_type_default():
     resource = get()
     resource.website.default_renderers_by_media_type.default = 'glubber'
     err = assert_raises(ValueError, resource._parse_specline, 'media/type')
-    actual = err.args[0]
-    assert actual == ("Unknown renderer for media/type: glubber. "
-                      "Possible renderers (starred are missing third-party "
-                      "libraries): *jinja2, *pystache, tornado."), actual
+    msg = err.args[0]
+    assert msg.startswith("Unknown renderer for media/type: glubber."), msg
 
 def test_get_renderer_factory_can_raise_syntax_error():
     resource = get()
@@ -98,10 +94,9 @@ def test_get_renderer_factory_can_raise_syntax_error():
                        , 'media/type'
                        , 'oo*gle'
                         )
-    actual = err.args[0]
-    assert actual == ("Malformed renderer oo*gle. It must match #![a-z0-9.-]+."
-                      " Possible renderers (might need third-party libs): "
-                      "jinja2, pystache, tornado."), actual
+    msg = err.args[0]
+    assert msg.startswith("Malformed renderer oo*gle. It must match"
+                    " #![a-z0-9.-]+."), msg
 
 
 # get_response
