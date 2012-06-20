@@ -265,7 +265,7 @@ class Configurable(object):
             # Pre-populate renderers so we can report on ImportErrors early
             try:
                 capture = {}
-                python_syntax = 'from aspen.renderers.%s_ import Factory' 
+                python_syntax = 'from aspen.renderers.%s import Factory' 
                 exec python_syntax % name in capture
                 make_renderer = capture['Factory'](self)
             except ImportError, err:

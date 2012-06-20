@@ -1,5 +1,7 @@
-import pystache
+
+from __future__ import absolute_import
 from aspen import renderers
+import pystache
 
 
 class Renderer(renderers.Renderer):
