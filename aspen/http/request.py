@@ -271,7 +271,8 @@ class Request(str):
         val = self.headers.get('X-Requested-With', '')
         return val.lower() == 'xmlhttprequest'
 
-    def redirect(self, location, code=None, permanent=False):
+    @staticmethod
+    def redirect(location, code=None, permanent=False):
         """Given a string, an int, and a boolean, raise a Response.
 
         If code is None then it will be set to 301 (Moved Permanently) if
