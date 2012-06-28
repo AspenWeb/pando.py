@@ -159,4 +159,22 @@ def test_goad_passes_body_through():
     assert actual == expected, actual
 
 
+def test_request_redirect_works_on_instance():
+    request = Request()
+    actual = assert_raises(Response, request.redirect, '/').code
+    assert actual == 302, actual
+
+def test_request_redirect_works_on_class():
+    actual = assert_raises(Response, Request.redirect, '/').code
+    assert actual == 302, actual
+
+def test_request_redirect_code_is_settable():
+    actual = assert_raises(Response, Request.redirect, '/', code=8675309).code
+    assert actual == 8675309, actual
+
+def test_request_redirect_permanent_convenience():
+    actual = assert_raises(Response, Request.redirect, '/', permanent=True).code
+    assert actual == 301, actual
+
+
 attach_teardown(globals())
