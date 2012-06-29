@@ -258,4 +258,20 @@ def test_indirect_negotiation_with_unsupported_media_type_is_404():
     assert actual == 404, actual
 
 
+INDIRECTLY_NEGOTIATED_VIRTUAL_RESOURCE = """\
+^L
+^L text/html
+<h1>Greetings, {{ path['foo'] }}!</h1>
+^L text/plain
+Greetings, {{ path['foo'] }}!"""
+
+
+def test_negotiated_inside_virtual_path():
+    mk(('/%foo/bar', INDIRECTLY_NEGOTIATED_VIRTUAL_RESOURCE ))
+    response = handle('/program/bar.txt')
+    expected = "Greetings, program!"
+    actual = response.body
+    assert actual == expected, actual
+
+
 attach_teardown(globals())
