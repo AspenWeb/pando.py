@@ -94,70 +94,76 @@ def virtual_paths(request):
     """
     if os.sep + '%' in request.fs[len(request.website.www_root):]:
         raise Response(404)     # disallow direct access
+
     if request.line.uri.path.raw in ('/favicon.ico', '/robots.txt'):
         # Special case. Aspen bundles its own favicon.ico, and it wants to
         # serve that if it can rather then letting it fall through to a virtual
         # path. For robots.txt we just want to avoid spam in a common case.
         return
-    if not exists(request.fs):
-        matched = request.website.www_root
-        parts = request._parts
-        del request._parts
-        nparts = len(parts)
-        for i in range(1, nparts):
-            part = parts[i]
-            next = join(matched, part)
-            if exists(next):    # this URL part names an actual directory
-                matched = next
-            else:               # this part is missing; do we have a %subdir?
-                key = None
-                for root, dirs, files in os.walk(matched):
-                    files.sort(key=lambda x: x.lower())
-                    dirs.sort(key=lambda x: x.lower())
-                    for name in files + dirs:
-                        if name.startswith('%'):
-                            
-                            # See if we can use this item.
-                            # ============================
-                            # We want to allow file matches for the last URL
-                            # path part, and in that case we strip the file
-                            # extension. For other matches we need them to be
-                            # directories.
 
-                            fs = join(matched, name)
-                            k = name[1:]
-                            v = part
-                            if i == (nparts - 1):
-                                if isfile(fs):
-                                    # Take care with extensions.
-                                    x = k.rsplit('.', 1)
-                                    y = part.rsplit('.', 1)
-                                    nx = len(x) # 1|2
-                                    if nx != len(y):
+    if exists(request.fs):
+        # Exit early. The file exists as requested, so don't go looking for a 
+        # virtual path.
+        return
+
+    matched = request.website.www_root
+    parts = request._parts
+    del request._parts
+    nparts = len(parts)
+    for i in range(1, nparts):
+        part = parts[i]
+        next = join(matched, part)
+        if exists(next):    # this URL part names an actual directory
+            matched = next
+        else:               # this part is missing; do we have a %subdir?
+            key = None
+            for root, dirs, files in os.walk(matched):
+                files.sort(key=lambda x: x.lower())
+                dirs.sort(key=lambda x: x.lower())
+                for name in files + dirs:
+                    if name.startswith('%'):
+                        
+                        # See if we can use this item.
+                        # ============================
+                        # We want to allow file matches for the last URL
+                        # path part, and in that case we strip the file
+                        # extension. For other matches we need them to be
+                        # directories.
+
+                        fs = join(matched, name)
+                        k = name[1:]
+                        v = part
+                        if i == (nparts - 1):
+                            if isfile(fs):
+                                # Take care with extensions.
+                                x = k.rsplit('.', 1)
+                                y = part.rsplit('.', 1)
+                                nx = len(x) # 1|2
+                                if nx != len(y):
+                                    continue
+                                if nx == 2:
+                                    # If there's an extension, match it.
+                                    k, ext1 = x
+                                    v, ext2 = y
+                                    if ext1 != ext2:
                                         continue
-                                    if nx == 2:
-                                        # If there's an extension, match it.
-                                        k, ext1 = x
-                                        v, ext2 = y
-                                        if ext1 != ext2:
-                                            continue
-                            elif not isdir(fs):
-                                continue 
+                        elif not isdir(fs):
+                            continue 
 
 
-                            # We found a suitable match at the current level.
-                            # ===============================================
+                        # We found a suitable match at the current level.
+                        # ===============================================
 
-                            matched = fs 
-                            key, value = _typecast(k, v)
-                            request.line.uri.path[key] = value
-                            break # Only use the first %match per level.
-                    break # don't recurse in os.walk
-                if key is None:
-                    matched = request.website.www_root
-                    break # no match, reset
-        if matched != request.website.www_root:
-            request.fs = matched.rstrip(os.sep)
+                        matched = fs 
+                        key, value = _typecast(k, v)
+                        request.line.uri.path[key] = value
+                        break # Only use the first %match per level.
+                break # don't recurse in os.walk
+            if key is None:
+                matched = request.website.www_root
+                break # no match, reset
+    if matched != request.website.www_root:
+        request.fs = matched.rstrip(os.sep)
 
 def _typecast(key, value):
     """Given two strings, return a string, and an int or string.
