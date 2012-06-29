@@ -87,7 +87,7 @@ class Response(Exception):
     def __call__(self, environ, start_response):
         wsgi_status = str(self)
         for morsel in self.headers.cookie.values():
-            self.headers['Set-Cookie'] = morsel.OutputString()
+            self.headers.add('Set-Cookie', morsel.OutputString())
         wsgi_headers = []
         for k, vals in self.headers.iteritems():
             try:        # XXX This is a hack. It's red hot, baby.
