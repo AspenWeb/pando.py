@@ -107,7 +107,7 @@ def test_configure_aspen_py_setting_works_with_only_comma():
 # =======================
 
 def check_indirect_negotiation(path):
-    """Given an urlpath, return a filesystem path per gauntlet.virtual_paths.
+    """Given an urlpath, return a filesystem path per gauntlet.indirect_negotiation.
     """
     request = StubRequest.from_fs(path)
     gauntlet.run_through(request, gauntlet.indirect_negotiation)
@@ -151,6 +151,12 @@ def test_indirect_negotiation_really_prefers_rendered():
        )
     expected = fix('foo.html')
     actual = check_indirect_negotiation('foo.html').fs
+    assert actual == expected, actual
+
+def test_indirect_negotation_doesnt_do_dirs():
+    mk(('foo/bar.html', "Greetings, program!"))
+    actual = check_indirect_negotiation('foo.html').fs
+    expected = fix('foo.html')
     assert actual == expected, actual
 
 
@@ -267,7 +273,41 @@ def test_virtual_path_file_key_val_cast():
     actual = check_virtual_paths('/foo/537.html').line.uri.path
     assert actual == expected, actual
 
+def test_virtual_path_file_not_dir():
+    mk( ('%foo/bar.html', "Greetings from bar!")
+      , ('%baz.html', "Greetings from baz!")
+       )
+    actual = check_virtual_paths('/bal.html').fs
+    expected = fix('%baz.html')
+    assert actual == expected, actual
 
+
+# negotiated *and* virtual paths
+# ==============================
+
+def test_virtual_path__and_indirect_neg_file_not_dir():
+    mk( ('%foo/bar.html', "Greetings from bar!")
+      , ('%baz', "Greetings from baz!")
+       )
+    actual = check_virtual_paths('/bal.html').fs
+    expected = fix('%baz')
+    assert actual == expected, actual
+
+def test_virtual_path_and_indirect_neg_noext():
+    mk( ('%foo/bar', "Greetings program!"))
+    actual = check_virtual_paths('/greet/bar').fs
+    expected = fix('%foo/bar')
+    assert actual == expected, actual
+
+def test_virtual_path_and_indirect_neg_ext():
+    mk( ('%foo/bar', "Greetings program!"))
+    actual = check_virtual_paths('/greet/bar.html').fs
+    expected = fix('%foo/bar')
+    assert actual == expected, actual
+
+
+
+    
 # trailing slash
 # ==============
 
