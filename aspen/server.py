@@ -23,17 +23,20 @@ def _main(argv):
     def SIGHUP(signum, frame):
         aspen.log_dammit("Received HUP, re-executing.")
         execution.execute()
-    signal.signal(signal.SIGHUP, SIGHUP)
+    if not aspen.WINDOWS:
+        signal.signal(signal.SIGHUP, SIGHUP)
 
     def SIGINT(signum, frame):
         aspen.log_dammit("Received INT, exiting.")
         raise SystemExit
     signal.signal(signal.SIGINT, SIGINT)
 
+
     def SIGQUIT(signum, frame):
         aspen.log_dammit("Received QUIT, exiting.")
         raise SystemExit
-    signal.signal(signal.SIGQUIT, SIGQUIT)
+    if not aspen.WINDOWS:
+        signal.signal(signal.SIGQUIT, SIGQUIT)
 
 
     # Website
