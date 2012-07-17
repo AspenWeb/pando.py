@@ -16,7 +16,7 @@ from aspen.hooks import Hooks
 from aspen.configuration import parse
 from aspen.configuration.exceptions import ConfigurationError
 from aspen.configuration.options import OptionParser, DEFAULT
-from aspen.utils import ascii_dammit
+from aspen.utils import ascii_dammit, utcnow
 
 
 # Nicer defaultdict
@@ -376,7 +376,7 @@ class Configurable(object):
         # Really finally provide service unavailable service.
         # ===================================================
 
-        self.retry_after = datetime.datetime.utcnow()
+        self.retry_after = utcnow()
         if self.unavailable > 0:
             self.retry_after += datetime.timedelta(minutes=self.unavailable)
             header = self.retry_after.strftime("%a, %d %b %Y %H:%M:%S -0000")
