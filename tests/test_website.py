@@ -83,6 +83,16 @@ def test_unavailable_knob_sets_retry_after():
     assert actual.startswith(expected), actual
     assert actual.endswith(' -0000'), actual
 
+def test_unavailable_knob_sets_retry_after_on_website():
+    mk( '.aspen'
+      , ('.aspen/foo.py', 'bar = "baz"')
+      , ('index.html', "import fooGreetings, {{ foo.bar }}!")
+       )
+    actual = handle('/', '--unavailable=10').headers['Retry-After']
+    expected = datetime.datetime.utcnow().strftime('%a, %d %b %Y')
+    assert actual.startswith(expected), actual
+    assert actual.endswith(' -0000'), actual
+
 
 def test_double_failure_still_sets_response_dot_request():
     mk( '.aspen'

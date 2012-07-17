@@ -376,12 +376,12 @@ class Configurable(object):
         # Really finally provide service unavailable service.
         # ===================================================
 
+        self.retry_after = datetime.datetime.utcnow()
         if self.unavailable > 0:
-            retry_after = datetime.datetime.utcnow() 
-            retry_after += datetime.timedelta(minutes=self.unavailable)
-            retry_after = retry_after.strftime("%a, %d %b %Y %H:%M:%S -0000")
+            self.retry_after += datetime.timedelta(minutes=self.unavailable)
+            header = self.retry_after.strftime("%a, %d %b %Y %H:%M:%S -0000")
             def handler(request):
                 response = aspen.Response(503)
-                response.headers['Retry-After'] = retry_after
+                response.headers['Retry-After'] = header
                 raise response
             self.handler = handler
