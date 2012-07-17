@@ -80,7 +80,8 @@ returns <a
     href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.4">503
     Service Unavailable</a> for all requests. The value of unavailable is
 interpreted as the number of minutes of downtime you expect, and the
-Retry-After header is set accordingly.</p>
+Retry-After header is set accordingly. You can access the header as a
+datetime.datetime object at website.retry_after.</p>
 
 <h3>Hooks</h3>
 
