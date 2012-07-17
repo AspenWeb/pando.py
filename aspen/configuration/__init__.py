@@ -1,6 +1,7 @@
 """Define configuration objects.
 """
 import collections
+import datetime
 import errno
 import mimetypes
 import os
@@ -58,6 +59,7 @@ KNOBS = \
     , 'project_root':       (None, parse.identity)
     , 'logging_threshold':  (0, int)
     , 'www_root':           (None, parse.identity)
+    , 'unavailable':        (0, int)
 
 
     # Extended Options
@@ -369,3 +371,17 @@ class Configurable(object):
                 # XXX smelly ... bug here? second else pls?
             else:
                 execution.if_changes(filepath)
+
+
+        # Really finally provide service unavailable service.
+        # ===================================================
+
+        if self.unavailable > 0:
+            retry_after = datetime.datetime.utcnow() 
+            retry_after += datetime.timedelta(minutes=self.unavailable)
+            retry_after = retry_after.strftime("%a, %d %b %Y %H:%M:%S -0000")
+            def handler(request):
+                response = aspen.Response(503)
+                response.headers['Retry-After'] = retry_after
+                raise response
+            self.handler = handler

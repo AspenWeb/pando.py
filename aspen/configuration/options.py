@@ -109,6 +109,14 @@ def OptionParser():
                                "[index.html, index.json]")
                        , default=DEFAULT
                         )
+    extended.add_option( "--unavailable"
+                       , help=("a non-negative integer, the number of minutes "
+                               "the site is expected to be down for "
+                               "maintenance. If set to non-zero, all requests "
+                               "will get a 503 response, and the Retry-After "
+                               "header will be set [0]")
+                       , default=DEFAULT
+                        )
     extended.add_option( "--list_directories"
                        , help=("if set to {yes,true,1}, aspen will serve a "
                                "directory listing when no index is available "

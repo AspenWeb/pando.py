@@ -1,4 +1,5 @@
 import os
+import datetime
 
 from aspen.testing import handle, StubRequest
 from aspen.testing.fsfix import attach_teardown, FSFIX, mk
@@ -63,6 +64,24 @@ def test_resources_can_import_from_dot_aspen():
     expected = "Greetings, baz!"
     actual = handle('/', '--project_root=.aspen').body
     assert actual == expected, actual
+
+def test_unavailable_knob_works():
+    mk( '.aspen'
+      , ('.aspen/foo.py', 'bar = "baz"')
+      , ('index.html', "import fooGreetings, {{ foo.bar }}!")
+       )
+    actual = handle('/', '--unavailable=1').code
+    assert actual == 503, actual
+
+def test_unavailable_knob_sets_retry_after():
+    mk( '.aspen'
+      , ('.aspen/foo.py', 'bar = "baz"')
+      , ('index.html', "import fooGreetings, {{ foo.bar }}!")
+       )
+    actual = handle('/', '--unavailable=10').headers['Retry-After']
+    expected = datetime.datetime.utcnow().strftime('%a, %d %b %Y')
+    assert actual.startswith(expected), actual
+    assert actual.endswith(' -0000'), actual
 
 
 def test_double_failure_still_sets_response_dot_request():

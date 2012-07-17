@@ -33,6 +33,7 @@ line (<code>--name</code>):</p>
     <tr><td>show_tracebacks</td><td>False</td> </tr>
     <tr><td>quiet_level</td><td>0</td> </tr>
     <tr><td>www_root</td><td>None</td> </tr>
+    <tr><td>unavailable</td><td>0</td> </tr>
 </table>
 
 
@@ -73,6 +74,13 @@ configuration is processed, and before your <a
 
 </ul>
 
+<p>After your configuration scripts are run, Aspen looks at the value for
+unavailable, and if it&rsquo;s greater than zero it installs a handler that
+returns <a
+    href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.4">503
+    Service Unavailable</a> for all requests. The value of unavailable is
+interpreted as the number of minutes of downtime you expect, and the
+Retry-After header is set accordingly.</p>
 
 <h3>Hooks</h3>
 
