@@ -16,7 +16,7 @@ from aspen.hooks import Hooks
 from aspen.configuration import parse
 from aspen.configuration.exceptions import ConfigurationError
 from aspen.configuration.options import OptionParser, DEFAULT
-from aspen.utils import ascii_dammit, utcnow
+from aspen.utils import ascii_dammit, to_rfc822, utcnow
 
 
 # Nicer defaultdict
@@ -379,7 +379,7 @@ class Configurable(object):
         self.retry_after = utcnow()
         if self.unavailable > 0:
             self.retry_after += datetime.timedelta(minutes=self.unavailable)
-            header = self.retry_after.strftime("%a, %d %b %Y %H:%M:%S -0000")
+            header = to_rfc822(self.retry_after)
             def handler(request):
                 response = aspen.Response(503)
                 response.headers['Retry-After'] = header
