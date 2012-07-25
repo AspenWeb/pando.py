@@ -44,12 +44,12 @@ def ascii_dammit(s):
     return unicode_dammit(s, encoding="ASCII").encode("ASCII")
 
 
-# dt2age
-# ======
+# datetime helpers 
+# ================
 
 def total_seconds(td):
-    """
-    Python 2.7 adds a total_seconds method to timedelta objects.
+    """Python 2.7 adds a total_seconds method to timedelta objects.
+
     See http://docs.python.org/library/datetime.html#datetime.timedelta.total_seconds
 
     This function is taken from https://bitbucket.org/jaraco/jaraco.compat/src/e5806e6c1bcb/py26compat/__init__.py#cl-26
@@ -79,12 +79,13 @@ utc = UTC()
 
 
 def utcnow():
+    """Return a tz-aware datetime.datetime.
+    """
     # For Python < 3, see http://bugs.python.org/issue5094
-    dt = datetime.datetime.now(tz=utc)
-    return dt
+    return datetime.datetime.now(tz=utc)
 
 
-def dt2age(dt, fmt_past=None, fmt_future=None):
+def to_age(dt, fmt_past=None, fmt_future=None):
     """Given a timezone-aware datetime object, return an age string.
 
         range                                       denomination    example
@@ -105,6 +106,9 @@ def dt2age(dt, fmt_past=None, fmt_future=None):
     fmt_past and fmt_future.
 
     """
+    if dt.tzinfo is None:
+        raise ValueError("You passed a naive datetime object to to_age.")
+
 
     # Define some helpful constants.
     # ==============================
@@ -130,6 +134,8 @@ def dt2age(dt, fmt_past=None, fmt_future=None):
     # We start with the coarsest unit and filter to the finest. Pluralization 
     # is centralized.
 
+    article = "a"
+
     if age >= yr:           # years
         amount = age / yr
         unit = 'year'
@@ -145,6 +151,7 @@ def dt2age(dt, fmt_past=None, fmt_future=None):
     elif age >= hr:         # hours
         amount = age / hr
         unit = 'hour'
+        article = "an"
     elif age >= min:        # minutes
         amount = age / min
         unit = 'minute'
@@ -164,7 +171,7 @@ def dt2age(dt, fmt_past=None, fmt_future=None):
         if amount != 1:
             unit += 's'
         if amount < 10:
-            amount = ['zero', 'a', 'two', 'three', 'four', 'five', 'six', 
+            amount = ['zero', article, 'two', 'three', 'four', 'five', 'six', 
                       'seven', 'eight', 'nine'][amount]
         age = ' '.join([str(amount), unit])
 
