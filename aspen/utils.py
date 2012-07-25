@@ -175,6 +175,30 @@ def dt2age(dt, fmt_past=None, fmt_future=None):
     return fmt.format(age=age)
 
 
+def to_rfc822(dt):
+    """Given a datetime.datetime, return an RFC 822-formatted unicode.
+
+        Sun, 06 Nov 1994 08:49:37 -0000
+
+    According to RFC 1123, day and month names must always be in English. If
+    not for that, this code could use strftime(). It can't because strftime()
+    honors the locale and could generated non-English names.
+    
+    """
+    tz = ""
+    if dt.tzinfo is not None:
+        offset = dt.utcoffset()
+        if offset is not None:
+            sign = "-" if offset.seconds < 0 else "+"
+            tz = " " + sign + str(offset.seconds / 60).zfill(4)
+    out = dt.strftime("%%s, %d %%s %Y %H:%M:%S") + tz
+    days = ("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
+    months = ("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", 
+              "Oct", "Nov", "Dec")
+    out %= (days[dt.weekday()], months[dt.month - 1])
+    return out.decode('US-ASCII')
+
+
 # Soft type checking
 # ==================
 
