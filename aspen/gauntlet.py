@@ -115,55 +115,53 @@ def virtual_paths(request):
         next = join(matched, part)
         if exists(next):    # this URL part names an actual directory
             matched = next
+            continue
         else:               # this part is missing; do we have a %subdir?
             key = None
-            for root, dirs, files in os.walk(matched):
-                files.sort(key=lambda x: x.lower())
-                dirs.sort(key=lambda x: x.lower())
-                for name in files + dirs:
-                    if name.startswith('%'):
-                        
-                        # See if we can use this item.
-                        # ============================
-                        # We want to allow file matches for the last URL
-                        # path part, and in that case we strip the file
-                        # extension. For other matches we need them to be
-                        # directories.
+            root, dirs, files = os.walk(matched).next()
+            files.sort(key=lambda x: x.lower())
+            dirs.sort(key=lambda x: x.lower())
+            for name in files + dirs:
+                if name.startswith('%'):
+                    
+                    # See if we can use this item.
+                    # ============================
+                    # We want to allow file matches for the last URL
+                    # path part, and in that case we strip the file
+                    # extension. For other matches we need them to be
+                    # directories.
 
-                        fs = join(matched, name)
-                        k = name[1:]
-                        v = part
-                        if i == (nparts - 1):
-                            if isfile(fs):
-                                # Take care with extensions.
-                                x = k.rsplit('.', 1)
-                                y = part.rsplit('.', 1)
-                                nx = len(x) # 1|2
-                                if nx != len(y):
-                                    continue
-                                if nx == 2:
-                                    # If there's an extension, match it.
-                                    k, ext1 = x
-                                    v, ext2 = y
-                                    if ext1 != ext2:
-                                        continue
-                        elif not isdir(fs):
-                            continue 
+                    fs = join(matched, name)
+                    k = name[1:]
+                    v = part
+                    if i == (nparts - 1):
+                        if isfile(fs):
+                            if not _ext_matches(k, part):
+                                continue
+                            k = k.rsplit('.', 1)[0]
+                            v = part.rsplit('.', 1)[0]
+                    elif not isdir(fs):
+                        continue 
 
+                    # We found a suitable match at the current level.
+                    # ===============================================
 
-                        # We found a suitable match at the current level.
-                        # ===============================================
-
-                        matched = fs 
-                        key, value = _typecast(k, v)
-                        request.line.uri.path[key] = value
-                        break # Only use the first %match per level.
-                break # don't recurse in os.walk
+                    matched = fs 
+                    key, value = _typecast(k, v)
+                    request.line.uri.path[key] = value
+                    break # Only use the first %match per level.
             if key is None:
                 matched = request.website.www_root
                 break # no match, reset
     if matched != request.website.www_root:
         request.fs = matched.rstrip(os.sep)
+
+def _ext_matches(n1, n2):
+    """return true iff either both have an extension and it's the same,
+       or neither have an extension"""
+    n1_parts = n1.rsplit('.', 1) + [ None ]
+    n2_parts = n2.rsplit('.', 1) + [ None ]
+    return n1_parts[1] == n2_parts[1]
 
 def _typecast(key, value):
     """Given two strings, return a string, and an int or string.
