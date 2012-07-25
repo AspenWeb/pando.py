@@ -1,3 +1,4 @@
+import datetime
 import os
 import sys
 import traceback
@@ -8,6 +9,10 @@ from aspen import gauntlet, resources, sockets
 from aspen.http.request import Request
 from aspen.http.response import Response
 from aspen.configuration import Configurable
+from aspen.utils import to_rfc822, utc
+
+
+THE_PAST = to_rfc822(datetime.datetime(1955, 11, 05, tzinfo=utc))
 
 
 class Website(Configurable):
@@ -61,6 +66,7 @@ class Website(Configurable):
 
         """
         self.hooks.inbound_early.run(request)
+        self.check_auth(request)
         gauntlet.run(request)  # sets request.fs
         request.socket = sockets.get(request)
         self.hooks.inbound_late.run(request)
@@ -99,6 +105,7 @@ class Website(Configurable):
             self.hooks.outbound_early.run(response)
 
         self.hooks.outbound_late.run(response)
+        self.dont_cache_authed(request, response)
         self.log_access(request, response) # TODO is this at the right level?
         return response
 
@@ -156,6 +163,25 @@ class Website(Configurable):
             return ours
 
         return None
+
+    def check_auth(self, request):
+        """Raise 401 if there's no authenticated user.
+
+        The user can set website.protected 
+
+        """
+        if self.protected and request.context['user'].ANON:
+            raise Response(401)
+
+    def dont_cache_authed(self, request, response):
+        """Given request and response, modify response.
+
+        We never want to allow caching responses for authenticated requests, to
+        avoid leaking one user's data to a different user.
+
+        """
+        if self.protected and not request.context['user'].ANON:
+            response.headers['Expires'] = THE_PAST  # don't cache
 
     def log_access(self, request, response):
         """Log access. With our own format (not Apache's).

@@ -86,6 +86,9 @@ class Configurable(object):
     """Mixin object for aggregating configuration from several sources.
     """
 
+    protected = False  # Set to True to require authentication for all 
+                       # requests.
+
     @classmethod
     def from_argv(cls, argv):
         configurable = cls()
