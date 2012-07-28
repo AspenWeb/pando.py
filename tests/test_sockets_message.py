@@ -45,7 +45,7 @@ def test_from_bytes_type_too_big_raises_ValueError():
 
 def test_from_bytes_type_lower_bound_instantiable():
     message = Message.from_bytes('0:::')
-    expected = 0 
+    expected = 0
     actual = message.type
     assert actual == expected, actual
 

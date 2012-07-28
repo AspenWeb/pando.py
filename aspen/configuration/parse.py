@@ -14,7 +14,7 @@ from aspen.http.response import charset_re
 
 def identity(value):
     typecheck(value, unicode)
-    return value 
+    return value
 
 def media_type(media_type):
     # XXX for now. Read a spec
@@ -37,7 +37,7 @@ def yes_no(s):
 
 def list_(value):
     """Return a tuple of (bool, list).
-    
+
     The bool indicates whether to extend the existing config with the list, or
     replace it.
 

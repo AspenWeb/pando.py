@@ -21,7 +21,7 @@ class DynamicResource(Resource):
 
     min_pages = None  # set on subclass
     max_pages = None
-    
+
     def __init__(self, *a, **kw):
         Resource.__init__(self, *a, **kw)
         self.pages = self.parse_into_pages(self.raw)
@@ -32,22 +32,22 @@ class DynamicResource(Resource):
         """
         response = response or Response(charset=self.website.charset_dynamic)
 
-       
+
         # Populate context.
         # =================
-        
+
         context = request.context
         context.update(self.pages[0])
         context['request'] = request
         context['response'] = response
         context['resource'] = self
-   
+
 
         # Exec page two.
         # ==============
-    
+
         try:
-            exec self.pages[1] in context 
+            exec self.pages[1] in context
         except Response, response:
             response = self.process_raised_response(response)
             raise response
@@ -55,7 +55,7 @@ class DynamicResource(Resource):
 
         # Hook.
         # =====
-        
+
         try:
             response = self.get_response(context)
         except Response, response:
@@ -125,7 +125,7 @@ class DynamicResource(Resource):
         # all pages because then for content pages the user would view source
         # in their browser and see nothing but whitespace until they scroll way
         # down.
-   
+
         paddings = self._compute_paddings(pages)
         two = paddings[1] + two
 
@@ -136,7 +136,7 @@ class DynamicResource(Resource):
         context = dict()
         context['__file__'] = self.fs
         context['website'] = self.website
-        
+
         one = compile(one, self.fs, 'exec')
         exec one in context    # mutate context
         one = context          # store it
@@ -162,8 +162,8 @@ class DynamicResource(Resource):
         """
         if not pages:
             return []
-        
-        # A file with many, many lines would flog this algorithm. 
+
+        # A file with many, many lines would flog this algorithm.
         lines_in = lambda s: '\n' * s.count('\n')
         paddings = ['']  # first page doesn't need padding
         paddings += [paddings[-1] + lines_in(page) for page in pages[:-1]]

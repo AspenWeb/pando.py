@@ -28,9 +28,9 @@ def _auth_headers(response):
 
 
 def _digest_auth_for(headers, username, password):
-    fields = { 'qop': 'auth', 
-               'uri': '/', 
-               'nc':'00000001', 
+    fields = { 'qop': 'auth',
+               'uri': '/',
+               'nc':'00000001',
                'cnonce':'FFFFFFFF',
                'username' : username
              }
@@ -57,7 +57,7 @@ def test_good_works():
     response = assert_raises(Response, hook, request)
     # do something with the header
     auth_headers = _auth_headers(response)
-    request.headers['Authorization'] = _digest_auth_for(auth_headers, "username", "password") 
+    request.headers['Authorization'] = _digest_auth_for(auth_headers, "username", "password")
     #print repr(request.headers['Authorization'])
     response = hook(request)
     success = request.auth.authorized()
@@ -83,11 +83,11 @@ def test_bad_fails():
     response = assert_raises(Response, hook, request)
     # do something with the header
     auth_headers = _auth_headers(response)
-    request.headers['Authorization'] = _digest_auth_for(auth_headers, "username", "badpassword") 
+    request.headers['Authorization'] = _digest_auth_for(auth_headers, "username", "badpassword")
     response = assert_raises(Response, hook, request)
     assert response.code == 401, response
     assert not request.auth.authorized()
-    
+
 def test_wrong_auth():
     auth = lambda u, p: u == "username" and p == "password"
     response = assert_raises(Response, _request_with, auth, "Wacky xxx")

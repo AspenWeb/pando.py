@@ -13,14 +13,14 @@ from aspen.resources.dynamic_resource import DynamicResource
 
 def test_barely_working():
     response = check("Greetings, program!", 'index.html', False)
-   
+
     expected = 'text/html'
     actual = response.headers['Content-Type']
     assert actual == expected, actual
 
 def test_charset_static_barely_working():
     response = check( "Greetings, program!", 'index.html', False
-                    , argv=['--charset_static=OOG'] 
+                    , argv=['--charset_static=OOG']
                      )
     expected = 'text/html; charset=OOG'
     actual = response.headers['Content-Type']
@@ -28,7 +28,7 @@ def test_charset_static_barely_working():
 
 def test_charset_dynamic_barely_working():
     response = check( "^LGreetings, program!", 'index.html', False
-                    , argv=['--charset_dynamic=CHEESECODE'] 
+                    , argv=['--charset_dynamic=CHEESECODE']
                      )
     expected = 'text/html; charset=CHEESECODE'
     actual = response.headers['Content-Type']

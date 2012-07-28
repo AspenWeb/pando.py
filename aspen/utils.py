@@ -6,10 +6,10 @@ import re
 
 # Register a 'repr' error strategy.
 # =================================
-# Sometimes we want to echo bytestrings back to a user, and we don't know what 
-# encoding will work. This error strategy replaces non-decodable bytes with 
+# Sometimes we want to echo bytestrings back to a user, and we don't know what
+# encoding will work. This error strategy replaces non-decodable bytes with
 # their Python representation, so that they are human-visible.
-# 
+#
 # See also:
 #   - https://github.com/dcrosta/mongo/commit/e1ac732
 #   - http://www.crummy.com/software/BeautifulSoup/bs4/doc/#unicode-dammit
@@ -44,7 +44,7 @@ def ascii_dammit(s):
     return unicode_dammit(s, encoding="ASCII").encode("ASCII")
 
 
-# datetime helpers 
+# datetime helpers
 # ================
 
 def total_seconds(td):
@@ -131,7 +131,7 @@ def to_age(dt, fmt_past=None, fmt_future=None):
 
     # Convert it to a string.
     # =======================
-    # We start with the coarsest unit and filter to the finest. Pluralization 
+    # We start with the coarsest unit and filter to the finest. Pluralization
     # is centralized.
 
     article = "a"
@@ -171,7 +171,7 @@ def to_age(dt, fmt_past=None, fmt_future=None):
         if amount != 1:
             unit += 's'
         if amount < 10:
-            amount = ['zero', article, 'two', 'three', 'four', 'five', 'six', 
+            amount = ['zero', article, 'two', 'three', 'four', 'five', 'six',
                       'seven', 'eight', 'nine'][amount]
         age = ' '.join([str(amount), unit])
 
@@ -190,7 +190,7 @@ def to_rfc822(dt):
     According to RFC 1123, day and month names must always be in English. If
     not for that, this code could use strftime(). It can't because strftime()
     honors the locale and could generated non-English names.
-    
+
     """
     tz = ""
     if dt.tzinfo is not None:
@@ -200,7 +200,7 @@ def to_rfc822(dt):
             tz = " " + sign + str(offset.seconds / 60).zfill(4)
     out = dt.strftime("%%s, %d %%s %Y %H:%M:%S") + tz
     days = ("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
-    months = ("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", 
+    months = ("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep",
               "Oct", "Nov", "Dec")
     out %= (days[dt.weekday()], months[dt.month - 1])
     return out.decode('US-ASCII')
@@ -300,9 +300,9 @@ def typecheck(*checks):
         for i, t in enumerate(expected):
             if t is None:
                 expected[i] = type(t)
-        
-        if actual not in expected: 
-            msg = "Check #%d: %s is of type %s, " 
+
+        if actual not in expected:
+            msg = "Check #%d: %s is of type %s, "
             msg %= (nchecks, repr(obj), nice(actual))
             if len(expected) > 1:
                 niced = [nice(t) for t in expected]

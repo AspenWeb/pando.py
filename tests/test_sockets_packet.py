@@ -1,5 +1,5 @@
 from aspen.sockets import FFFD
-from aspen.sockets.packet import Packet 
+from aspen.sockets.packet import Packet
 from aspen.sockets.message import Message
 from aspen.testing import assert_raises, attach_teardown
 
