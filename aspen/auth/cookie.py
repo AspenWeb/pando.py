@@ -5,11 +5,11 @@ import datetime
 from aspen import auth
 from aspen.utils import to_rfc822, utcnow
 
- 
+
 MINUTE = datetime.timedelta(seconds=60)
 HOUR = 60 * MINUTE
 DAY  = 24 * HOUR
-WEEK = 7 * DAY 
+WEEK = 7 * DAY
 
 
 TIMEOUT = 2 * HOUR
@@ -44,7 +44,7 @@ def outbound_late(response):
     """
     if 'user' not in response.request.context:
         # XXX When does this happen? When auth.inbound_early hasn't run, eh?
-        raise 
+        raise
 
     user = response.request.context['user']
     if not isinstance(user, auth.User):

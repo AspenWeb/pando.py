@@ -22,7 +22,7 @@ def make_socket(filename='echo.sock', channel=None):
 class SocketInThread(object):
 
     def __enter__(self, filename='echo.sock'):
-        self.socket = make_socket(filename) 
+        self.socket = make_socket(filename)
         self.socket.loop.start()
         return self.socket
 

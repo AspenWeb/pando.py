@@ -101,7 +101,7 @@ def utf8(value):
     return value
 
 
-# I originally used the regex from 
+# I originally used the regex from
 # http://daringfireball.net/2010/07/improved_regex_for_matching_urls
 # but it gets all exponential on certain patterns (such as too many trailing
 # dots), causing the regex matcher to never return.

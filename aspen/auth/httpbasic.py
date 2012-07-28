@@ -5,7 +5,7 @@ To use:
 
     # import it
     from aspen.auth import httpbasic
-    
+
     # configure it - see the docs on the BasicAuth object for args to inbound_responder()
     auth = httpbasic.inbound_responder(my_password_verifier)
 
@@ -33,8 +33,8 @@ def inbound_responder(*args, **kwargs):
 
 class BAWrapper(object):
     """A convenience wrapper for BasicAuth handler to put on the request
-    object so the user can do 'request.auth.username()' 
-    instead of 'request.auth.username(request)' 
+    object so the user can do 'request.auth.username()'
+    instead of 'request.auth.username(request)'
     """
 
     def __init__(self, basicauth, request):
@@ -57,12 +57,12 @@ class BasicAuth(object):
     def __init__(self, verify_password, html=None, realm='protected'):
         """Constructor for an HTTP BASIC AUTH handler.
 
-        :verify_password - a function that, when passed the args 
+        :verify_password - a function that, when passed the args
             (user, password), will return True iff the password is
             correct for the specified user
         :html - The HTML page to return along with a 401 'Not
             Authorized' response. Has a reasonable default
-        :realm - the name of the auth realm 
+        :realm - the name of the auth realm
         """
         failhtml = html or '''Not Authorized. <a href="#">Try again.</a>'''
         self.verify_password = verify_password

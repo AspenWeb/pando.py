@@ -42,4 +42,4 @@ class SocketResource(DynamicResource):
         context['socket'] = socket
         context['channel'] = socket.channel
         exec self.pages[1] in context
-        return context 
+        return context

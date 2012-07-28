@@ -14,7 +14,7 @@ class Mapping(dict):
     about it.
 
     """
-  
+
     def __getitem__(self, name):
         """Given a name, return the last value or raise Response(400).
         """
@@ -59,7 +59,7 @@ class Mapping(dict):
         except KeyError:
             from aspen import Response
             raise Response(400)
-      
+
     def get(self, name, default=None):
         """Override to only return the last value.
         """

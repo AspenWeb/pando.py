@@ -40,7 +40,7 @@ def test_nice_error_response_is_returned():
 
 def test_nice_error_response_is_returned_for_404():
     mk(('index.html', "from aspen import Responseraise Response(404)"))
-    expected = 404 
+    expected = 404
     actual = handle().code
     assert actual == expected, actual
 

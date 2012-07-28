@@ -34,7 +34,7 @@ def StubWSGIRequest(path='/'):
     return environ
 
 class StubRequest:
-    
+
     def __call__(cls, uripath='/'):
         return Request.from_wsgi(StubWSGIRequest(uripath))
 
@@ -50,7 +50,7 @@ class StubRequest:
         request.www_root = os.path.join(os.path.dirname(__file__), FSFIX)
         request.fs = fs
         request.context = {}
-        request.website = website 
+        request.website = website
         request._media_type = None
         return request
 
@@ -67,7 +67,7 @@ class Handle(object):
         self.argv = argv
 
     def __call__(self, path='/', *a):
-        """Given an URL path, return 
+        """Given an URL path, return
 
         This only allows you to simulate GET requests with no querystring, so
         it's limited. But it's a something. Kind of. Almost.
@@ -85,7 +85,7 @@ handle = Handle(['--www_root', FSFIX])
 def Resource(fs):
     return load(StubRequest.from_fs(fs), 0)
 
-def check(content, filename="index.html", body=True, configure_aspen_py="", 
+def check(content, filename="index.html", body=True, configure_aspen_py="",
         response=None, argv=None):
     if argv is None:
         argv = []

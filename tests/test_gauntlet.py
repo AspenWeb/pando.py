@@ -2,7 +2,7 @@ import os
 
 from aspen import gauntlet, Response
 from aspen.http.request import Request
-from aspen.testing import assert_raises, handle, NoException, StubRequest 
+from aspen.testing import assert_raises, handle, NoException, StubRequest
 from aspen.testing import attach_teardown, fix, mk
 
 
@@ -21,7 +21,7 @@ def test_index_is_found():
     expected = fix('index.html')
     actual = check_index('/').fs
     assert actual == expected, actual
-    
+
 def test_negotiated_index_is_found():
     mk(( 'index'
        , """\
@@ -33,13 +33,13 @@ Greetings, program!
     expected = fix('index')
     actual = check_index('/').fs
     assert actual == expected, actual
-    
+
 def test_alternate_index_is_not_found():
     mk(('default.html', "Greetings, program!"))
     expected = fix('')
     actual = check_index('/').fs
     assert actual == expected, actual
-    
+
 def test_alternate_index_is_found():
     mk( ('.aspen/configure-aspen.py', 'website.indices += ["default.html"]')
       , ('default.html', "Greetings, program!")
@@ -47,7 +47,7 @@ def test_alternate_index_is_found():
     expected = fix('default.html')
     actual = check_index('/').fs
     assert actual == expected, actual
-    
+
 def test_configure_aspen_py_setting_override_works_too():
     mk( ('.aspen/configure-aspen.py', 'website.indices = ["default.html"]')
       , ('index.html', "Greetings, program!")
@@ -55,7 +55,7 @@ def test_configure_aspen_py_setting_override_works_too():
     expected = fix('')
     actual = check_index('/').fs
     assert actual == expected, actual
-    
+
 def test_configure_aspen_py_setting_takes_first():
     mk( ( '.aspen/configure-aspen.py'
         , 'website.indices = ["index.html", "default.html"]')
@@ -65,7 +65,7 @@ def test_configure_aspen_py_setting_takes_first():
     expected = fix('index.html')
     actual = check_index('/').fs
     assert actual == expected, actual
-    
+
 def test_configure_aspen_py_setting_takes_second_if_first_is_missing():
     mk( ( '.aspen/configure-aspen.py'
         , 'website.indices = ["index.html", "default.html"]')
@@ -74,7 +74,7 @@ def test_configure_aspen_py_setting_takes_second_if_first_is_missing():
     expected = fix('default.html')
     actual = check_index('/').fs
     assert actual == expected, actual
-    
+
 def test_configure_aspen_py_setting_strips_commas():
     mk( ( '.aspen/configure-aspen.py'
         , 'website.indices = ["index.html", "default.html"]')
@@ -83,13 +83,13 @@ def test_configure_aspen_py_setting_strips_commas():
     expected = fix('default.html')
     actual = check_index('/').fs
     assert actual == expected, actual
-    
+
 def test_configure_aspen_py_setting_strips_many_commas():
     mk(('default.html', "Greetings, program!"))
     expected = fix('default.html')
     actual = check_index('/', '--indices', 'index.html,,default.html').fs
     assert actual == expected, actual
-    
+
 def test_configure_aspen_py_setting_ignores_blanks():
     mk(('default.html', "Greetings, program!"))
     expected = fix('default.html')
@@ -103,7 +103,7 @@ def test_configure_aspen_py_setting_works_with_only_comma():
     assert actual == expected, actual
 
 
-# Negotiated Fall-through 
+# Negotiated Fall-through
 # =======================
 
 def check_indirect_negotiation(path):
@@ -307,7 +307,7 @@ def test_virtual_path_and_indirect_neg_ext():
 
 
 
-    
+
 # trailing slash
 # ==============
 
@@ -378,7 +378,7 @@ def test_virtual_path_docs_4():
       , ('%name/%cheese.txt', "{{ path['name'].title() }} likes {{ path['cheese'] }} cheese.")
        )
     response = handle('/chad/cheddar.txt/')
-    expected = 404 
+    expected = 404
     actual = response.code
     assert actual == expected, actual
 
@@ -415,7 +415,7 @@ def test_intercept_socket_protects_direct_access():
 def test_intercept_socket_intercepts_handshake():
     request = Request(uri="/foo.sock/1")
     gauntlet.intercept_socket(request)
-    
+
     expected = ('/foo.sock', '1')
     actual = (request.line.uri.path.decoded, request.socket)
     assert actual == expected, actual
@@ -467,14 +467,14 @@ def test_file_matches_other_extension():
 def test_virtual_file_with_no_extension_works():
     mk(('%value', '{"Greetings,": "program!"}'))
     check_virtual_paths('/baz.txt')
-    assert NoException 
+    assert NoException
 
 def test_normal_file_with_no_extension_works():
     mk( ('%value', '{"Greetings,": "program!"}')
       , ('value', '{"Greetings,": "program!"}')
        )
     check_virtual_paths('/baz.txt')
-    assert NoException 
+    assert NoException
 
 def test_file_with_no_extension_matches():
     mk( ('%value', '{"Greetings,": "program!"}')
@@ -498,6 +498,6 @@ def test_robots_txt_also_shouldnt_be_redirected():
     request = StubRequest.from_fs('/robots.txt')
     err = assert_raises(Response, gauntlet.run_through, request, gauntlet.not_found)
     actual = err.code
-    assert actual == 404, actual 
+    assert actual == 404, actual
 
 attach_teardown(globals())

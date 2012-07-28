@@ -29,7 +29,7 @@ class SimplateLoader(BaseLoader):
 
 
 class Renderer(renderers.Renderer):
-    
+
     def compile(self, filepath, raw):
         environment = self.meta
         return SimplateLoader(filepath, raw).load(environment, filepath)

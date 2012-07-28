@@ -2,7 +2,7 @@ from collections import deque
 
 from aspen.sockets.buffer import ThreadedBuffer
 from aspen.sockets.channel import Channel
-from aspen.sockets.message import Message 
+from aspen.sockets.message import Message
 from aspen.testing.sockets import make_socket
 from aspen.testing import assert_raises
 from aspen.testing.fsfix import mk, attach_teardown

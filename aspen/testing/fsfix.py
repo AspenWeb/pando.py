@@ -54,7 +54,7 @@ def mk(*treedef):
 def fix(path=''):
     """Given a relative path, return an absolute path under FSFIX.
 
-    The incoming path is in UNIX form (/foo/bar.html). The outgoing path is in 
+    The incoming path is in UNIX form (/foo/bar.html). The outgoing path is in
     native form, with symlinks removed.
 
     """
@@ -75,7 +75,7 @@ def rm():
 
 def teardown():
     """Standard teardown function.
-    
+
     - reset the current working directory
     - remove FSFIX = %{tempdir}/fsfix
     - reset Aspen's global state

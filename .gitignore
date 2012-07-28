@@ -6,3 +6,4 @@ distribute-*
 __pycache__
 *\$py.class
 .tox
+/build/

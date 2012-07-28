@@ -43,7 +43,7 @@ def test_bad_fails():
     auth = lambda u, p: u == "username" and p == "password"
     response = assert_raises(Response, _request_with, auth, _auth_header("username", "wrong password"))
     assert response.code == 401, response
-    
+
 def test_wrong_auth():
     auth = lambda u, p: u == "username" and p == "password"
     response = assert_raises(Response, _request_with, auth, "Wacky xxx")
