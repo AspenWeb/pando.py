@@ -36,7 +36,7 @@ class NegotiatedResource(DynamicResource):
     """This is a negotiated resource. It has three or more pages.
     """
 
-    min_pages = 3 
+    min_pages = 3
     max_pages = None
 
 
@@ -113,13 +113,13 @@ class NegotiatedResource(DynamicResource):
         The incoming string is expected to be of the form:
 
             ^L #!renderer media/type
-       
+
         The renderer is optional. It will be computed based on media type if
         absent. The return two-tuple contains a render function and a media
         type (as unicode). SyntaxError is raised if there aren't one or two
         parts or if either of the parts is malformed. If only one part is
         passed in it's interpreted as a media type.
-        
+
         """
         typecheck(specline, str)
         if specline == "":
@@ -133,7 +133,7 @@ class NegotiatedResource(DynamicResource):
             raise SyntaxError("A negotiated resource specline must have one "
                               "or two parts: #!renderer media/type. Yours is: "
                               "%s." % specline)
-       
+
         # Assign parts.
         if nparts == 1:
             media_type = parts[0]
@@ -156,7 +156,7 @@ class NegotiatedResource(DynamicResource):
         # Return.
         return (make_renderer, media_type)
 
-    
+
     def _get_renderer_factory(self, media_type, renderer):
         """Given two bytestrings, return a renderer factory or None.
         """
@@ -166,7 +166,7 @@ class NegotiatedResource(DynamicResource):
             msg = ("Malformed renderer %s. It must match %s. Possible "
                    "renderers (might need third-party libs): %s.")
             raise SyntaxError(msg % (renderer, renderer_re.pattern, possible))
-        renderer = renderer[2:]  # strip off the hashbang 
+        renderer = renderer[2:]  # strip off the hashbang
         renderer = renderer.decode('US-ASCII')
 
         factories = self.website.renderer_factories
@@ -178,7 +178,7 @@ class NegotiatedResource(DynamicResource):
             want_legend = False
             for k, v in sorted(factories.iteritems()):
                 if isinstance(v, ImportError):
-                    k = '*' + k 
+                    k = '*' + k
                     want_legend = True
                 possible.append(k)
             possible = ', '.join(possible)
@@ -187,6 +187,6 @@ class NegotiatedResource(DynamicResource):
             else:
                 legend = ''
             raise ValueError("Unknown renderer for %s: %s. Possible "
-                             "renderers%s: %s." 
+                             "renderers%s: %s."
                              % (media_type, renderer, legend, possible))
         return make_renderer

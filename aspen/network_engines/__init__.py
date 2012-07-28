@@ -52,7 +52,7 @@ class ThreadedEngine(BaseEngine):
 
     Buffer = ThreadedBuffer
     Loop = ThreadedLoop
-   
+
 
 # Cooperative
 # ===========

@@ -1,12 +1,12 @@
 import time
 import threading
 
-import rocket 
+import rocket
 from aspen.network_engines import ThreadedEngine
 
 
 class Engine(ThreadedEngine):
-    
+
     rocket_server = None # a rocket.CherryPyWSGIServer instance
 
     def bind(self):

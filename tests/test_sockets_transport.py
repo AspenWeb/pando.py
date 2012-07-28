@@ -35,21 +35,21 @@ def test_transport_can_minimally_respond():
     expected = Response
     actual = transport.respond(request).__class__
     assert actual is expected, actual
-    
+
 def test_transport_starts_in_state_0():
     transport = make_transport()
     request = Request()
-    
+
     expected = 0
     actual = transport.state
     assert actual == expected, actual
-    
+
 def test_transport_goes_to_state_1_after_first_request():
     transport = make_transport()
     request = Request()
     transport.respond(request)
 
-    expected = 1 
+    expected = 1
     actual = transport.state
     assert actual == expected, actual
 
@@ -58,11 +58,11 @@ def test_transport_stays_in_state_1_after_second_request():
     request = make_request()
     transport.respond(request)
     transport.respond(request)
-    
-    expected = 1 
+
+    expected = 1
     actual = transport.state
     assert actual == expected, actual
-    
+
 def test_transport_POST_gives_data_to_socket():
     transport = make_transport(state=1)
 
@@ -71,42 +71,42 @@ def test_transport_POST_gives_data_to_socket():
                      , body=StringIO('3::/echo.sock:Greetings, program!')
                       )
     transport.respond(request)
-   
+
     expected = deque(['Greetings, program!'])
     actual = transport.socket.incoming.queue
     assert actual == expected, actual
-    
+
 def test_transport_GET_gets_data_from_socket():
     transport = make_transport(state=1)
     message = Message.from_bytes("3:::Greetings, program!")
     transport.socket.outgoing.put(message)
-    
+
     request = Request('GET')
     response = transport.respond(request)
-   
+
     expected = FFFD+'23'+FFFD+'3:::Greetings, program!'
     actual = response.body.next()
     assert actual == expected, actual
-    
+
 def test_transport_GET_blocks_for_empty_socket():
     transport = make_transport(state=1)
-    
+
     request = make_request()
     start = time.time()
     response = transport.respond(request)
     end = time.time()
- 
+
     expected = transport.timeout
     actual = round(end - start, 4)
     assert actual > expected, actual
 
 def test_transport_handles_roundtrip():
     transport = make_transport(state=1, content="socket.send(socket.recv())")
-    
+
     request = Request('POST', '/echo.sock', body=StringIO("3::/echo.sock:ping"))
     transport.respond(request)
     transport.socket.tick() # do it manually
- 
+
     request = Request('GET', '/echo.sock')
     response = transport.respond(request)
 

@@ -7,7 +7,7 @@ from aspen.sockets import TIMEOUT
 class Transport(object):
     """A transport converts HTTP messages into Socket messages.
     """
-    
+
     def __init__(self, socket):
         """Takes a Socket instance.
         """
@@ -32,7 +32,7 @@ class XHRPollingTransport(Transport):
         elif request.line.method == 'POST': # The client is sending us data.
             self.socket._send(request.body.raw)
             response = Response(200)
-            
+
         elif request.line.method == 'GET':  # The client is asking for data.
             bytes_iter = iter([""])
             timeout = time.time() + self.timeout

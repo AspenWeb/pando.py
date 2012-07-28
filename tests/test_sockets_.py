@@ -18,7 +18,7 @@ def test_sockets_get_adds_channel():
     try:
         response = sockets.get(request) # handshake
 
-        expected = '/echo.sock' 
+        expected = '/echo.sock'
         actual = sockets.__channels__['/echo.sock'].name
         assert actual == expected, actual
     finally:
@@ -34,7 +34,7 @@ def test_channel_survives_transportation():
     transport = sockets.get(request)   # transport
 
     try:
-        expected = '/echo.sock' 
+        expected = '/echo.sock'
         actual = sockets.__channels__['/echo.sock'].name
         assert actual == expected, actual
 

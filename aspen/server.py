@@ -50,7 +50,7 @@ def _main(argv):
 
     # Start serving the website.
     # ==========================
-    # This amounts to binding the requested socket, with logging and 
+    # This amounts to binding the requested socket, with logging and
     # restarting as needed. Wrap the whole thing in a try/except to
     # do some cleanup on shutdown.
 
@@ -99,7 +99,7 @@ def _main(argv):
             msg %= website.network_port
             if not aspen.WINDOWS:
                 # Assume we can use ANSI color escapes if not on Windows.
-                # XXX Maybe a bad assumption if this is going into a log 
+                # XXX Maybe a bad assumption if this is going into a log
                 # file? See also: colorama
                 msg = '\033[01;33m%s\033[00m' % msg
             aspen.log_dammit(msg)

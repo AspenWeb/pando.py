@@ -84,7 +84,7 @@ def get_resource_class(filename, raw, media_type):
     Step two is to decide what kind of dynamic resource it is. JSON and Socket
     are based on media type. Otherwise it's Rendered if there is a file
     extension and Negotiated if not.
-    
+
     """
 
     # XXX What is media_type coming in for a negotiated resource? Is it None?
@@ -94,7 +94,7 @@ def get_resource_class(filename, raw, media_type):
     is_dynamic = True
 
     if media_type == 'application/x-socket.io':
-        
+
         # *.sock files are always dynamic.
 
         pass
@@ -140,12 +140,12 @@ def load(request, mtime):
     # We work with resources exclusively as bytestrings. Renderers take note.
 
     raw = open(request.fs, 'rb').read()
-    
-   
+
+
     # Compute a media type.
     # =====================
     # For a negotiated resource we will ignore this.
-   
+
     media_type = mimetypes.guess_type(request.fs, strict=False)[0]
     if media_type is None:
         media_type = request.website.media_type_default
@@ -154,7 +154,7 @@ def load(request, mtime):
     # Compute and instantiate a class.
     # ================================
     # An instantiated resource is compiled as far as we can take it.
- 
+
     Class = get_resource_class(request.fs, raw, media_type)
     resource = Class(request.website, request.fs, raw, media_type, mtime)
     return resource
@@ -170,7 +170,7 @@ def get(request):
     # XXX This is not thread-safe. It used to be, but then I simplified it
     # when I switched to diesel. Now that we have multiple engines, some of
     # which are threaded, we need to make this thread-safe again.
-    
+
     # Get a cache Entry object.
     # =========================
 
@@ -196,7 +196,7 @@ def get(request):
                         , sys.exc_info()[2]
                          )
         else:       # reset any previous Exception
-            entry.exc = None 
+            entry.exc = None
 
         entry.mtime = mtime
         if entry.exc is not None:
@@ -205,7 +205,7 @@ def get(request):
 
     # Return
     # ======
-    # The caller must take care to avoid mutating any context dictionary at 
+    # The caller must take care to avoid mutating any context dictionary at
     # entry.resource.pages[0].
 
     return entry.resource

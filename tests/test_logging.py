@@ -12,7 +12,7 @@ def capture(*a, **kw):
 
     Positional and keyword arguments are passed through to a logging function
     with these exceptions, which are pulled out of kw before that is passed
-    through to the logging function: 
+    through to the logging function:
 
         func        the logging function to use, defaults to log
         threshold   where to set the logging threshold; it will be reset to its

@@ -43,7 +43,7 @@ def test_mapping_get_returns_default():
 
 def test_mapping_get_default_default_is_None():
     m = Mapping()
-    expected = None 
+    expected = None
     actual = m.get('foo')
     assert actual is expected, actual
 
@@ -60,13 +60,13 @@ def test_mapping_ones_returns_list_of_last_values():
     m = Mapping()
     m['foo'] = 1
     m['foo'] = 2
-    m['bar'] = 3 
-    m['bar'] = 4 
+    m['bar'] = 3
+    m['bar'] = 4
     m['bar'] = 5
-    m['baz'] = 6 
+    m['baz'] = 6
     m['baz'] = 7
     m['baz'] = 8
-    m['baz'] = 9 
+    m['baz'] = 9
     expected = [2, 5, 9]
     actual = m.ones('foo', 'bar', 'baz')
     assert actual == expected, actual
@@ -126,7 +126,7 @@ def test_mapping_popall_returns_a_list():
 def test_mapping_popall_removes_the_item():
     m = Mapping()
     m['foo'] = 1
-    m['foo'] = 1 
+    m['foo'] = 1
     m['foo'] = 3
     m.popall('foo')
     assert 'foo' not in m, m.keys()
@@ -147,7 +147,7 @@ def test_case_insensitive_mapping_access_is_case_insensitive():
     m['Foo'] = 1
     m['foo'] = 1
     m['fOO'] = 1
-    m['FOO'] = 11 
+    m['FOO'] = 11
     expected = 11
     actual = m['foo']
     assert actual == expected, actual

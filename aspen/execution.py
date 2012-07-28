@@ -45,7 +45,7 @@ else:
 
 def _do_execv():
     """Re-execute the current process.
-    
+
     This must be called from the main thread, because certain platforms
     (OS X) don't allow execv to be called in a child thread very well.
 
@@ -69,13 +69,13 @@ def _do_execv():
 
 def _set_cloexec():
     """Set the CLOEXEC flag on all open files (except stdin/out/err).
-    
+
     If self.max_cloexec_files is an integer (the default), then on
     platforms which support it, it represents the max open files setting
     for the operating system. This function will be called just before
     the process is restarted via os.execv() to prevent open files
     from persisting into the new process.
-    
+
     Set self.max_cloexec_files to 0 to disable this behavior.
 
     """
@@ -109,7 +109,7 @@ def check_one(filename):
             aspen.log("File deleted: %s" % filename)
             execute()
         else:
-            # We haven't seen the file before. It has probably been loaded 
+            # We haven't seen the file before. It has probably been loaded
             # from a zip (egg) archive.
             return
 
@@ -122,7 +122,7 @@ def check_one(filename):
         mtimes[filename] = mtime
     if mtime > mtimes[filename]:
         aspen.log("File changed: %s" % filename)
-        execute() 
+        execute()
 
 
 def check_all():
