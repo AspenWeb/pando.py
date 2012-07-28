@@ -17,7 +17,7 @@ class JSONResource(DynamicResource):
         """Given a response, return a response.
         """
         return self._process(response)
-  
+
     def get_response(self, context):
         """Given a context dict, return a response object.
         """

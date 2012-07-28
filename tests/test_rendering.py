@@ -7,7 +7,7 @@ from aspen._tornado.template import ParseError
 def test_that_a_renderer_factory_is_instantiable():
     actual = TornadoFactory(Configurable.from_argv([])).__class__
     assert actual is TornadoFactory, actual
-    
+
 
 
 def tornado_factory_factory(argv=None):

@@ -3,7 +3,7 @@ import datetime
 
 # Find a json module.
 # ===================
-# The standard library includes simplejson as json since 2.6, but without the 
+# The standard library includes simplejson as json since 2.6, but without the
 # C speedups. So we prefer simplejson if it is available.
 
 try:
@@ -30,7 +30,7 @@ except ImportError:
 encoders = {}
 def register_encoder(cls, encode):
     """Register the encode function for cls.
-    
+
     An encoder should take an instance of cls and return something basically
     serializable (strings, lists, dictionaries).
 
@@ -62,13 +62,13 @@ if _json is not None:
         """Add support for additional types to the default JSON encoder.
         """
         def default(self, obj):
-            cls = obj.__class__ # Use this instead of type(obj) because that 
-                                # isn't consistent between new- and old-style 
+            cls = obj.__class__ # Use this instead of type(obj) because that
+                                # isn't consistent between new- and old-style
                                 # classes, and this is.
             encode = encoders.get(cls, _json.JSONEncoder.default)
             return encode(obj)
 
-def lazy_check(): 
+def lazy_check():
     if _json is None:
         raise ImportError("Neither simplejson nor json was found. Try "
                           "installing simplejson to use dynamic JSON "

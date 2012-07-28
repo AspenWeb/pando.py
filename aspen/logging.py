@@ -54,7 +54,7 @@ def log(*messages, **kw):
             message = stringify(message)
             for line in message.splitlines():
                 with LOCK:
-                    # Log lines can get interleaved, but that's okay, because 
+                    # Log lines can get interleaved, but that's okay, because
                     # we prepend lines with thread identifiers that can be used
                     # to reassemble log messages per-thread.
                     print fmt % line

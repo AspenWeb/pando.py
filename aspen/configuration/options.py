@@ -19,7 +19,7 @@ http://aspen.io/
 
 description = """\
 Aspen is a Python web framework. By default this program will start serving a
-website from the current directory on port 8080. Options are as follows. See 
+website from the current directory on port 8080. Options are as follows. See
 also http://aspen.io/.
 """
 

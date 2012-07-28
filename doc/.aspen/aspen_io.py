@@ -20,7 +20,7 @@ def inbound(request):
         if src[0] != '/':
             rel = dirname(request.fs)[len(request.website.www_root):]
             src = '/'.join([rel, src])
-        src = opts['base'] + src 
+        src = opts['base'] + src
         return src
 
     def img(src):
@@ -36,7 +36,7 @@ def inbound(request):
             href = translate(short + '.' + imgtype)
         html = ('<a title="Click for full size" href="%s"'
                 'class="screencap">%s</a>')
-        return html % (href, small) 
+        return html % (href, small)
 
 
     # Make these available within simplates.

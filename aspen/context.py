@@ -17,7 +17,7 @@ class Context(dict):
         self.context    = self
 
         # http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html
-        for method in ['OPTIONS', 'GET', 'HEAD', 'POST', 'PUT', 'DELETE', 
+        for method in ['OPTIONS', 'GET', 'HEAD', 'POST', 'PUT', 'DELETE',
                        'TRACE', 'CONNECT']:
             self[method] = (method == request.line.method)
             setattr(self, method, self[method])

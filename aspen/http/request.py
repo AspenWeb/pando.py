@@ -7,8 +7,8 @@ we use to model each:
         - line                  Line
             - method            Method      ASCII
             - uri               URI
-                - path          Path        
-                - querystring   Querystring 
+                - path          Path
+                - querystring   Querystring
             - version           Version     ASCII
         - headers               Headers     str
             - cookie            Cookie      str
@@ -44,7 +44,7 @@ from aspen.utils import ascii_dammit, typecheck
 # ================
 # Aspen is jealous. It wants to pretend that it parsed the HTTP Request itself,
 # instead of letting some WSGI server or library do the work for it. Here are
-# routines for going from WSGI back to HTTP. Since WSGI is lossy, we end up 
+# routines for going from WSGI back to HTTP. Since WSGI is lossy, we end up
 # with a Dr. Frankenstein's HTTP message.
 
 quoted_slash_re = re.compile("%2F", re.IGNORECASE)
@@ -52,13 +52,13 @@ quoted_slash_re = re.compile("%2F", re.IGNORECASE)
 
 def make_franken_uri(path, querystr):
     """Given two bytestrings, return a bytestring.
-    
+
     We want to pass ASCII to Request. However, our friendly neighborhood WSGI
     servers do friendly neighborhood things with the Request-URI to compute
     PATH_INFO and QUERY_STRING. In addition, our friendly neighborhood browser
     sends "raw, unescaped UTF-8 bytes in the query during an HTTP request"
     (http://web.lookout.net/2012/03/unicode-normalization-in-urls.html).
-    
+
     Our strategy is to try decoding to ASCII, and if that fails (we don't have
     ASCII) then we'll quote the value before passing to Request. What encoding
     are those bytes? Good question. The above blog post claims that experiment
@@ -92,7 +92,7 @@ def make_franken_headers(environ):
 
     # There are a couple keys that CherryPyWSGIServer explicitly doesn't
     # include as HTTP_ keys. I'm not sure why, but I believe we want them.
-    also = ['CONTENT_TYPE', 'CONTENT_LENGTH'] 
+    also = ['CONTENT_TYPE', 'CONTENT_LENGTH']
 
     headers = []
     for k, v in environ.items():
@@ -108,7 +108,7 @@ def make_franken_headers(environ):
 
     return '\r\n'.join(headers)  # *sigh*
 
-    
+
 def kick_against_goad(environ):
     """Kick against the goad. Try to squeeze blood from a stone. Do our best.
     """
@@ -118,7 +118,7 @@ def kick_against_goad(environ):
                            )
     server = environ.get('SERVER_SOFTWARE', '')
     version = environ['SERVER_PROTOCOL']
-    headers = make_franken_headers(environ) 
+    headers = make_franken_headers(environ)
     body = environ['wsgi.input']
     return method, uri, server, version, headers, body
 
@@ -135,7 +135,7 @@ class IntWithRaw(int):
 
     def __new__(cls, i):
         if i is None:
-            i = 0 
+            i = 0
         obj = super(IntWithRaw, cls).__new__(cls, i)
         obj.raw = str(i)
         return obj
@@ -169,11 +169,11 @@ class Request(str):
     #   http://docs.python.org/reference/datamodel.html#__slots__
 
 
-    def __new__(cls, method='GET', uri='/', server_software='', 
+    def __new__(cls, method='GET', uri='/', server_software='',
                 version='HTTP/1.1', headers='', body=None):
         """Takes five bytestrings and an iterable of bytestrings.
         """
-        obj = str.__new__(cls, '') # start with an empty string, see below for 
+        obj = str.__new__(cls, '') # start with an empty string, see below for
                                    # laziness
         obj.server_software = server_software
         try:
@@ -226,14 +226,14 @@ class Request(str):
     # When working with a Request object interactively or in a debugging
     # situation we want it to behave transparently string-like. We don't want
     # to read bytes off the wire if we can avoid it, though, because for mega
-    # file uploads and such this could have a big impact. 
+    # file uploads and such this could have a big impact.
 
     _raw = "" # XXX We should reset this when subobjects are mutated.
     def __str__(self):
         """Lazily load the body and return the whole message.
         """
         if not self._raw:
-            fmt = "%s\r\n%s\r\n\r\n%s" 
+            fmt = "%s\r\n%s\r\n\r\n%s"
             self._raw = fmt % (self.line.raw, self.headers.raw, self.body.raw)
         return self._raw
 
@@ -249,7 +249,7 @@ class Request(str):
     def __ne__(self, other): return str.__ne__(str(self), other)
     def __gt__(self, other): return str.__gt__(str(self), other)
     def __ge__(self, other): return str.__ge__(str(self), other)
-      
+
 
     # Public Methods
     # ==============
@@ -264,7 +264,7 @@ class Request(str):
         methods = [x.upper() for x in methods]
         if self.line.method not in methods:
             raise Response(405, headers={'Allow': ', '.join(methods)})
-       
+
     def is_xhr(self):
         """Check the value of X-Requested-With.
         """
@@ -286,7 +286,7 @@ class Request(str):
         if code is None:
             code = permanent is True and 301 or 302
         raise Response(code, headers={'Location': location})
-   
+
 
     def _infer_media_type(self):
         """Guess a media type based on our filesystem path.
@@ -391,15 +391,15 @@ class Method(unicode):
                     # "This is the appropriate response when the server does
                     #  not recognize the request method and is not capable of
                     #  supporting it for any resource."
-                    # 
+                    #
                     #  http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html
-                    
+
                     safe = ascii_dammit(raw)
                     raise Response(501, "Your request-method violates RFC "
                                         "2616: %s" % safe)
 
         obj = super(Method, cls).__new__(cls, raw.decode('ASCII'))
-        obj.raw = raw 
+        obj.raw = raw
         return obj
 
 
@@ -412,7 +412,7 @@ class URI(unicode):
     XXX spec-ify this
 
     """
-  
+
     __slots__ = ['scheme', 'username', 'password', 'host', 'port', 'path',
                  'querystring', 'raw']
 
@@ -450,7 +450,7 @@ class URI(unicode):
         obj.port = port
         obj.path = path
         obj.querystring = querystring
-        obj.raw = raw 
+        obj.raw = raw
         return obj
 
 
@@ -462,7 +462,7 @@ class Path(Mapping):
     This is populated by aspen.gauntlet.virtual_paths.
 
     """
-   
+
     def __init__(self, raw):
         self.decoded = urllib.unquote(raw).decode('UTF-8')
         self.raw = raw
@@ -488,8 +488,8 @@ class Querystring(Mapping):
 # Request -> Line -> Version
 # ..........................
 
-versions = { 'HTTP/0.9': ((0, 9), u'HTTP/0.9') 
-           , 'HTTP/1.0': ((1, 0), u'HTTP/1.0') 
+versions = { 'HTTP/0.9': ((0, 9), u'HTTP/0.9')
+           , 'HTTP/1.0': ((1, 0), u'HTTP/1.0')
            , 'HTTP/1.1': ((1, 1), u'HTTP/1.1')
             }  # Go ahead, find me another version.
 
@@ -510,7 +510,7 @@ class Version(unicode):
         version = versions.get(raw, None)
         if version is None: # fast for 99.999999% case
             safe = ascii_dammit(raw)
-            if version_re.match(raw) is None: 
+            if version_re.match(raw) is None:
                 raise Response(400, "Bad HTTP version: %s." % safe)
             else:
                 raise Response(505, "HTTP Version Not Supported: %s. This "
@@ -543,7 +543,7 @@ class Headers(BaseHeaders):
         # ====
         # Per the spec, respond with 400 if no Host header is given. However,
         # we prefer X-Forwarded-For if that is available.
-        
+
         host = self.get('X-Forwarded-Host', self['Host']) # KeyError raises 400
         self.host = UnicodeWithRaw(host, encoding='idna')
 
@@ -565,7 +565,7 @@ class Body(Mapping):
 
     def __init__(self, headers, fp, server_software):
         """Takes a str, a file-like object, and another str.
-        
+
         If the Mapping API is used (in/one/all/has), then the iterable will be
         read and parsed as media of type application/x-www-form-urlencoded or
         multipart/form-data, according to content_type.
@@ -607,7 +607,7 @@ class Body(Mapping):
             # The hacky solution is to grab the socket from the stream and
             # manually set the timeout to 0 and set it back when you get your
             # data (or not).
-            # 
+            #
             # If you're curious, those HTTP conditions are (it's better to do
             # this anyway to avoid unnecessary and slow OS calls):
             # - You can assume that there will be content in the body if the
@@ -632,7 +632,7 @@ class Body(Mapping):
 
         return raw
 
-    
+
     def _parse(self, headers, raw):
         """Takes a dict and a bytestring.
 
@@ -668,9 +668,9 @@ class Body(Mapping):
         # Force the cgi module to parse as we want. If it doesn't find
         # something besides GET or HEAD here then it ignores the fp
         # argument and instead uses environ['QUERY_STRING'] or even
-        # sys.stdin(!). We want it to parse request bodies even if the 
+        # sys.stdin(!). We want it to parse request bodies even if the
         # method is GET (we already parsed the querystring elsewhere).
-        
+
         environ = {"REQUEST_METHOD": "POST"}
 
 
@@ -678,5 +678,5 @@ class Body(Mapping):
                                , environ = environ
                                , headers = headers
                                , keep_blank_values = True
-                               , strict_parsing = True 
+                               , strict_parsing = True
                                 )

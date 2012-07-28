@@ -21,7 +21,7 @@ class ThreadedLoop(threading.Thread):
         """Takes a socket object.
         """
         threading.Thread.__init__(self)
-        self.socket = socket 
+        self.socket = socket
         self.please_stop = threading.Event()
         self.daemon = True
 
@@ -46,6 +46,6 @@ class ThreadedLoop(threading.Thread):
         # unblock reads from incoming
         self.socket.incoming.put(Die)
 
-        # wait for magic to work 
+        # wait for magic to work
         self.join()
 

@@ -16,11 +16,11 @@ class DevNull:
 
 class EventletBuffer(LightQueue):
     """Model a buffer of items.
-  
+
     There are two of these for each Socket, one for incoming message payloads
     and one for outgoing message objects.
 
-    Here's what the flow looks like: 
+    Here's what the flow looks like:
 
         wire => [msg, msg, msg, msg, msg, msg, msg, msg] => resource
         wire <= [msg, msg, msg, msg, msg, msg, msg, msg] <= resource
@@ -67,13 +67,13 @@ class EventletBuffer(LightQueue):
             yield packet.frame(self.get())
 
 
-    # next 
+    # next
     # ====
     # Used for incoming buffer.
 
     def next(self):
         """Return the next item from the queue.
-        
+
         The first time this is called, we lazily instantiate the generator at
         self._blocked. Subsequent calls are directed directly to that
         generator's next method.
@@ -87,7 +87,7 @@ class EventletBuffer(LightQueue):
         try:
             return self._blocked.next()
         except StopIteration:
-            # When the _blocked generator discovers Die and breaks, the 
+            # When the _blocked generator discovers Die and breaks, the
             # effect is a StopIteration here. It's a bug if this happens
             # other than when we are disconnecting the socket.
             assert self._socket is not None
@@ -112,7 +112,7 @@ class EventletBuffer(LightQueue):
 
 
 class EventletLoop(object):
-   
+
     def __init__(self, socket):
         self.socket = socket
         self.please_stop = False

@@ -19,7 +19,7 @@ def foo():
     sys.stdout = os.fdopen(sys.stdout.fileno(), 'wb', 0)
 
     if len(sys.argv) < 2:
-        print ("usage: %s <child> [child opts and args]" 
+        print ("usage: %s <child> [child opts and args]"
                % os.path.basename(sys.argv[0]))
         sys.exit(1)
 
@@ -28,14 +28,14 @@ def foo():
     PROMPT_AFTER = 60   # Give the user this much time to fix the error.
     INITIAL_WAIT = 15   # Give the user this much time to read the error.
 
-    n = 0 
+    n = 0
     backoff = BACKOFF_MIN
     cumulative_time = 0
 
     while 1:
 
         # The child process exited.
-        # ========================= 
+        # =========================
         # Log restart attempts after the initial launch.
 
         n += 1
@@ -67,25 +67,25 @@ def foo():
         # ======================
 
         if n == 1:
-            # This is the first time we've thrashed. Give the user time to 
+            # This is the first time we've thrashed. Give the user time to
             # parse the (presumed) traceback.
-            cumulative_time += INITIAL_WAIT 
+            cumulative_time += INITIAL_WAIT
             try:
                 time.sleep(INITIAL_WAIT)
             except KeyboardInterrupt:
                 # Allow user to fast-track this step.
-                
+
                 # reset
                 n = 0
                 backoff = BACKOFF_MIN
                 cumulative_time = 0
 
-        elif cumulative_time < PROMPT_AFTER:      
-            # We've given the user time to parse the traceback. Now thrash 
+        elif cumulative_time < PROMPT_AFTER:
+            # We've given the user time to parse the traceback. Now thrash
             # for a while.
             cumulative_time += backoff
             time.sleep(backoff)
-            
+
         else:
             # We've been thrashing for a while. Pause.
             print

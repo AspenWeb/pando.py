@@ -11,14 +11,14 @@ import random
 def test_hooks_is_barely_instantiable():
     actual = Hooks([])
     assert actual == {}, actual
-    
+
 def test_hooks_is_instantiable_with_one_section():
     actual = Hooks(['foo'])
     assert actual == {'foo': []}, actual
-    
+
 def test_hooks_is_not_instantiable_with_str():
     assert_raises(TypeError, Hooks, 'foo')
-    
+
 def test_hooks_is_not_instantiable_with_unicode():
     assert_raises(TypeError, Hooks, 'foo')
 

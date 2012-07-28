@@ -39,7 +39,7 @@ def translate(request):
     directories in request.fs.
 
     """
-    parts = [request.website.www_root] 
+    parts = [request.website.www_root]
     parts += request.line.uri.path.decoded.lstrip('/').split('/')
     request.fs = os.sep.join(parts).rstrip(os.sep)
     request._parts = parts # store for use in processing virtual_paths
@@ -66,7 +66,7 @@ def indirect_negotiation(request):
     path as well. Note that this only works if there is exactly one dot (.) in
     the URL, as otherwise direct requests for the same resource would get
     convoluted.
-    
+
     """
     if not isfile(request.fs):
         path = request.fs.rsplit('.', 1)[0]
@@ -85,7 +85,7 @@ def indirect_negotiation(request):
 def virtual_paths(request):
     """Support /foo/bar.html => ./%blah/bar.html and /blah.html => ./%flah.html
 
-    Parts is a list of fs path parts as returned by translate, above. 
+    Parts is a list of fs path parts as returned by translate, above.
 
     Path parts will end up in request.line.uri.path, a Mapping. There can
     only be one variable per path part. If a directory has more than one
@@ -102,7 +102,7 @@ def virtual_paths(request):
         return
 
     if exists(request.fs):
-        # Exit early. The file exists as requested, so don't go looking for a 
+        # Exit early. The file exists as requested, so don't go looking for a
         # virtual path.
         return
 
@@ -123,7 +123,7 @@ def virtual_paths(request):
             dirs.sort(key=lambda x: x.lower())
             for name in files + dirs:
                 if name.startswith('%'):
-                    
+
                     # See if we can use this item.
                     # ============================
                     # We want to allow file matches for the last URL
@@ -141,12 +141,12 @@ def virtual_paths(request):
                             k = k.rsplit('.', 1)[0]
                             v = part.rsplit('.', 1)[0]
                     elif not isdir(fs):
-                        continue 
+                        continue
 
                     # We found a suitable match at the current level.
                     # ===============================================
 
-                    matched = fs 
+                    matched = fs
                     key, value = _typecast(k, v)
                     request.line.uri.path[key] = value
                     break # Only use the first %match per level.

@@ -51,10 +51,10 @@ class RenderedResource(NegotiatedResource):
 
     def _parse_specline(self, specline):
         """Override to simplify.
-      
+
         Rendered resources have a simpler specline than negotiated resources.
         They don't have a media type, and the renderer is optional.
-        
+
         """
         typecheck(specline, str)
 

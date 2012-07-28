@@ -20,7 +20,7 @@ class BaseHeaders(CaseInsensitiveMapping):
         else:
             genheaders = d.iteritems
         CaseInsensitiveMapping.__init__(self, genheaders)
-      
+
 
         # Cookie
         # ======
