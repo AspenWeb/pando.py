@@ -9,13 +9,13 @@ import sys
 from pprint import pformat
 
 
-FIX_VIA_IMPORT = 1 
+FIX_VIA_IMPORT = 1
 FIX_VIA_PROJ = 0
 FSFIX = os.path.realpath('fsfix')
 
 
 def log(a, *b):
-    return  # turn off logging now that this works 
+    return  # turn off logging now that this works
     if not b:
         print a.rjust(30)
     else:

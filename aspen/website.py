@@ -28,7 +28,7 @@ class Website(Configurable):
         """Takes an argv list, without the initial executable name.
         """
         self.configure(argv)
-    
+
     def __call__(self, environ, start_response):
         """WSGI interface.
         """
@@ -97,7 +97,7 @@ class Website(Configurable):
             # case where it was returned, response is set in a try block above.
             pass
         else:
-            # If the response object is coming from handle_error via except 
+            # If the response object is coming from handle_error via except
             # Response, then it already has request on it and the early hooks
             # have already been run. If it fell off the edge un-exceptionally,
             # we need to take care of those two things.
@@ -167,7 +167,7 @@ class Website(Configurable):
     def check_auth(self, request):
         """Raise 401 if there's no authenticated user.
 
-        The user can set website.protected 
+        The user can set website.protected
 
         """
         if self.protected and request.context['user'].ANON:

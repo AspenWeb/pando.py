@@ -2,7 +2,7 @@
 # version 0.01
 #  Public domain.
 # from http://www.autopond.com/digestauth.py
-# modified by Paul Jimenez 
+# modified by Paul Jimenez
 
 import random, time, re
 
@@ -14,7 +14,7 @@ except ImportError:
 
 class MalformedAuthenticationHeader(Exception): pass
 
-## wrapper bits 
+## wrapper bits
 
 class AspenHTTPProvider:
     """An abstraction layer between the Auth object and
@@ -64,7 +64,7 @@ def inbound_responder(*args, **kw):
         password = users[username]
         return digestauth.digest(':'.join([username, realm, password]))
 
-    website.hooks.inbound_early.register(digestauth.inbound_responder(get_digest)) 
+    website.hooks.inbound_early.register(digestauth.inbound_responder(get_digest))
     """
     kwargs = kw.copy()
     kwargs['http_provider'] = AspenHTTPProvider
@@ -91,15 +91,15 @@ class AspenAuthWrapper(object):
         self.request = request
 
     def authorized(self):
-        """delegates to self.auth object""" 
+        """delegates to self.auth object"""
         return self.auth.authorized(self.request)[0]
 
     def username(self):
-        """delegates to self.auth object""" 
+        """delegates to self.auth object"""
         return self.auth.username(self.request)
 
     def logout(self):
-        """delegates to self.auth object""" 
+        """delegates to self.auth object"""
         return self.auth.logout(self.request)
 
 
@@ -150,7 +150,7 @@ class Storage(dict):
 class Auth(object):
     """A decorator class implementing digest authentication (RFC 2617)"""
     def __init__(self,  get_digest,  realm="Protected",  tolerate_ie = True, redirect_url = '/newuser',  unauth_html = None,  nonce_skip = 0,  lockout_time = 20,  nonce_life = 180,  tries=3,  domain=[], http_provider=None):
-        """Creates a decorator specific to a particular web application. 
+        """Creates a decorator specific to a particular web application.
             get_digest: a function taking the arguments (username, realm), and returning digestauth.digest(username:realm:password), or
                             throwing KeyError if no such user
             realm: the authentication "realm"
@@ -223,7 +223,7 @@ class Auth(object):
         if status[0] < 1 and time.time() < status[1]:
             # User got the password wrong within the last (self.lockout_time) seconds
             return False, self._deny_forbidden(http)
-        if status[0] < 1: 
+        if status[0] < 1:
             # User sent the wrong password, but more than (self.lockout_time) seconds have passed, so give
             # them another try.  However, send a 401 header so user's browser prompts for a password
             # again.
@@ -275,7 +275,7 @@ class Auth(object):
     def _send_401_unauth_response(self, http, why_msg, stale=False):
         """send a 401, optionally with a stale flag"""
         nonce = self.outstanding_nonces.get_new_nonce(self.nonce_life)
-        challenge_list = [ "realm=" + quote_it(self.realm), 
+        challenge_list = [ "realm=" + quote_it(self.realm),
                            'qop="auth"',
                            'nonce=' + quote_it(nonce),
                            'opaque=' + quote_it(self.opaque)
@@ -316,7 +316,7 @@ class Auth(object):
         if len(req_header_dict['nonce']) == 34:
             # First time: send a 401 giving the user the fake "logout" nonce
             nonce = "%032x" % random.getrandbits(136)
-            challenge_list = [ "realm=" + quote_it(self.realm), 
+            challenge_list = [ "realm=" + quote_it(self.realm),
                                'qop="auth"',
                                'nonce=' + quote_it(nonce),
                                'opaque=' + quote_it(self.opaque),
@@ -386,7 +386,7 @@ class NonceMemory(dict):
         is_new = False
         while not is_new:
             nonce = "%034x" % random.getrandbits(136)  # a random 136-bit zero-padded lowercase hex string
-            is_new = not nonce in self 
+            is_new = not nonce in self
         self[nonce] = (time.time() + lifespan, 1)
         return nonce
 

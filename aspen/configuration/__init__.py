@@ -28,7 +28,7 @@ NO_DEFAULT = object()
 class NicerDefaultDict(collections.defaultdict):
     """Subclass to support .default assignment.
     """
-    
+
     __default = ''
     def _get_default(self, name):
         return self.__default
@@ -40,14 +40,14 @@ class NicerDefaultDict(collections.defaultdict):
 
     def get(self, name, default=NO_DEFAULT):
         if default is NO_DEFAULT:
-            default = self.default 
+            default = self.default
         collections.defaultdict.get(self, name, default)
 
 
 # Defaults
 # ========
-# The from_unicode callable converts from unicode to whatever format is 
-# required by the variable, raising ValueError appropriately. Note that 
+# The from_unicode callable converts from unicode to whatever format is
+# required by the variable, raising ValueError appropriately. Note that
 # name is supposed to match the options in our optparser. I like it wet.
 
 KNOBS = \
@@ -68,7 +68,7 @@ KNOBS = \
     , 'charset_dynamic':    (u'UTF-8', parse.charset)
     , 'charset_static':     (None, parse.charset)
     , 'indices':            ( lambda: [u'index.html', u'index.json', u'index']
-                            , parse.list_ 
+                            , parse.list_
                              )
     , 'list_directories':   (False, parse.yes_no)
     , 'media_type_default': ('text/plain', parse.media_type)
@@ -86,7 +86,7 @@ class Configurable(object):
     """Mixin object for aggregating configuration from several sources.
     """
 
-    protected = False  # Set to True to require authentication for all 
+    protected = False  # Set to True to require authentication for all
                        # requests.
 
     @classmethod
@@ -105,7 +105,7 @@ class Configurable(object):
         if name_in_context:
             assert isinstance(flat, unicode) # sanity check
             name_in_context = " %s=%s" % (name_in_context, flat)
-        out = "  %-22s %-30s %-24s" 
+        out = "  %-22s %-30s %-24s"
         return out % (name, hydrated, context + name_in_context)
 
     def set(self, name, raw, from_unicode, context, name_in_context):
@@ -211,7 +211,7 @@ class Configurable(object):
             aspen.logging.LOGGING_THRESHOLD = self.logging_threshold
         # Now that we know the user's desires, we can log appropriately.
         aspen.log_dammit(os.linesep.join(msgs))
-       
+
         # www_root
         if self.www_root is None:
             try:
@@ -235,7 +235,7 @@ class Configurable(object):
         self.www_root = os.path.realpath(self.www_root)
         os.chdir(self.www_root)
 
-        # project root 
+        # project root
         if self.project_root is None:
             aspen.log_dammit("project_root not configured (no template bases, "
                              "etc.).")
@@ -243,7 +243,7 @@ class Configurable(object):
         else:
             # canonicalize it
             if not os.path.isabs(self.project_root):
-                aspen.log_dammit("project_root is relative: '%s'." 
+                aspen.log_dammit("project_root is relative: '%s'."
                                  % self.project_root)
                 self.project_root = os.path.join( self.www_root
                                                 , self.project_root
@@ -270,7 +270,7 @@ class Configurable(object):
             # Pre-populate renderers so we can report on ImportErrors early
             try:
                 capture = {}
-                python_syntax = 'from aspen.renderers.%s import Factory' 
+                python_syntax = 'from aspen.renderers.%s import Factory'
                 exec python_syntax % name in capture
                 make_renderer = capture['Factory'](self)
             except ImportError, err:
@@ -279,7 +279,7 @@ class Configurable(object):
 
         default_renderer = self.renderer_factories[self.renderer_default]
         if isinstance(default_renderer, ImportError):
-            msg = "\033[1;31mImportError loading the default renderer, %s:\033[0m" 
+            msg = "\033[1;31mImportError loading the default renderer, %s:\033[0m"
             aspen.log_dammit(msg % self.renderer_default)
             raise default_renderer
 
@@ -304,17 +304,17 @@ class Configurable(object):
         mimetypes.init()
 
         # network_engine
-        try: 
+        try:
             capture = {}
-            python_syntax = 'from aspen.network_engines.%s_ import Engine' 
+            python_syntax = 'from aspen.network_engines.%s_ import Engine'
             exec python_syntax % self.network_engine in capture
             Engine = capture['Engine']
         except ImportError:
-            # ANSI colors: 
+            # ANSI colors:
             #   http://stackoverflow.com/questions/287871/
             #   http://en.wikipedia.org/wiki/ANSI_escape_code#CSI_codes
             #   XXX consider http://pypi.python.org/pypi/colorama
-            msg = "\033[1;31mImportError loading the %s network engine:\033[0m" 
+            msg = "\033[1;31mImportError loading the %s network engine:\033[0m"
             aspen.log_dammit(msg % self.network_engine)
             raise
         self.network_engine = Engine(self.network_engine, self)
@@ -339,7 +339,7 @@ class Configurable(object):
         # Finally, exec any configuration scripts.
         # ========================================
         # The user gets self as 'website' inside their configuration scripts.
-       
+
         for filepath in self.configuration_scripts:
             if not filepath.startswith(os.sep):
                 if self.project_root is None:
@@ -351,8 +351,8 @@ class Configurable(object):
             try:
                 execfile(filepath, {'website': self})
             except IOError, err:
-                # I was checking os.path.isfile for these, but then we have a 
-                # race condition that smells to me like a potential security 
+                # I was checking os.path.isfile for these, but then we have a
+                # race condition that smells to me like a potential security
                 # vulnerability.
                 if err.errno == errno.ENOENT:
                     msg = ("The configuration script %s doesn't seem to "

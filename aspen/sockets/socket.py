@@ -12,7 +12,7 @@ class Socket(object):
     Socket objects sit between Aspen's HTTP machinery and your Resource. They
     function as middleware, and the recv/send and _recv/_send semantics reflect
     this. They (the sockets) are persistent.
-    
+
     """
 
     transports = ",".join(TRANSPORTS)
@@ -40,7 +40,7 @@ class Socket(object):
         """
         handshake = ":".join([ self.sid
                              , self.heartbeat
-                             , self.timeout 
+                             , self.timeout
                              , self.transports
                               ])
         return Response(200, handshake)
@@ -102,19 +102,19 @@ class Socket(object):
 
     def __send(self, type_, data):
         message = Message()
-        message.type = type_ 
+        message.type = type_
         message.endpoint = self.endpoint
         message.data = data
         self.outgoing.put(message)
 
-   
+
     # Event API
     # =========
     # Working with events is so common that we offer these conveniences.
 
     def listen(self, *filter):
         """Given a series of events to listen for, return a tuple.
-    
+
         The return value is a tuple of the event name and data. If no events
         are specified, the first event is returned.
 
@@ -136,7 +136,7 @@ class Socket(object):
         self.send_event({"name": name, "args": args})
 
 
-    # Server Side 
+    # Server Side
     # ===========
     # These are called by Aspen's HTTP machinery.
 
@@ -157,7 +157,7 @@ class Socket(object):
                 raise RuntimeError(msg)
             if message.type == 0:           # disconnect
                 self.disconnect()
-            elif message.type == 1:         # connect 
+            elif message.type == 1:         # connect
                 pass
             elif message.type == 2:         # heartbeat
                 pass

@@ -43,13 +43,13 @@ def test_allow_allows_allowed():
     expected = None
     actual = request.allow('GET')
     assert actual is expected, actual
-    
+
 def test_allow_disallows_disallowed():
     request = StubRequest()
     expected = 405
     actual = assert_raises(Response, request.allow, 'POST').code
     assert actual == expected, actual
-    
+
 def test_allow_can_handle_lowercase():
     request = StubRequest()
     expected = 405
@@ -72,12 +72,12 @@ def test_methods_changing_changes():
 def test_is_xhr_false():
     request = StubRequest()
     assert not request.is_xhr()
-    
+
 def test_is_xhr_true():
     request = StubRequest()
     request.headers['X-Requested-With'] = 'XmlHttpRequest'
     assert request.is_xhr()
-    
+
 def test_is_xhr_is_case_insensitive():
     request = StubRequest()
     request.headers['X-Requested-With'] = 'xMLhTTPrEQUEST'
@@ -89,19 +89,19 @@ def test_headers_access_gets_a_value():
     expected = "Bar"
     actual = headers['Foo']
     assert actual == expected, actual
-    
+
 def test_headers_access_gets_last_value():
     headers = BaseHeaders("Foo: Bar\r\nFoo: Baz")
     expected = "Baz"
     actual = headers['Foo']
     assert actual == expected, actual
-    
+
 def test_headers_access_is_case_insensitive():
     headers = BaseHeaders("Foo: Bar")
     expected = "Bar"
     actual = headers['foo']
     assert actual == expected, actual
-    
+
 
 # kick_against_goad
 

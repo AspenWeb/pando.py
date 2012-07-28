@@ -8,7 +8,7 @@ from the inside out:
 
     Message     a Socket.IO message, a colon-delimited set of bytestrings
     Packet      a Socket.IO packet, a message or series of framed messages
-    Buffer      a Socket.IO buffer, buffers incoming and outgoing messages 
+    Buffer      a Socket.IO buffer, buffers incoming and outgoing messages
     Loop        an object responsible for repeatedly calling socket.tick
     Socket      a Socket.IO socket, maintains state
     Channel     an object that represents all connections to a single Resource
@@ -17,7 +17,7 @@ from the inside out:
     Response    an HTTP Response message
     Request     an HTTP Request message
 
-    Engine      fits somewhere, handles networking implementation; Buffer and 
+    Engine      fits somewhere, handles networking implementation; Buffer and
                   Loop attributes point to implementations of the above
 
 
@@ -135,7 +135,7 @@ def get(request):
         # This is the first request after a handshake. It's not until this
         # point that we know what transport the client wants to use.
         Transport = XHRPollingTransport # XXX derp
-        __sockets__[sid] = Transport(__sockets__[sid]) 
+        __sockets__[sid] = Transport(__sockets__[sid])
 
     transport = __sockets__[sid]
     return transport

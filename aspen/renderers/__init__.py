@@ -84,7 +84,7 @@ Out will come:
 If you write a new renderer for inclusion in the base Aspen distribution,
 please work with Aspen's existing reloading machinery, etc. as much as
 possible. Use the existing template shims as guidelines, and if Aspen's
-machinery is inadequate for some reason let's evolve the machinery so all 
+machinery is inadequate for some reason let's evolve the machinery so all
 renderers behave consistently for users. Thanks.
 
 """

@@ -43,7 +43,7 @@ class Hook(list):
         """Extend to ensure that obj is callable. Could check signature, too.
         """
         if not is_callable(obj):
-            raise TypeError("Hooks must be callable objects; this isn't: %s." 
+            raise TypeError("Hooks must be callable objects; this isn't: %s."
                             % str(obj))
         list.append(self, obj)
 

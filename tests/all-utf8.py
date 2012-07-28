@@ -6,4 +6,4 @@ for i in range(2**16):
     sys.stdout.write("%5d %s  " % (i, u))
     if i % 6 == 0:
         print
-    
+

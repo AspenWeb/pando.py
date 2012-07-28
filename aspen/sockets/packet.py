@@ -1,7 +1,7 @@
 """Packets.
 
 Socket.IO packets contain one or more frames of this format:
-      
+
     \ufffdlength\ufffdencoded-message
 
 Alternately, a packet can contain a single encoded-message, without framing.
@@ -14,7 +14,7 @@ from aspen.sockets.message import Message
 class Packet(object):
     """Model a Socket.IO packet. It takes bytes and yields Messages.
     """
-    
+
     def __init__(self, bytes):
         self.bytes = bytes
 
@@ -28,7 +28,7 @@ class Packet(object):
             frames = frames[1:] # discard initial empty string
             nframes = len(frames)
             if nframes % 2 != 0:
-                msg = "There are an odd number of frames in this packet: " 
+                msg = "There are an odd number of frames in this packet: "
                 msg += self.bytes
                 raise SyntaxError(msg)
             while frames:
