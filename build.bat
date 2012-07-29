@@ -1,7 +1,7 @@
 python vendor\virtualenv-1.7.1.2.py ^
 		--distribute ^
 		--unzip-setuptools ^
-		--prompt="[aspen] " ^
+		--prompt="[aspen]" ^
 		--never-download ^
 		--extra-search-dir=vendor ^
 		env
