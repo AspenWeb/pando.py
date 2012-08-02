@@ -80,6 +80,16 @@ def lazy_check():
 # Main public API.
 # ================
 
+def load(*a, **kw):
+    lazy_check()
+    return _json.load(*a, **kw)
+
+def dump(*a, **kw):
+    lazy_check()
+    if 'cls' not in kw:
+        kw['cls'] = FriendlyEncoder
+    return _json.dump(*a, **kw)
+
 def loads(*a, **kw):
     lazy_check()
     return _json.loads(*a, **kw)
@@ -89,3 +99,4 @@ def dumps(*a, **kw):
     if 'cls' not in kw:
         kw['cls'] = FriendlyEncoder
     return _json.dumps(*a, **kw)
+
