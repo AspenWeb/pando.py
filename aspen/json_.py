@@ -72,8 +72,8 @@ def lazy_check():
     if _json is None:
         raise ImportError("Neither simplejson nor json was found. Try "
                           "installing simplejson to use dynamic JSON "
-                          "resources. See "
-                          "http://aspen.io/resources/json/#libraries for "
+                          "simplates. See "
+                          "http://aspen.io/simplates/json/#libraries for "
                           "more information.")
 
 
