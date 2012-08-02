@@ -5,7 +5,7 @@ Here is the class hierarchy:
     Resource                            Logic Pages     Content Pages
      +-- DynamicResource                -----------------------------
      |    +-- JSONResource                  1 or 2          0
-     |    +-- NegotiatedResource            1 or 2          1 or more
+     |    +-- NegotiatedResource            2               1 or more
      |    |    +-- RenderedResource         1 or 2          1
      |    +-- SocketResource                1, 2, or 3      0
      +-- StaticResource                     0               1
