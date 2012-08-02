@@ -1,3 +1,6 @@
+import StringIO
+
+from aspen import json
 from aspen.testing import assert_raises, check
 from aspen.testing.fsfix import attach_teardown
 
@@ -112,6 +115,28 @@ def test_json_raises_TypeError_on_unknown_types():
                  , "class Foo: passresponse.body = Foo()"
                  , filename="foo.json"
                   )
+
+def test_aspen_json_load_loads():
+    fp = StringIO.StringIO()
+    fp.write('{"cheese": "puffs"}')
+    fp.seek(0)
+    actual = json.load(fp)
+    assert actual == {'cheese': 'puffs'}, actual
+
+def test_aspen_json_dump_dumps():
+    fp = StringIO.StringIO()
+    json.dump({"cheese": "puffs"}, fp)
+    fp.seek(0)
+    actual = fp.read()
+    assert actual == '{"cheese": "puffs"}', actual
+
+def test_aspen_json_loads_loads():
+    actual = json.loads('{"cheese": "puffs"}')
+    assert actual == {'cheese': 'puffs'}, actual
+
+def test_aspen_json_dumps_dumps():
+    actual = json.dumps({'cheese': 'puffs'})
+    assert actual == '{"cheese": "puffs"}', actual
 
 
 # Teardown
