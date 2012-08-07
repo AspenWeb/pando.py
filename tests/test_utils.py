@@ -1,7 +1,6 @@
 import aspen.utils # this happens to install the 'repr' error strategy
 from aspen.testing import assert_raises, attach_teardown
-from aspen.utils import ascii_dammit, unicode_dammit, dt2age, utcnow
-
+from aspen.utils import ascii_dammit, unicode_dammit, to_age, utcnow
 
 GARBAGE = "\xef\xf9"
 
@@ -30,13 +29,12 @@ def test_ascii_dammit_works():
     actual = ascii_dammit("comet: \xe2\x98\x84")
     assert actual == r"comet: \xe2\x98\x84", actual
 
-
-def test_dt2age_barely_works():
-    actual = dt2age(utcnow())
+def test_to_age_barely_works():
+    actual = to_age(utcnow())
     assert actual == "just a moment ago", actual
 
-def test_dt2age_formatting_works():
-    actual = dt2age(utcnow(), fmt_past="Cheese, for {age}!")
+def test_to_age_formatting_works():
+    actual = to_age(utcnow(), fmt_past="Cheese, for {age}!")
     assert actual == "Cheese, for just a moment!", actual
 
 
