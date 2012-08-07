@@ -197,14 +197,12 @@ def _typecast(key, value):
         try:
             value = int(value)
         except ValueError:
-            print "404 int typecasting; %s and %s" % (key, value)
-            raise Response(404)
+            raise Response(404, body="404 int typecasting; %s and %s" % (key, value))
     else:                       # otherwise it's URL-quoted ASCII
         try:
             value = value.decode('ASCII')
         except UnicodeDecodeError:
-            print "404 decoding typecasting; %s and %s" % (key, value)
-            raise Response(400)
+            raise Response(400, body="404 decoding typecasting; %s and %s" % (key, value))
     return key, value
 
 def trailing_slash(request):
