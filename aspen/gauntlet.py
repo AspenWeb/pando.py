@@ -109,59 +109,85 @@ def virtual_paths(request):
     matched = request.website.www_root
     parts = request._parts
     del request._parts
-    nparts = len(parts)
-    for i in range(1, nparts):
-        part = parts[i]
+
+    def _match_remaining(rparts, matched):
+        """given
+               rparts - unmatched request parts
+               matched - fs path matched so far
+           return the matched file to dispatch to
+        """
+        part = rparts[0]
         next = join(matched, part)
-        if exists(next):    # this URL part names an actual directory
-            matched = next
-            continue
-        else:               # this part is missing; do we have a %subdir?
-            key = None
-            root, dirs, files = os.walk(matched).next()
-            files.sort(key=lambda x: x.lower())
-            dirs.sort(key=lambda x: x.lower())
-            for name in files + dirs:
+        root, dirs, files = os.walk(matched).next()
+        files.sort(key=lambda x: x.lower())
+        dirs.sort(key=lambda x: x.lower())
+
+        if len(rparts) > 1:
+            if exists(next):
+                return _match_remaining(rparts[1:], next)
+            # looking for a dir, or if not found, a greedy simplate
+            for name in dirs:
                 if name.startswith('%'):
+                    key, value = _typecast(name[1:], part)
+                    request.line.uri.path[key] = value
+                    recurse = _match_remaining(rparts[1:], join(matched, name))
+                    if recurse is not None:
+                        return recurse
 
-                    # See if we can use this item.
-                    # ============================
-                    # We want to allow file matches for the last URL
-                    # path part, and in that case we strip the file
-                    # extension. For other matches we need them to be
-                    # directories.
-
-                    fs = join(matched, name)
-                    k = name[1:]
-                    v = part
-                    if i == (nparts - 1):
-                        if isfile(fs):
-                            if not _ext_matches(k, part):
-                                continue
-                            k = k.rsplit('.', 1)[0]
-                            v = part.rsplit('.', 1)[0]
-                    elif not isdir(fs):
-                        continue
-
-                    # We found a suitable match at the current level.
-                    # ===============================================
-
-                    matched = fs
+            fullparts = '/'.join(rparts)
+            for name in files:
+                if name.startswith('%') and _ext_matches_if_present(fullparts, name):
+                    k = name.rsplit('.',1)[0][1:]
+                    v = fullparts.rsplit('.',1)[0]
                     key, value = _typecast(k, v)
                     request.line.uri.path[key] = value
-                    break # Only use the first %match per level.
-            if key is None:
-                matched = request.website.www_root
-                break # no match, reset
-    if matched != request.website.www_root:
-        request.fs = matched.rstrip(os.sep)
+                    return join(matched, name)
 
-def _ext_matches(n1, n2):
-    """return true iff either both have an extension and it's the same,
-       or neither have an extension"""
-    n1_parts = n1.rsplit('.', 1) + [ None ]
-    n2_parts = n2.rsplit('.', 1) + [ None ]
-    return n1_parts[1] == n2_parts[1]
+        else:
+            # check for immediate match
+            if exists(next):
+                if isdir(next):
+                    return match_index(request, next)
+                else:
+                    return next
+
+            # indirect negotiation
+            part_noext = join(matched, part.split('.', 1)[0])
+            if exists(part_noext) and not isdir(part_noext):
+                return part_noext
+
+            # looking for a final dir, if it contains an index path
+            for name in dirs:
+                if name.startswith('%'):
+                    p = match_index(request, join(matched, name))
+                    if p is not None and _ext_matches_if_present(p, part):
+                        key, value = _typecast(name[1:], part)
+                        request.line.uri.path[key] = value
+                        return p
+
+            # no dir matched, look for a virtual file that might
+            for name in files:
+                if name.startswith('%') and _ext_matches_if_present(part, name):
+                    k = name.rsplit('.',1)[0][1:]
+                    v = '/'.join(rparts).rsplit('.',1)[0]
+                    key, value = _typecast(k, v)
+                    request.line.uri.path[key] = value
+                    return join(matched, name)
+
+        # not found
+        return None
+
+    search = _match_remaining(parts, matched)
+    if search is not None:
+        request.fs = search
+
+
+def _ext_matches_if_present(r, f):
+    """return true if either both have a matching extension, or r
+       has one and f doesn't"""
+    r_parts = r.rsplit('.',1) + [ None ]
+    f_parts = f.rsplit('.',1) + [ None ]
+    return r_parts[1] == f_parts[1] or f_parts[1] == None
 
 def _typecast(key, value):
     """Given two strings, return a string, and an int or string.
@@ -171,11 +197,13 @@ def _typecast(key, value):
         try:
             value = int(value)
         except ValueError:
+            print "404 int typecasting; %s and %s" % (key, value)
             raise Response(404)
     else:                       # otherwise it's URL-quoted ASCII
         try:
             value = value.decode('ASCII')
         except UnicodeDecodeError:
+            print "404 decoding typecasting; %s and %s" % (key, value)
             raise Response(400)
     return key, value
 
@@ -196,6 +224,14 @@ def index(request):
             if isfile(index):
                 request.fs = index
                 break
+
+def match_index(request, indir):
+    for filename in request.website.indices:
+        index = join(indir, filename)
+        if isfile(index):
+            return index
+    return None
+
 
 def autoindex(request):
     if isdir(request.fs):
