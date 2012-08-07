@@ -233,7 +233,7 @@ def test_virtual_path_matches_the_first():
 
 def test_virtual_path_directory():
     mk(('%first/index.html', "Greetings, program!"))
-    expected = fix('%first')
+    expected = fix('%first/index.html')
     actual = check_virtual_paths('/foo/').fs
     assert actual == expected, actual
 
