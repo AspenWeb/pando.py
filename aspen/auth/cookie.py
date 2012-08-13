@@ -4,6 +4,7 @@ import datetime
 
 from aspen import auth
 from aspen.utils import to_rfc822, utcnow
+from aspen.website import THE_PAST
 
 
 MINUTE = datetime.timedelta(seconds=60)
@@ -57,11 +58,11 @@ def outbound_late(response):
     elif user.ANON:
         # user is anonymous, instruct browser to delete any auth cookie
         cookie_value = ''
-        cookie_expires = auth.THE_PAST
+        cookie_expires = THE_PAST
     else:
         # user is authenticated, keep it rolling for them
         cookie_value = user.token
-        cookie_expires = utcnow() + TIMEOUT
+        cookie_expires = to_rfc822(utcnow() + TIMEOUT)
 
 
     # Configure outgoing cookie.
@@ -70,7 +71,7 @@ def outbound_late(response):
     response.headers.cookie[NAME] = cookie_value  # creates a cookie object?
     cookie = response.headers.cookie[NAME]          # loads a cookie object?
 
-    cookie['expires'] = to_rfc822(cookie_expires)
+    cookie['expires'] = cookie_expires
 
     if DOMAIN is not None:
         # Browser default is the domain of the resource requested.
