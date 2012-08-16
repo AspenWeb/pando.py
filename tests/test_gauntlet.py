@@ -135,7 +135,7 @@ def test_indirect_negotiation_skips_two_dots():
     mk(('foo.bar', "Greetings, program!"))
     expected = fix('foo.bar.html')
     actual = check_indirect_negotiation('foo.bar.html').fs
-    assert actual == expected, actual
+    assert actual == expected, actual + " isn't " + expected
 
 def test_indirect_negotiation_prefers_rendered():
     mk( ('foo.html', "Greetings, program!")
@@ -233,9 +233,9 @@ def test_virtual_path_matches_the_first():
 
 def test_virtual_path_directory():
     mk(('%first/index.html', "Greetings, program!"))
-    expected = fix('%first/index.html')
+    expected = fix('%first') + os.sep
     actual = check_virtual_paths('/foo/').fs
-    assert actual == expected, actual
+    assert actual == expected, actual + " != " + expected
 
 def test_virtual_path_file():
     mk(('foo/%bar.html', "Greetings, program!"))
@@ -271,7 +271,7 @@ def test_virtual_path_file_key_val_cast():
     mk(('foo/%bar.int.html', "Greetings, program!"))
     expected = {'bar': [537]}
     actual = check_virtual_paths('/foo/537.html').line.uri.path
-    assert actual == expected, actual
+    assert actual == expected, repr(actual) + " isn't " + repr(expected)
 
 def test_virtual_path_file_not_dir():
     mk( ('%foo/bar.html', "Greetings from bar!")

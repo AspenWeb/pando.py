@@ -117,15 +117,20 @@ def virtual_paths(request):
            return the matched file to dispatch to
         """
         part = rparts[0]
+        part_noext = part.split('.', 1)[0]
         next = join(matched, part)
+        next_noext = join(matched, part_noext)
         root, dirs, files = os.walk(matched).next()
         files.sort(key=lambda x: x.lower())
         dirs.sort(key=lambda x: x.lower())
 
         if len(rparts) > 1:
+            # looking for a dir, or if not found, a greedy simplate
+            ## if this matches it's a real dir
             if exists(next):
                 return _match_remaining(rparts[1:], next)
-            # looking for a dir, or if not found, a greedy simplate
+
+            ## if this matches, it's a virtual dir, so recurse
             for name in dirs:
                 if name.startswith('%'):
                     key, value = _typecast(name[1:], part)
@@ -134,11 +139,14 @@ def virtual_paths(request):
                     if recurse is not None:
                         return recurse
 
+            ## if this matches, it's a greedy simplate; the value is the full path
             fullparts = '/'.join(rparts)
             for name in files:
-                if name.startswith('%') and _ext_matches_if_present(fullparts, name):
+                if name.startswith('%') and _ext_matches_if_present(rparts[-1], name):
                     k = name.rsplit('.',1)[0][1:]
-                    v = fullparts.rsplit('.',1)[0]
+                    lastpart_noext = rparts[-1].rsplit('.', 1)[0]
+                    fullparts_noext = '/'.join(rparts[:-1] + [lastpart_noext])
+                    v = fullparts_noext
                     key, value = _typecast(k, v)
                     request.line.uri.path[key] = value
                     return join(matched, name)
@@ -146,24 +154,20 @@ def virtual_paths(request):
         else:
             # check for immediate match
             if exists(next):
-                if isdir(next):
-                    return match_index(request, next)
-                else:
-                    return next
+                return next
 
             # indirect negotiation
-            part_noext = join(matched, part.split('.', 1)[0])
-            if exists(part_noext) and not isdir(part_noext):
-                return part_noext
+            if exists(next_noext) and not isdir(next_noext):
+                return next_noext
 
             # looking for a final dir, if it contains an index path
             for name in dirs:
                 if name.startswith('%'):
                     p = match_index(request, join(matched, name))
-                    if p is not None and _ext_matches_if_present(p, part):
+                    if p is not None and _ext_matches_if_present(part, basename(p)):
                         key, value = _typecast(name[1:], part)
                         request.line.uri.path[key] = value
-                        return p
+                        return join(matched, name)
 
             # no dir matched, look for a virtual file that might
             for name in files:
@@ -177,17 +181,14 @@ def virtual_paths(request):
         # not found
         return None
 
-    search = _match_remaining(parts, matched)
-    if search is not None:
-        request.fs = search
-
+    request.fs = _match_remaining(parts, matched) or request.fs
 
 def _ext_matches_if_present(r, f):
     """return true if either both have a matching extension, or r
        has one and f doesn't"""
     r_parts = r.rsplit('.',1) + [ None ]
     f_parts = f.rsplit('.',1) + [ None ]
-    return r_parts[1] == f_parts[1] or f_parts[1] == None
+    return (len(r_parts) < 4) and (r_parts[1] == f_parts[1]) or (f_parts[1] == None) or (r_parts[0] == f)
 
 def _typecast(key, value):
     """Given two strings, return a string, and an int or string.
