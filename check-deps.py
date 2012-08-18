@@ -30,7 +30,6 @@ def get_current_versions(deps_file):
 
 def report_version_status(name, version, latest_available):
     if latest_available > version:
-        retcode = 1
         print((
             '{} {} is available!  ' +
             'Current dependency is version {}.  Upgrade!').format(
