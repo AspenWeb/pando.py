@@ -5,21 +5,24 @@
 # that doesn't belong to aspen while still allowing us to ship vendorized
 # libraries (batteries!)
 
+TOP="`python -S -c "
+import os, sys
+sys.stdout.write(os.path.dirname(os.path.abspath('$0')))
+"`"
+cd "$TOP"
+eval "`cat "$TOP/deps.txt" | tr '[:lower:]' '[:upper:]' | sed 's/ /_VERSION=/'`"
 
 CHERRYPY_DL_BASE="http://download.cherrypy.org/cherrypy"
-CHERRYPY_VERSION="3.2.2"
 CHERRYPY_DIR="CherryPy-$CHERRYPY_VERSION"
 CHERRYPY_TARBALL="$CHERRYPY_DIR.tar.gz"
 CHERRYPY_URL="$CHERRYPY_DL_BASE/$CHERRYPY_VERSION/$CHERRYPY_TARBALL"
 
 TORNADO_DL_BASE="http://github.com/downloads/facebook/tornado"
-TORNADO_VERSION="2.3"
 TORNADO_DIR="tornado-$TORNADO_VERSION"
 TORNADO_TARBALL="$TORNADO_DIR.tar.gz"
 TORNADO_URL="$TORNADO_DL_BASE/$TORNADO_TARBALL"
 
 MIMEPARSE_DL_BASE="http://pypi.python.org/packages/source/m/mimeparse"
-MIMEPARSE_VERSION="0.1.3"
 MIMEPARSE_DIR="mimeparse-$MIMEPARSE_VERSION"
 MIMEPARSE_TARBALL="mimeparse-$MIMEPARSE_VERSION.tar.gz"
 MIMEPARSE_URL="$MIMEPARSE_DL_BASE/$MIMEPARSE_TARBALL"
@@ -42,10 +45,6 @@ set -e
 set -x
 
 
-TOP="`python -S -c "
-import os, sys
-sys.stdout.write(os.path.dirname(os.path.abspath('$0')))
-"`"
 mkdir -p "$TOP/downloads"
 cd "$TOP/downloads"
 
