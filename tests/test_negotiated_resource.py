@@ -1,6 +1,6 @@
 from aspen import resources, Response
 from aspen.resources.negotiated_resource import NegotiatedResource
-from aspen.testing import assert_raises, attach_teardown, handle,mk,StubRequest
+from aspen.testing import assert_raises, attach_teardown, handle, mk, StubRequest
 from aspen.website import Website
 from aspen.renderers.tornado import Factory as TornadoFactory
 
