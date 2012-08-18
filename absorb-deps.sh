@@ -1,6 +1,10 @@
 #!/bin/sh
 
-TOP="`dirname $(readlink -f $0)`"
+# This script should be maybe both a development-time and release-time
+# dependency?  I think the goal is to have the *aspen* source tree free of code
+# that doesn't belong to aspen while still allowing us to ship vendorized
+# libraries (batteries!)
+
 
 CHERRYPY_DL_BASE="http://download.cherrypy.org/cherrypy"
 CHERRYPY_VERSION="3.2.2"
@@ -21,30 +25,43 @@ MIMEPARSE_TARBALL="mimeparse-$MIMEPARSE_VERSION.tar.gz"
 MIMEPARSE_URL="$MIMEPARSE_DL_BASE/$MIMEPARSE_TARBALL"
 
 
+maybe_untar_url_to_dir() {
+    if [ ! -d "$2" ] ; then
+        curl -O -L "$1"
+        tar -xvzf "`basename $1`"
+    fi
+}
+
+redo_tree() {
+    rm -rvf "$1"
+    mkdir -p "$1"
+    touch "$1/__init__.py"
+}
+
+set -e
+set -x
+
+
+TOP="`python -S -c "
+import os, sys
+sys.stdout.write(os.path.dirname(os.path.abspath('$0')))
+"`"
 mkdir -p "$TOP/downloads"
 cd "$TOP/downloads"
 
 
-if [ ! -d "$CHERRYPY_DIR" ] ; then
-    curl -O -L "$CHERRYPY_URL"
-    tar -xvzf "$CHERRYPY_TARBALL"
-fi
-rm -rvf "$TOP/aspen/_cherrypy"
-mkdir -p "$TOP/aspen/_cherrypy"
+maybe_untar_url_to_dir "$CHERRYPY_URL" "$CHERRYPY_DIR"
+redo_tree "$TOP/aspen/_cherrypy"
 rsync -av "$CHERRYPY_DIR/cherrypy/wsgiserver" "$TOP/aspen/_cherrypy/"
 
 
-if [ ! -d "$TORNADO_DIR" ] ; then
-    curl -O -L "$TORNADO_URL"
-    tar -xzvf "$TORNADO_TARBALL"
-fi
+maybe_untar_url_to_dir "$TORNADO_URL" "$TORNADO_DIR"
+redo_tree "$TOP/aspen/_tornado"
 for f in escape.py template.py ; do
     cp -v "$TORNADO_DIR/tornado/$f" "$TOP/aspen/_tornado/$f"
 done
 
 
-if [ ! -d "$MIMEPARSE_DIR" ] ; then
-    curl -O -L "$MIMEPARSE_URL"
-    tar -xzvf "$MIMEPARSE_TARBALL"
-fi
+maybe_untar_url_to_dir "$MIMEPARSE_URL" "$MIMEPARSE_DIR"
+redo_tree "$TOP/aspen/_mimeparse"
 cp -v "$MIMEPARSE_DIR/mimeparse.py" "$TOP/aspen/_mimeparse/mimeparse.py"
