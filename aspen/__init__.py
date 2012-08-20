@@ -1,4 +1,5 @@
 import sys
+import pkg_resources
 
 try:                # Python >= 2.6
     from collections import Callable
@@ -15,8 +16,8 @@ from aspen.logging import log, log_dammit
 # Shut up, PyFlakes. I know I'm addicted to you.
 Response, json, is_callable, log, log_dammit
 
-
-__version__ = "~~VERSION~~"
+dist = pkg_resources.get_distribution('aspen')
+__version__ = dist.version
 WINDOWS = sys.platform[:3] == 'win'
 NETWORK_ENGINES = ['cheroot', 'cherrypy', 'diesel', 'eventlet', 'gevent',
                    'pants', 'rocket', 'tornado', 'twisted']
