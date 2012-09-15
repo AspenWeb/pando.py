@@ -158,6 +158,7 @@ def virtual_paths(request):
 
             # indirect negotiation
             if exists(next_noext) and not isdir(next_noext):
+                request.headers['X-Aspen-Accept'] = request._infer_media_type()
                 return next_noext
 
             # looking for a final dir, if it contains an index path
