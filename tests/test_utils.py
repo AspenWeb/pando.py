@@ -34,7 +34,7 @@ def test_to_age_barely_works():
     assert actual == "just a moment ago", actual
 
 def test_to_age_formatting_works():
-    actual = to_age(utcnow(), fmt_past="Cheese, for {age}!")
+    actual = to_age(utcnow(), fmt_past="Cheese, for %(age)s!")
     assert actual == "Cheese, for just a moment!", actual
 
 
