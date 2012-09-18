@@ -175,11 +175,11 @@ def to_age(dt, fmt_past=None, fmt_future=None):
                       'seven', 'eight', 'nine'][amount]
         age = ' '.join([str(amount), unit])
 
-    fmt_past = fmt_past if fmt_past is not None else '{age} ago'
-    fmt_future = fmt_future if fmt_future is not None else 'in {age}'
+    fmt_past = fmt_past if fmt_past is not None else '%(age)s ago'
+    fmt_future = fmt_future if fmt_future is not None else 'in %(age)s'
     fmt = fmt_past if dt < now else fmt_future
 
-    return fmt.format(age=age)
+    return fmt % dict(age=age)
 
 
 def to_rfc822(dt):
