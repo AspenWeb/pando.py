@@ -28,12 +28,13 @@ setup( author = 'Chad Whitacre'
                       'Simplates are the main attraction.')
      , entry_points = { 'console_scripts': [ 'aspen = aspen.server:main'
                                            , 'thrash = thrash:main'
+                                           , 'swaddle = swaddle:main'
                                             ] }
      , name = 'aspen'
      , packages = find_packages(exclude=[ 'aspen.tests'
                                         , 'aspen.tests.*'
                                          ])
-     , py_modules = ['thrash']
+     , py_modules = ['swaddle', 'thrash']
      , url = 'http://aspen.io/'
      , version = version
      , zip_safe = False
