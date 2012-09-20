@@ -65,11 +65,7 @@ class Website(Configurable):
             website.handler = greetings_program
 
         """
-        self.hooks.inbound_early.run(request)
-        self.check_auth(request)
-        gauntlet.run(request)  # sets request.fs
-        request.socket = sockets.get(request)
-        self.hooks.inbound_late.run(request)
+        self.run_inbound(request)
 
         # Look for a Socket.IO socket (http://socket.io/).
         if isinstance(request.socket, Response):    # handshake
@@ -81,6 +77,17 @@ class Website(Configurable):
         else:                                       # socket
             response = request.socket.respond(request)
         return response
+
+
+    def run_inbound(self, request):
+        """Factored out to support testing.
+        """
+        self.hooks.inbound_early.run(request)
+        self.check_auth(request)
+        gauntlet.run(request)  # sets request.fs
+        request.socket = sockets.get(request)
+        self.hooks.inbound_late.run(request)
+
 
     def handle_safely(self, request):
         """Given an Aspen request, return an Aspen response.

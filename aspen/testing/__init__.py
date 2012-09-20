@@ -5,8 +5,8 @@ import aspen.logging
 if aspen.logging.LOGGING_THRESHOLD == -1:
     # Suppress aspen's logging during tests.
     aspen.logging.LOGGING_THRESHOLD = 3
+from aspen import resources, Response
 from aspen.http.request import Request
-from aspen.resources import load
 from aspen.website import Website
 from aspen.testing.fsfix import fix, attach_teardown, FSFIX, mk, teardown
 
@@ -83,7 +83,7 @@ handle = Handle(['--www_root', FSFIX])
 
 
 def Resource(fs):
-    return load(StubRequest.from_fs(fs), 0)
+    return resources.load(StubRequest.from_fs(fs), 0)
 
 def check(content, filename="index.html", body=True, configure_aspen_py="",
         response=None, argv=None):
@@ -91,7 +91,7 @@ def check(content, filename="index.html", body=True, configure_aspen_py="",
         argv = []
     mk(('.aspen/configure-aspen.py', configure_aspen_py), (filename, content))
     request = StubRequest.from_fs(filename, *argv)
-    resource = load(request, 0)
+    resource = resources.load(request, 0)
     response = resource.respond(request, response)
     if body:
         return response.body
@@ -117,3 +117,43 @@ def assert_raises(Exc, call, *arg, **kw):
     return exc
 
 NoException = True
+
+
+# Website subclass for testing simplates.
+# =======================================
+
+class TestWebsite(Website):
+
+    def serve_request(self, path):
+        """Given an URL path, return response.
+        """
+        request = Request(uri=path)
+        request.website = self
+        response = self.handle_safely(request)
+        return response
+
+
+    def load_simplate(self, path, request=None, return_request_too=False):
+        """Given an URL path, return a simplate (Resource) object.
+        """
+        if request is None:
+            request = Request(uri=path)
+        if not hasattr(request, 'website'):
+            request.website = self
+        self.run_inbound(request)
+        resource = resources.get(request)
+        if return_request_too:
+            return resource, request
+        else:
+            return resource
+
+
+    def exec_simplate(self, path="/", request=None, response=None):
+        """Given the URL path of a simplate, exec page two and return response.
+        """
+        resource, request = self.load_simplate(path, request, True)
+        if response is None:
+            response = Response(charset=self.charset_dynamic)
+        context = resource.populate_context(request, response)
+        exec resource.pages[1] in context  # let's let exceptions raise
+        return response, context

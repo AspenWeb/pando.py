@@ -27,6 +27,7 @@ class DynamicResource(Resource):
         self.pages = self.parse_into_pages(self.raw)
         self.pages = self.compile_pages(self.pages)
 
+
     def respond(self, request, response=None):
         """Given a Request and maybe a Response, return or raise a Response.
         """
@@ -36,11 +37,7 @@ class DynamicResource(Resource):
         # Populate context.
         # =================
 
-        context = request.context
-        context.update(self.pages[0])
-        context['request'] = request
-        context['response'] = response
-        context['resource'] = self
+        context = self.populate_context(request, response)
 
 
         # Exec page two.
@@ -63,6 +60,17 @@ class DynamicResource(Resource):
             raise response
         else:
             return response
+
+
+    def populate_context(self, request, response):
+        """Factored out to support testing.
+        """
+        context = request.context
+        context.update(self.pages[0])
+        context['request'] = request
+        context['response'] = response
+        context['resource'] = self
+        return context
 
 
     def parse_into_pages(self, raw):
