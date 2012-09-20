@@ -312,6 +312,37 @@ def typecheck(*checks):
             raise TypeError(msg)
 
 
+# Hostname canonicalization
+# =========================
+
+def Canonizer(expected):
+    """Takes a netloc such as http://localhost:8080 (no path part).
+    """
+
+    def canonize(request):
+        """Enforce a certain network location.
+        """
+
+        scheme = request.headers.get('X-Forwarded-Proto', 'http') # XXX Heroku
+        host = request.headers['Host']  # will 400 if missing
+
+        actual = scheme + "://" + host
+
+        if actual != expected:
+            uri = expected
+            if request.line.method in ('GET', 'HEAD', 'OPTIONS', 'TRACE'):
+                # Redirect to a particular path for idempotent methods.
+                uri += request.line.uri.path.raw
+                if request.line.uri.querystring:
+                    uri += '?' + request.line.uri.querystring.raw
+            else:
+                # For non-idempotent methods, redirect to homepage.
+                uri += '/'
+            request.redirect(uri, permanent=True)
+
+    return canonize
+
+
 if __name__ == '__main__':
     import doctest
     doctest.testmod()
