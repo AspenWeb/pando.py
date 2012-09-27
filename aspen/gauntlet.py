@@ -217,14 +217,6 @@ def trailing_slash(request):
                 location += '?' + uri.querystring.raw
             raise Response(301, headers={'Location': location})
 
-def index(request):
-    if isdir(request.fs):
-        for filename in request.website.indices:
-            index = join(request.fs, filename)
-            if isfile(index):
-                request.fs = index
-                break
-
 def match_index(request, indir):
     for filename in request.website.indices:
         index = join(indir, filename)
@@ -232,15 +224,23 @@ def match_index(request, indir):
             return index
     return None
 
+def index(request):
+    if isdir(request.fs):
+        result = match_index(request, request.fs)
+        if result is not None:
+            request.fs = result
+
+def autoindex_of(request, somedir):
+    if not request.website.list_directories:
+        raise Response(404)
+    result = request.website.ours_or_theirs('autoindex.html')
+    assert result is not None # sanity check
+    request.headers['X-Aspen-AutoIndexDir'] = somedir
+    return result
 
 def autoindex(request):
     if isdir(request.fs):
-        if request.website.list_directories:
-            request.headers['X-Aspen-AutoIndexDir'] = request.fs
-            request.fs = request.website.ours_or_theirs('autoindex.html')
-            assert request.fs is not None # sanity check
-        else:
-            raise Response(404)
+        request.fs = autoindex_of(request, request.fs)
 
 def not_found(request):
     if not isfile(request.fs):
