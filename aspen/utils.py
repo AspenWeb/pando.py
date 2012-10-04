@@ -2,7 +2,8 @@ import math
 import codecs
 import datetime
 import re
-
+from email import utils as email_utils
+import time
 
 # Register a 'repr' error strategy.
 # =================================
@@ -192,18 +193,7 @@ def to_rfc822(dt):
     honors the locale and could generated non-English names.
 
     """
-    tz = ""
-    if dt.tzinfo is not None:
-        offset = dt.utcoffset()
-        if offset is not None:
-            sign = "-" if offset.seconds < 0 else "+"
-            tz = " " + sign + str(offset.seconds / 60).zfill(4)
-    out = dt.strftime("%%s, %d %%s %Y %H:%M:%S") + tz
-    days = ("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
-    months = ("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep",
-              "Oct", "Nov", "Dec")
-    out %= (days[dt.weekday()], months[dt.month - 1])
-    return out.decode('US-ASCII')
+    return email_utils.formatdate(time.mktime(dt.timetuple())).decode('US-ASCII')
 
 
 # Soft type checking

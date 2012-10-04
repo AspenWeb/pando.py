@@ -81,7 +81,7 @@ def test_unavailable_knob_sets_retry_after():
     actual = handle('/', '--unavailable=10').headers['Retry-After']
     expected = datetime.datetime.utcnow().strftime('%a, %d %b %Y')
     assert actual.startswith(expected), actual
-    assert actual.endswith(' +0000'), actual
+    assert (actual.endswith(' +0000') or actual.endswith(' -0000')), actual
 
 def test_unavailable_knob_sets_retry_after_on_website():
     mk( '.aspen'
@@ -91,7 +91,7 @@ def test_unavailable_knob_sets_retry_after_on_website():
     actual = handle('/', '--unavailable=10').headers['Retry-After']
     expected = datetime.datetime.utcnow().strftime('%a, %d %b %Y')
     assert actual.startswith(expected), actual
-    assert actual.endswith(' +0000'), actual
+    assert (actual.endswith(' +0000') or actual.endswith(' -0000')), actual
 
 
 def test_double_failure_still_sets_response_dot_request():
