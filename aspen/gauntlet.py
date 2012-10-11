@@ -104,6 +104,8 @@ def virtual_paths(request):
     if exists(request.fs):
         # Exit early. The file exists as requested, so don't go looking for a
         # virtual path.
+        if isdir(request.fs):
+            assert_trailing_slash(request)
         return
 
     matched = request.website.www_root
@@ -154,6 +156,8 @@ def virtual_paths(request):
         else:
             # check for immediate match
             if exists(next):
+                if isdir(next):
+                    assert_trailing_slash(request)
                 return next
 
             # indirect negotiation
@@ -161,14 +165,15 @@ def virtual_paths(request):
                 request.headers['X-Aspen-Accept'] = request._infer_media_type()
                 return next_noext
 
-            # looking for a final dir, if it contains an index path
-            for name in dirs:
-                if name.startswith('%'):
-                    p = match_index(request, join(matched, name))
-                    if p is not None and _ext_matches_if_present(part, basename(p)):
-                        key, value = _typecast(name[1:], part)
-                        request.line.uri.path[key] = value
-                        return join(matched, name)
+            if request.line.uri.path.raw.endswith('/'):
+                # looking for a final dir, if it contains an index path
+                for name in dirs:
+                    if name.startswith('%'):
+                        p = match_index(request, join(matched, name))
+                        if p is not None and _ext_matches_if_present(part, basename(p)):
+                            key, value = _typecast(name[1:], part)
+                            request.line.uri.path[key] = value
+                            return join(matched, name)
 
             # no dir matched, look for a virtual file that might
             for name in files:
@@ -178,6 +183,11 @@ def virtual_paths(request):
                     key, value = _typecast(k, v)
                     request.line.uri.path[key] = value
                     return join(matched, name)
+
+            # not a dir request, but a virtual dir will match it if there's no virtual file
+            for name in dirs:
+                if name.startsiwth('%'):
+                    assert_trailing_slash(request)
 
         # not found
         return None
@@ -207,15 +217,18 @@ def _typecast(key, value):
             raise Response(400)
     return key, value
 
-def trailing_slash(request):
-    if isdir(request.fs):
-        uri = request.line.uri
-        if not uri.path.raw.endswith('/'):
-            uri.path.raw += '/'
-            location = uri.path.raw
-            if uri.querystring.raw:
-                location += '?' + uri.querystring.raw
-            raise Response(301, headers={'Location': location})
+def assert_trailing_slash(request):
+    """If the request URI doesn't end with a trailing slash,
+       make it do so by doing a 301 to a corrected URI
+    """
+    if request.line.uri.path.raw.endswith('/'):
+        return
+    uri = request.line.uri
+    uri.path.raw += '/'
+    location = uri.path.raw
+    if uri.querystring.raw:
+        location += '?' + uri.querystring.raw
+    raise Response(301, headers={'Location': location})
 
 def match_index(request, indir):
     for filename in request.website.indices:
@@ -256,7 +269,6 @@ gauntlet = [ intercept_socket
            , hidden_files
            , indirect_negotiation
            , virtual_paths
-           , trailing_slash
            , index
            , autoindex
            , not_found
