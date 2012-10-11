@@ -315,7 +315,7 @@ def check_trailing_slash(path):
     """Given an urlpath, return a filesystem path per gauntlet.trailing_slash.
     """
     request = StubRequest.from_fs(path)
-    gauntlet.run_through(request, gauntlet.trailing_slash)
+    gauntlet.run_through(request, gauntlet.virtual_paths)
     return request
 
 def test_trailing_slash_passes_files_through():
