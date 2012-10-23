@@ -62,7 +62,8 @@ def test_resources_can_import_from_dot_aspen():
       , ('index.html', "import fooGreetings, {{ foo.bar }}!")
        )
     expected = "Greetings, baz!"
-    actual = handle('/', '--project_root=.aspen').body
+    project_root = os.path.join(FSFIX, '.aspen')
+    actual = handle('/', '--project_root='+project_root).body
     assert actual == expected, actual
 
 def test_unavailable_knob_works():
@@ -107,7 +108,8 @@ def bar(response):
        )
 
     # Intentionally break the website object so as to trigger a double failure.
-    website = Website(['--www_root='+FSFIX, '--project_root=.aspen'])
+    project_root = os.path.join(FSFIX, '.aspen')
+    website = Website(['--www_root='+FSFIX, '--project_root='+project_root])
     del website.renderer_factories
 
     response = website.handle_safely(StubRequest())
