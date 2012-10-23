@@ -202,6 +202,24 @@ class Configurable(object):
         # Set some attributes.
         # ====================
 
+
+        def safe_getcwd(errorstr):
+            try:
+                # If the working directory no longer exists, then the following
+                # will raise OSError: [Errno 2] No such file or directory. I
+                # swear I've seen this under supervisor, though I don't have
+                # steps to reproduce. :-(  To get around this you specify a
+                # www_root explicitly, or you can use supervisor's cwd
+                # facility.
+
+                return os.getcwd()
+            except OSError, err:
+                if err.errno != errno.ENOENT:
+                    raise
+                raise ConfigurationError(errorstr)
+
+
+
         # LOGGING_THRESHOLD
         # -----------------
         # This is initially set to -1 and not 0 so that we can tell if the user
@@ -211,29 +229,6 @@ class Configurable(object):
             aspen.logging.LOGGING_THRESHOLD = self.logging_threshold
         # Now that we know the user's desires, we can log appropriately.
         aspen.log_dammit(os.linesep.join(msgs))
-
-        # www_root
-        if self.www_root is None:
-            try:
-
-                # If the working directory no longer exists, then the following
-                # will raise OSError: [Errno 2] No such file or directory. I
-                # swear I've seen this under supervisor, though I don't have
-                # steps to reproduce. :-(  To get around this you specify a
-                # www_root explicitly, or you can use supervisor's cwd
-                # facility.
-
-                self.www_root = os.getcwd()
-            except OSError, err:
-                if err.errno != errno.ENOENT:
-                    raise
-                raise ConfigurationError("Could not get a current working "
-                                         "directory. You can specify "
-                                         "ASPEN_WWW_ROOT in the environment, "
-                                         "or --www_root on the command line.")
-
-        self.www_root = os.path.realpath(self.www_root)
-        os.chdir(self.www_root)
 
         # project root
         if self.project_root is None:
@@ -245,9 +240,12 @@ class Configurable(object):
             if not os.path.isabs(self.project_root):
                 aspen.log_dammit("project_root is relative: '%s'."
                                  % self.project_root)
-                self.project_root = os.path.join( self.www_root
-                                                , self.project_root
-                                                 )
+                cwd = safe_getcwd("Could not get a current working "
+                                  "directory. You can specify "
+                                  "ASPEN_PROJECT_ROOT in the environment, "
+                                  "or --project_root on the command line.")
+                self.project_root = os.path.join(cwd, self.project_root)
+
             self.project_root = os.path.realpath(self.project_root)
             aspen.log_dammit("project_root set to %s." % self.project_root)
 
@@ -263,6 +261,16 @@ class Configurable(object):
 
             # PYTHONPATH
             sys.path.insert(0, self.project_root)
+
+        # www_root
+        if self.www_root is None:
+            self.www_root = safe_getcwd("Could not get a current working "
+                                         "directory. You can specify "
+                                         "ASPEN_WWW_ROOT in the environment, "
+                                         "or --www_root on the command line.")
+
+        self.www_root = os.path.realpath(self.www_root)
+        os.chdir(self.www_root)
 
         # renderers
         self.renderer_factories = {}
