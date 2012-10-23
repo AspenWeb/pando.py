@@ -16,7 +16,7 @@ clean:
 	find . -name \*.pyc -delete
 
 docs: env
-	./env/bin/thrash ./env/bin/aspen -a:5370 -wdoc/ -p.aspen --changes_reload=1
+	./env/bin/aspen -a:5370 -wdoc/ -pdoc/.aspen --changes_reload=1
 
 test: env
 	./env/bin/nosetests -sx tests/
