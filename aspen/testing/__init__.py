@@ -45,7 +45,7 @@ class StubRequest:
         fs = os.sep.join(fs.split(os.sep))
         request = Request.from_wsgi(StubWSGIRequest(fs))
         website = Website([ '--www_root', FSFIX
-                          , '--project_root', '.aspen'
+                          , '--project_root', os.path.join(FSFIX, '.aspen')
                            ] + list(a))
         request.www_root = os.path.join(os.path.dirname(__file__), FSFIX)
         request.fs = fs
