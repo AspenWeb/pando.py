@@ -25,7 +25,7 @@ if [ "`git tag | grep $1`" ]; then
 else
     confirm "Tag version $1 and upload to PyPI and push to github and heroku?"
     if [ $? -eq 0 ]; then
-        echo -n "$1" > version.txt
+        printf "$1" > version.txt
         git commit version.txt -m"Version bump for release."
         git tag $1
 
@@ -34,7 +34,7 @@ else
 
         python2.7 setup.py sdist --formats=zip,gztar,bztar upload
 
-        echo -n "-dev" >> version.txt
+        printf "\055dev" >> version.txt
         git commit version.txt -m"Version bump post-release."
         git push
         git push heroku
