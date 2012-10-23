@@ -34,7 +34,7 @@ else
 
         python2.7 setup.py sdist --formats=zip,gztar,bztar upload
 
-        printf "+" >> version.txt
+        printf "-dev" >> version.txt
         git commit version.txt -m"Version bump post-release."
         git push
         git push heroku
