@@ -48,7 +48,7 @@ available immediately, without restarting the server.</p>
 
 <h3>Different Kinds of Simplates</h3>
 
-<p>Aspen uses the simplate file format to represent three different kinds of
+<p>Aspen uses the simplate file format to represent four different kinds of
 resources. Media types are inferred from the file extension.</p>
 
 <ol>
@@ -58,15 +58,19 @@ resources. Media types are inferred from the file extension.</p>
     a static file. Other media types are static unless they start with a
     docstring or an import.</li>
 
-    <li><a href="/simplates/template/"><b>Template Simplates</b></a>&mdash;This
+    <li><a href="/simplates/template/"><b>Rendered Simplates</b></a>&mdash;This
     is the main kind. It&rsquo;s what was introduced above. The first two pages
-    are Python and then the third is <a href="template/">Tornado template
+    are Python and then the third is <a href="template/">a templating
         syntax</a>.</li>
 
     <li><a href="/simplates/json/"><b>JSON Simplates</b></a>&mdash;Aspen has
     special support for JSON resources. There are only two pages, and whatever
     you set response.body to in the second page is serialized to JSON with the
     appropriate Content-Type.</li>
+
+    <li><a href="/simplates/negotiated/"><b>Negotiated
+            Simplates</b></a>&mdash;If a simplate file doesn&rsquo;t have a
+    file extension, then it can be used to serve multiple media types.</li>
 
 </ol>
 
