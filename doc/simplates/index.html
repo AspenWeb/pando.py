@@ -38,6 +38,22 @@ The first one is run once, the first time the page is hit (<i>not</i> on
 startup), and again any time the simplate is changed. It&rsquo;s designed for
 imports and constants. The second is run once for each request.</p>
 
+<p>The first page has these variables defined and available to you:</p>
+
+<pre>__file__   the absolute path to the simplate file (symlinks preserved)
+
+<a href="/api/website/">website</a>    an instance of a Website object that gives you access to 
+           configuration objects</pre>
+
+<p>The second page has those, and adds:</p>
+
+<pre>request    a request object
+
+response   a response object</pre>
+
+<p>The <a href="rendered/">template page</a> uses the template language from
+    Tornado by default, though others are available.</p>
+
 <p>All simplate pages are cached in a compiled state. This cache is invalidated
 whenever the underlying file changes, so simplate changes are always
 immediately available. When you change Python libraries or configuration files,
@@ -109,23 +125,5 @@ something like, &ldquo;What if you could put a Script (Python) and a ZPT in THE
 SAME FILE!?&rdquo; Steve has since switched careers to philosophy. I debuted
 simplates in Aspen 0.8, which came out in December of 2007. I made simplates
 the main attraction in Aspen 0.9.</p>
-
-
-
-<p>The first page has these variables defined and available to you:</p>
-
-<pre>__file__   the absolute path to the simplate file (symlinks preserved)
-
-<a href="/api/website/">website</a>    an instance of a Website object that gives you access to 
-           configuration objects</pre>
-
-<p>The second page has those, and adds:</p>
-
-<pre>request    a request object
-
-response   a response object</pre>
-
-<p>The template page uses <a href="/templating/">the template language from
-    Tornado</a>. It&rsquo;s nice.</p>
 
 {% end %}
