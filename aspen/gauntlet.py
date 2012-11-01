@@ -186,7 +186,7 @@ def virtual_paths(request):
 
             # not a dir request, but a virtual dir will match it if there's no virtual file
             for name in dirs:
-                if name.startsiwth('%'):
+                if name.startswith('%'):
                     assert_trailing_slash(request)
 
         # not found

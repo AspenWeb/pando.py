@@ -31,8 +31,10 @@ class NicerDefaultDict(collections.defaultdict):
 
     __default = ''
     def _get_default(self, name):
+        """property getter for default property"""
         return self.__default
     def _set_default(self, value):
+        """property setter for default property"""
         self.default_factory = lambda: value
         self.__default = value
     default = property(_get_default, _set_default)
@@ -91,6 +93,8 @@ class Configurable(object):
 
     @classmethod
     def from_argv(cls, argv):
+        """return a Configurable based on the passed-in arguments list
+        """
         configurable = cls()
         configurable.configure(argv)
         return configurable
