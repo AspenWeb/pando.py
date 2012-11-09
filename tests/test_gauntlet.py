@@ -5,6 +5,11 @@ from aspen.http.request import Request
 from aspen.testing import assert_raises, handle, NoException, StubRequest
 from aspen.testing import attach_teardown, fix, mk
 
+# Convenience wrappers
+def assert_raises_404(func, *args):
+    response = assert_raises(Response, func, *args)
+    assert response.code == 404, "Got " + str(response.code) + " instead of 404"
+    return response
 
 # Indices
 # =======
@@ -13,7 +18,7 @@ def check_index(path, *a):
     """Given a uripath, return a filesystem path per gauntlet.index.
     """
     request = StubRequest.from_fs(path, *a)
-    gauntlet.run_through(request, gauntlet.index)
+    gauntlet.run_through(request)
     return request
 
 def test_index_is_found():
@@ -36,9 +41,7 @@ Greetings, program!
 
 def test_alternate_index_is_not_found():
     mk(('default.html', "Greetings, program!"))
-    expected = fix('')
-    actual = check_index('/').fs
-    assert actual == expected, actual
+    response = assert_raises_404(check_index, '/')
 
 def test_alternate_index_is_found():
     mk( ('.aspen/configure-aspen.py', 'website.indices += ["default.html"]')
@@ -52,9 +55,7 @@ def test_configure_aspen_py_setting_override_works_too():
     mk( ('.aspen/configure-aspen.py', 'website.indices = ["default.html"]')
       , ('index.html', "Greetings, program!")
        )
-    expected = fix('')
-    actual = check_index('/').fs
-    assert actual == expected, actual
+    response = assert_raises_404( check_index, '/')
 
 def test_configure_aspen_py_setting_takes_first():
     mk( ( '.aspen/configure-aspen.py'
@@ -110,7 +111,7 @@ def check_indirect_negotiation(path):
     """Given an urlpath, return a filesystem path per gauntlet.indirect_negotiation.
     """
     request = StubRequest.from_fs(path)
-    gauntlet.run_through(request, gauntlet.indirect_negotiation)
+    gauntlet.run_through(request)
     return request
 
 def test_indirect_negotiation_can_passthrough_renderered():
@@ -133,7 +134,7 @@ def test_indirect_negotiation_modifies_one_dot():
 
 def test_indirect_negotiation_skips_two_dots():
     mk(('foo.bar', "Greetings, program!"))
-    expected = fix('foo.bar.html')
+    expected = fix('foo.bar')
     actual = check_indirect_negotiation('foo.bar.html').fs
     assert actual == expected, actual + " isn't " + expected
 
@@ -153,11 +154,17 @@ def test_indirect_negotiation_really_prefers_rendered():
     actual = check_indirect_negotiation('foo.html').fs
     assert actual == expected, actual
 
+def test_indirect_negotiation_really_prefers_rendered_2():
+    mk( ('foo.html', "Greetings, program!")
+      , ('foo', "blah blah blah")
+       )
+    expected = fix('foo.html')
+    actual = check_indirect_negotiation('foo.html').fs
+    assert actual == expected, actual
+
 def test_indirect_negotation_doesnt_do_dirs():
     mk(('foo/bar.html', "Greetings, program!"))
-    actual = check_indirect_negotiation('foo.html').fs
-    expected = fix('foo.html')
-    assert actual == expected, actual
+    response = assert_raises_404(check_indirect_negotiation, 'foo.html')
 
 
 # Virtual Paths
@@ -167,7 +174,7 @@ def check_virtual_paths(path):
     """Given an urlpath, return a filesystem path per gauntlet.virtual_paths.
     """
     request = StubRequest.from_fs(path)
-    gauntlet.run_through(request, gauntlet.virtual_paths)
+    gauntlet.run_through(request)
     return request
 
 def test_virtual_path_can_passthrough():
@@ -178,10 +185,7 @@ def test_virtual_path_can_passthrough():
 
 def test_unfound_virtual_path_passes_through():
     mk(('%bar/foo.html', "Greetings, program!"))
-    request = check_virtual_paths('/blah/flah.html')
-    expected = fix('/blah/flah.html')
-    actual = request.fs
-    assert actual == expected, actual
+    assert_raises_404(check_virtual_paths, '/blah/flah.html')
 
 def test_virtual_path_is_virtual():
     mk(('%bar/foo.html', "Greetings, program!"))
@@ -207,10 +211,7 @@ def test_virtual_path_raises_on_bad_typecast():
 
 def test_virtual_path_raises_404_on_bad_typecast():
     mk(('%year.int/foo.html', "Greetings, program!"))
-    response = assert_raises(Response, check_virtual_paths, '/I am not a year./foo.html')
-    expected = 404
-    actual = response.code
-    assert actual == expected, actual
+    response = assert_raises_404(check_virtual_paths, '/I am not a year./foo.html')
 
 def test_virtual_path_raises_on_direct_access():
     mk()
@@ -218,10 +219,7 @@ def test_virtual_path_raises_on_direct_access():
 
 def test_virtual_path_raises_404_on_direct_access():
     mk()
-    response = assert_raises(Response, check_virtual_paths, '/%name/foo.html')
-    expected = 404
-    actual = response.code
-    assert actual == expected, actual
+    response = assert_raises_404(check_virtual_paths, '/%name/foo.html')
 
 def test_virtual_path_matches_the_first():
     mk( ('%first/foo.html', "Greetings, program!")
@@ -233,7 +231,7 @@ def test_virtual_path_matches_the_first():
 
 def test_virtual_path_directory():
     mk(('%first/index.html', "Greetings, program!"))
-    expected = fix('%first') + os.sep
+    expected = fix('%first/index.html')
     actual = check_virtual_paths('/foo/').fs
     assert actual == expected, actual + " != " + expected
 
@@ -245,15 +243,13 @@ def test_virtual_path_file():
 
 def test_virtual_path_file_only_last_part():
     mk(('foo/%bar.html', "Greetings, program!"))
-    expected = fix('foo/blah.html/baz')
-    actual = check_virtual_paths('/foo/blah.html/baz').fs
+    expected = fix('foo/%bar.html')
+    actual = check_virtual_paths('/foo/blah/baz.html').fs
     assert actual == expected, actual
 
 def test_virtual_path_file_only_last_part____no_really():
     mk(('foo/%bar.html', "Greetings, program!"))
-    expected = fix('foo/blah.html/')
-    actual = check_virtual_paths('/foo/blah.html/').fs
-    assert actual == expected, actual
+    assert_raises_404(check_virtual_paths, '/foo/blah.html/')
 
 def test_virtual_path_file_key_val_set():
     mk(('foo/%bar.html', "Greetings, program!"))
@@ -277,8 +273,8 @@ def test_virtual_path_file_not_dir():
     mk( ('%foo/bar.html', "Greetings from bar!")
       , ('%baz.html', "Greetings from baz!")
        )
-    actual = check_virtual_paths('/bal.html').fs
     expected = fix('%baz.html')
+    actual = check_virtual_paths('/bal.html').fs
     assert actual == expected, actual
 
 
@@ -289,8 +285,8 @@ def test_virtual_path__and_indirect_neg_file_not_dir():
     mk( ('%foo/bar.html', "Greetings from bar!")
       , ('%baz', "Greetings from baz!")
        )
-    actual = check_virtual_paths('/bal.html').fs
     expected = fix('%baz')
+    actual = check_virtual_paths('/bal.html').fs
     assert actual == expected, actual
 
 def test_virtual_path_and_indirect_neg_noext():
@@ -315,18 +311,17 @@ def check_trailing_slash(path):
     """Given an urlpath, return a filesystem path per gauntlet.trailing_slash.
     """
     request = StubRequest.from_fs(path)
-    gauntlet.run_through(request, gauntlet.virtual_paths)
+    gauntlet.run_through(request)
     return request
 
 def test_trailing_slash_passes_files_through():
     mk(('foo/index.html', "Greetings, program!"))
     expected = fix('/foo/537.html')
-    actual = check_trailing_slash('/foo/537.html').fs
-    assert actual == expected, actual
+    assert_raises_404(check_trailing_slash, '/foo/537.html')
 
 def test_trailing_slash_passes_dirs_with_slash_through():
-    mk('foo')
-    expected = fix('/foo/')
+    mk(('foo/index.html', "Greetings, program!"))
+    expected = fix('/foo/index.html')
     actual = check_trailing_slash('/foo/').fs
     assert actual == expected, actual
 
@@ -345,6 +340,19 @@ def test_trailing_slash_redirects_trailing_slash_to_the_right_place():
     expected = '/foo/'
     actual = response.headers['Location']
     assert actual == expected, actual
+
+def test_trailing_on_virtual_paths_missing():
+    mk('%foo/%bar/%baz')
+    response = assert_raises(Response, check_trailing_slash, '/foo/bar/baz')
+    expected = '/foo/bar/baz/'
+    actual = response.headers['Location']
+    assert actual == expected, actual
+
+def test_trailing_on_virtual_paths():
+    mk(('%foo/%bar/%baz/index.html', "Greetings program!"))
+    expected = fix('/%foo/%bar/%baz/index.html')
+    actual = check_trailing_slash('/foo/bar/baz/').fs
+    assert actual == expected, actual + " isn't " + expected
 
 
 # Docs
@@ -488,7 +496,7 @@ def test_file_with_no_extension_matches():
 def test_aspen_favicon_doesnt_get_clobbered_by_virtual_path():
     mk('%value')
     request = StubRequest.from_fs('/favicon.ico')
-    gauntlet.run_through(request, gauntlet.not_found)
+    gauntlet.run_through(request)
     expected = {}
     actual = request.line.uri.path
     assert actual == expected, actual
@@ -496,7 +504,7 @@ def test_aspen_favicon_doesnt_get_clobbered_by_virtual_path():
 def test_robots_txt_also_shouldnt_be_redirected():
     mk('%value')
     request = StubRequest.from_fs('/robots.txt')
-    err = assert_raises(Response, gauntlet.run_through, request, gauntlet.not_found)
+    err = assert_raises(Response, gauntlet.run_through, request)
     actual = err.code
     assert actual == 404, actual
 
