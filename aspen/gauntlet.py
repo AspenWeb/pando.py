@@ -5,10 +5,154 @@ given here.
 
 """
 import os
+import mimetypes
 from os.path import basename, join, isfile, isdir, exists
+from collections import namedtuple
 
 from aspen import Response
 
+def debug_noop(*args,**kwargs):
+    pass
+
+def debug_stdout(func):
+    print "DEBUG: " + str(func())
+
+debug=debug_noop
+
+def splitext(name):
+    parts = name.rsplit('.',1) + [None]
+    return parts[:2]
+
+def _typecast(key, value):
+    """Given two strings, return a string, and an int or string.
+    """
+    debug( lambda: "typecasting " + key + ", " + value )
+    if key.endswith('.int'):    # you can typecast to int
+        key = key[:-4]
+        try:
+            value = int(value)
+        except ValueError:
+            raise Response(404)
+    else:                       # otherwise it's URL-quoted ASCII
+        try:
+            value = value.decode('ASCII')
+        except UnicodeDecodeError:
+            raise Response(400)
+    debug( lambda: "typecasted " + key + ", " + repr(value) )
+    return key, value
+
+def strip_matching_ext(a, b):
+    """given two names, strip a trailing extension iff they both have them"""
+    aparts = splitext(a)
+    bparts = splitext(b)
+    debug_ext = lambda: "exts: " + str(a) + "( " + str(aparts[1]) + " ) and " + str(b) + "( " + str(bparts[1]) + " )"
+    if aparts[1] == bparts[1]:
+        debug( lambda: debug_ext() + " matches" )
+        return aparts[0], bparts[0]
+    debug( lambda: debug_ext() + " don't match" )
+    return a, b
+
+class DispatchStatus:
+    okay, missing, non_leaf = range(3)
+
+DispatchResult = namedtuple('DispatchResult', 'status match wildcards detail'.split()) 
+
+def dispatch_abstract(listnodes, is_leaf, traverse, find_index, noext_matched, startnode, nodepath):
+    """Given a list of nodenames (in 'nodepath'), tries to traverse the
+       directed graph rooted at 'startnode' using the functions:
+           listnodes(joinedpath) - which lists the nodes in the specified joined path
+           is_leaf(node) - which returns true iff the specified node is a leaf node
+           traverse(joinedpath, newnode) - which returns a new joined path by traversing into newnode from the current joinedpath
+           find_index(joinedpath) - which returns the index file in the specified path if it exists, or None if not
+           noext_matched(node) - is called iff node is matched with no extension instead of fully
+       Wildcards nodenames start with %.  non-leaf wildcards are used askeys in wildvals and their actual path names are used as their values.
+       In general, the rule for matching is 'most specific wins':
+          $foo looks for isfile($foo) then isfile($foo-minus-extention) then isfile(virtual-with-extention) then isfile(virtual-no-extension) then isdir(virtual)
+       Returns a DispatchResult, a namedtuple described above.
+    """
+    # TODO: noext_matched wildleafs are borken
+    wildvals, wildleafs = {}, {}
+    curnode = startnode
+    is_wild = lambda n : n.startswith('%')
+    lastnode_ext = splitext(nodepath[-1])[1]
+    for depth, node in enumerate(nodepath):
+        if not node:
+            # empty path segment - only possible in the last position
+            subnode = traverse(curnode, node)
+            idx = find_index(subnode)
+            if idx is None:
+                # this makes the resulting path end in /, meaning autoindex or 404 as appropriate
+                idx = ""
+            curnode = traverse(subnode, idx)
+            break
+        subnodes = listnodes(curnode)
+        subnodes.sort()
+        node_noext, node_ext = splitext(node)
+        # look for matches, and gather future options
+        found_direct, found_indirect = None, None
+        wildsubs = []
+        for n in subnodes:
+            if n.startswith('.'):
+                # don't serve hidden files
+                continue
+            if node == n:
+                # exact name match
+                found_direct = n
+                break
+            n_is_leaf = is_leaf(traverse(curnode, n))
+            if node_noext == n and n_is_leaf:
+                # negotiated/indirect filename match - only for files
+                found_indirect = n
+                continue
+            if not is_wild(n): continue
+            if not n_is_leaf:
+                debug( lambda: "not is_leaf " + n )
+                wildsubs.append(n)
+                continue
+            # wild leafs are fallbacks if anything goes missing
+            # though they still have to match extension
+            ## figure out the wildcard value
+            wildwildvals = wildvals.copy()
+            remaining = reduce(traverse, nodepath[depth:])
+            k, v = strip_matching_ext(n[1:], remaining)
+            k, v = _typecast(k, v)
+            wildwildvals[k] = v
+            ## store it 
+            n_ext = splitext(n)[1]
+            wildleafs[n_ext] = (traverse(curnode, n), wildwildvals)
+        if found_direct: 
+            # exact match
+            debug( lambda : "Exact match " + str(node))
+            curnode = traverse(curnode, found_direct)
+            continue
+        if found_indirect:
+            # matched but no extension
+            debug( lambda : "Indirect match " + str(node))
+            noext_matched(node)
+            curnode = traverse(curnode, found_indirect)
+            continue
+        ## now look for wildcard matches
+        wildleaf_fallback = lastnode_ext in wildleafs or None in wildleafs
+        last_pathseg = depth == len(nodepath) - 1
+        if wildleaf_fallback and (last_pathseg or not wildsubs):
+            ext = lastnode_ext if lastnode_ext in wildleafs else None
+            curnode, wildvals = wildleafs[ext]
+            debug( lambda : "Wildcard leaf match " + str(curnode) + " because last_pathseg:" + str(last_pathseg) + " and ext " + str(ext))
+            break
+        if wildsubs:
+            # wildcard subnode matches
+            n = wildsubs[0]
+            k, v = _typecast(n[1:], node)
+            wildvals[k] = v
+            curnode = traverse(curnode, n)
+            debug( lambda : "Wildcard subnode match " + str(n))
+            continue
+        return DispatchResult(DispatchStatus.missing, None, None, "Node '" + str(node) +"' Not Found")
+    else:
+        debug( lambda: "else clause tripped; testing is_leaf " + str(curnode) )
+        if not is_leaf(curnode):
+            return DispatchResult(DispatchStatus.non_leaf, curnode, None, "Tried to access non-leaf node as leaf.")
+    return DispatchResult(DispatchStatus.okay, curnode, wildvals, "Found.")
 
 def intercept_socket(request):
     """Given a request object, return a tuple of (str, None) or (str, str).
@@ -31,205 +175,6 @@ def intercept_socket(request):
         socket = parts[1]
     request.line.uri.path.decoded, request.socket = path, socket
 
-def translate(request):
-    """Translate urlpath to fspath, returning urlpath parts.
-
-    We specifically avoid removing symlinks in the path so that the filepath
-    remains under the website root. Also, we don't want trailing slashes for
-    directories in request.fs.
-
-    """
-    parts = [request.website.www_root]
-    parts += request.line.uri.path.decoded.lstrip('/').split('/')
-    request.fs = os.sep.join(parts).rstrip(os.sep)
-    request._parts = parts # store for use in processing virtual_paths
-
-def check_sanity(request):
-    """Make sure the request is under our root.
-    """
-    if not request.fs.startswith(request.website.www_root):
-        raise Response(404)
-
-def hidden_files(request):
-    """Protect hidden files.
-    """
-    if '/.' in request.fs[len(request.website.www_root):]:
-        raise Response(404)
-
-def indirect_negotiation(request):
-    """Requests for /foo.html should be servable by /foo.
-
-    Negotiate resources are those that have no file extension. One way to
-    multiplex requests onto a single such file is to use the Accept request
-    header to specify a media type preference. This method implements support
-    for indexing into negotiated resources using the file extension in the URL
-    path as well. Note that this only works if there is exactly one dot (.) in
-    the URL, as otherwise direct requests for the same resource would get
-    convoluted.
-
-    """
-    if not isfile(request.fs):
-        path = request.fs.rsplit('.', 1)[0]
-        filename = basename(path)
-        if '.' not in filename:
-            if isfile(path):
-                media_type = request._infer_media_type()
-                request.headers['X-Aspen-Accept'] = media_type
-                # We look for X-Aspen-Accept before Accept.
-                # "The default value is q=1."
-                #   http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html
-                # That means that setting to 'text/html' will enforce only
-                # that one media type and fail if it's not available.
-                request.fs = path
-
-def virtual_paths(request):
-    """Support /foo/bar.html => ./%blah/bar.html and /blah.html => ./%flah.html
-
-    Parts is a list of fs path parts as returned by translate, above.
-
-    Path parts will end up in request.line.uri.path, a Mapping. There can
-    only be one variable per path part. If a directory has more than one
-    subdirectory starting with '%' then only the 'first' is used.
-
-    """
-    if os.sep + '%' in request.fs[len(request.website.www_root):]:
-        raise Response(404)     # disallow direct access
-
-    if request.line.uri.path.raw in ('/favicon.ico', '/robots.txt'):
-        # Special case. Aspen bundles its own favicon.ico, and it wants to
-        # serve that if it can rather then letting it fall through to a virtual
-        # path. For robots.txt we just want to avoid spam in a common case.
-        return
-
-    if exists(request.fs):
-        # Exit early. The file exists as requested, so don't go looking for a
-        # virtual path.
-        if isdir(request.fs):
-            assert_trailing_slash(request)
-        return
-
-    matched = request.website.www_root
-    parts = request._parts
-    del request._parts
-
-    def _match_remaining(rparts, matched):
-        """given
-               rparts - unmatched request parts
-               matched - fs path matched so far
-           return the matched file to dispatch to
-        """
-        part = rparts[0]
-        part_noext = part.split('.', 1)[0]
-        next = join(matched, part)
-        next_noext = join(matched, part_noext)
-        root, dirs, files = os.walk(matched).next()
-        files.sort(key=lambda x: x.lower())
-        dirs.sort(key=lambda x: x.lower())
-
-        if len(rparts) > 1:
-            # looking for a dir, or if not found, a greedy simplate
-            ## if this matches it's a real dir
-            if exists(next):
-                return _match_remaining(rparts[1:], next)
-
-            ## if this matches, it's a virtual dir, so recurse
-            for name in dirs:
-                if name.startswith('%'):
-                    key, value = _typecast(name[1:], part)
-                    request.line.uri.path[key] = value
-                    recurse = _match_remaining(rparts[1:], join(matched, name))
-                    if recurse is not None:
-                        return recurse
-
-            ## if this matches, it's a greedy simplate; the value is the full path
-            fullparts = '/'.join(rparts)
-            for name in files:
-                if name.startswith('%') and _ext_matches_if_present(rparts[-1], name):
-                    k = name.rsplit('.',1)[0][1:]
-                    lastpart_noext = rparts[-1].rsplit('.', 1)[0]
-                    fullparts_noext = '/'.join(rparts[:-1] + [lastpart_noext])
-                    v = fullparts_noext
-                    key, value = _typecast(k, v)
-                    request.line.uri.path[key] = value
-                    return join(matched, name)
-
-        else:
-            # check for immediate match
-            if exists(next):
-                if isdir(next):
-                    assert_trailing_slash(request)
-                return next
-
-            # indirect negotiation
-            if exists(next_noext) and not isdir(next_noext):
-                request.headers['X-Aspen-Accept'] = request._infer_media_type()
-                return next_noext
-
-            if request.line.uri.path.raw.endswith('/'):
-                # looking for a final dir, if it contains an index path
-                for name in dirs:
-                    if name.startswith('%'):
-                        p = match_index(request, join(matched, name))
-                        if p is not None and _ext_matches_if_present(part, basename(p)):
-                            key, value = _typecast(name[1:], part)
-                            request.line.uri.path[key] = value
-                            return join(matched, name)
-
-            # no dir matched, look for a virtual file that might
-            for name in files:
-                if name.startswith('%') and _ext_matches_if_present(part, name):
-                    k = name.rsplit('.',1)[0][1:]
-                    v = '/'.join(rparts).rsplit('.',1)[0]
-                    key, value = _typecast(k, v)
-                    request.line.uri.path[key] = value
-                    return join(matched, name)
-
-            # not a dir request, but a virtual dir will match it if there's no virtual file
-            for name in dirs:
-                if name.startswith('%'):
-                    assert_trailing_slash(request)
-
-        # not found
-        return None
-
-    request.fs = _match_remaining(parts, matched) or request.fs
-
-def _ext_matches_if_present(r, f):
-    """return true if either both have a matching extension, or r
-       has one and f doesn't"""
-    r_parts = r.rsplit('.',1) + [ None ]
-    f_parts = f.rsplit('.',1) + [ None ]
-    return (len(r_parts) < 4) and (r_parts[1] == f_parts[1]) or (f_parts[1] == None) or (r_parts[0] == f)
-
-def _typecast(key, value):
-    """Given two strings, return a string, and an int or string.
-    """
-    if key.endswith('.int'):    # you can typecast to int
-        key = key[:-4]
-        try:
-            value = int(value)
-        except ValueError:
-            raise Response(404)
-    else:                       # otherwise it's URL-quoted ASCII
-        try:
-            value = value.decode('ASCII')
-        except UnicodeDecodeError:
-            raise Response(400)
-    return key, value
-
-def assert_trailing_slash(request):
-    """If the request URI doesn't end with a trailing slash,
-       make it do so by doing a 301 to a corrected URI
-    """
-    if request.line.uri.path.raw.endswith('/'):
-        return
-    uri = request.line.uri
-    uri.path.raw += '/'
-    location = uri.path.raw
-    if uri.querystring.raw:
-        location += '?' + uri.querystring.raw
-    raise Response(301, headers={'Location': location})
-
 def match_index(request, indir):
     for filename in request.website.indices:
         index = join(indir, filename)
@@ -237,56 +182,70 @@ def match_index(request, indir):
             return index
     return None
 
-def index(request):
-    if isdir(request.fs):
-        result = match_index(request, request.fs)
-        if result is not None:
-            request.fs = result
+def update_neg_type(request, filename):
+    media_type = mimetypes.guess_type(filename, strict=False)[0]
+    if media_type is None:
+        media_type = self.website.media_type_default
+    request.headers['X-Aspen-Accept'] = media_type
 
-def autoindex_of(request, somedir):
-    if not request.website.list_directories:
-        raise Response(404)
-    result = request.website.ours_or_theirs('autoindex.html')
-    assert result is not None # sanity check
-    request.headers['X-Aspen-AutoIndexDir'] = somedir
-    return result
 
-def autoindex(request):
-    if isdir(request.fs):
-        request.fs = autoindex_of(request, request.fs)
+def dispatch(request, pure_dispatch=False):
+    """This is the 'adapter' that applies dispatch_abstract(), above, to the 'real world'.
+       It's all side-effecty on the request object, setting, at the least, request.fs, and at worst
+       other random contents including but not limited to: request.line.uri.path, request.headers, 
+    """
 
-def not_found(request):
-    if not isfile(request.fs):
-        if request.line.uri.path.raw == '/favicon.ico': # special case
-            request.fs = request.website.find_ours('favicon.ico')
-        else:
+    # legacy (?) websocket handling
+    intercept_socket(request)
+
+    # set up the real environment for the dispatcher, then dispatch
+    listnodes = os.listdir
+    is_leaf = os.path.isfile
+    traverse = os.path.join
+    find_index = lambda x: match_index(request, x)
+    noext_matched = lambda x: update_neg_type(request, x)
+    startdir = request.website.www_root
+    pathsegs = request.line.uri.path.decoded.lstrip('/').split('/')
+    result = dispatch_abstract( listnodes, is_leaf, traverse, find_index, noext_matched, startdir, pathsegs )
+
+    # provide a favicon if there's not one
+    if not pure_dispatch and request.line.uri.path.raw == '/favicon.ico' and result.status != DispatchStatus.okay:
+        request.fs = request.website.find_ours( request.line.uri.path.raw[1:] )
+        return
+    # don't let robots.txt be handled by anything other than an actual robots.txt file
+    if not pure_dispatch and request.line.uri.path.raw == '/robots.txt':
+        if result.status != DispatchStatus.missing and not result.match.endswith('robots.txt'):
             raise Response(404)
 
+    # handle returned states
+    if result.status == DispatchStatus.okay:
+        # handle autoindex
+        if result.match.endswith('/'):
+            if not request.website.list_directories:
+                raise Response(404)
+            autoindex = request.website.ours_or_theirs('autoindex.html')
+            assert autoindex is not None # sanity check
+            request.headers['X-Aspen-AutoIndexDir'] = result.match
+            request.fs = autoindex
+            return # return so we skip the no-escape check
+        # normal match
+        request.fs = result.match
+        for k, v in result.wildcards.iteritems():
+            request.line.uri.path[k] = v
+    elif result.status == DispatchStatus.non_leaf:
+        # requested a dir without a trailing slash; redirect to the same but with a trailing slash
+        uri = request.line.uri
+        location = uri.path.raw + '/'
+        if uri.querystring.raw:
+            location += '?' + uri.querystring.raw
+        raise Response(301, headers={'Location': location})
+    elif result.status == DispatchStatus.missing:
+        raise Response(404)
+    else:
+        raise "Unknown result status - internal error"
+    # not allowed to escape the www_root
+    if not request.fs.startswith(startdir):
+        raise Response(404)
 
-gauntlet = [ intercept_socket
-           , translate
-           , check_sanity
-           , hidden_files
-           , indirect_negotiation
-           , virtual_paths
-           , index
-           , autoindex
-           , not_found
-            ]
+run = run_through = dispatch
 
-def run(request):
-    """Given a request, run it through the gauntlet.
-    """
-    for func in gauntlet:
-        func(request)
-
-def run_through(request, last):
-    """For testing, here's a function that runs part of the gauntlet.
-
-    Pass in a request object and a gauntlet function, the last to be run.
-
-    """
-    for func in gauntlet:
-        func(request)
-        if func is last:
-            break
