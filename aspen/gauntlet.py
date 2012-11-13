@@ -105,6 +105,7 @@ def dispatch_abstract(listnodes, is_leaf, traverse, find_index, noext_matched,
         if not node:                            # empty path segment - only
             subnode = traverse(curnode, node)   #  possible in the last
             idx = find_index(subnode)           #  position
+            assert depth + 1 == len(nodepath)  # sanity check
             if idx is None:
                 # this makes the resulting path end in /, meaning autoindex or
                 # 404 as appropriate
@@ -135,7 +136,7 @@ def dispatch_abstract(listnodes, is_leaf, traverse, find_index, noext_matched,
             if not is_wild(n):
                 continue
             if not n_is_leaf:
-                debug( lambda: "not is_leaf " + n )
+                debug(lambda: "not is_leaf " + n)
                 wildsubs.append(n)
                 continue
 
@@ -154,12 +155,12 @@ def dispatch_abstract(listnodes, is_leaf, traverse, find_index, noext_matched,
             wildleafs[n_ext] = (traverse(curnode, n), wildwildvals)
 
         if found_direct:                        # exact match
-            debug( lambda : "Exact match " + str(node))
+            debug(lambda: "Exact match " + str(node))
             curnode = traverse(curnode, found_direct)
             continue
 
         if found_indirect:                      # matched but no extension
-            debug( lambda : "Indirect match " + str(node))
+            debug(lambda: "Indirect match " + str(node))
             noext_matched(node)
             curnode = traverse(curnode, found_indirect)
             continue
