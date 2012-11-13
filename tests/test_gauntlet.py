@@ -41,7 +41,7 @@ Greetings, program!
 
 def test_alternate_index_is_not_found():
     mk(('default.html', "Greetings, program!"))
-    response = assert_raises_404(check_index, '/')
+    assert_raises_404(check_index, '/')
 
 def test_alternate_index_is_found():
     mk( ('.aspen/configure-aspen.py', 'website.indices += ["default.html"]')
@@ -55,7 +55,7 @@ def test_configure_aspen_py_setting_override_works_too():
     mk( ('.aspen/configure-aspen.py', 'website.indices = ["default.html"]')
       , ('index.html', "Greetings, program!")
        )
-    response = assert_raises_404( check_index, '/')
+    assert_raises_404(check_index, '/')
 
 def test_configure_aspen_py_setting_takes_first():
     mk( ( '.aspen/configure-aspen.py'
