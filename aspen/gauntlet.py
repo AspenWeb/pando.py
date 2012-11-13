@@ -7,7 +7,10 @@ given here.
 import os
 import mimetypes
 from os.path import basename, join, isfile, isdir, exists
-from collections import namedtuple
+try: # python2.6+
+    from collections import namedtuple
+except ImportError: # < python2.6
+    from backcompat import namedtuple
 
 from aspen import Response
 
