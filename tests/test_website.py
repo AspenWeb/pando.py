@@ -80,7 +80,8 @@ def test_unavailable_knob_sets_retry_after():
       , ('index.html', "import fooGreetings, {{ foo.bar }}!")
        )
     actual = handle('/', '--unavailable=10').headers['Retry-After']
-    expected = datetime.datetime.utcnow().strftime('%a, %d %b %Y')
+    expectedtime = datetime.datetime.utcnow() + datetime.timedelta(minutes=10)
+    expected = expectedtime.strftime('%a, %d %b %Y')
     assert actual.startswith(expected), actual
     assert (actual.endswith(' +0000') or actual.endswith(' -0000')), actual
 
