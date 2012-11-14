@@ -64,8 +64,7 @@ def OptionParser():
     basic.add_option( "-p", "--project_root"
                     , help=("the filesystem path of the directory in "
                             "which to look for project files like "
-                            "template bases and such, relative to "
-                            "$ASPEN_WWW_ROOT []")
+                            "template bases and such. []")
                     , default=DEFAULT
                      )
     basic.add_option( "-w", "--www_root"
