@@ -66,35 +66,6 @@ def test_resources_can_import_from_dot_aspen():
     actual = handle('/', '--project_root='+project_root).body
     assert actual == expected, actual
 
-def test_unavailable_knob_works():
-    mk( '.aspen'
-      , ('.aspen/foo.py', 'bar = "baz"')
-      , ('index.html', "import fooGreetings, {{ foo.bar }}!")
-       )
-    actual = handle('/', '--unavailable=1').code
-    assert actual == 503, actual
-
-def test_unavailable_knob_sets_retry_after():
-    mk( '.aspen'
-      , ('.aspen/foo.py', 'bar = "baz"')
-      , ('index.html', "import fooGreetings, {{ foo.bar }}!")
-       )
-    actual = handle('/', '--unavailable=10').headers['Retry-After']
-    expectedtime = datetime.datetime.utcnow() + datetime.timedelta(minutes=10)
-    expected = expectedtime.strftime('%a, %d %b %Y')
-    assert actual.startswith(expected), actual
-    assert (actual.endswith(' +0000') or actual.endswith(' -0000')), actual
-
-def test_unavailable_knob_sets_retry_after_on_website():
-    mk( '.aspen'
-      , ('.aspen/foo.py', 'bar = "baz"')
-      , ('index.html', "import fooGreetings, {{ foo.bar }}!")
-       )
-    actual = handle('/', '--unavailable=10').headers['Retry-After']
-    expected = datetime.datetime.utcnow().strftime('%a, %d %b %Y')
-    assert actual.startswith(expected), actual
-    assert (actual.endswith(' +0000') or actual.endswith(' -0000')), actual
-
 
 def test_double_failure_still_sets_response_dot_request():
     mk( '.aspen'
