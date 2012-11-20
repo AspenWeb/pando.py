@@ -61,7 +61,6 @@ KNOBS = \
     , 'project_root':       (None, parse.identity)
     , 'logging_threshold':  (0, int)
     , 'www_root':           (None, parse.identity)
-    , 'unavailable':        (0, int)
 
 
     # Extended Options
@@ -386,17 +385,3 @@ class Configurable(object):
                 # XXX smelly ... bug here? second else pls?
             else:
                 execution.if_changes(filepath)
-
-
-        # Really finally provide service unavailable service.
-        # ===================================================
-
-        self.retry_after = utcnow()
-        if self.unavailable > 0:
-            self.retry_after += datetime.timedelta(minutes=self.unavailable)
-            header = to_rfc822(self.retry_after)
-            def handler(request):
-                response = aspen.Response(503)
-                response.headers['Retry-After'] = header
-                raise response
-            self.handler = handler
