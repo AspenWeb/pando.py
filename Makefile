@@ -12,7 +12,7 @@ env:
 	./env/bin/pip install -e ./
 
 clean:
-	rm -rf env .coverage coverage.xml nosetests.xml pylint.out
+	rm -rf env .coverage coverage.xml nosetests.xml pylint.out jenv vendor/jython-installer.jar jython_home
 	find . -name \*.pyc -delete
 
 docs: env
@@ -37,7 +37,8 @@ analyse: pylint.out coverage.xml nosetests.xml
 	@echo done!
 
 vendor/jython-installer.jar:
-	@wget "http://downloads.sourceforge.net/project/jython/jython/2.5.2/jython_installer-2.5.2.jar?r=http%3A%2F%2Fwiki.python.org%2Fjython%2FDownloadInstructions&ts=1336182239&use_mirror=superb-dca2" -O ./vendor/jython-installer.jar
+	#@wget "http://downloads.sourceforge.net/project/jython/jython/2.5.2/jython_installer-2.5.2.jar?r=http%3A%2F%2Fwiki.python.org%2Fjython%2FDownloadInstructions&ts=1336182239&use_mirror=superb-dca2" -O ./vendor/jython-installer.jar
+	@wget "http://search.maven.org/remotecontent?filepath=org/python/jython-installer/2.5.3/jython-installer-2.5.3.jar" -O ./vendor/jython-installer.jar
 
 jython_home: vendor/jython-installer.jar
 	@java -jar ./vendor/jython-installer.jar -s -d jython_home
