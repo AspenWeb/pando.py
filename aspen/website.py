@@ -12,7 +12,7 @@ from aspen.configuration import Configurable
 from aspen.utils import to_rfc822, utc
 
 
-THE_PAST = to_rfc822(datetime.datetime(1955, 11, 05, tzinfo=utc))
+THE_PAST = to_rfc822(datetime.datetime(1970, 1, 1, tzinfo=utc))
 
 
 class Website(Configurable):
