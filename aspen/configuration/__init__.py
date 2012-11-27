@@ -286,12 +286,14 @@ class Configurable(object):
                 make_renderer = capture['Factory'](self)
             except ImportError, err:
                 make_renderer = err
+                err.info = sys.exc_info()
             self.renderer_factories[name] = make_renderer
 
         default_renderer = self.renderer_factories[self.renderer_default]
         if isinstance(default_renderer, ImportError):
             msg = "\033[1;31mImportError loading the default renderer, %s:\033[0m"
             aspen.log_dammit(msg % self.renderer_default)
+            sys.excepthook(*default_renderer.info)
             raise default_renderer
 
         aspen.log_dammit("Renderers (*ed are unavailable, CAPS is default):")
