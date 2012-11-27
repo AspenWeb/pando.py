@@ -11,8 +11,8 @@ from aspen.http.response import Response
 from aspen.configuration import Configurable
 from aspen.utils import to_rfc822, utc
 
-
-THE_PAST = to_rfc822(datetime.datetime(1970, 1, 1, tzinfo=utc))
+# 2006-11-17 was the first release of aspen - v0.3
+THE_PAST = to_rfc822(datetime.datetime(2006, 11, 17, tzinfo=utc))
 
 
 class Website(Configurable):
