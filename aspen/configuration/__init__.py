@@ -241,7 +241,7 @@ class Configurable(object):
         else:
             # canonicalize it
             if not os.path.isabs(self.project_root):
-                aspen.log_dammit("project_root is relative: '%s'."
+                aspen.log_dammit("project_root is relative to CWD: '%s'."
                                  % self.project_root)
                 cwd = safe_getcwd("Could not get a current working "
                                   "directory. You can specify "
