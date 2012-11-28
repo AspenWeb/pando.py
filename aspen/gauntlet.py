@@ -286,6 +286,8 @@ def dispatch(request, pure_dispatch=False):
                               , pathsegs
                                )
 
+    debug(lambda: "dispatch_abstract returned: " + repr(result))
+
 
     if not pure_dispatch:
 

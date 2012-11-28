@@ -274,11 +274,11 @@ INDIRECTLY_NEGOTIATED_VIRTUAL_RESOURCE_STARTYPE = """\
 Greetings, {{ path['foo'] }}!"""
 
 def test_negotiated_inside_virtual_path():
-    mk(('/%foo/bar', INDIRECTLY_NEGOTIATED_VIRTUAL_RESOURCE ))
+    mk(('/%foo/bar', INDIRECTLY_NEGOTIATED_VIRTUAL_RESOURCE_STARTYPE ))
     response = handle('/program/bar.txt')
     expected = "Greetings, program!"
     actual = response.body
-    assert actual == expected, actual
+    assert actual == expected, "got " + repr(actual) + " instead of " + repr(expected)
     response = handle('/program/bar.html')
     actual = response.body
     assert '<h1>' in actual
