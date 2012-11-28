@@ -12,8 +12,9 @@ env:
 	./env/bin/pip install -e ./
 
 clean:
-	rm -rf env .coverage coverage.xml nosetests.xml pylint.out jenv vendor/jython-installer.jar jython_home
+	rm -rf env .coverage coverage.xml nosetests.xml pylint.out jenv vendor/jython-installer.jar jython_home jython-nosetests.xml
 	find . -name \*.pyc -delete
+	find . -name \*.class -delete
 
 docs: env
 	./env/bin/aspen -a:5370 -wdoc/ -pdoc/.aspen --changes_reload=1
