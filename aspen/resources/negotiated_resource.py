@@ -29,7 +29,7 @@ from aspen.utils import typecheck
 
 
 renderer_re = re.compile(r'#![a-z0-9.-]+')
-media_type_re = re.compile(r'[A-Za-z0-9.+-]+/[A-Za-z0-9.+-]+')
+media_type_re = re.compile(r'[A-Za-z0-9.+*-]+/[A-Za-z0-9.+*-]+')
 
 
 class NegotiatedResource(DynamicResource):
@@ -82,6 +82,7 @@ class NegotiatedResource(DynamicResource):
 
         # negotiate or punt
         if accept is not None:
+            #print "Calling best_match(" + repr(self.available_types) + "," + repr(accept) + ")"
             media_type = mimeparse.best_match(self.available_types, accept)
             if media_type == '':    # breakdown in negotiations
                 if failure == 404:
