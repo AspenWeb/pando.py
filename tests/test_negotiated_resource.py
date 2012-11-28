@@ -266,5 +266,22 @@ def test_negotiated_inside_virtual_path():
     actual = response.body
     assert actual == expected, actual
 
+INDIRECTLY_NEGOTIATED_VIRTUAL_RESOURCE_STARTYPE = """\
+^L
+^L text/html
+<h1>Greetings, {{ path['foo'] }}!</h1>
+^L text/*
+Greetings, {{ path['foo'] }}!"""
+
+def test_negotiated_inside_virtual_path():
+    mk(('/%foo/bar', INDIRECTLY_NEGOTIATED_VIRTUAL_RESOURCE ))
+    response = handle('/program/bar.txt')
+    expected = "Greetings, program!"
+    actual = response.body
+    assert actual == expected, actual
+    response = handle('/program/bar.html')
+    actual = response.body
+    assert '<h1>' in actual
+
 
 attach_teardown(globals())
