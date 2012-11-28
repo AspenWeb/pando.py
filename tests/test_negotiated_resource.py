@@ -123,7 +123,6 @@ def test_get_response_gets_response():
     actual = get_response(request, response)
     assert actual is response, actual
 
-
 def test_get_response_is_happy_not_to_negotiate():
     mk(('index', NEGOTIATED_RESOURCE))
     request = StubRequest.from_fs('index')
@@ -183,7 +182,7 @@ def test_get_response_406_gives_list_of_acceptable_types():
     request = StubRequest.from_fs('index')
     request.headers['Accept'] = 'cheese/head'
     actual = assert_raises(Response, get_response, request, Response()).body
-    expected ="The following media types are available: text/plain, text/html."
+    expected = "The following media types are available: text/plain, text/html."
     assert actual == expected, actual
 
 
@@ -268,20 +267,34 @@ def test_negotiated_inside_virtual_path():
 
 INDIRECTLY_NEGOTIATED_VIRTUAL_RESOURCE_STARTYPE = """\
 ^L
+^L */*
+Unknown request type, {{ path['foo'] }}!
 ^L text/html
 <h1>Greetings, {{ path['foo'] }}!</h1>
 ^L text/*
 Greetings, {{ path['foo'] }}!"""
 
-def test_negotiated_inside_virtual_path():
+def test_negotiated_inside_virtual_path_with_startypes_present():
+    mk(('/%foo/bar', INDIRECTLY_NEGOTIATED_VIRTUAL_RESOURCE_STARTYPE ))
+    response = handle('/program/bar.html')
+    actual = response.body
+    assert '<h1>' in actual
+
+def test_negotiated_inside_virtual_path_with_startype_partial_match():
     mk(('/%foo/bar', INDIRECTLY_NEGOTIATED_VIRTUAL_RESOURCE_STARTYPE ))
     response = handle('/program/bar.txt')
     expected = "Greetings, program!"
     actual = response.body
     assert actual == expected, "got " + repr(actual) + " instead of " + repr(expected)
-    response = handle('/program/bar.html')
-    actual = response.body
-    assert '<h1>' in actual
+
+def test_negotiated_inside_virtual_path_with_startype_fallback():
+    mk(('/%foo/bar', INDIRECTLY_NEGOTIATED_VIRTUAL_RESOURCE_STARTYPE ))
+    response = handle('/program/bar.jpg')
+    expected = "Unknown request type, program!"
+    actual = response.body.strip()
+    assert actual == expected, "got " + repr(actual) + " instead of " + repr(expected)
+
+
 
 
 attach_teardown(globals())
