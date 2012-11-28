@@ -186,8 +186,8 @@ def test_get_response_406_gives_list_of_acceptable_types():
     expected ="The following media types are available: text/plain, text/html."
     assert actual == expected, actual
 
-def test_can_override_default_renderers_by_mimetype():
-    mk(('.aspen/configure-aspen.py', """\
+
+OVERRIDE_SIMPLATE = """\
 from aspen.renderers import Renderer, Factory
 
 class Glubber(Renderer):
@@ -200,27 +200,20 @@ class GlubberFactory(Factory):
 website.renderer_factories['glubber'] = GlubberFactory(website)
 website.default_renderers_by_media_type['text/plain'] = 'glubber'
 
-"""), ('index', NEGOTIATED_RESOURCE))
+"""
+
+
+def test_can_override_default_renderers_by_mimetype():
+    mk(('.aspen/configure-aspen.py', OVERRIDE_SIMPLATE),
+       ('index', NEGOTIATED_RESOURCE))
     request = StubRequest.from_fs('index')
     request.headers['Accept'] = 'text/plain'
     actual = get_response(request, Response()).body
     assert actual == "glubber", actual
 
 def test_can_override_default_renderer_entirely():
-    mk(('.aspen/configure-aspen.py', """\
-from aspen.renderers import Renderer, Factory
-
-class Glubber(Renderer):
-    def render_content(self, context):
-        return "glubber"
-
-class GlubberFactory(Factory):
-    Renderer = Glubber
-
-website.renderer_factories['glubber'] = GlubberFactory(website)
-website.default_renderers_by_media_type.default = 'glubber'
-
-"""), ('index', NEGOTIATED_RESOURCE))
+    mk(('.aspen/configure-aspen.py', OVERRIDE_SIMPLATE),
+       ('index', NEGOTIATED_RESOURCE))
     request = StubRequest.from_fs('index')
     request.headers['Accept'] = 'text/plain'
     actual = get_response(request, Response()).body
