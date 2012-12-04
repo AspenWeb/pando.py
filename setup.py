@@ -42,4 +42,8 @@ setup( author = 'Chad Whitacre'
      , package_data = {'aspen': [ 'www/*'
                                 , 'configuration/mime.types'
                                  ]}
+     , install_requires = [ 'tornado==2.3' 
+                  , 'CherryPy==3.2.2'
+                  , 'mimeparse==0.1.3'
+                  ]
       )

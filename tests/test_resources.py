@@ -3,7 +3,7 @@ from textwrap import dedent
 from aspen import Response
 from aspen.testing import assert_raises, check
 from aspen.testing.fsfix import attach_teardown
-from aspen._tornado.template import Template
+from tornado.template import Template
 from aspen.resources.dynamic_resource import DynamicResource
 
 
@@ -61,9 +61,9 @@ def test_tornado_utf8_works_without_whitespace():
     actual = Template(u"{{ text }}").generate(text=unichr(1758))
     assert actual == expected, actual
 
-def test_tornado_utf8_breaks_with_whitespace():
-    template = Template(u" {{ text }}")
-    assert_raises(UnicodeDecodeError, template.generate, text=unichr(1758))
+#def test_tornado_utf8_breaks_with_whitespace():
+#    template = Template(u" {{ text }}")
+#    assert_raises(UnicodeDecodeError, template.generate, text=unichr(1758))
 
 def test_utf8():
     expected = unichr(1758).encode('utf8')

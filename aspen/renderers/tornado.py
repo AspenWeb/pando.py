@@ -1,5 +1,6 @@
+from __future__ import absolute_import
 from aspen import renderers
-from aspen._tornado.template import Loader, Template
+from tornado.template import Loader, Template
 
 
 class Renderer(renderers.Renderer):
