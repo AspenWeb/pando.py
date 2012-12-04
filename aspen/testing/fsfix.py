@@ -1,9 +1,9 @@
 import os
 import sys
+import shutil
 import tempfile
 import traceback
 from os.path import dirname, isdir, join, realpath
-
 from aspen import resources, sockets
 try:
     from nose.tools import with_setup
@@ -64,14 +64,8 @@ def fix(path=''):
 def rm():
     """Remove the filesystem fixture at FSFIX.
     """
-    root = FSFIX
-    if isdir(root):
-        for root, dirs, files in os.walk(root, topdown=False):
-            for name in dirs:
-                os.rmdir(join(root, name))
-            for name in files:
-                os.remove(join(root, name))
-        os.rmdir(root)
+    if isdir(FSFIX):
+        shutil.rmtree(FSFIX)
 
 def teardown():
     """Standard teardown function.
