@@ -5,7 +5,7 @@ import traceback
 from os.path import join, isfile
 
 import aspen
-from aspen import gauntlet, resources, sockets
+from aspen import dispatcher, resources, sockets
 from aspen.http.request import Request
 from aspen.http.response import Response
 from aspen.configuration import Configurable
@@ -84,7 +84,7 @@ class Website(Configurable):
         """
         self.hooks.inbound_early.run(request)
         self.check_auth(request)
-        gauntlet.run(request)  # sets request.fs
+        dispatcher.dispatch(request)  # sets request.fs
         request.socket = sockets.get(request)
         self.hooks.inbound_late.run(request)
 

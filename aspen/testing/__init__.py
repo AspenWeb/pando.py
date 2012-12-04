@@ -5,7 +5,7 @@ import aspen.logging
 if aspen.logging.LOGGING_THRESHOLD == -1:
     # Suppress aspen's logging during tests.
     aspen.logging.LOGGING_THRESHOLD = 3
-from aspen import resources, Response
+from aspen import resources
 from aspen.http.request import Request
 from aspen.website import Website
 from aspen.testing.fsfix import fix, attach_teardown, FSFIX, mk, teardown
