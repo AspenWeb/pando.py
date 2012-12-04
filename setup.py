@@ -43,7 +43,7 @@ setup( author = 'Chad Whitacre'
                                 , 'configuration/mime.types'
                                  ]}
      , install_requires = [ 'tornado==2.3' 
-                  , 'CherryPy==3.2.2'
+                  , 'cheroot==4.0.0beta'
                   , 'mimeparse==0.1.3'
                   ]
       )
