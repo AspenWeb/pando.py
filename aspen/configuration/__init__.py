@@ -54,7 +54,7 @@ class NicerDefaultDict(collections.defaultdict):
 
 KNOBS = \
     { 'configuration_scripts': (lambda: [], parse.list_)
-    , 'network_engine':     (u'cherrypy', parse.network_engine)
+    , 'network_engine':     (u'cheroot', parse.network_engine)
     , 'network_address':    ( ((u'0.0.0.0', 8080), socket.AF_INET)
                             , parse.network_address
                              )
