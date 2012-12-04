@@ -29,12 +29,13 @@ setup( author = 'Chad Whitacre'
      , entry_points = { 'console_scripts': [ 'aspen = aspen.server:main'
                                            , 'thrash = thrash:main'
                                            , 'swaddle = swaddle:main'
+                                           , 'fcgi_aspen = fcgi_aspen:main'
                                             ] }
      , name = 'aspen'
      , packages = find_packages(exclude=[ 'aspen.tests'
                                         , 'aspen.tests.*'
                                          ])
-     , py_modules = ['swaddle', 'thrash']
+     , py_modules = ['swaddle', 'thrash', 'fcgi_aspen']
      , url = 'http://aspen.io/'
      , version = version
      , zip_safe = False
