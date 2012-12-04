@@ -64,3 +64,7 @@ jython-nosetests.xml: jenv
 
 jython-test: jython-nosetests.xml
 
+smoke: env
+	@mkdir env/www && echo "Greetings, program!" >env/www/index.html
+	./env/bin/aspen -w env/www
+
