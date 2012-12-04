@@ -1,7 +1,7 @@
 import time
 import threading
 
-from aspen._cherrypy.wsgiserver import CherryPyWSGIServer
+from cherrypy.wsgiserver import CherryPyWSGIServer
 from aspen.network_engines import ThreadedEngine
 
 

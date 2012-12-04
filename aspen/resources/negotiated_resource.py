@@ -22,7 +22,7 @@ have both an extension *and* multiple content pages.
 import re
 
 from aspen import Response
-from aspen._mimeparse import mimeparse
+import mimeparse
 from aspen.resources import PAGE_BREAK
 from aspen.resources.dynamic_resource import DynamicResource
 from aspen.utils import typecheck
