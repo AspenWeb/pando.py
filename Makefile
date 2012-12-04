@@ -6,13 +6,15 @@ env:
 		--unzip-setuptools \
 		--prompt="[aspen] " \
 		--never-download \
+		--no-site-packages \
 		--extra-search-dir=./vendor/ \
 		env/
 	./env/bin/pip install -r requirements.txt
 	./env/bin/pip install -e ./
 
 clean:
-	rm -rf env .coverage coverage.xml nosetests.xml pylint.out jenv vendor/jython-installer.jar jython_home jython-nosetests.xml
+	python setup.py clean -a
+	rm -rf env .coverage coverage.xml nosetests.xml pylint.out jenv vendor/jython-installer.jar jython_home jython-nosetests.xml dist
 	find . -name \*.pyc -delete
 	find . -name \*.class -delete
 
