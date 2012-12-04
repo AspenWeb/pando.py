@@ -6,7 +6,6 @@ env:
 		--unzip-setuptools \
 		--prompt="[aspen] " \
 		--never-download \
-		--no-site-packages \
 		--extra-search-dir=./vendor/ \
 		env/
 	./env/bin/pip install -r requirements.txt
