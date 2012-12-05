@@ -13,7 +13,9 @@ env:
 
 clean:
 	python setup.py clean -a
-	rm -rf env .coverage coverage.xml nosetests.xml pylint.out jenv vendor/jython-installer.jar jython_home jython-nosetests.xml dist
+	rm -rf env .coverage coverage.xml nosetests.xml pylint.out jenv \
+		vendor/jython-installer.jar jython_home jython-nosetests.xml dist \
+		smoke-test
 	find . -name \*.pyc -delete
 	find . -name \*.class -delete
 
@@ -64,7 +66,7 @@ jython-nosetests.xml: jenv
 
 jython-test: jython-nosetests.xml
 
-smoke: env
-	@mkdir env/www && echo "Greetings, program!" >env/www/index.html
-	./env/bin/aspen -w env/www
+smoke-test: env
+	@mkdir smoke-test && echo "Greetings, program!" > smoke-test/index.html
+	./env/bin/aspen -w smoke-test
 
