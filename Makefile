@@ -32,7 +32,10 @@ test: env
 	./env/bin/pip install pylint
 
 nosetests.xml coverage.xml: -coverage-env
-	./env/bin/nosetests --with-xcoverage --with-xunit tests --cover-package aspen 
+	./env/bin/nosetests \
+		--with-xcoverage \
+		--with-xunit tests \
+		--cover-package aspen 
 
 pylint.out: -pylint-env
 	./env/bin/pylint --rcfile=.pylintrc aspen | tee pylint.out
