@@ -9,7 +9,7 @@ env:
 		--extra-search-dir=./vendor/ \
 		env/
 	./env/bin/pip install -r requirements.txt
-	./env/bin/pip install -e ./
+	./env/bin/pip install -e ./ --download-cache=./vendor/
 
 clean:
 	python setup.py clean -a
