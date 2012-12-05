@@ -1,6 +1,15 @@
 PYTHON=python
 
-env:
+# Satisfy dependencies using local tarballs.
+env/bin/aspen: env/bin/pip
+	./env/bin/pip install ./vendor/Cheroot-4.0.0beta.tar.gz
+	./env/bin/pip install ./vendor/mimeparse-0.1.3.tar.gz
+	./env/bin/pip install ./vendor/tornado-2.3.tar.gz
+	./env/bin/python setup.py develop
+
+env: env/bin/pip
+
+env/bin/pip:
 	$(PYTHON) ./vendor/virtualenv-1.7.1.2.py \
 		--distribute \
 		--unzip-setuptools \
@@ -8,8 +17,10 @@ env:
 		--never-download \
 		--extra-search-dir=./vendor/ \
 		env/
-	./env/bin/pip install -r requirements.txt
-	./env/bin/pip install -e ./ --download-cache=./vendor/
+
+env/bin/nosetests: env/bin/pip
+	./env/bin/pip install ./vendor/nose-1.1.2.tar.gz
+	./env/bin/pip install ./vendor/snot-0.6.tar.gz
 
 clean:
 	python setup.py clean -a
@@ -19,19 +30,23 @@ clean:
 	find . -name \*.pyc -delete
 	find . -name \*.class -delete
 
-docs: env
+docs: env/bin/aspen
 	./env/bin/aspen -a:5370 -wdoc/ -pdoc/.aspen --changes_reload=1
 
-test: env
+test: env/bin/nosetests
 	./env/bin/nosetests -sx tests/
 
--coverage-env: env
+smoke: env/bin/aspen
+	@mkdir smoke-test && echo "Greetings, program!" > smoke-test/index.html
+	./env/bin/aspen -w smoke-test
+
+-coverage-env: env/bin/pip
 	./env/bin/pip install coverage nosexcover
 
--pylint-env: env
+-pylint-env: env/bin/pip
 	./env/bin/pip install pylint
 
-nosetests.xml coverage.xml: -coverage-env
+nosetests.xml coverage.xml: env/bin/nosetests -coverage-env
 	./env/bin/nosetests \
 		--with-xcoverage \
 		--with-xunit tests \
@@ -68,8 +83,4 @@ jython-nosetests.xml: jenv
 	./jenv/bin/jython ./jenv/bin/nosetests --with-xunit tests --xunit-file=jython-nosetests.xml --cover-package aspen
 
 jython-test: jython-nosetests.xml
-
-smoke-test: env
-	@mkdir smoke-test && echo "Greetings, program!" > smoke-test/index.html
-	./env/bin/aspen -w smoke-test
 
