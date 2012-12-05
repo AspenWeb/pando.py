@@ -33,7 +33,7 @@ clean:
 docs: env/bin/aspen
 	./env/bin/aspen -a:5370 -wdoc/ -pdoc/.aspen --changes_reload=1
 
-test: env/bin/nosetests
+test: env/bin/aspen env/bin/nosetests
 	./env/bin/nosetests -sx tests/
 
 smoke: env/bin/aspen
