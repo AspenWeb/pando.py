@@ -32,16 +32,15 @@ Options:
                         the IPv4, IPv6, or Unix address to bind to
                         [0.0.0.0:8080]
     -e NETWORK_ENGINE, --network_engine=NETWORK_ENGINE
-                        the HTTP engine to use, one of {cheroot,cherrypy,diese
-                        l,eventlet,gevent,pants,rocket,tornado,twisted}
-                        [cherrypy]
+                        the HTTP engine to use, one of {cheroot,cherrypy,
+                        diesel,eventlet,gevent,pants,rocket,tornado,twisted}
+                        [cheroot]
     -q QUIET_LEVEL, --quiet_level=QUIET_LEVEL
                         a small integer; 1 will suppress most of aspen's
                         internal logging, 2 will suppress all it [0]
     -p PROJECT_ROOT, --project_root=PROJECT_ROOT
                         the filesystem path of the directory in which to look
-                        for project files like template bases and such,
-                        relative to $ASPEN_WWW_ROOT []
+                        for project files like template bases and such.[]
     -w WWW_ROOT, --www_root=WWW_ROOT
                         the filesystem path of the document publishing root
                         [.]
