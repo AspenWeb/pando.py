@@ -1,5 +1,6 @@
 PYTHON=python
 
+
 # Core Executables
 # ================
 # We satisfy dependencies using local tarballs, to ensure that we can build 
@@ -31,6 +32,7 @@ env: env/bin/pip
 env-clean:
 	find . -name \*.pyc -delete
 	rm -rf env smoke-test
+
 
 # Doc / Smoke
 # ===========
@@ -70,6 +72,7 @@ analyse: pylint.out coverage.xml nosetests.xml
 testing-clean:
 	rm -rf .coverage coverage.xml nosetests.xml pylint.out
 
+
 # Build
 # =====
 
@@ -79,6 +82,7 @@ build:
 build-clean:
 	python setup.py clean -a
 	rm -rf dist
+
 
 # Jython
 # ======
@@ -112,6 +116,7 @@ jython-test: jython-nosetests.xml
 jython-clean:
 	rm -rf jenv vendor/jython-installer.jar jython_home jython-nosetests.xml
 	find . -name \*.class -delete
+
 
 # Clean
 # =====
