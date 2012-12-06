@@ -52,7 +52,7 @@ def OptionParser():
     basic.add_option( "-e", "--network_engine"
                     , help=( "the HTTP engine to use, one of "
                            + "{%s}" % ','.join(aspen.NETWORK_ENGINES)
-                           + " [%s]" % aspen.NETWORK_ENGINES[1]
+                           + " [%s]" % aspen.NETWORK_ENGINES[0]
                             )
                     , default=DEFAULT
                      )
