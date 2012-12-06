@@ -12,7 +12,9 @@ env/bin/aspen: env/bin/pip
 	./env/bin/python setup.py develop
 
 env/bin/nosetests: env/bin/pip
+	./env/bin/pip install ./vendor/coverage-3.5.3.tar.gz
 	./env/bin/pip install ./vendor/nose-1.1.2.tar.gz
+	./env/bin/pip install ./vendor/nosexcover-1.0.7.tar.gz
 	./env/bin/pip install ./vendor/snot-0.6.tar.gz
 
 env/bin/pip:
@@ -50,7 +52,7 @@ test: env/bin/aspen env/bin/nosetests
 -pylint-env: env/bin/pip
 	./env/bin/pip install pylint
 
-nosetests.xml coverage.xml: env/bin/nosetests -coverage-env
+nosetests.xml coverage.xml: env/bin/aspen env/bin/nosetests -coverage-env
 	./env/bin/nosetests \
 		--with-xcoverage \
 		--with-xunit tests \
