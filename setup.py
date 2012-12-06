@@ -44,6 +44,6 @@ setup( author = 'Chad Whitacre'
                                  ]}
      , install_requires = [ 'cheroot==4.0.0beta'
                           , 'mimeparse==0.1.3'
-                          , 'tornado==2.3'
+                          , 'tornado==1.2.1'
                            ]
       )

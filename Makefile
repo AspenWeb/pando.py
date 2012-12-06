@@ -9,7 +9,7 @@ PYTHON=python
 env/bin/aspen: env/bin/pip
 	./env/bin/pip install ./vendor/Cheroot-4.0.0beta.tar.gz
 	./env/bin/pip install ./vendor/mimeparse-0.1.3.tar.gz
-	./env/bin/pip install ./vendor/tornado-2.3.tar.gz
+	./env/bin/pip install ./vendor/tornado-1.2.1.tar.gz
 	./env/bin/python setup.py develop
 
 env/bin/nosetests: env/bin/pip
