@@ -92,6 +92,9 @@ def _set_cloexec():
 
 execute = _do_execv
 
+def clear_changes():
+    global extras
+    extras = set()
 
 def if_changes(filename):
     extras.add(filename)
