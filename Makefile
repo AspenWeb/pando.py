@@ -40,6 +40,8 @@ env-clean:
 docs: env/bin/aspen
 	./env/bin/aspen -a:5370 -wdoc/ -pdoc/.aspen --changes_reload=1
 
+doc: docs
+
 smoke: env/bin/aspen
 	@mkdir smoke-test && echo "Greetings, program!" > smoke-test/index.html
 	./env/bin/aspen -w smoke-test
