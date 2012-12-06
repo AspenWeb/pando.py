@@ -14,7 +14,7 @@ def test_startup_basically_works():
     execution.install(website)
     expected = set()
     actual = execution.extras
-    assert actual == expected, actual
+    assert actual == expected, repr(actual) + " instead of " + repr(expected)
 
 
 attach_teardown(globals())

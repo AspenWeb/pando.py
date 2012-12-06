@@ -350,5 +350,3 @@ def dispatch(request, pure_dispatch=False):
     if not request.fs.startswith(startdir):
         raise Response(404)
 
-
-run = run_through = dispatch

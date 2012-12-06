@@ -1,6 +1,6 @@
 import os
 
-from aspen import gauntlet, Response
+from aspen import dispatcher, Response
 from aspen.http.request import Request
 from aspen.testing import assert_raises, handle, NoException, StubRequest
 from aspen.testing import attach_teardown, fix, mk
@@ -15,10 +15,10 @@ def assert_raises_404(func, *args):
 # =======
 
 def check_index(path, *a):
-    """Given a uripath, return a filesystem path per gauntlet.index.
+    """Given a uripath, return a filesystem path per dispatcher
     """
     request = StubRequest.from_fs(path, *a)
-    gauntlet.run_through(request)
+    dispatcher.dispatch(request)
     return request
 
 def test_index_is_found():
@@ -108,10 +108,10 @@ def test_configure_aspen_py_setting_works_with_only_comma():
 # =======================
 
 def check_indirect_negotiation(path):
-    """Given an urlpath, return a filesystem path per gauntlet.indirect_negotiation.
+    """Given an urlpath, return a filesystem path per dispatcher.dispatch
     """
     request = StubRequest.from_fs(path)
-    gauntlet.run_through(request)
+    dispatcher.dispatch(request)
     return request
 
 def test_indirect_negotiation_can_passthrough_renderered():
@@ -171,10 +171,10 @@ def test_indirect_negotation_doesnt_do_dirs():
 # =============
 
 def check_virtual_paths(path):
-    """Given an urlpath, return a filesystem path per gauntlet.virtual_paths.
+    """Given an urlpath, return a filesystem path per dispatcher.dispatch
     """
     request = StubRequest.from_fs(path)
-    gauntlet.run_through(request)
+    dispatcher.dispatch(request)
     return request
 
 def test_virtual_path_can_passthrough():
@@ -308,18 +308,11 @@ def test_virtual_path_and_indirect_neg_ext():
 # ==============
 
 def check_trailing_slash(path):
-    """Given an urlpath, return a filesystem path per trailing slash logic.
-
-    We used to have a single function for this in the gauntlet, but that wasn't
-    sufficient, and the logic is now spread through a couple functions. It
-    should be done by virtual_paths, however.
-
-    """
     request = StubRequest.from_fs(path)
-    gauntlet.run_through(request)
+    dispatcher.dispatch(request)
     return request
 
-def test_gauntlet_passes_through_files():
+def test_dispatcher_passes_through_files():
     mk(('foo/index.html', "Greetings, program!"))
     expected = fix('/foo/537.html')
     assert_raises_404(check_trailing_slash, '/foo/537.html')
@@ -330,20 +323,20 @@ def test_trailing_slash_passes_dirs_with_slash_through():
     actual = check_trailing_slash('/foo/').fs
     assert actual == expected, actual
 
-def test_gauntlet_passes_through_virtual_dir_with_trailing_slash():
+def test_dispatcher_passes_through_virtual_dir_with_trailing_slash():
     mk(('%foo/index.html', "Greetings, program!"))
     expected = fix('/%foo/index.html')
     actual = check_trailing_slash('/foo/').fs
     assert actual == expected, actual + " isn't " + expected
 
-def test_gauntlet_redirects_dir_without_trailing_slash():
+def test_dispatcher_redirects_dir_without_trailing_slash():
     mk('foo')
     response = assert_raises(Response, check_trailing_slash, '/foo')
     expected = (301, '/foo/')
     actual = (response.code, response.headers['Location'])
     assert actual == expected, actual
 
-def test_gauntlet_redirects_virtual_dir_without_trailing_slash():
+def test_dispatcher_redirects_virtual_dir_without_trailing_slash():
     mk('%foo')
     response = assert_raises(Response, check_trailing_slash, '/foo')
     expected = (301, '/foo/')
@@ -427,11 +420,11 @@ def test_virtual_path_docs_6():
 
 def test_intercept_socket_protects_direct_access():
     request = Request(uri="/foo.sock")
-    assert_raises(Response, gauntlet.intercept_socket, request)
+    assert_raises(Response, dispatcher.dispatch, request)
 
 def test_intercept_socket_intercepts_handshake():
     request = Request(uri="/foo.sock/1")
-    gauntlet.intercept_socket(request)
+    dispatcher.intercept_socket(request)
 
     expected = ('/foo.sock', '1')
     actual = (request.line.uri.path.decoded, request.socket)
@@ -439,7 +432,7 @@ def test_intercept_socket_intercepts_handshake():
 
 def test_intercept_socket_intercepts_transported():
     request = Request(uri="/foo.sock/1/websocket/46327hfjew3?foo=bar")
-    gauntlet.intercept_socket(request)
+    dispatcher.intercept_socket(request)
 
     expected = ('/foo.sock', '1/websocket/46327hfjew3')
     actual = (request.line.uri.path.decoded, request.socket)
@@ -505,7 +498,7 @@ def test_file_with_no_extension_matches():
 def test_aspen_favicon_doesnt_get_clobbered_by_virtual_path():
     mk('%value')
     request = StubRequest.from_fs('/favicon.ico')
-    gauntlet.run_through(request)
+    dispatcher.dispatch(request)
     expected = {}
     actual = request.line.uri.path
     assert actual == expected, actual
@@ -513,7 +506,7 @@ def test_aspen_favicon_doesnt_get_clobbered_by_virtual_path():
 def test_robots_txt_also_shouldnt_be_redirected():
     mk('%value')
     request = StubRequest.from_fs('/robots.txt')
-    err = assert_raises(Response, gauntlet.run_through, request)
+    err = assert_raises(Response, dispatcher.dispatch, request)
     actual = err.code
     assert actual == 404, actual
 

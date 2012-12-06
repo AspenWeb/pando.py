@@ -76,6 +76,7 @@ def teardown():
     - remove '.aspen' from sys.path
     - remove 'foo' from sys.modules
     - clear out sys.path_importer_cache
+    - clear out execution.extras
 
     """
     os.chdir(CWD)
@@ -89,6 +90,8 @@ def teardown():
         sys.path = sys.path[1:]
     if 'foo' in sys.modules:
         del sys.modules['foo']
+    import aspen.execution
+    aspen.execution.clear_changes()
 
 teardown() # start clean
 
