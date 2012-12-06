@@ -28,6 +28,9 @@ env/bin/pip:
 
 env: env/bin/pip
 
+env-clean:
+	find . -name \*.pyc -delete
+	rm -rf env smoke-test
 
 # Doc / Smoke
 # ===========
@@ -64,6 +67,18 @@ pylint.out: -pylint-env
 analyse: pylint.out coverage.xml nosetests.xml
 	@echo done!
 
+testing-clean:
+	rm -rf .coverage coverage.xml nosetests.xml pylint.out
+
+# Build
+# =====
+
+build:
+	python setup.py bdist_egg
+
+build-clean:
+	python setup.py clean -a
+	rm -rf dist
 
 # Jython
 # ======
@@ -94,14 +109,11 @@ jython-nosetests.xml: jenv
 
 jython-test: jython-nosetests.xml
 
+jython-clean:
+	rm -rf jenv vendor/jython-installer.jar jython_home jython-nosetests.xml
+	find . -name \*.class -delete
 
 # Clean
 # =====
 
-clean:
-	python setup.py clean -a
-	rm -rf env .coverage coverage.xml nosetests.xml pylint.out jenv \
-		vendor/jython-installer.jar jython_home jython-nosetests.xml dist \
-		smoke-test
-	find . -name \*.pyc -delete
-	find . -name \*.class -delete
+clean: env-clean testing-clean jython-clean build-clean
