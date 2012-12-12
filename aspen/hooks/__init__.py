@@ -31,6 +31,16 @@ class Hooks(dict):
     def __setitem__(self, name, value):
         raise NotImplementedError("Please use attribute access.")
 
+    def register(self, obj):
+        """Convenience - hand this an object with methods on it named after
+           the hookpoints and it will register them all
+        """
+        for name in self.__names:
+            hook = getattr(obj, name, None)
+            if hook is not None:
+                hookpoint = getattr(self, name)
+                hookpoint.register(hook)
+
 
 class Hook(list):
     """Model a single point where callbacks can be registered.

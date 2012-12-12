@@ -40,5 +40,19 @@ def test_hooks_cant_be_appended():
     hooks = Hooks(['inbound_early'])
     assert_raises(NotImplementedError, hooks.inbound_early.append, None)
 
+def test_hooks_can_be_mass_registered():
+    class MyHooks:
+        def inbound_early(self, x):
+            return x
+        def outbound_late(self, x):
+            return x + xx
+    hooks = Hooks(['inbound_early', 'inbound_late', 'outbound_early', 'outbound_late'])
+    myhooks = MyHooks()
+    hooks.register(myhooks)
+    assert myhooks.inbound_early in hooks.inbound_early
+    assert hooks.inbound_late == []
+    assert hooks.outbound_early == []
+    assert myhooks.outbound_late in hooks.outbound_late
+
 
 attach_teardown(globals())
