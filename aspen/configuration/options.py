@@ -12,7 +12,7 @@ usage = "aspen [options]"
 version = """\
 aspen, version %s
 
-(c) 2006-2012 Chad Whitacre and contributors
+(c) 2006-2013 Chad Whitacre and contributors
 http://aspen.io/
 """ % aspen.__version__
 
