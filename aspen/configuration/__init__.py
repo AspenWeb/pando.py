@@ -1,7 +1,6 @@
 """Define configuration objects.
 """
 import collections
-import datetime
 import errno
 import mimetypes
 import os
@@ -16,7 +15,7 @@ from aspen.hooks import Hooks
 from aspen.configuration import parse
 from aspen.configuration.exceptions import ConfigurationError
 from aspen.configuration.options import OptionParser, DEFAULT
-from aspen.utils import ascii_dammit, to_rfc822, utcnow
+from aspen.utils import ascii_dammit
 
 
 # Nicer defaultdict
