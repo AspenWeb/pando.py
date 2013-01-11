@@ -1,5 +1,4 @@
 import os
-import datetime
 
 from aspen.testing import handle, StubRequest
 from aspen.testing.fsfix import attach_teardown, FSFIX, mk
