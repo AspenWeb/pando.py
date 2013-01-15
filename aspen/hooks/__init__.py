@@ -63,3 +63,12 @@ class Hook(list):
         for hook in self:
             thing = hook(thing) or thing
         return thing
+
+    def clear(self):
+        # This is useful if you want to monkey-patch some method of website
+        # that was already registered as a hook. See website.register_*.
+        while 1:
+            try:
+                self.pop()
+            except IndexError:
+                break

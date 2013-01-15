@@ -13,13 +13,19 @@ functions or methods that you write, and there are six kinds of them:</p>
 def inbound_early(request):
     return request
 
+def inbound_core(request):
+    return request
+
 def inbound_late(request):
     return request
 
-def outbound_early(response):
+def error_early(request):
+    return request
+
+def error_late(response):
     return response
 
-def outbound_late(response):
+def outbound(response):
     return response
 
 def shutdown(website):
@@ -28,14 +34,20 @@ def shutdown(website):
 <p>They don&rsquo;t need to be named startup, inbound_early, etc. Each can
 return the object it was given, or a new request/response/website object. You
 can also return None if you want to stick with the same object. Furthermore,
-inbound and outbound hooks are encouraged to raise <a
+inbound and hooks are encouraged to raise <a
     href="/response/">Response objects</a>.</p>
 
-<p>In between the inbound_early and inbound_late hooks, the request is safely
-translated to the filesystem, with the result at <code>request.fs</code>.</p>
+<p>In between the inbound_early and inbound_late hooks, the inbound_core hook
+is run, which primarily translates the request to the filesystem, storing the
+result at <code>request.fs</code>.</p>
 
-<p>In between the outbound_early and outbound_late hooks, <a
-    href="/nice-errors/">nice error messages</a> happen.</p>
+<p>In between the error_early and error_late hooks, <a
+    href="/nice-errors/">nice error messages</a> happen. This is more
+complicated, so you don't have access to the core error processing via a
+hook.</p>
+
+<p>The outbound hook is called for all responses, include errors. By default it
+includes one method, log_access.</p>
 
 <p>Hooks are global, meaning every hook touches every request/response.</p>
 
