@@ -340,12 +340,14 @@ class Configurable(object):
 
         # hooks
         self.hooks = Hooks()
+        self.hooks.startup = []
         self.hooks.inbound_early = []
         self.hooks.inbound_core = []
         self.hooks.inbound_late = []
         self.hooks.error_early = []
         self.hooks.error_late = []
         self.hooks.outbound = []
+        self.hooks.shutdown = []
 
 
         # Finally, exec any configuration scripts.
