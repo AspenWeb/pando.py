@@ -121,24 +121,49 @@ class Website(Configurable):
         """
         try:                        # nice error messages
             tb_1 = traceback.format_exc()
+
+
+            # Grab a response
+            # ===============
+
             response = sys.exc_info()[1]
             if not isinstance(response, Response):
                 aspen.log_dammit(tb_1)
                 response = Response(500, tb_1)
             elif 200 <= response.code < 300:
+                # The app raised a Response(2xx).
+
+                # XXX Bug here, no? The next two lines aren't run, nor is the
+                # else block above.
+
                 return response
+
+
+            # Run any hook.
+            # =============
+            # XXX Really? Why?
+
             response.request = request
             self.hooks.outbound_early.run(response)
+
+
+            # Delegate to any error simplate.
+            # ===============================
+
             fs = self.ours_or_theirs(str(response.code) + '.html')
             if fs is None:
                 fs = self.ours_or_theirs('error.html')
             if fs is None:
                 raise
+
             request.fs = fs
             request.original_resource = request.resource
             request.resource = resources.get(request)
+
             response = request.resource.respond(request, response)
+
             return response
+
         except Response, response:  # no nice error simplate available
             raise
         except:                     # last chance for tracebacks in the browser
