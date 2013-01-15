@@ -56,12 +56,12 @@ class Website(Configurable):
 
     def start(self):
         aspen.log_dammit("Starting up Aspen website.")
-        self.hooks.startup.run(self)
+        self.hooks.run('startup', self)
         self.network_engine.start()
 
     def stop(self):
         aspen.log_dammit("Shutting down Aspen website.")
-        self.hooks.shutdown.run(self)
+        self.hooks.run('shutdown', self)
         self.network_engine.stop()
 
 

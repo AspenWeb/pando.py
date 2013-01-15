@@ -11,4 +11,4 @@ opts['base'] = ''
 opts['version'] = open('../version.txt').read()[:-len('-dev')]
 
 
-website.hooks.inbound_early.register(inbound)
+website.hooks.inbound_early = [inbound]
