@@ -40,7 +40,7 @@ def inbound_early(request):
         request.context['user'] = auth.User(token)
 
 
-def outbound_late(response):
+def outbound(response):
     """Set outbound auth cookie.
     """
     if 'user' not in response.request.context:
