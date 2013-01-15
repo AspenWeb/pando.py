@@ -341,9 +341,11 @@ class Configurable(object):
         # hooks
         self.hooks = Hooks([ 'startup'
                            , 'inbound_early'
+                           , 'inbound_core'
                            , 'inbound_late'
-                           , 'outbound_early'
-                           , 'outbound_late'
+                           , 'error_early'
+                           , 'error_late'
+                           , 'outbound'
                            , 'shutdown'
                             ])
 
