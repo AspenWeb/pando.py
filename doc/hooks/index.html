@@ -5,7 +5,7 @@ doc_next = ("Unicode", "/unicode/")
 {% block doc %}
 
 <p>Aspen has hooks that allow you to influence program execution. Hooks are
-functions or methods that you write, and there are six kinds of them:</p>
+functions or methods that you write, and there are eight kinds of them:</p>
 
 <pre>def startup(website):
     return website
@@ -31,10 +31,10 @@ def outbound(response):
 def shutdown(website):
     return website</pre>
 
-<p>They don&rsquo;t need to be named startup, inbound_early, etc. Each can
-return the object it was given, or a new request/response/website object. You
-can also return None if you want to stick with the same object. Furthermore,
-inbound and hooks are encouraged to raise <a
+<p>Your functions don&rsquo;t need to be named startup, inbound_early, etc.
+Each can return the object it was given, or a new request/response/website
+object. You can also return None if you want to stick with the same object.
+Furthermore, inbound hooks are encouraged to raise <a
     href="/response/">Response objects</a>.</p>
 
 <p>In between the inbound_early and inbound_late hooks, the inbound_core hook

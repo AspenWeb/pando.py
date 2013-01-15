@@ -339,15 +339,13 @@ class Configurable(object):
             self.network_port = None
 
         # hooks
-        self.hooks = Hooks([ 'startup'
-                           , 'inbound_early'
-                           , 'inbound_core'
-                           , 'inbound_late'
-                           , 'error_early'
-                           , 'error_late'
-                           , 'outbound'
-                           , 'shutdown'
-                            ])
+        self.hooks = Hooks()
+        self.hooks.inbound_early = []
+        self.hooks.inbound_core = []
+        self.hooks.inbound_late = []
+        self.hooks.error_early = []
+        self.hooks.error_late = []
+        self.hooks.outbound = []
 
 
         # Finally, exec any configuration scripts.

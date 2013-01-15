@@ -36,8 +36,8 @@ class Website(Configurable):
         # cycle. We don't have an error_core because error handling is more
         # complicated.
 
-        self.register_inbound_core()
-        self.register_outbound()
+        self.reset_inbound_core()
+        self.reset_outbound()
 
 
     def __call__(self, environ, start_response):
@@ -117,15 +117,15 @@ class Website(Configurable):
     # =======
 
     def do_inbound(self, request):
-        request = self.hooks.inbound_early.run(request)
-        request = self.hooks.inbound_core.run(request)
-        request = self.hooks.inbound_late.run(request)
+        request = self.hooks.run('inbound_early', request)
+        request = self.hooks.run('inbound_core', request)
+        request = self.hooks.run('inbound_late', request)
         return request
 
-    def register_inbound_core(self):
-        self.hooks.inbound_core.clear()
-        self.hooks.inbound_core.register(self.set_fs_etc)
-        self.hooks.inbound_core.register(self.set_socket)
+    def reset_inbound_core(self):
+        self.hooks.inbound_core = [ self.set_fs_etc
+                                  , self.set_socket
+                                   ]
 
     def set_fs_etc(self, request):
         dispatcher.dispatch(request)  # mutates request
@@ -142,16 +142,15 @@ class Website(Configurable):
         """
         try:                        # nice error messages
             tb_1 = self.log_error()
-            request = self.hooks.error_early.run(request)
+            request = self.hooks.run('error_early', request)
             response = self.handle_error_nicely(tb_1, request)
-            response = self.hooks.error_late.run(response)
         except Response, response:
             pass
         except:                     # last chance for tracebacks in the browser
             response = self.handle_error_at_all(tb_1)
 
         response.request = request
-        response = self.hooks.error_late.run(response)
+        response = self.hooks.run('error_late', response)
         return response
 
 
@@ -211,11 +210,11 @@ class Website(Configurable):
     # ========
 
     def do_outbound(self, response):
-        response = self.hooks.outbound.run(response)
+        response = self.hooks.run('outbound', response)
         return response
 
-    def register_outbound(self):
-        self.hooks.outbound.register(self.log_access)
+    def reset_outbound(self):
+        self.hooks.outbound = [self.log_access]
 
     def log_access(self, response):
         """Log access. With our own format (not Apache's).
