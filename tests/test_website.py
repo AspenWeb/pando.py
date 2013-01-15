@@ -73,7 +73,7 @@ def bar(response):
     response.request
 """)
       , ( '.aspen/configure-aspen.py'
-        , 'import foo\nwebsite.hooks.outbound.register(foo.bar)'
+        , 'import foo\nwebsite.hooks.outbound.append(foo.bar)'
          )
       , ('index.html', "raise heck")
        )

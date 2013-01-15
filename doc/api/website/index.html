@@ -85,25 +85,21 @@ datetime.datetime object at website.retry_after.</p>
 
 <h3>Hooks</h3>
 
-<p>The website object has a <a href="/hooks/">hooks</a> attribute with six
+<p>The website object has a <a href="/hooks/">hooks</a> attribute with eight 
 sub-attributes:</p>
 
 <ul>
     <li>website.hooks.startup</li>
     <li>website.hooks.inbound_early</li>
+    <li>website.hooks.inbound_core</li>
     <li>website.hooks.inbound_late</li>
-    <li>website.hooks.outbound_early</li>
-    <li>website.hooks.outbound_late</li>
+    <li>website.hooks.error_early</li>
+    <li>website.hooks.error_late</li>
+    <li>website.hooks.outbound</li>
     <li>website.hooks.shutdown</li>
 </ul>
 
-<p>The <code>aspen.configuration.hooks.Hooks</code> object is a slightly
-stunted dict. You have to use attribute access instead of subscript access, but
-otherwise you can use it like a dict.  Likewise each individual
-<code>aspen.configuration.hooks.Hook</code> object is a slightly-stunted list.
-You can&rsquo;t append to it, you have to use register, but beyond the basic
-case you are free to iterate, insert, pop, etc.</p>
-
+<p>These are all lists that you can modify as needed in configure-aspen.py.</p>
 
 
 <h4>Example</h4>
@@ -114,7 +110,7 @@ ${website.project_root}/configure-aspen.py.</p>
 <pre>def glurpy_callback(request):
     print "Greetings, program!"
 
-website.hooks.inbound_early.register(glurpy_callback)
+website.hooks.inbound_early.append(glurpy_callback)
 </pre>
 
 {% end %}
