@@ -45,7 +45,7 @@ def outbound(response):
     """
     if 'user' not in response.request.context:
         # XXX When does this happen? When auth.inbound_early hasn't run, eh?
-        raise
+        raise  # XXX raise what?
 
     user = response.request.context['user']
     if not isinstance(user, auth.User):

@@ -144,7 +144,7 @@ class Website(Configurable):
             tb_1 = self.log_error()
             request = self.hooks.run('error_early', request)
             response = self.handle_error_nicely(tb_1, request)
-        except Response, response:
+        except Response, response:  # error simplate raised Response
             pass
         except:                     # last chance for tracebacks in the browser
             response = self.handle_error_at_all(tb_1)
