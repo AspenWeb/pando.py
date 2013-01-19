@@ -54,5 +54,37 @@ Should start 4 new children
 (40269) wsgi starting up on http://0.0.0.0:8080/
 </pre>
 
+<h4>Apache mod_fastcgi</h4>
+
+To get this to work you'll need:
+
+
+An .htaccess file (or other appropriate apache config file) that includes:
+
+<pre>
+&lt;Files myfcgi&gt;
+  SetHandler fastcgi-script
+&lt;/Files&gt;
+</pre>
+
+and then myfcgi is a script that looks like:
+
+<pre>
+#!/bin/bash
+INSTDIR=/path/to/my/aspen/project
+export ASPEN_PROJECT_ROOT=$INSTDIR/src
+export ASPEN_WWW_ROOT=$INSTDIR/www
+
+source $INSTDIR/bin/activate
+$INSTDIR/bin/fcgi_aspen "$@"
+</pre>
+
+Notes:
+<ul>
+<li>fcgi_aspen requires that you have the flup package installed in your virtualenv.
+<li>The ASPEN_PROJECT_ROOT and ASPEN_WWW_ROOT dirs are of course relatively arbitrarily named - I just picked obvious ones.
+<li>There's a bit of an issue if someone hits the node without a trailing slash: in this case aspen gets the full path from root to the script, instead of just the extra path supplied 'under' the script. Dealing with this is up to the reader.
+</ul>
+
 {% end %}
 
