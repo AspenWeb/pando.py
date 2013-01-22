@@ -18,7 +18,10 @@ def by_regex(hook, regex_tuples, default=True):
                     return hook(request)
                 else:
                     return request
-        return default
+        if default:
+            return hook(request)
+        else:
+            return request
     return filtered_hook
 
 
