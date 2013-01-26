@@ -35,7 +35,46 @@ def encode_multipart(boundary, data):
 
 
 class TestClient(object):
+    """
+    The Aspen test client.
 
+    Used in tests to emulate ``GET`` and ``POST`` requests by sending them
+    into a ``Website`` instance's ``handle_safely`` method.
+
+    Aspen does not define any User data structures or modules. If you want to
+    do anything with users/sessions etc in your tests it is expected that you
+    will subclass this TestClient and add a ``add_cookie_info`` method.
+
+    For example, in gittip a suitable subclass might be::
+
+        class GittipTestClient(TestClient):
+
+            def add_cookie_info(self, request, cookie_info):
+                if cookie_info:
+                    user = cookie_info.get('user')
+                    if user is not None:
+                        user = User.from_id(user)
+                        # Note that Cookie needs a bytestring.
+                        request.headers.cookie['session'] = user.session_token
+
+    Example usage in a test::
+
+        def test_api_handles_posts():
+            client = TestClient()
+
+            # We need to get ourselves a token!
+            response = client.get('/')
+            csrf_token = response.request.context['csrf_token']
+
+            # Then, add a $1.50 and $3.00 tip
+            response = client.post("/test_tippee1/tip.json",
+                                {'amount': "1.00", 'csrf_token': csrf_token},
+                                cookie_info={'user': 'test_tipper'})
+
+            # Confirm we get back the right amounts in the JSON body.
+            first_data = json.loads(response.body)
+            assert_equal(first_data['amount'], "1.00")
+    """
     def __init__(self, website):
         self.cookies = SimpleCookie()
         self.test_website = website
