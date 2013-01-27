@@ -350,14 +350,20 @@ class Configurable(object):
         self.hooks.shutdown = []
 
 
-        # Set up core logic.
-        # ==================
+        # Set up core logic as hooks.
+        # ===========================
         # This way, apps have fairly complete control over the request handling
         # cycle. We don't have an error_core because error handling is more
         # complicated.
 
+        self.reset_startup()
+        self.reset_inbound_early()
         self.reset_inbound_core()
+        self.reset_inbound_late()
+        self.reset_error_early()
+        self.reset_error_late()
         self.reset_outbound()
+        self.reset_shutdown()
 
 
         # Finally, exec any configuration scripts.
@@ -398,3 +404,15 @@ class Configurable(object):
                 # XXX smelly ... bug here? second else pls?
             else:
                 execution.if_changes(filepath)
+
+
+    # Override these in subclasses to implement default logic.
+
+    def reset_startup(self): pass
+    def reset_inbound_early(self): pass
+    def reset_inbound_core(self): pass
+    def reset_inbound_late(self): pass
+    def reset_outbound(self): pass
+    def reset_error_early(self): pass
+    def reset_error_late(self): pass
+    def reset_shutdown(self): pass
