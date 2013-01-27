@@ -90,4 +90,19 @@ def bar(response):
     assert actual == expected, actual
 
 
+def test_website_doesnt_clobber_outbound():
+    mk( ( '.aspen/configure-aspen.py'
+        , 'import random\nwebsite.hooks.outbound.append(random.choice)'
+         )
+       )
+
+    project_root = os.path.join(FSFIX, '.aspen')
+    website = Website(['--www_root='+FSFIX, '--project_root='+project_root])
+
+    expected = 2
+    actual = len(website.hooks.outbound)
+    assert actual == expected, actual
+
+
+
 attach_teardown(globals())

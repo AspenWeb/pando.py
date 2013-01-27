@@ -350,6 +350,16 @@ class Configurable(object):
         self.hooks.shutdown = []
 
 
+        # Set up core logic.
+        # ==================
+        # This way, apps have fairly complete control over the request handling
+        # cycle. We don't have an error_core because error handling is more
+        # complicated.
+
+        self.reset_inbound_core()
+        self.reset_outbound()
+
+
         # Finally, exec any configuration scripts.
         # ========================================
         # The user gets self as 'website' inside their configuration scripts.
