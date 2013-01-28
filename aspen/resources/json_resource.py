@@ -14,20 +14,20 @@ class JSONResource(DynamicResource):
         return None
 
     def process_raised_response(self, response):
-        """Given a response, return a response.
+        """Given a response, mutate it as needed.
         """
-        return self._process(response)
+        self._process(response)
 
     def get_response(self, context):
         """Given a context dict, return a response object.
         """
         response = context['response']
-        return self._process(response)
+        self._process(response)
+        return response
 
     def _process(self, response):
-        """Given a response object, process it for JSON.
+        """Given a response object, mutate it for JSON.
         """
         if not isinstance(response.body, basestring):
             response.body = json.dumps(response.body)
         response.headers['Content-Type'] = self.website.media_type_json
-        return response

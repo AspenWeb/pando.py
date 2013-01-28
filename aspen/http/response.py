@@ -1,4 +1,6 @@
+import os
 import re
+import sys
 
 try:                # 2
     from Cookie import CookieError, SimpleCookie
@@ -128,3 +130,32 @@ class Response(Exception):
             body = body.replace('\n', '\r\n')
             body = body.replace('\r\r', '\r')
         return '\r\n'.join([status_line, headers, '', body])
+
+    def whence_raised(self):
+        """Return a tuple, (filename, linenum) where we were raised from.
+
+        If we're not the exception currently being handled then the return
+        value is (None, None).
+
+        """
+        tb = filepath = linenum = None
+        try:
+            cls, response, tb = sys.exc_info()
+            if response is self:
+                while tb.tb_next is not None:
+                    tb = tb.tb_next
+                frame = tb.tb_frame
+
+                # filepath
+                pathparts = tb.tb_frame.f_code.co_filename.split(os.sep)[-2:]
+                # XXX It'd be nice to use www_root and project_root here, but
+                # self.request is None at this point afaict, and it's enough to
+                # show the last two parts just to differentiate index.html or
+                # __init__.py.
+                filepath = os.sep.join(pathparts)
+
+                # linenum
+                linenum = frame.f_lineno
+        finally:
+            del tb  # http://docs.python.org/2/library/sys.html#sys.exc_info
+        return filepath, linenum

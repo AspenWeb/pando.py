@@ -46,8 +46,8 @@ class DynamicResource(Resource):
         try:
             exec self.pages[1] in context
         except Response, response:
-            response = self.process_raised_response(response)
-            raise response
+            self.process_raised_response(response)
+            raise
 
 
         # Hook.
@@ -56,8 +56,8 @@ class DynamicResource(Resource):
         try:
             response = self.get_response(context)
         except Response, response:
-            response = self.process_raised_response(response)
-            raise response
+            self.process_raised_response(response)
+            raise
         else:
             return response
 
@@ -189,9 +189,9 @@ class DynamicResource(Resource):
         raise NotImplementedError
 
     def process_raised_response(self, response):
-        """Given a response object, return a response object.
+        """Given a response object, mutate it as needed.
         """
-        return response
+        pass
 
     def get_response(self, context):
         """Given a context dictionary, return a Response object.
