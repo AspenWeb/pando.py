@@ -230,16 +230,11 @@ class Website(Configurable):
         # Where was response raised from?
         # ===============================
 
-        tb = sys.exc_info()[2]
-        if tb is not None:
-            while tb.tb_next is not None:
-                tb = tb.tb_next
-            frame = tb.tb_frame
-            filename = tb.tb_frame.f_code.co_filename.split(os.sep)[-1]
-            response = "%s (%s:%d)" % (response, filename, frame.f_lineno)
+        filename, linenum = response.whence_raised()
+        if filename is not None:
+            response = "%s (%s:%d)" % (response, filename, linenum)
         else:
             response = str(response)
-
 
         # Log it.
         # =======

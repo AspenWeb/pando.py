@@ -129,11 +129,24 @@ def test_raise_response_works():
     expected = 404
     response = assert_raises( Response
                             , check
-                            , "from aspen import Response; raise Response(404)"
+                            , "from aspen import Response; "
+                              "raise Response(404)"
                              )
     actual = response.code
     assert actual == expected, actual
 
+def test_location_preserved_for_response_raised_in_page_2():
+    # https://github.com/zetaweb/aspen/issues/153
+    expected = ('index.html', 1)
+    try: check("from aspen import Response; raise Response(404)")
+    except Response, response: actual = response.whence_raised()
+    assert actual == expected, actual
+
+def test_location_preserved_for_response_raised_under_page_3():
+    expected = ('http/mapping.py', 25)
+    try: check("^L{{ request.body['missing'] }}")
+    except Response, response: actual = response.whence_raised()
+    assert actual == expected, actual
 
 def test_website_is_in_context():
     expected = "It worked."
