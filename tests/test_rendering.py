@@ -1,7 +1,9 @@
 from aspen.configuration import Configurable
 from aspen.renderers.tornado import Factory as TornadoFactory
 from aspen.testing import assert_raises, attach_teardown, fix, FSFIX, mk
+from aspen.testing.fsfix import convert_path
 from tornado.template import ParseError
+import os
 
 
 def test_that_a_renderer_factory_is_instantiable():
@@ -108,6 +110,15 @@ website.renderer_factories['excited-about-cheese'] = CheeseFactory(website)
     render = make_renderer("", "I like cheese!")  # test specline elsewhere
     actual = render({})
     assert actual == "I like CHEESE!!!!!!!", actual
+
+
+def test_tornado_loader_shim_resolves_path_from_absolute_nested_parent_path():
+    mk(("base.html", "Resolved."), "www")
+    make_renderer = tornado_factory_factory(["--project_root", FSFIX])
+    path = os.path.abspath(os.path.join(FSFIX, convert_path("www/index.html")))
+    render = make_renderer(path, "{% extends base.html %}")
+    actual = render({})
+    assert actual == "Resolved.", actual
 
 
 attach_teardown(globals())
