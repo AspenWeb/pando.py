@@ -309,6 +309,9 @@ def Canonizer(expected):
     """Takes a netloc such as http://localhost:8080 (no path part).
     """
 
+    def noop(request):
+        pass
+
     def canonize(request):
         """Enforce a certain network location.
         """
@@ -330,7 +333,7 @@ def Canonizer(expected):
                 uri += '/'
             request.redirect(uri, permanent=True)
 
-    return canonize
+    return expected and canonize or noop
 
 
 if __name__ == '__main__':
