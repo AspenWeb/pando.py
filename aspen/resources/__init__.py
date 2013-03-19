@@ -39,23 +39,32 @@ from aspen.resources.rendered_resource import RenderedResource
 from aspen.resources.socket_resource import SocketResource
 from aspen.resources.static_resource import StaticResource
 
+from watchdog.observers import Observer
 
 # Cache helpers
 # =============
 
 __cache__ = dict()        # cache, keyed to filesystem path
 
+__cache_watcher__ = Observer()
+
+class Cache_Invalidator(watchdog.events.FileSystemEventHandler):
+    def on_modified(event):
+        if not event.is_directory and event.src_path in __cache__.keys():
+            del __cache__[event.src_path]
+
+
 class Entry:
     """An entry in the global resource cache.
     """
 
-    fspath = ''         # The filesystem path [string]
+#    fspath = ''         # The filesystem path [string]
     mtime = None        # The timestamp of the last change [int]
     quadruple = None    # A post-processed version of the data [4-tuple]
     exc = None          # Any exception in reading or compilation [Exception]
 
     def __init__(self):
-        self.fspath = ''
+#        self.fspath = ''
         self.mtime = 0
         self.quadruple = ()
 
@@ -141,7 +150,6 @@ def load(request, mtime):
 
     raw = open(request.fs, 'rb').read()
 
-
     # Compute a media type.
     # =====================
     # For a negotiated resource we will ignore this.
@@ -149,7 +157,6 @@ def load(request, mtime):
     media_type = mimetypes.guess_type(request.fs, strict=False)[0]
     if media_type is None:
         media_type = request.website.media_type_default
-
 
     # Compute and instantiate a class.
     # ================================
@@ -175,33 +182,28 @@ def get(request):
     # =========================
 
     if request.fs not in __cache__:
-        entry = Entry()
-        __cache__[request.fs] = entry
+        __cache__[request.fs] = Entry()
 
     entry = __cache__[request.fs]
-
 
     # Process the resource.
     # =====================
 
-    mtime = os.stat(request.fs)[stat.ST_MTIME]
-    if entry.mtime == mtime:                                # cache hit
-        if entry.exc is not None:
-            raise entry.exc
-    else:                                                   # cache miss
-        try:
-            entry.resource = load(request, mtime)
-        except:     # capture any Exception
-            entry.exc = ( LoadError(traceback.format_exc())
-                        , sys.exc_info()[2]
-                         )
-        else:       # reset any previous Exception
-            entry.exc = None
+    if entry.exc is not None:                               # cache hit
+        raise entry.exc
+    
+    # cache miss
+    try:
+        entry.resource = load(request, mtime)
+    except:     # capture any Exception
+        entry.exc = ( LoadError(traceback.format_exc())
+                    , sys.exc_info()[2]
+                     )
+    else:       # reset any previous Exception
+        entry.exc = None
 
-        entry.mtime = mtime
-        if entry.exc is not None:
-            raise entry.exc[0] # TODO Why [0] here, and not above?
-
+    if entry.exc is not None:
+        raise entry.exc[0] # TODO Why [0] here, and not above?
 
     # Return
     # ======

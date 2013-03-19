@@ -43,6 +43,7 @@ setup( author = 'Chad Whitacre'
                                  ]}
      , install_requires = [ 'Cheroot==4.0.0beta'
                           , 'mimeparse==0.1.3'
+                          , 'watchdog==0.6.0'
                           , 'tornado==1.2.1'
                            ]
       )
