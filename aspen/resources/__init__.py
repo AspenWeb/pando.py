@@ -26,7 +26,6 @@ It's more complicate for dynamic resources:
 """
 import mimetypes
 import os
-import stat
 import sys
 import traceback
 
@@ -39,6 +38,7 @@ from aspen.resources.rendered_resource import RenderedResource
 from aspen.resources.socket_resource import SocketResource
 from aspen.resources.static_resource import StaticResource
 
+import watchdog
 from watchdog.observers import Observer
 
 # Cache helpers
@@ -46,26 +46,25 @@ from watchdog.observers import Observer
 
 __cache__ = dict()        # cache, keyed to filesystem path
 
-__cache_watcher__ = Observer()
-
 class Cache_Invalidator(watchdog.events.FileSystemEventHandler):
     def on_modified(event):
         if not event.is_directory and event.src_path in __cache__.keys():
             del __cache__[event.src_path]
 
+def watcher_for(path):
+    """turn on resource watching for the specified path ; return the observer object"""
+    watcher = Observer()
+    watcher.schedule(Cache_Invalidator(), path=path, recursive=True)
+    return watcher
 
 class Entry:
     """An entry in the global resource cache.
     """
 
-#    fspath = ''         # The filesystem path [string]
-    mtime = None        # The timestamp of the last change [int]
     quadruple = None    # A post-processed version of the data [4-tuple]
     exc = None          # Any exception in reading or compilation [Exception]
 
     def __init__(self):
-#        self.fspath = ''
-        self.mtime = 0
         self.quadruple = ()
 
 
@@ -140,8 +139,8 @@ def get_resource_class(filename, raw, media_type):
     return Class
 
 
-def load(request, mtime):
-    """Given a Request and a mtime, return a Resource object (w/o caching).
+def load(request):
+    """Given a Request, return a Resource object (w/o caching).
     """
 
     # Load bytes.
@@ -163,7 +162,7 @@ def load(request, mtime):
     # An instantiated resource is compiled as far as we can take it.
 
     Class = get_resource_class(request.fs, raw, media_type)
-    resource = Class(request.website, request.fs, raw, media_type, mtime)
+    resource = Class(request.website, request.fs, raw, media_type)
     return resource
 
 
@@ -194,7 +193,7 @@ def get(request):
     
     # cache miss
     try:
-        entry.resource = load(request, mtime)
+        entry.resource = load(request)
     except:     # capture any Exception
         entry.exc = ( LoadError(traceback.format_exc())
                     , sys.exc_info()[2]
