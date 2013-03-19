@@ -243,7 +243,7 @@ def match_index(request, indir):
 def update_neg_type(request, filename):
     media_type = mimetypes.guess_type(filename, strict=False)[0]
     if media_type is None:
-        media_type = self.website.media_type_default
+        media_type = request.website.media_type_default
     request.headers['X-Aspen-Accept'] = media_type
 
 
