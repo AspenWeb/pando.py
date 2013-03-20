@@ -41,32 +41,28 @@ from aspen.resources.static_resource import StaticResource
 import watchdog
 from watchdog.observers import Observer
 
+try:                    # python2.6+
+    from collections import namedtuple
+except ImportError:     # < python2.6
+    from backcompat import namedtuple
+
 # Cache helpers
 # =============
 
 __cache__ = dict()        # cache, keyed to filesystem path
 
 class Cache_Invalidator(watchdog.events.FileSystemEventHandler):
-    def on_modified(event):
+    def on_modified(self, event):
         if not event.is_directory and event.src_path in __cache__.keys():
             del __cache__[event.src_path]
+
+CacheEntry = namedtuple('CacheEntry', 'resource exc' )
 
 def watcher_for(path):
     """turn on resource watching for the specified path ; return the observer object"""
     watcher = Observer()
     watcher.schedule(Cache_Invalidator(), path=path, recursive=True)
     return watcher
-
-class Entry:
-    """An entry in the global resource cache.
-    """
-
-    quadruple = None    # A post-processed version of the data [4-tuple]
-    exc = None          # Any exception in reading or compilation [Exception]
-
-    def __init__(self):
-        self.quadruple = ()
-
 
 # Core loaders
 # ============
@@ -177,36 +173,34 @@ def get(request):
     # when I switched to diesel. Now that we have multiple engines, some of
     # which are threaded, we need to make this thread-safe again.
 
-    # Get a cache Entry object.
+    # Get a CacheEntry object.
     # =========================
 
     if request.fs not in __cache__:
-        __cache__[request.fs] = Entry()
+
+        resource, exc = None, None
+
+        # Process the resource.
+        # =====================
+
+        try:
+            resource = load(request)
+        except:     # capture any Exception
+            exc = ( LoadError(traceback.format_exc())
+                        , sys.exc_info()[2]
+                         )
+
+        __cache__[request.fs] = CacheEntry(resource=resource, exc=exc)
 
     entry = __cache__[request.fs]
 
-    # Process the resource.
-    # =====================
-
-    if entry.exc is not None:                               # cache hit
-        raise entry.exc
-    
-    # cache miss
-    try:
-        entry.resource = load(request)
-    except:     # capture any Exception
-        entry.exc = ( LoadError(traceback.format_exc())
-                    , sys.exc_info()[2]
-                     )
-    else:       # reset any previous Exception
-        entry.exc = None
-
-    if entry.exc is not None:
-        raise entry.exc[0] # TODO Why [0] here, and not above?
-
-    # Return
-    # ======
+    # Raise or Return just like we did the first time
+    # ===============================================
     # The caller must take care to avoid mutating any context dictionary at
     # entry.resource.pages[0].
 
+    if entry.exc is not None: # raise the captured exception, if any
+        raise entry.exc
+
     return entry.resource
+

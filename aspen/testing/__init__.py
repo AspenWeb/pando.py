@@ -83,7 +83,7 @@ handle = Handle(['--www_root', FSFIX])
 
 
 def Resource(fs):
-    return resources.load(StubRequest.from_fs(fs), 0)
+    return resources.load(StubRequest.from_fs(fs))
 
 def check(content, filename="index.html", body=True, configure_aspen_py="",
         response=None, argv=None):
@@ -91,7 +91,7 @@ def check(content, filename="index.html", body=True, configure_aspen_py="",
         argv = []
     mk(('.aspen/configure-aspen.py', configure_aspen_py), (filename, content))
     request = StubRequest.from_fs(filename, *argv)
-    resource = resources.load(request, 0)
+    resource = resources.load(request)
     response = resource.respond(request, response)
     if body:
         return response.body
