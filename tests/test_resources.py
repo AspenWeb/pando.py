@@ -27,7 +27,7 @@ def test_charset_static_barely_working():
     assert actual == expected, actual
 
 def test_charset_dynamic_barely_working():
-    response = check( "^LGreetings, program!", 'index.html', False
+    response = check( "----\nGreetings, program!", 'index.html', False
                     , argv=['--charset_dynamic=CHEESECODE']
                      )
     expected = 'text/html; charset=CHEESECODE'
@@ -36,12 +36,7 @@ def test_charset_dynamic_barely_working():
 
 def test_resource_pages_work():
     expected = "Greetings, bar!"
-    actual = check("foo = 'bar'Greetings, {{ foo }}!")
-    assert actual == expected, actual
-
-def test_resource_pages_work_with_caret_L():
-    expected = "Greetings, bar!"
-    actual = check("foo = 'bar'^LGreetings, {{ foo }}!")
+    actual = check("foo = 'bar'\n--------\nGreetings, {{ foo }}!")
     assert actual == expected, actual
 
 def test_resource_templating_set():
@@ -50,7 +45,7 @@ def test_resource_templating_set():
         foo = [1,2,3,4]
         nfoo = len(foo)
 
-        
+        ----------------
         {% set i = 0 %}
         {% for x in foo %}{% set i += 1 %}{{ x }}{% if i < nfoo %}, {% end %}{% end %}
             """)).strip()
@@ -69,9 +64,9 @@ def test_utf8():
     expected = unichr(1758).encode('utf8')
     actual = check("""
 "empty first page"
-^L
+------------------
 text = unichr(1758)
-^L
+------------------
 {{ text }}
     """).strip()
     assert actual == expected, actual
@@ -80,9 +75,10 @@ def test_resources_dont_leak_whitespace():
     """This aims to resolve https://github.com/whit537/aspen/issues/8.
     """
     actual = check(dedent("""
-        
+        --------------
         foo = [1,2,3,4]
-        {{repr(foo)}}"""))
+        --------------
+        {{repr(foo)}}"""))
     expected = "[1, 2, 3, 4]"
     assert actual == expected, repr(actual)
 
@@ -104,10 +100,10 @@ Greetings, {{ foo }}!
 # ========================================
 # See also: https://github.com/whit537/aspen/issues/10
 
-eg = """\
+eg = """
 latinate = chr(181).decode('latin1')
 response.headers['Content-Type'] = 'text/plain; charset=latin1'
-^L
+-------------------------------------
 {{ latinate.encode('latin1') }}"""
 
 def test_content_type_is_right_in_template_doc_unicode_example():
@@ -130,7 +126,7 @@ def test_raise_response_works():
     response = assert_raises( Response
                             , check
                             , "from aspen import Response; "
-                              "raise Response(404)"
+                              "raise Response(404)\n---------\n"
                              )
     actual = response.code
     assert actual == expected, actual
@@ -138,22 +134,22 @@ def test_raise_response_works():
 def test_location_preserved_for_response_raised_in_page_2():
     # https://github.com/zetaweb/aspen/issues/153
     expected = ('index.html', 1)
-    try: check("from aspen import Response; raise Response(404)")
+    try: check("from aspen import Response; raise Response(404)\n----\n")
     except Response, response: actual = response.whence_raised()
     assert actual == expected, actual
 
 def test_location_preserved_for_response_raised_under_page_3():
     expected = ('http/mapping.py', 25)
-    try: check("^L{{ request.body['missing'] }}")
+    try: check("-----\n{{ request.body['missing'] }}")
     except Response, response: actual = response.whence_raised()
     assert actual == expected, actual
 
 def test_website_is_in_context():
     expected = "It worked."
-    actual = check("""\
+    actual = check("""
 assert website.__class__.__name__ == 'Website', website
-
-
+--------
+--------
 It worked.""")
     assert actual == expected, actual
 
