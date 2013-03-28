@@ -1,6 +1,6 @@
 doc_title = "Virtual Paths"
 doc_next = ''
-
+--------------------------------------------------------------------------------
 {% extends doc.html %}
 {% block doc %}
 
@@ -55,16 +55,16 @@ a trailing slash), you&rsquo;ll get a 404:</p>
 
 {{ screenshot("no-cheese") }}
 
-<p>Virtual path files (only! not directories!) are <em>greedy</em>, however. 
+<p>Virtual path files (only! not directories!) are <em>greedy</em>, however.
 so if you hit <a href="http://localhost:8080/chad/swiss/gruyere.txt">
-/chad/swiss/gruyere.txt</a>  then since it ends in .txt and there's no real 
-<code>swiss</code> directory to take precedence, the <code>%cheese.txt</code> 
+/chad/swiss/gruyere.txt</a>  then since it ends in .txt and there's no real
+<code>swiss</code> directory to take precedence, the <code>%cheese.txt</code>
 file will be used, with <code>cheese</code> equal to <code>swiss/gruyere</code>
 .</p>
-<p> The general philosophy of aspen's matching with virtual paths and greedy 
-virtual filenames is <em>Most specific wins</em>, so if there's a real 
+<p> The general philosophy of aspen's matching with virtual paths and greedy
+virtual filenames is <em>Most specific wins</em>, so if there's a real
 directory named <code>swiss</code>  with a file named <code>gruyere.txt</code>
-in it, then that real file will be preferred over the virtual one. 
+in it, then that real file will be preferred over the virtual one.
 
 <h3>Typecasting</h3>
 

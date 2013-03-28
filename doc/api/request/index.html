@@ -1,7 +1,7 @@
 doc_title = "Request"
 doc_next = ('Response', '/response/')
 
-^L
+--------------------------------------------------------------------------------
 
 {% extends doc.html %}
 {% block doc %}
@@ -123,7 +123,7 @@ request.is_xhr():
 request.redirect(location, code=None, permanent=False):
     """Given a string, an int, and a boolean, raise a Response.
 
-    If code is None then it will be set to 301 (Moved Permanently) 
+    If code is None then it will be set to 301 (Moved Permanently)
     if permanent is True and 302 (Found) if it is False.
 
     """
@@ -143,7 +143,7 @@ as lists of values:</p>
 <pre>obj.all(name, default=None):
     """Given a name, return a list of values.
     """
-   
+
 obj.add(name, value):
     """Given a name and value, add another entry.
     """</pre>

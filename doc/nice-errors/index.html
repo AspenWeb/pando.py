@@ -1,10 +1,10 @@
 doc_title = "Nice Errors and Indexes"
 doc_next = ("Unicode", "/unicode/")
-
+--------------------------------------------------------------------------------
 {% extends doc.html %}
 {% block doc %}
 
-<p>Aspen comes with default pages for errors (404, 500, etc) and 
+<p>Aspen comes with default pages for errors (404, 500, etc) and
 directory indexes ( if --list-directories is enabled ). You may,
 however, wish to override or replace them.  If so, Aspen will look for:
 
@@ -15,7 +15,7 @@ however, wish to override or replace them.  If so, Aspen will look for:
 
 before falling back to its internal error pages.
 </p>
-<p>Similarly, Aspen will look in <a href="/project_root/">project_root</a> 
+<p>Similarly, Aspen will look in <a href="/project_root/">project_root</a>
 for a file 'autoindex.html' if a raw directory is named and there's no index
 file in that directory to respond with.
 </p>
