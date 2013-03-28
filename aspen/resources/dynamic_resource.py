@@ -1,5 +1,5 @@
 from aspen import Response
-from aspen.resources import PAGE_BREAK
+from aspen.resources import split_and_escape
 from aspen.resources.resource import Resource
 
 
@@ -24,8 +24,8 @@ class DynamicResource(Resource):
 
     def __init__(self, *a, **kw):
         Resource.__init__(self, *a, **kw)
-        self.pages = self.parse_into_pages(self.raw)
-        self.pages = self.compile_pages(self.pages)
+        pages = self.parse_into_pages(self.raw)
+        self.pages = self.compile_pages(pages)
 
 
     def respond(self, request, response=None):
@@ -80,9 +80,7 @@ class DynamicResource(Resource):
 
         """
 
-        # Support caret-L in addition to .
-        uncareted = raw.replace("^L", PAGE_BREAK)
-        pages = uncareted.split(PAGE_BREAK)
+        pages = split_and_escape(raw)
         npages = len(pages)
 
         # Check for too few pages. This is a sanity check as get_resource_class
@@ -102,7 +100,6 @@ class DynamicResource(Resource):
 
         return pages
 
-
     def compile_pages(self, pages):
         """Given a list of bytestrings, replace the bytestrings with objects.
 
@@ -118,8 +115,7 @@ class DynamicResource(Resource):
         # general it's nice to standardize this, I think. XXX Should we be
         # going back to \r\n for the wire? That's HTTP, right?
 
-        for i, page in enumerate(pages):
-            pages[i] = page.replace('\r\n', '\n')
+        pages = [page.replace('\r\n', '\n') for page in pages]
 
         one = pages[0]
         two = pages[1]
@@ -161,6 +157,8 @@ class DynamicResource(Resource):
         for i, page in enumerate(pages[2:]):
             i += 2  # no start kw to enumerate in Python 2.5
             pages[i] = self.compile_page(page, paddings[i])
+
+        pages[2:] = []
 
         return pages
 

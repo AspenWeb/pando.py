@@ -29,8 +29,63 @@ import os
 import stat
 import sys
 import traceback
+import re
+import functools
 
-PAGE_BREAK = chr(12) # used in the following imports
+SPLITTER = '----+'
+
+def memoizing(func):
+    '''Decorator to make functions cache their return values
+    '''
+    cache = dict()
+    @functools.wraps(func)
+    def memoizing(*args):
+        if args not in cache: #args is a tuple, and useable as a dict key
+            cache[args] = func(*args)
+        return cache[args]
+    return memoizing
+
+@memoizing
+def suffixed(splitter):
+    return splitter + '.*\n'
+
+@memoizing
+def escaped(splitter):
+    return re.compile('^(/*)/(%s)' % suffixed(splitter), re.MULTILINE)
+
+@memoizing
+def splitting(splitter):
+    return re.compile('^' + suffixed(splitter), re.MULTILINE)
+
+def split(raw, splitter=SPLITTER):
+    '''Pure split method. This function defines the plain logic to split a
+    string into a list of strings via a splitter.
+    '''
+
+    splitter = splitting(splitter)
+    return splitting.split(raw)
+
+def escape(raw, splitter=SPLITTER):
+    '''Pure escape method. This function defines the logic to properly convert
+    escaped splitter patterns in a string
+    '''
+    escaper = escaped(splitter)
+    return escaper.sub('\1\2', raw)
+
+def split_and_escape(raw, splitter=SPLITTER):
+    '''This function defines the logic to split and escape a string. Escaping is
+    only performed if there are more than one pages from the split.
+    '''
+    pages = split(raw, splitter)
+    if len(pages) > 1:
+        pages = [escape(page, splitter) for page in pages]
+    return pages
+
+def can_split(raw, splitter=SPLITTER):
+    '''Determine if a text block would be split by a splitter
+    '''
+    return splitting(splitter).search(raw) is not None
+
 
 from aspen.exceptions import LoadError
 from aspen.resources.json_resource import JSONResource
@@ -104,17 +159,17 @@ def get_resource_class(filename, raw, media_type):
         # For text formats we can perform a highly accurate test for
         # dynamicity.
 
-        c = lambda s: s in raw
-        is_dynamic = c("") or c("^L")
+        is_dynamic = can_split(raw)
 
     else:
 
         # For binary formats we must rely on a less-accurate test. This is
-        # because a binary file can have s in it without being a resource--
-        # and I've actually seen, in the wild, a file with exactly two s. So
+        # because a binary file can haves in it without being a resource--
+        # and I've actually seen, in the wild, a file with exactly twos. So
         # we sniff the first few bytes.
 
-        s = lambda s: raw.startswith(s)
+        def s(x):
+            return raw.startswith(x)
         is_dynamic = s('"""') or s('import') or s('from')
 
     if not is_dynamic:
