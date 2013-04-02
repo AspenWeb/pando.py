@@ -188,7 +188,7 @@ def _shell(args, input=None, silent=True, shell=False, ignore_status=False, **kw
     output, stderr = proc.communicate(input)
     status = proc.wait()
     if status and not ignore_status:
-        raise ExecutionError('%r exited with status %d'
+        raise ExecutionError('in _shell, %r exited with status %d'
                              % (os.path.basename(arglist[0]), status),
                              output, status)
     if silent:
@@ -522,7 +522,7 @@ class StraceRunner(Runner):
     def _do_strace(self, args, kwargs, outfile, outname):
         """ Run strace on given command args/kwargs, sending output to file.
             Return (status code, list of dependencies, list of outputs). """
-        shell_keywords = dict(silent=False)
+        shell_keywords = dict(silent=False, ignore_status=True)
         shell_keywords.update(kwargs)
         shell('strace', '-fo', outname, '-e',
               'trace=open,%s,execve,exit_group,chdir,mkdir,rename,clone,vfork,fork' % self._stat_func,
@@ -656,7 +656,7 @@ class StraceRunner(Runner):
                 os.remove(outname)
 
         if status and not ignore_status:
-            raise ExecutionError('%r exited with status %d'
+            raise ExecutionError('in __call_, %r exited with status %d'
                                  % (os.path.basename(args[0]), status),
                                  '', status)
         return list(deps), list(outputs)
