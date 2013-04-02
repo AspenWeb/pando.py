@@ -23,12 +23,12 @@ import re
 
 from aspen import Response
 import mimeparse
-from aspen.resources import PAGE_BREAK
 from aspen.resources.dynamic_resource import DynamicResource
 from aspen.utils import typecheck
+from aspen.resources import parse_specline
 
 
-renderer_re = re.compile(r'#![a-z0-9.-]+')
+renderer_re = re.compile(r'[a-z0-9.-]+')
 media_type_re = re.compile(r'[A-Za-z0-9.+*-]+/[A-Za-z0-9.+*-]+')
 
 
@@ -46,17 +46,11 @@ class NegotiatedResource(DynamicResource):
         DynamicResource.__init__(self, *a, **kw)
 
 
-    def compile_page(self, page, __ignored):
-        """Given a bytestring, return a (renderer, media type) pair.
+    def compile_page(self, page):
+        """Given a bytestring, return a (render, media type) pair.
         """
-        if '\n' in page:
-            specline, raw = page.split('\n', 1)
-        else:
-            specline = ''
-            raw = page
-        specline = specline.strip(PAGE_BREAK + ' \n')
-        make_renderer, media_type = self._parse_specline(specline)
-        render = make_renderer(self.fs, raw)
+        make_render, media_type = self._parse_specline(page.header)
+        render = make_render(self.fs, page.content)
         if media_type in self.renderers:
             raise SyntaxError("Two content pages defined for %s." % media_type)
 
@@ -65,7 +59,6 @@ class NegotiatedResource(DynamicResource):
         self.available_types.append(media_type)
 
         return (render, media_type)  # back to parent class
-
 
     def get_response(self, context):
         """Given a context dict, return a response object.
@@ -107,13 +100,12 @@ class NegotiatedResource(DynamicResource):
 
         return response
 
-
     def _parse_specline(self, specline):
         """Given a bytestring, return a two-tuple.
 
         The incoming string is expected to be of the form:
 
-            ^L #!renderer media/type
+            media_type via renderer
 
         The renderer is optional. It will be computed based on media type if
         absent. The return two-tuple contains a render function and a media
@@ -123,26 +115,14 @@ class NegotiatedResource(DynamicResource):
 
         """
         typecheck(specline, str)
-        if specline == "":
-            raise SyntaxError("Content pages in negotiated resources must "
-                              "have a specline.")
 
-        # Parse into one or two parts.
-        parts = specline.split()
-        nparts = len(parts)
-        if nparts not in (1, 2):
-            raise SyntaxError("A negotiated resource specline must have one "
-                              "or two parts: #!renderer media/type. Yours is: "
-                              "%s." % specline)
-
-        # Assign parts.
-        if nparts == 1:
-            media_type = parts[0]
+        # Parse into parts
+        parts = parse_specline(specline)
+            
+        #Assign parts
+        media_type, renderer = parts
+        if renderer == '':
             renderer = self.website.default_renderers_by_media_type[media_type]
-            renderer = "#!" + renderer
-        else:
-            assert nparts == 2, nparts
-            renderer, media_type = parts
 
         # Validate media type.
         if media_type_re.match(media_type) is None:
@@ -167,7 +147,7 @@ class NegotiatedResource(DynamicResource):
             msg = ("Malformed renderer %s. It must match %s. Possible "
                    "renderers (might need third-party libs): %s.")
             raise SyntaxError(msg % (renderer, renderer_re.pattern, possible))
-        renderer = renderer[2:]  # strip off the hashbang
+        
         renderer = renderer.decode('US-ASCII')
 
         factories = self.website.renderer_factories

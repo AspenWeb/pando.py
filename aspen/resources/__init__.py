@@ -32,60 +32,70 @@ import traceback
 import re
 import functools
 
-SPLITTER = '----+'
+#Paginate methods.
+#=================
 
-def memoizing(func):
-    '''Decorator to make functions cache their return values
+SPLITTER = '^\[----+\](?P<header>.*?)\n'
+ESCAPED_SPLITTER = '^/(/*)(\[----+\].*?\n)'
+SPECLINE = '^(.*?)\s*(?:via\s*(.*?))?$'
+
+SPLITTER = re.compile(SPLITTER, re.MULTILINE)
+ESCAPED_SPLITTER = re.compile(ESCAPED_SPLITTER, re.MULTILINE)
+SPECLINE = re.compile(SPECLINE, re.MULTILINE)
+
+class Page(object):
+    __slots__ = ('header', 'content', 'padding')
+    
+    def __init__(self, content, header='', padding=0):
+        self.content = content
+        self.header = header
+        self.padding = padding
+    
+    @property
+    def padded_content(self):
+        return ('\n' * self.padding) + self.content
+
+def split(raw):
+    '''Pure split generator. This function defines the plain logic to split a
+    string into a list of pages
     '''
-    cache = dict()
-    @functools.wraps(func)
-    def memoizing(*args):
-        if args not in cache: #args is a tuple, and useable as a dict key
-            cache[args] = func(*args)
-        return cache[args]
-    return memoizing
-
-@memoizing
-def suffixed(splitter):
-    return splitter + '.*\n'
-
-@memoizing
-def escaped(splitter):
-    return re.compile('^(/*)/(%s)' % suffixed(splitter), re.MULTILINE)
-
-@memoizing
-def splitting(splitter):
-    return re.compile('^' + suffixed(splitter), re.MULTILINE)
-
-def split(raw, splitter=SPLITTER):
-    '''Pure split method. This function defines the plain logic to split a
-    string into a list of strings via a splitter.
-    '''
-
-    splitter = splitting(splitter)
-    return splitting.split(raw)
-
-def escape(raw, splitter=SPLITTER):
+    
+    current_index = 0
+    
+    header = ''
+    
+    for page_break in SPLITTER.finditer(raw):
+        content = raw[current_index:page_break.start()]
+        yield Page(content, header)
+        header = page_break.group('header').strip()
+        current_index = page_break.end()
+        
+    if current_index == 0: #Hacky way to say "if no page_breaks were found"
+        yield Page(raw)
+        
+def escape(content):
     '''Pure escape method. This function defines the logic to properly convert
     escaped splitter patterns in a string
     '''
-    escaper = escaped(splitter)
-    return escaper.sub('\1\2', raw)
+    return ESCAPED_SPLITTER.sub('\1\2', content)
 
-def split_and_escape(raw, splitter=SPLITTER):
-    '''This function defines the logic to split and escape a string. Escaping is
-    only performed if there are more than one pages from the split.
+def split_and_escape(raw):
+    '''This function defines the logic to split and escape a string.
     '''
-    pages = split(raw, splitter)
-    if len(pages) > 1:
-        pages = [escape(page, splitter) for page in pages]
-    return pages
-
+    for page in split(raw):
+        page.content = escape(page.content)
+        yield page
+        
+def parse_specline(header):
+    '''Attempt to parse the header in a page returned from split(...) as a
+    specline. Returns a tuple (content_type, renderer)
+    '''
+    return SPECLINE.match(header).groups('')
+    
 def can_split(raw, splitter=SPLITTER):
     '''Determine if a text block would be split by a splitter
     '''
-    return splitting(splitter).search(raw) is not None
-
+    return bool(SPLITTER.search(raw))
 
 from aspen.exceptions import LoadError
 from aspen.resources.json_resource import JSONResource
@@ -168,9 +178,12 @@ def get_resource_class(filename, raw, media_type):
         # and I've actually seen, in the wild, a file with exactly twos. So
         # we sniff the first few bytes.
 
-        def s(x):
-            return raw.startswith(x)
-        is_dynamic = s('"""') or s('import') or s('from')
+        #def s(x):
+        #    return raw.startswith(x)
+        #is_dynamic = s('"""') or s('import') or s('from')
+        
+        #Testing for a regex match should be reliable enough, even in a binary
+        is_dynamic = can_split(raw)
 
     if not is_dynamic:
         Class = StaticResource
