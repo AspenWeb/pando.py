@@ -6,17 +6,23 @@ PYTHON=python
 # We satisfy dependencies using local tarballs, to ensure that we can build 
 # without a network connection. They're kept in our repo in ./vendor.
 
+ASPEN_DEPS=Cheroot-4.0.0beta.tar.gz mimeparse-0.1.3.tar.gz tornado-1.2.1.tar.gz
+
+TEST_DEPS=coverage-3.5.3.tar.gz nose-1.1.2.tar.gz nosexcover-1.0.7.tar.gz snot-0.6.tar.gz
+
 env/bin/aspen: env/bin/pip
-	./env/bin/pip install ./vendor/Cheroot-4.0.0beta.tar.gz
-	./env/bin/pip install ./vendor/mimeparse-0.1.3.tar.gz
-	./env/bin/pip install ./vendor/tornado-1.2.1.tar.gz
+	for f in $(ASPEN_DEPS) ; do \
+		./env/bin/pip install ./vendor/$$f ;\
+	done
 	./env/bin/python setup.py develop
 
 env/bin/nosetests: env/bin/pip
-	./env/bin/pip install ./vendor/coverage-3.5.3.tar.gz
-	./env/bin/pip install ./vendor/nose-1.1.2.tar.gz
-	./env/bin/pip install ./vendor/nosexcover-1.0.7.tar.gz
-	./env/bin/pip install ./vendor/snot-0.6.tar.gz
+	for f in $(TEST_DEPS) ; do \
+		./env/bin/pip install ./vendor/$$f ;\
+	done
+
+env/bin/pylint: env/bin/pip
+	./env/bin/pip install pylint
 
 env/bin/pip:
 	$(PYTHON) ./vendor/virtualenv-1.7.1.2.py \
@@ -53,19 +59,13 @@ smoke: env/bin/aspen
 test: env/bin/aspen env/bin/nosetests
 	./env/bin/nosetests -sx tests/
 
--coverage-env: env/bin/pip
-	./env/bin/pip install coverage nosexcover
-
--pylint-env: env/bin/pip
-	./env/bin/pip install pylint
-
-nosetests.xml coverage.xml: env/bin/aspen env/bin/nosetests -coverage-env
+nosetests.xml coverage.xml: env/bin/aspen env/bin/nosetests
 	./env/bin/nosetests \
 		--with-xcoverage \
 		--with-xunit tests \
 		--cover-package aspen 
 
-pylint.out: -pylint-env
+pylint.out: env/bin/pylint
 	./env/bin/pylint --rcfile=.pylintrc aspen | tee pylint.out
 
 analyse: pylint.out coverage.xml nosetests.xml
@@ -96,7 +96,7 @@ vendor/jython-installer.jar:
 jython_home: vendor/jython-installer.jar
 	@java -jar ./vendor/jython-installer.jar -s -d jython_home
 
-jenv: jython_home
+jenv/bin/pip: jython_home
 	PATH=`pwd`/jython_home/bin:$$PATH jython ./vendor/virtualenv-1.7.1.2.py \
 		--python=jython \
 		--distribute \
@@ -105,12 +105,22 @@ jenv: jython_home
 		--never-download \
 		--extra-search-dir=./vendor/ \
 		jenv/
-	./jenv/bin/pip install -r requirements.txt
-	./jenv/bin/pip install -e ./
 	# always required for jython since it's ~= python 2.5
 	./jenv/bin/pip install simplejson
 
-jython-nosetests.xml: jenv
+
+jenv/bin/aspen: jenv/bin/pip
+	for f in $(ASPEN_DEPS) ; do \
+		./jenv/bin/pip install ./vendor/$$f ;\
+	done
+	./jenv/bin/jython setup.py develop
+
+jenv/bin/nosetests: jenv/bin/pip
+	for f in $(TEST_DEPS) ; do \
+		./jenv/bin/pip install ./vendor/$$f ;\
+	done
+
+jython-nosetests.xml: jenv/bin/nosetests jenv/bin/aspen
 	./jenv/bin/jython ./jenv/bin/nosetests --with-xunit tests --xunit-file=jython-nosetests.xml --cover-package aspen
 
 jython-test: jython-nosetests.xml
