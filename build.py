@@ -69,7 +69,7 @@ def test():
 def pylint():
     _env()
     run(_virt('pip'), 'install', 'pylint')
-    run(_virt('pylint'), '--rcfile=.pylintrc', 'aspen', ignore_status=True)
+    run(_virt('pylint'), '--rcfile=.pylintrc', 'aspen', '|', 'tee', 'pylint.out', shell=True, ignore_status=True)
 
 def analyse():
     pylint()
