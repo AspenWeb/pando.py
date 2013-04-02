@@ -1,7 +1,7 @@
 import sys
 import os.path
 from optparse import make_option
-from fabricate import main, run, autoclean
+from fabricate import main, run, shell, autoclean
 
 # Core Executables
 # ================
@@ -41,6 +41,7 @@ def dev():
 
 def clean():
     autoclean()
+    shell('rm', '-rf', 'env', 'jenv')
 
 
 # Doc / Smoke
@@ -48,7 +49,7 @@ def clean():
 
 def docs():
     aspen()
-    run(_virt('aspen'), '-a:5370', '-wdoc', '-pdoc/.aspen', '--changes_reload=1')
+    shell(_virt('aspen'), '-a:5370', '-wdoc', '-pdoc/.aspen', '--changes_reload=1')
 
 def smoke():
     aspen()
@@ -63,20 +64,21 @@ def smoke():
 def test():
     aspen()
     dev()
-    run(_virt('nosetests'), '-sx', 'tests/')
+    run(_virt('nosetests'), '-sx', 'tests/', ignore_status=True)
 
 def pylint():
     _env()
     run(_virt('pip'), 'install', 'pylint')
-    run(_virt('pylint'), '--rcfile=.pylintrc', 'aspen')
+    run(_virt('pylint'), '--rcfile=.pylintrc', 'aspen', ignore_status=True)
 
 def analyse():
     pylint()
     dev()
+    aspen()
     run(_virt('nosetests'), 
             '--with-xcoverage', 
             '--with-xunit', 'tests', 
-            '--cover-package', 'aspen')
+            '--cover-package', 'aspen', ignore_status=True)
     print('done!')
 
 # Build
@@ -110,8 +112,8 @@ def jython_test():
     run(_virt('jython', 'jenv'), 'setup.py', 'develop')
     run(_virt('jython', 'jenv'), _virt('nosetests', 'jenv'), '--with-xunit', 'tests',
         '--xunit-file=jython-nosetests.xml',
-	'--cover-package', 'aspen'
-	)
+	'--cover-package', 'aspen',
+	ignore_status=True)
 
 def show_targets():
     print("""Valid targets:
