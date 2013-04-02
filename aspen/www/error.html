@@ -1,12 +1,12 @@
 from aspen.http import status_strings
---------------------------------------------------------------------------------
+[----------------------------------------]
 msg = status_strings.get(response.code, 'Sorry')
 msg = msg[0].upper() + msg[1:].lower()
 if request.website.show_tracebacks:
     err = response.body
 else:
     err = ''
---------------------------------------------------------------------------------
+[----------------------------------------]
 <html>
     <head>
         <title>{{ response.code }} {{ msg.title() }}</title>

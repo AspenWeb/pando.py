@@ -6,6 +6,9 @@ class JSONResource(DynamicResource):
 
     min_pages = 2
     max_pages = 2
+    
+    def compile_page(self, page):
+        raise SyntaxError('JSON resources should only have logic pages')
 
     def process_raised_response(self, response):
         """Given a response, mutate it as needed.
