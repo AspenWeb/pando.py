@@ -1,7 +1,8 @@
 Acknowledgements
 ================
 
-... will go here.
+dstufft
+https://github.com/gittip/www.gittip.com/issues/800#issuecomment-15493967
 
 
 Disclosure
