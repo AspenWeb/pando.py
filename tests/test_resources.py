@@ -177,7 +177,7 @@ def test_templating_skipped_without_script():
 
 @nose.tools.nottest
 def test_offsets(raw, offsets):
-    actual = [page.content for page in split(raw)]
+    actual = [page.offset for page in split(raw)]
     assert actual == offsets, actual
 
 def test_offset_calculation_basic():
