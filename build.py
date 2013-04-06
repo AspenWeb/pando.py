@@ -92,15 +92,17 @@ def build():
 JYTHON_URL="http://search.maven.org/remotecontent?filepath=org/python/jython-installer/2.5.3/jython-installer-2.5.3.jar" 
 
 def _jython_home():
-    local_jython = os.path.join('vendor', 'jython-installer.jar')
-    run('wget', JYTHON_URL, '-O', local_jython)
-    run('java', '-jar', local_jython, '-s', '-d', 'jython_home')
+    if not os.path.exists('jython_home'):
+        local_jython = os.path.join('vendor', 'jython-installer.jar')
+        run('wget', JYTHON_URL, '-O', local_jython)
+        run('java', '-jar', local_jython, '-s', '-d', 'jython_home')
 
 def _jenv():
     _jython_home()
-    jpath = os.path.join('.', 'jython_home', 'bin') + ':' + os.environ['PATH']
-    args = ['PATH=' + jpath, 'jython' ] + ENV_ARGS + [ '--python=jython', 'jenv' ] 
-    run(*args)
+    jenv = dict(os.environ)
+    jenv['PATH'] = os.path.join('.', 'jython_home', 'bin') + ':' + jenv['PATH']
+    args = [ 'jython' ] + ENV_ARGS + [ '--python=jython', 'jenv' ] 
+    run(*args, env=jenv)
     # always required for jython since it's ~= python 2.5
     run(_virt('pip', 'jenv'), 'install', 'simplejson')
 
