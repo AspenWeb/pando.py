@@ -43,8 +43,6 @@ class RenderedResource(NegotiatedResource):
         """Extend to insert page one if needed.
         """
         pages = NegotiatedResource.parse_into_pages(self, raw)
-        npages = len(pages)
-        assert npages in (2, 3, 4), npages  # sanity check
         self._prepend_empty_pages(pages, 3)
         return pages
 
