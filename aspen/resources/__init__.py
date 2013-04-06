@@ -31,6 +31,7 @@ import sys
 import traceback
 import re
 import functools
+import nose
 
 #Paginate methods.
 #=================
@@ -61,7 +62,6 @@ def split(raw):
     '''
     
     current_index = 0
-    
     header = ''
     
     for page_break in SPLITTER.finditer(raw):
@@ -69,9 +69,10 @@ def split(raw):
         yield Page(content, header)
         header = page_break.group('header').strip()
         current_index = page_break.end()
-        
-    if current_index == 0: #Hacky way to say "if no page_breaks were found"
-        yield Page(raw)
+    
+    #Yield final page. If no page dividers were found, this will be all of it
+    content = raw[current_index:]
+    yield Page(content, header)
         
 def escape(content):
     '''Pure escape method. This function defines the logic to properly convert
