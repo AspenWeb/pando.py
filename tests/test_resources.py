@@ -175,16 +175,15 @@ def test_templating_skipped_without_script():
 
 # Test offset calculation
 
-@nose.tools.nottest
-def test_offsets(raw, offsets):
+def check_offsets(raw, offsets):
     actual = [page.offset for page in split(raw)]
     assert actual == offsets, actual
 
 def test_offset_calculation_basic():
-    test_offsets('\n\n\n[----]\n\n', [0, 4])
+    check_offsets('\n\n\n[----]\n\n', [0, 4])
 
 def test_offset_calculation_for_empty_file():
-    test_offsets('', [0])
+    check_offsets('', [0])
 
 def test_offset_calculation_advanced():
     raw = (
@@ -192,7 +191,7 @@ def test_offset_calculation_advanced():
         'cheese\n[----]\n'
         '\n\n\n\n\n\n[----]\n'
         'Monkey\nHead\n') #Be careful: this is implicit concation, not a tuple
-    test_offsets(raw, [0, 4, 6, 13])
+    check_offsets(raw, [0, 4, 6, 13])
 
 
 
