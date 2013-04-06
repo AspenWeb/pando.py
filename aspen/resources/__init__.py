@@ -67,7 +67,7 @@ def split(raw):
     for page_break in SPLITTER.finditer(raw):
         content = raw[current_index:page_break.start()]
         yield Page(content, header, line_offset)
-        line_offset = content.count('\n') + 1
+        line_offset += content.count('\n') + 1
         header = page_break.group('header').strip()
         current_index = page_break.end()
     
