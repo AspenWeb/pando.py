@@ -31,9 +31,8 @@ import sys
 import traceback
 import re
 import functools
-import nose
 
-#Paginate methods.
+# Paginate methods.
 #=================
 
 SPLITTER = '^\[----+\](?P<header>.*?)\n'
@@ -45,16 +44,16 @@ ESCAPED_SPLITTER = re.compile(ESCAPED_SPLITTER, re.MULTILINE)
 SPECLINE = re.compile(SPECLINE, re.MULTILINE)
 
 class Page(object):
-    __slots__ = ('header', 'content', 'padding')
+    __slots__ = ('header', 'content', 'offset')
     
-    def __init__(self, content, header='', padding=0):
+    def __init__(self, content, header='', offset=0):
         self.content = content
         self.header = header
-        self.padding = padding
+        self.offset = offset
     
     @property
     def padded_content(self):
-        return ('\n' * self.padding) + self.content
+        return ('\n' * self.offset) + self.content
 
 def split(raw):
     '''Pure split generator. This function defines the plain logic to split a
@@ -62,17 +61,19 @@ def split(raw):
     '''
     
     current_index = 0
+    line_offset = 0
     header = ''
     
     for page_break in SPLITTER.finditer(raw):
         content = raw[current_index:page_break.start()]
-        yield Page(content, header)
+        yield Page(content, header, line_offset)
+        line_offset = content.count('\n') + 1
         header = page_break.group('header').strip()
         current_index = page_break.end()
     
-    #Yield final page. If no page dividers were found, this will be all of it
+    # Yield final page. If no page dividers were found, this will be all of it
     content = raw[current_index:]
-    yield Page(content, header)
+    yield Page(content, header, line_offset)
         
 def escape(content):
     '''Pure escape method. This function defines the logic to properly convert
@@ -109,16 +110,16 @@ from aspen.resources.static_resource import StaticResource
 # Cache helpers
 # =============
 
-__cache__ = dict()        # cache, keyed to filesystem path
+__cache__ = dict()  # cache, keyed to filesystem path
 
 class Entry:
     """An entry in the global resource cache.
     """
 
-    fspath = ''         # The filesystem path [string]
-    mtime = None        # The timestamp of the last change [int]
-    quadruple = None    # A post-processed version of the data [4-tuple]
-    exc = None          # Any exception in reading or compilation [Exception]
+    fspath = ''  # The filesystem path [string]
+    mtime = None  # The timestamp of the last change [int]
+    quadruple = None  # A post-processed version of the data [4-tuple]
+    exc = None  # Any exception in reading or compilation [Exception]
 
     def __init__(self):
         self.fspath = ''
@@ -179,11 +180,11 @@ def get_resource_class(filename, raw, media_type):
         # and I've actually seen, in the wild, a file with exactly twos. So
         # we sniff the first few bytes.
 
-        #def s(x):
+        # def s(x):
         #    return raw.startswith(x)
-        #is_dynamic = s('"""') or s('import') or s('from')
+        # is_dynamic = s('"""') or s('import') or s('from')
         
-        #Testing for a regex match should be reliable enough, even in a binary
+        # Testing for a regex match should be reliable enough, even in a binary
         is_dynamic = can_split(raw)
 
     if not is_dynamic:
@@ -201,6 +202,7 @@ def get_resource_class(filename, raw, media_type):
 
 
 def load(request, mtime):
+    import nose
     """Given a Request and a mtime, return a Resource object (w/o caching).
     """
 
@@ -254,22 +256,22 @@ def get(request):
     # =====================
 
     mtime = os.stat(request.fs)[stat.ST_MTIME]
-    if entry.mtime == mtime:                                # cache hit
+    if entry.mtime == mtime:  # cache hit
         if entry.exc is not None:
             raise entry.exc
-    else:                                                   # cache miss
+    else:  # cache miss
         try:
             entry.resource = load(request, mtime)
-        except:     # capture any Exception
-            entry.exc = ( LoadError(traceback.format_exc())
+        except:  # capture any Exception
+            entry.exc = (LoadError(traceback.format_exc())
                         , sys.exc_info()[2]
                          )
-        else:       # reset any previous Exception
+        else:  # reset any previous Exception
             entry.exc = None
 
         entry.mtime = mtime
         if entry.exc is not None:
-            raise entry.exc[0] # TODO Why [0] here, and not above?
+            raise entry.exc[0]  # TODO Why [0] here, and not above?
 
 
     # Return

@@ -110,12 +110,6 @@ class DynamicResource(Resource):
 
         """
 
-        # Compute paddings
-        # ====================================================
-        # This is so we get accurate tracebacks.
-        for page, padding in zip(pages, self._compute_paddings(pages)):
-            page.padding = padding
-
         # Exec the first page and compile the second.
         # ===========================================
         
@@ -142,19 +136,6 @@ class DynamicResource(Resource):
         pages[2:] = (self.compile_page(page) for page in pages[2:])
 
         return pages
-    
-    @staticmethod
-    def _compute_paddings(pages):
-        """Given a list of pages, return a list of paddings, such that the line
-        numbers for each page are correct to the original source file when the
-        paddings are applied
-        """
-        
-        lines = 0
-        
-        for page in pages:
-            yield lines
-            lines += (page.content.count('\n') + 1)
             
     @staticmethod
     def _prepend_empty_pages(pages, min_length):
@@ -163,7 +144,7 @@ class DynamicResource(Resource):
         """
         num_extra_pages = min_length - len(pages)
         #Note that range(x) returns an empty list if x < 1
-        pages[0:0] = (Page() for _ in range(num_extra_pages))
+        pages[0:0] = (Page('') for _ in range(num_extra_pages))
 
     # Hooks
     # =====
