@@ -1,3 +1,5 @@
+import os
+import re
 import sys
 import os.path
 from optparse import make_option
@@ -39,9 +41,17 @@ def dev():
     for dep in TEST_DEPS:
         run(_virt('pip'), 'install', os.path.join('vendor', dep))
 
+def clean_env():
+    shell('rm', '-rf', 'env')
+
 def clean():
     autoclean()
-    shell('rm', '-rf', 'env', 'jenv')
+    shell('find', '.', '-name', '*.pyc', '-delete')
+    clean_env()
+    clean_smoke()
+    clean_jenv()
+    clean_test()
+    clean_build()
 
 
 # Doc / Smoke
@@ -51,12 +61,16 @@ def docs():
     aspen()
     shell(_virt('aspen'), '-a:5370', '-wdoc', '-pdoc/.aspen', '--changes_reload=1')
 
+smoke_dir = 'smoke-test'
 def smoke():
     aspen()
-    testdir = 'smoke-test'
-    run('mkdir', testdir)
-    open(os.path.join(testdir, "index.html"),"w").write("Greetings, program!")
-    run(_virt('aspen'), '-w', testdir)
+    run('mkdir', smoke_dir)
+    open(os.path.join(smoke_dir, "index.html"),"w").write("Greetings, program!")
+    run(_virt('aspen'), '-w', smoke_dir)
+
+def clean_smoke():
+    shell('rm', '-rf', smoke_dir)
+
 
 # Testing
 # =======
@@ -81,11 +95,19 @@ def analyse():
             '--cover-package', 'aspen', ignore_status=True)
     print('done!')
 
+def clean_test():
+    clean_env()
+    shell('rm', '.coverage', 'coverage.xml', 'nosetests.xml', 'pylint.out')
+
 # Build
 # =====
 
 def build():
     run(main.options.python, 'setup.py', 'bdist_egg')
+
+def clean_build():
+    run('python', 'setup.py', 'clean', '-a')
+    run('rm', '-rf', 'dist')
 
 # Jython
 # ======
@@ -106,6 +128,9 @@ def _jenv():
     # always required for jython since it's ~= python 2.5
     run(_virt('pip', 'jenv'), 'install', 'simplejson')
 
+def clean_jenv():
+    shell('find', '.', '-name', '*.class', '-delete')
+    shell('rm', '-rf', 'jenv', 'vendor/jython-installer.jar', 'jython_home')
 
 def jython_test():
     _jenv()
@@ -116,6 +141,10 @@ def jython_test():
         '--xunit-file=jython-nosetests.xml',
 	'--cover-package', 'aspen',
 	ignore_status=True)
+
+def clean_jtest():
+    shell('find', '.', '-name', '*.class', '-delete')
+    shell('rm', '-rf', 'jython-nosetests.xml')
 
 def show_targets():
     print("""Valid targets:
@@ -129,6 +158,8 @@ def show_targets():
     test - run the unit tests
     analyse - run the unit tests with code coverage enabled
     pylint - run pylint on the source
+    clean - remove all build artifacts
+    clean_{env,jenv,smoke,test,jtest} - clean some build artifacts
     
     jython_test - install jython and run unit tests with code coverage. 
                   (requires java)
