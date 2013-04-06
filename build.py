@@ -27,10 +27,12 @@ ENV_ARGS = [
             ]
 
 def _env():
+    if os.path.exists('env'): return
     args = [ main.options.python ] + ENV_ARGS + [ 'env' ]
     run(*args)
 
 def aspen():
+    if os.path.exists('env/bin/aspen'): return
     _env()
     for dep in ASPEN_DEPS:
         run(_virt('pip'), 'install', os.path.join('vendor', dep))
@@ -97,7 +99,7 @@ def analyse():
 
 def clean_test():
     clean_env()
-    shell('rm', '.coverage', 'coverage.xml', 'nosetests.xml', 'pylint.out')
+    shell('rm', '-f', '.coverage', 'coverage.xml', 'nosetests.xml', 'pylint.out')
 
 # Build
 # =====
@@ -116,7 +118,7 @@ JYTHON_URL="http://search.maven.org/remotecontent?filepath=org/python/jython-ins
 def _jython_home():
     if not os.path.exists('jython_home'):
         local_jython = os.path.join('vendor', 'jython-installer.jar')
-        run('wget', JYTHON_URL, '-O', local_jython)
+        run('wget', JYTHON_URL, '-qO', local_jython)
         run('java', '-jar', local_jython, '-s', '-d', 'jython_home')
 
 def _jenv():

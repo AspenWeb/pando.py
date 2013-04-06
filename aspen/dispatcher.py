@@ -102,10 +102,9 @@ def dispatch_abstract(listnodes, is_leaf, traverse, find_index, noext_matched,
 
     for depth, node in enumerate(nodepath):
 
-        if not node:                            # empty path segment - only
-            subnode = traverse(curnode, node)   #  possible in the last
-            idx = find_index(subnode)           #  position
-            assert depth + 1 == len(nodepath)  # sanity check
+        if not node and depth + 1 == len(nodepath): # empty path segment in 
+            subnode = traverse(curnode, node)       #  last position, so look
+            idx = find_index(subnode)               #  for index or 404
             if idx is None:
                 # this makes the resulting path end in /, meaning autoindex or
                 # 404 as appropriate
