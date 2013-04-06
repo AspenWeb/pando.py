@@ -1,10 +1,12 @@
 from textwrap import dedent
 
+import nose.tools
+
 from aspen import Response
 from aspen.testing import assert_raises, check
 from aspen.testing.fsfix import attach_teardown
 from tornado.template import Template
-from aspen.resources import Page
+from aspen.resources import split
 from aspen.resources.dynamic_resource import DynamicResource
 
 
@@ -171,25 +173,26 @@ def test_templating_skipped_without_script():
     assert actual == expected, actual
 
 
-# _compute_paddings
+# Test offset calculation
 
-def test_compute_paddings_computes_paddings():
-    actual = list(DynamicResource._compute_paddings([Page('\n\n\n'), Page('\n')]))
-    assert actual == ['', '\n\n\n\n'], actual
+@nose.tools.nottest
+def test_offsets(raw, offsets):
+    actual = [page.content for page in split(raw)]
+    assert actual == offsets, actual
 
-def test_compute_paddings_computes_paddings_for_empty_list():
-    actual = list(DynamicResource._compute_paddings([]))
-    assert actual == [], actual
+def test_offset_calculation_basic():
+    test_offsets('\n\n\n[----]\n\n', [0, 4])
 
-def test_compute_paddings_computes_paddings_for_more():
-    func = DynamicResource._compute_paddings
-    pages = [
-        Page('\n\n\n'),
-        Page('cheese\n'),
-        Page('\n\n\n\n\n\n'),
-        Page('Monkey\nHead\n')]
-    actual = list(func(pages))
-    assert actual == ['', '\n'*4, '\n'*6, '\n'*13], actual
+def test_offset_calculation_for_empty_file():
+    test_offsets('', [0])
+
+def test_offset_calculation_advanced():
+    raw = (
+        '\n\n\n[----]\n'
+        'cheese\n[----]\n'
+        '\n\n\n\n\n\n[----]\n'
+        'Monkey\nHead\n') #Be careful: this is implicit concation, not a tuple
+    test_offsets(raw, [0, 4, 6, 13])
 
 
 
