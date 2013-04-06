@@ -51,7 +51,7 @@ smoke: env/bin/aspen
 # =======
 
 test: env/bin/aspen env/bin/nosetests
-	./env/bin/nosetests tests/
+	./env/bin/nosetests -sx tests/
 
 -coverage-env: env/bin/pip
 	./env/bin/pip install coverage nosexcover
