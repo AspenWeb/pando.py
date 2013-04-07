@@ -166,26 +166,10 @@ def get_resource_class(filename, raw, media_type):
 
         pass
 
-    elif media_type.startswith('text/') or media_type == 'application/json':
-
-        # For text formats we can perform a highly accurate test for
-        # dynamicity.
-
-        is_dynamic = can_split(raw)
-
     else:
-
-        # For binary formats we must rely on a less-accurate test. This is
-        # because a binary file can haves in it without being a resource--
-        # and I've actually seen, in the wild, a file with exactly twos. So
-        # we sniff the first few bytes.
-
-        # def s(x):
-        #    return raw.startswith(x)
-        # is_dynamic = s('"""') or s('import') or s('from')
-        
-        # Testing for a regex match should be reliable enough, even in a binary
+        # For other files, it is determined by the presence of [----] in the file
         is_dynamic = can_split(raw)
+
 
     if not is_dynamic:
         Class = StaticResource
@@ -202,7 +186,6 @@ def get_resource_class(filename, raw, media_type):
 
 
 def load(request, mtime):
-    import nose
     """Given a Request and a mtime, return a Resource object (w/o caching).
     """
 
