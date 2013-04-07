@@ -47,10 +47,10 @@ class NegotiatedResource(DynamicResource):
 
 
     def compile_page(self, page):
-        """Given a bytestring, return a (render, media type) pair.
+        """Given a bytestring, return a (renderer, media type) pair.
         """
-        make_render, media_type = self._parse_specline(page.header)
-        render = make_render(self.fs, page.content)
+        make_renderer, media_type = self._parse_specline(page.header)
+        renderer = make_renderer(self.fs, page.content)
         if media_type in self.renderers:
             raise SyntaxError("Two content pages defined for %s." % media_type)
 
@@ -58,7 +58,7 @@ class NegotiatedResource(DynamicResource):
         self.renderers[media_type] = render
         self.available_types.append(media_type)
 
-        return (render, media_type)  # back to parent class
+        return (renderer, media_type)  # back to parent class
 
     def get_response(self, context):
         """Given a context dict, return a response object.
