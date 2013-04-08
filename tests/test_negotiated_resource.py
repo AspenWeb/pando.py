@@ -222,11 +222,11 @@ def test_can_override_default_renderer_entirely():
 # indirect
 
 INDIRECTLY_NEGOTIATED_RESOURCE = """\
-^L
+[-------]
 foo = "program"
-^L text/html
+[-------] text/html
 <h1>Greetings, {{ foo }}!</h1>
-^L text/plain
+[-------] text/plain
 Greetings, {{ foo }}!"""
 
 def test_indirect_negotiation_sets_media_type():
@@ -251,10 +251,10 @@ def test_indirect_negotiation_with_unsupported_media_type_is_404():
 
 
 INDIRECTLY_NEGOTIATED_VIRTUAL_RESOURCE = """\
-^L
-^L text/html
+[-------]
+[-------] text/html
 <h1>Greetings, {{ path['foo'] }}!</h1>
-^L text/plain
+[-------] text/plain
 Greetings, {{ path['foo'] }}!"""
 
 
@@ -266,12 +266,12 @@ def test_negotiated_inside_virtual_path():
     assert actual == expected, actual
 
 INDIRECTLY_NEGOTIATED_VIRTUAL_RESOURCE_STARTYPE = """\
-^L
-^L */*
+[-------]
+[-------] */*
 Unknown request type, {{ path['foo'] }}!
-^L text/html
+[-------] text/html
 <h1>Greetings, {{ path['foo'] }}!</h1>
-^L text/*
+[-------] text/*
 Greetings, {{ path['foo'] }}!"""
 
 def test_negotiated_inside_virtual_path_with_startypes_present():
