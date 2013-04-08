@@ -83,7 +83,7 @@ def test_basic_escape_1():
     check_escape('/[----]', '[----]')
 
 def test_basic_escape_2():
-    check_escape('////[----]', '[///[----]')
+    check_escape('////[----]', '///[----]')
 
 def test_inline_sep_ignored_1():
     check_escape('inline[----]break', 'inline[----]break')
