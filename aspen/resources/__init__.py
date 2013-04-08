@@ -37,11 +37,11 @@ import functools
 
 SPLITTER = '^\[----+\](?P<header>.*?)(\n|$)'
 ESCAPED_SPLITTER = '^/(/*)(\[----+\].*?(\n|$))'
-SPECLINE = '^(.*?)\s+(?:via\s+(.*?))?\s*$'
+SPECLINE_SPLIT = '(?:\s+|^)via(?:\s+)'
 
 SPLITTER = re.compile(SPLITTER, re.MULTILINE)
 ESCAPED_SPLITTER = re.compile(ESCAPED_SPLITTER, re.MULTILINE)
-SPECLINE = re.compile(SPECLINE)
+SPECLINE_SPLIT = re.compile(SPECLINE_SPLIT)
 
 class Page(object):
     __slots__ = ('header', 'content', 'offset')
@@ -92,7 +92,11 @@ def parse_specline(header):
     '''Attempt to parse the header in a page returned from split(...) as a
     specline. Returns a tuple (content_type, renderer)
     '''
-    return SPECLINE.match(header).groups('')
+    parts = SPECLINE_SPLIT.split(header, 1)
+    if len(parts) == 1:
+        return parts[0].strip(), ''
+    else:
+        return parts[0].strip(), parts[1].strip()
 
 def can_split(raw, splitter=SPLITTER):
     '''Determine if a text block would be split by a splitter
