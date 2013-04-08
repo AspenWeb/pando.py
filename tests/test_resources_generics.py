@@ -8,10 +8,10 @@ def check_page_content(raw, comp_pages):
     Pattern function. Splits a raw, then checks the number of pages generated,
     and that each page's content matches the contents of comp_pages.
     Interpretation of comp_pages is as follows:
-    comp_pages is am item or a list of items. Each item is a string or tuple.
-    If it is a string, the page's content is matched; if it is a tuple, the
-    page's content and/or header are checked. If any of the items are None, that
-    comparison is ignored
+    comp_pages is am item or a list of items. Each item is a string, tuple, or
+    None. If it is a string, the page's content is matched; if it is a tuple,
+    the page's content and/or header are checked. If any of the items are None,
+    that comparison is ignored.
     '''
 
     #Convert to single-element list
@@ -60,6 +60,19 @@ def test_no_inline_page_break():
     content = 'this is an[----]inline page break'
     check_page_content(content,  [None])
 
+def test_headers():
+    raw = '''pag1
+[----] header1
+page2
+[----] header3
+page3
+'''
+    pages = [
+        'page1\n',
+        ('page2\n', ' header2')
+        ('page3\n', ' header3')] #note that header whitespace is preserved
+
+    check_page_content(raw, pages)
 #ESCAPE TESTS
 #############
 
