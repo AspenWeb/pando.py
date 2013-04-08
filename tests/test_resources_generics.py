@@ -61,7 +61,7 @@ def test_no_inline_page_break():
     check_page_content(content,  [None])
 
 def test_headers():
-    raw = '''pag1
+    raw = '''page1
 [----] header1
 page2
 [----] header3
@@ -69,7 +69,7 @@ page3
 '''
     pages = [
         'page1\n',
-        ('page2\n', ' header2')
+        ('page2\n', ' header2'),
         ('page3\n', ' header3')] #note that header whitespace is preserved
 
     check_page_content(raw, pages)
