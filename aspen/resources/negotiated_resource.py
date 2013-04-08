@@ -28,8 +28,8 @@ from aspen.utils import typecheck
 from aspen.resources import parse_specline
 
 
-renderer_re = re.compile(r'[a-z0-9.-]+')
-media_type_re = re.compile(r'[A-Za-z0-9.+*-]+/[A-Za-z0-9.+*-]+')
+renderer_re = re.compile(r'[a-z0-9.-]+$')
+media_type_re = re.compile(r'[A-Za-z0-9.+*-]+/[A-Za-z0-9.+*-]+$')
 
 
 class NegotiatedResource(DynamicResource):
@@ -56,6 +56,7 @@ class NegotiatedResource(DynamicResource):
 
         # update internal data structures
         self.renderers[media_type] = renderer
+
         self.available_types.append(media_type)
 
         return (renderer, media_type)  # back to parent class
