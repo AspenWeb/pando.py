@@ -55,7 +55,7 @@ class NegotiatedResource(DynamicResource):
             raise SyntaxError("Two content pages defined for %s." % media_type)
 
         # update internal data structures
-        self.renderers[media_type] = render
+        self.renderers[media_type] = renderer
         self.available_types.append(media_type)
 
         return (renderer, media_type)  # back to parent class
@@ -118,7 +118,7 @@ class NegotiatedResource(DynamicResource):
 
         # Parse into parts
         parts = parse_specline(specline)
-            
+
         #Assign parts
         media_type, renderer = parts
         if renderer == '':
@@ -147,7 +147,7 @@ class NegotiatedResource(DynamicResource):
             msg = ("Malformed renderer %s. It must match %s. Possible "
                    "renderers (might need third-party libs): %s.")
             raise SyntaxError(msg % (renderer, renderer_re.pattern, possible))
-        
+
         renderer = renderer.decode('US-ASCII')
 
         factories = self.website.renderer_factories
