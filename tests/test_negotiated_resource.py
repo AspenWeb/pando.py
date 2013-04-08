@@ -96,8 +96,7 @@ def test_get_renderer_factory_can_raise_syntax_error():
                        , 'oo*gle'
                         )
     msg = err.args[0]
-    assert msg.startswith("Malformed renderer oo*gle. It must match"
-                    " #![a-z0-9.-]+."), msg
+    assert msg.startswith("Malformed renderer oo*gle. It must match"), msg
 
 
 # get_response
@@ -110,10 +109,10 @@ def get_response(request, response):
     return resource.get_response(context)
 
 NEGOTIATED_RESOURCE = """\
-^L
-^L text/plain
+[----]
+[----] text/plain
 Greetings, program!
-^L text/html
+[----] text/html
 <h1>Greetings, program!</h1>
 """
 
