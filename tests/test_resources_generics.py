@@ -48,7 +48,8 @@ def test_basic_page_break():
                        ['Page 1\n', 'Page 2\n'])
 
 def test_two_page_breaks():
-    raw = '''1
+    raw = '''\
+1
 [----]
 2
 [----]
@@ -61,14 +62,15 @@ def test_no_inline_page_break():
     check_page_content(content,  [None])
 
 def test_headers():
-    raw = '''page1
+    raw = '''\
+page1
 [----] header2
 page2
 [----] header3
 page3
 '''
     pages = [
-        'page1\n',
+        ('page1\n', ''),
         ('page2\n', 'header2'),
         ('page3\n', 'header3')]
 
