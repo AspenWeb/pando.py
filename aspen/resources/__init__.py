@@ -79,7 +79,7 @@ def escape(content):
     '''Pure escape method. This function defines the logic to properly convert
     escaped splitter patterns in a string
     '''
-    return ESCAPED_SPLITTER.sub('\1\2', content)
+    return ESCAPED_SPLITTER.sub(r'\1\2', content)
 
 def split_and_escape(raw):
     '''This function defines the logic to split and escape a string.
