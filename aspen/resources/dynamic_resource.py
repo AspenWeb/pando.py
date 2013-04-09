@@ -82,7 +82,7 @@ class DynamicResource(Resource):
 
         pages = list(split_and_escape(raw))
         npages = len(pages)
-            
+
 
         # Check for too few pages. This is a sanity check as get_resource_class
         # should guarantee this. Bug if it fails.
@@ -112,9 +112,8 @@ class DynamicResource(Resource):
 
         # Exec the first page and compile the second.
         # ===========================================
-        
-        one = pages[0]
-        two = pages[1]
+
+        one, two = pages[:2]
 
         context = dict()
         context['__file__'] = self.fs
@@ -126,17 +125,15 @@ class DynamicResource(Resource):
 
         two = compile(two.padded_content, self.fs, 'exec')
 
-        pages[0] = one
-        pages[1] = two
-
+        pages[:2] = (one, two)
 
         # Subclasses are responsible for the rest.
         # ========================================
-            
+
         pages[2:] = (self.compile_page(page) for page in pages[2:])
 
         return pages
-            
+
     @staticmethod
     def _prepend_empty_pages(pages, min_length):
         """Given a list of pages, and a min length, prepend blank pages to the
