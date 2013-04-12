@@ -1,6 +1,6 @@
 doc_title = "JSON Simplates"
 doc_next = []
-
+[----------------------------------------]
 {% extends doc.html %}
 {% block doc %}
 
@@ -56,7 +56,7 @@ output if it contains anything else.</p>
 <pre>import random
 &#94;L
 n = random.choice(range(10))
-extra_excitement = "!" * n 
+extra_excitement = "!" * n
 response.body = {'Greetings': 'program!' + extra_excitement}</pre>
 
 
@@ -116,8 +116,8 @@ imported <code>from aspen.json</code>:</p>
 <pre>
 def register_encoder(cls, encode):
     """Register the encode function for cls.
-    
-    An encoder should take an instance of cls and return something 
+
+    An encoder should take an instance of cls and return something
     basically serializable (strings, lists, dictionaries).
 
     """

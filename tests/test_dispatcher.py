@@ -29,10 +29,10 @@ def test_index_is_found():
 
 def test_negotiated_index_is_found():
     mk(( 'index'
-       , """\
-^L text/html
+       , """
+[----------] text/html
 <h1>Greetings, program!</h1>
-^L text/plain
+[----------] text/plain
 Greetings, program!
 """))
     expected = fix('index')
@@ -361,22 +361,22 @@ def test_trailing_on_virtual_paths():
 # ====
 
 def test_virtual_path_docs_1():
-    mk(('%name/index.html', "^L\nGreetings, {{ path['name'] }}!"))
+    mk(('%name/index.html', "[------]\nGreetings, {{ path['name'] }}!"))
     response = handle('/aspen/')
     expected = "Greetings, aspen!"
     actual = response.body
     assert actual == expected, actual
 
 def test_virtual_path_docs_2():
-    mk(('%name/index.html', "^L\nGreetings, {{ path['name'] }}!"))
+    mk(('%name/index.html', "[--------]\nGreetings, {{ path['name'] }}!"))
     response = handle('/python/')
     expected = "Greetings, python!"
     actual = response.body
     assert actual == expected, actual
 
 def test_virtual_path_docs_3():
-    mk( ('%name/index.html', "^L\nGreetings, {{ path['name'] }}!")
-      , ('%name/%cheese.txt', "^L\n{{ path['name'].title() }} likes {{ path['cheese'] }} cheese.")
+    mk( ('%name/index.html', "[---------]\nGreetings, {{ path['name'] }}!")
+      , ('%name/%cheese.txt', "[---------]\n{{ path['name'].title() }} likes {{ path['cheese'] }} cheese.")
        )
     response = handle('/chad/cheddar.txt')
     expected = "Chad likes cheddar cheese."
@@ -384,7 +384,7 @@ def test_virtual_path_docs_3():
     assert actual == expected, actual
 
 def test_virtual_path_docs_4():
-    mk( ('%name/index.html', "^L\nGreetings, {{ path['name'] }}!")
+    mk( ('%name/index.html', "[---------]\nGreetings, {{ path['name'] }}!")
       , ('%name/%cheese.txt', "{{ path['name'].title() }} likes {{ path['cheese'] }} cheese.")
        )
     response = handle('/chad/cheddar.txt/')
@@ -393,10 +393,10 @@ def test_virtual_path_docs_4():
     assert actual == expected, actual
 
 def test_virtual_path_docs_5():
-    mk( ('%name/index.html', "^L\nGreetings, {{ path['name'] }}!")
+    mk( ('%name/index.html', "[----------]\nGreetings, {{ path['name'] }}!")
       , ('%name/%cheese.txt', "{{ path['name'].title() }} likes {{ path['cheese'] }} cheese.")
       , ( '%year.int/index.html'
-        , "^L\nTonight we're going to party like it's {{ path['year'] }}!"
+        , "[----------]\nTonight we're going to party like it's {{ path['year'] }}!"
          )
        )
     response = handle('/1999/')
@@ -406,7 +406,7 @@ def test_virtual_path_docs_5():
 
 def test_virtual_path_docs_6():
     mk( ( '%year.int/index.html'
-        , "^L\nTonight we're going to party like it's {{ path['year'] }}!"
+        , "[----------]\nTonight we're going to party like it's {{ path['year'] }}!"
          )
        )
     response = handle('/1999/')

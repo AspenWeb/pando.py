@@ -26,19 +26,19 @@ Greetings, program!
     assert actual == expected, actual
 
 def test_fatal_error_response_is_returned():
-    mk(('index.html', "raise heck"))
+    mk(('index.html', "raise heck\n[----]\n"))
     expected = 500
     actual = handle().code
     assert actual == expected, actual
 
 def test_nice_error_response_is_returned():
-    mk(('index.html', "from aspen import Responseraise Response(500)"))
+    mk(('index.html', "from aspen import Response\n[----]\nraise Response(500)\n[----]\n"))
     expected = 500
     actual = handle().code
     assert actual == expected, actual
 
 def test_nice_error_response_is_returned_for_404():
-    mk(('index.html', "from aspen import Responseraise Response(404)"))
+    mk(('index.html', "from aspen import Response\n[----]\nraise Response(404)\n[----]\n"))
     expected = 404
     actual = handle().code
     assert actual == expected, actual
@@ -58,7 +58,7 @@ def test_autoindex_response_is_returned():
 def test_resources_can_import_from_dot_aspen():
     mk( '.aspen'
       , ('.aspen/foo.py', 'bar = "baz"')
-      , ('index.html', "import fooGreetings, {{ foo.bar }}!")
+      , ('index.html', "import foo\n[----]\nGreetings, {{ foo.bar }}!")
        )
     expected = "Greetings, baz!"
     project_root = os.path.join(FSFIX, '.aspen')
@@ -75,7 +75,7 @@ def bar(response):
       , ( '.aspen/configure-aspen.py'
         , 'import foo\nwebsite.hooks.outbound.append(foo.bar)'
          )
-      , ('index.html', "raise heck")
+      , ('index.html', "raise heck\n[----]\n")
        )
 
     # Intentionally break the website object so as to trigger a double failure.
