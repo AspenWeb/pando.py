@@ -188,14 +188,18 @@ def _shell(args, input=None, silent=True, shell=False, ignore_status=False, **kw
     output, stderr = proc.communicate(input)
     status = proc.wait()
     if status and not ignore_status:
-        raise ExecutionError('in _shell, %r exited with status %d'
+        raise ExecutionError('%r exited with status %d in _shell'
                              % (os.path.basename(arglist[0]), status),
                              output, status)
     if silent:
         return output
 
 def md5_hasher(filename):
-    """ Return MD5 hash of given filename, or None if file doesn't exist. """
+    """ Return MD5 hash of given filename if it is a regular file or 
+        a symlink with a hashable target, or the MD5 hash of the 
+        target_filename if it is a symlink without a hashable target,
+        or the MD5 hash of the filename if it is a directory, or None 
+        if file doesn't exist. """
     try:
         f = open(filename, 'rb')
         try:
@@ -203,6 +207,10 @@ def md5_hasher(filename):
         finally:
             f.close()
     except IOError:
+        if os.path.islink(filename):
+            return md5func(os.readlink(filename)).hexdigest()
+        elif os.path.isdir(filename):
+            return md5func(filename).hexdigest()
         return None
 
 def mtime_hasher(filename):
@@ -506,8 +514,10 @@ class StraceRunner(Runner):
     _stat32_re     = re.compile(r'(?P<pid>\d+)\s+stat\("(?P<name>[^"]*)", .*')
     _stat64_re     = re.compile(r'(?P<pid>\d+)\s+stat64\("(?P<name>[^"]*)", .*')
     _execve_re     = re.compile(r'(?P<pid>\d+)\s+execve\("(?P<name>[^"]*)", .*')
-    _mkdir_re      = re.compile(r'(?P<pid>\d+)\s+mkdir\("(?P<name>[^"]*)", .*')
+    _creat_re      = re.compile(r'(?P<pid>\d+)\s+creat\("(?P<name>[^"]*)", .*')
+    _mkdir_re      = re.compile(r'(?P<pid>\d+)\s+mkdir\("(?P<name>[^"]*)", .*\)\s*=\s(?P<result>-?[0-9]*).*')
     _rename_re     = re.compile(r'(?P<pid>\d+)\s+rename\("[^"]*", "(?P<name>[^"]*)"\)')
+    _symlink_re    = re.compile(r'(?P<pid>\d+)\s+symlink\("[^"]*", "(?P<name>[^"]*)"\)')
     _kill_re       = re.compile(r'(?P<pid>\d+)\s+killed by.*')
     _chdir_re      = re.compile(r'(?P<pid>\d+)\s+chdir\("(?P<cwd>[^"]*)"\)')
     _exit_group_re = re.compile(r'(?P<pid>\d+)\s+exit_group\((?P<status>.*)\).*')
@@ -525,7 +535,7 @@ class StraceRunner(Runner):
         shell_keywords = dict(silent=False, ignore_status=True)
         shell_keywords.update(kwargs)
         shell('strace', '-fo', outname, '-e',
-              'trace=open,%s,execve,exit_group,chdir,mkdir,rename,clone,vfork,fork' % self._stat_func,
+              'trace=open,%s,execve,exit_group,chdir,mkdir,rename,clone,vfork,fork,symlink,creat' % self._stat_func,
               args, **shell_keywords)
         cwd = '.' 
         status = 0
@@ -550,7 +560,9 @@ class StraceRunner(Runner):
             open_match = self._open_re.match(line)
             stat_match = self._stat_re.match(line)
             execve_match = self._execve_re.match(line)
+            creat_match = self._creat_re.match(line)
             mkdir_match = self._mkdir_re.match(line)
+            symlink_match = self._symlink_re.match(line)
             rename_match = self._rename_re.match(line)
             clone_match = self._clone_re.match(line)  
 
@@ -576,8 +588,19 @@ class StraceRunner(Runner):
                     is_output = True
             elif stat_match:
                 match = stat_match
+            elif creat_match:
+                match = creat_match
+                # a created file is an output file
+                is_output = True
             elif mkdir_match:
-                match = mkdir_match                
+                match = mkdir_match
+                if match.group('result') == '0':
+                    # a created directory is an output file
+                    is_output = True
+            elif symlink_match:
+            	match =  symlink_match                  
+                # the created symlink is an output file
+                is_output = True
             elif rename_match:
                 match = rename_match
                 # the destination of a rename is an output file
@@ -599,11 +622,9 @@ class StraceRunner(Runner):
                     name = name[len(self.build_dir):]
                     name = name.lstrip(os.path.sep)
 
-                if (self._builder._is_relevant(name)
-                    and not self.ignore(name)
-                    and (os.path.isfile(name)
-                         or os.path.isdir(name)
-                         or not os.path.lexists(name))):
+                if (self._builder._is_relevant(name) 
+                    and not self.ignore(name) 
+                    and os.path.lexists(name)):
                     if is_output:
                         processes[pid].add_output(name)
                     else:
@@ -611,6 +632,7 @@ class StraceRunner(Runner):
 
             match = self._chdir_re.match(line)
             if match:
+                pid  = match.group('pid')
                 processes[pid].cwd = os.path.join(processes[pid].cwd, match.group('cwd'))
 
             match = self._exit_group_re.match(line)
@@ -656,7 +678,7 @@ class StraceRunner(Runner):
                 os.remove(outname)
 
         if status and not ignore_status:
-            raise ExecutionError('in __call_, %r exited with status %d'
+            raise ExecutionError('%r exited with status %d in __call__'
                                  % (os.path.basename(args[0]), status),
                                  '', status)
         return list(deps), list(outputs)
@@ -949,6 +971,8 @@ class Builder(object):
             while deleting a file. """
         if error is None:
             self.echo('deleting %s' % filename)
+        else:
+            self.echo_debug('error deleting %s: %s' % (filename, error.strerror))
 
     def echo_debug(self, message):
         """ Print message, but only if builder is in debug mode. """
@@ -1110,6 +1134,7 @@ class Builder(object):
             file. """
         # first build a list of all the outputs from the .deps file
         outputs = []
+        dirs = []
         for command, deps in self.deps.items():
             outputs.extend(dep for dep, hashed in deps.items()
                            if hashed.startswith('output-'))
@@ -1119,9 +1144,24 @@ class Builder(object):
             try:
                 os.remove(output)
             except OSError, e:
-                self.echo_delete(output, e)
+                if os.path.isdir(output):
+                    # cache directories to be removed once all other outputs
+                    # have been removed, as they may be content of the dir
+                    dirs.append(output)
+                else:
+                    self.echo_delete(output, e)                
             else:
                 self.echo_delete(output)
+        # delete the directories in reverse sort order
+        # this ensures that parents are removed after children
+        for dir in sorted(dirs, reverse=True):
+            try:
+                os.rmdir(dir)
+            except OSError, e:
+                self.echo_delete(dir, e)                
+            else:
+                self.echo_delete(dir)
+               
 
     @property
     def deps(self):
