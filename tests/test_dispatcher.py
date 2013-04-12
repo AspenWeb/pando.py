@@ -444,9 +444,8 @@ def test_intercept_socket_intercepts_transported():
 # These surfaced when porting mongs from Aspen 0.8.
 
 def test_virtual_path_parts_can_be_empty():
-    return
     mk(('foo/%bar/index.html', "Greetings, program!"))
-    expected = {'bar': ''}
+    expected = {u'bar': [u'']}
     actual = check_virtual_paths('/foo//').line.uri.path
     assert actual == expected, actual
 
@@ -493,7 +492,6 @@ def test_file_with_no_extension_matches():
     expected = {'value': [u'baz']}
     actual = check_virtual_paths('/baz').line.uri.path
     assert actual == expected, actual
-
 
 def test_aspen_favicon_doesnt_get_clobbered_by_virtual_path():
     mk('%value')
