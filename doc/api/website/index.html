@@ -1,12 +1,12 @@
 doc_title = "Website"
 doc_next = ""
-^L
+[----------------------------------------]
 {% extends "doc.html" %}
 {% block doc %}
 
 <p>Aspen creates an instance of <code>aspen.website.Website</code> when it
 starts up. It holds all of the global configuration for your application. It is
-placed in the namespace of your <a 
+placed in the namespace of your <a
     href="/configure-aspen.py/">configuration scripts</a> and <a
     href="/simplates/">simplates</a>, where it is available from the first page
 onwards. It is also the object passed to your &ldquo;startup&rdquo; and
@@ -85,7 +85,7 @@ datetime.datetime object at website.retry_after.</p>
 
 <h3>Hooks</h3>
 
-<p>The website object has a <a href="/hooks/">hooks</a> attribute with eight 
+<p>The website object has a <a href="/hooks/">hooks</a> attribute with eight
 sub-attributes:</p>
 
 <ul>

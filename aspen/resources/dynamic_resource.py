@@ -1,5 +1,5 @@
 from aspen import Response
-from aspen.resources import PAGE_BREAK
+from aspen.resources import split_and_escape, Page
 from aspen.resources.resource import Resource
 
 
@@ -24,8 +24,8 @@ class DynamicResource(Resource):
 
     def __init__(self, *a, **kw):
         Resource.__init__(self, *a, **kw)
-        self.pages = self.parse_into_pages(self.raw)
-        self.pages = self.compile_pages(self.pages)
+        pages = self.parse_into_pages(self.raw)
+        self.pages = self.compile_pages(pages)
 
 
     def respond(self, request, response=None):
@@ -80,10 +80,9 @@ class DynamicResource(Resource):
 
         """
 
-        # Support caret-L in addition to .
-        uncareted = raw.replace("^L", PAGE_BREAK)
-        pages = uncareted.split(PAGE_BREAK)
+        pages = list(split_and_escape(raw))
         npages = len(pages)
+
 
         # Check for too few pages. This is a sanity check as get_resource_class
         # should guarantee this. Bug if it fails.
@@ -102,9 +101,8 @@ class DynamicResource(Resource):
 
         return pages
 
-
     def compile_pages(self, pages):
-        """Given a list of bytestrings, replace the bytestrings with objects.
+        """Given a list of pages, replace the pages with objects.
 
         All dynamic resources compile the first two pages the same way. It's
         the third and following pages that differ, so we require subclasses to
@@ -112,79 +110,44 @@ class DynamicResource(Resource):
 
         """
 
-        # Standardize newlines.
-        # =====================
-        # compile requires \n, and doing it now makes the next line easier. In
-        # general it's nice to standardize this, I think. XXX Should we be
-        # going back to \r\n for the wire? That's HTTP, right?
-
-        for i, page in enumerate(pages):
-            pages[i] = page.replace('\r\n', '\n')
-
-        one = pages[0]
-        two = pages[1]
-
-
-        # Compute paddings and pad the second and third pages.
-        # ====================================================
-        # This is so we get accurate tracebacks. We pass padding to the
-        # compile_page hook; the SocketResource subclass uses it, since it has
-        # an additional logic page that it wants to pad. We don't simply pad
-        # all pages because then for content pages the user would view source
-        # in their browser and see nothing but whitespace until they scroll way
-        # down.
-
-        paddings = self._compute_paddings(pages)
-        two = paddings[1] + two
-
-
         # Exec the first page and compile the second.
         # ===========================================
+
+        one, two = pages[:2]
 
         context = dict()
         context['__file__'] = self.fs
         context['website'] = self.website
 
-        one = compile(one, self.fs, 'exec')
+        one = compile(one.padded_content, self.fs, 'exec')
         exec one in context    # mutate context
         one = context          # store it
 
-        two = compile(two, self.fs, 'exec')
+        two = compile(two.padded_content, self.fs, 'exec')
 
-        pages[0] = one
-        pages[1] = two
-
+        pages[:2] = (one, two)
 
         # Subclasses are responsible for the rest.
         # ========================================
 
-        for i, page in enumerate(pages[2:]):
-            i += 2  # no start kw to enumerate in Python 2.5
-            pages[i] = self.compile_page(page, paddings[i])
+        pages[2:] = (self.compile_page(page) for page in pages[2:])
 
         return pages
 
-
-    def _compute_paddings(pages):
-        """Given a list of bytestrings, return a 1-shorter list of bytestrings.
+    @staticmethod
+    def _prepend_empty_pages(pages, min_length):
+        """Given a list of pages, and a min length, prepend blank pages to the
+        list until it is at least as long as min_length
         """
-        if not pages:
-            return []
-
-        # A file with many, many lines would flog this algorithm.
-        lines_in = lambda s: '\n' * s.count('\n')
-        paddings = ['']  # first page doesn't need padding
-        paddings += [paddings[-1] + lines_in(page) for page in pages[:-1]]
-        return paddings
-
-    _compute_paddings = staticmethod(_compute_paddings)
-
+        num_extra_pages = min_length - len(pages)
+        #Note that range(x) returns an empty list if x < 1
+        pages[0:0] = (Page('') for _ in range(num_extra_pages))
 
     # Hooks
     # =====
 
     def compile_page(self, *a):
-        """Given a bytestring, return an object.
+        """Given a page, return an object.
         """
         raise NotImplementedError
 

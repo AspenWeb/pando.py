@@ -1,6 +1,6 @@
 doc_title = "aspen.conf"
 doc_next = []
-
+[----------------------------------------]
 {% extends doc.html %}
 {% block doc %}
 
@@ -24,11 +24,11 @@ from the following four locations. Later files override earlier.</p>
 <dl>
     <dt><code>default_filenames</code></dt>
     <dd>
-    
-        <p>When given a request for a directory, Aspen will look for the files
-        named here to serve the request. The first one found will be used.</p> 
 
-        <b>Valid values:</b> comma- and/or space-separated list of 
+        <p>When given a request for a directory, Aspen will look for the files
+        named here to serve the request. The first one found will be used.</p>
+
+        <b>Valid values:</b> comma- and/or space-separated list of
         strings<br />
         <b>Default:</b> <code>index.html</code><br />
         <b>Example:</b>
@@ -40,7 +40,7 @@ default_filenames: index.html, default.html, README</pre>
 
     <dt><code>default_mimetype</code></dt>
     <dd>
-    
+
         <p>If Aspen can&rsquo;t guess a mimetype based on the filename
         extension, it will use this value. You might set this to
         <code>application/octet-stream</code>, for example, to conform better
@@ -53,7 +53,7 @@ default_filenames: index.html, default.html, README</pre>
 
     <dt><code>json_content_type</code></dt>
     <dd>
-    
+
         <p>Aspen has special support for <a href="/simplates/json/">JSON
             simplates</a>. Use this key to preserve special JSON simplate
         handling but set a different <code>Content-Type</code> header.</p>
@@ -70,7 +70,7 @@ json_content_type: text/plain</pre>
 
     <dt><code>list_directories</code></dt>
     <dd>
-    
+
         <p>If set to yes, Aspen will show a directory listing when none of the
         files named by <code>default_filenames</code> exist in a given
         directory. If set to no, requests for such directories will result in a
@@ -83,7 +83,7 @@ json_content_type: text/plain</pre>
 
     <dt><code>show_tracebacks</code></dt>
     <dd>
-    
+
         <p>If set to yes, Aspen will display debugging information for error
         responses. If set to no, a simple HTTP message will be shown without
         additional detail.</p>

@@ -29,8 +29,76 @@ import os
 import stat
 import sys
 import traceback
+import re
+import functools
 
-PAGE_BREAK = chr(12) # used in the following imports
+# Paginate methods.
+#=================
+
+SPLITTER = '^\[----+\](?P<header>.*?)(\n|$)'
+ESCAPED_SPLITTER = '^/(/*)(\[----+\].*?(\n|$))'
+SPECLINE_SPLIT = '(?:\s+|^)via\s+'
+
+SPLITTER = re.compile(SPLITTER, re.MULTILINE)
+ESCAPED_SPLITTER = re.compile(ESCAPED_SPLITTER, re.MULTILINE)
+SPECLINE_SPLIT = re.compile(SPECLINE_SPLIT)
+
+class Page(object):
+    __slots__ = ('header', 'content', 'offset')
+
+    def __init__(self, content, header='', offset=0):
+        self.content = content
+        self.header = header
+        self.offset = offset
+
+    @property
+    def padded_content(self):
+        return ('\n' * self.offset) + self.content
+
+def split(raw):
+    '''Pure split generator. This function defines the plain logic to split a
+    string into a list of pages
+    '''
+
+    current_index = 0
+    line_offset = 0
+    header = ''
+
+    for page_break in SPLITTER.finditer(raw):
+        content = raw[current_index:page_break.start()]
+        yield Page(content, header, line_offset)
+        line_offset += content.count('\n') + 1
+        header = page_break.group('header').strip()
+        current_index = page_break.end()
+
+    # Yield final page. If no page dividers were found, this will be all of it
+    content = raw[current_index:]
+    yield Page(content, header, line_offset)
+
+def escape(content):
+    '''Pure escape method. This function defines the logic to properly convert
+    escaped splitter patterns in a string
+    '''
+    return ESCAPED_SPLITTER.sub(r'\1\2', content)
+
+def split_and_escape(raw):
+    '''This function defines the logic to split and escape a string.
+    '''
+    for page in split(raw):
+        page.content = escape(page.content)
+        yield page
+
+def parse_specline(header):
+    '''Attempt to parse the header in a page returned from split(...) as a
+    specline. Returns a tuple (content_type, renderer)
+    '''
+    parts = SPECLINE_SPLIT.split(header, 1) + ['']
+    return parts[0].strip(), parts[1].strip()
+
+def can_split(raw, splitter=SPLITTER):
+    '''Determine if a text block would be split by a splitter
+    '''
+    return bool(SPLITTER.search(raw))
 
 from aspen.exceptions import LoadError
 from aspen.resources.json_resource import JSONResource
@@ -43,16 +111,16 @@ from aspen.resources.static_resource import StaticResource
 # Cache helpers
 # =============
 
-__cache__ = dict()        # cache, keyed to filesystem path
+__cache__ = dict()  # cache, keyed to filesystem path
 
 class Entry:
     """An entry in the global resource cache.
     """
 
-    fspath = ''         # The filesystem path [string]
-    mtime = None        # The timestamp of the last change [int]
-    quadruple = None    # A post-processed version of the data [4-tuple]
-    exc = None          # Any exception in reading or compilation [Exception]
+    fspath = ''  # The filesystem path [string]
+    mtime = None  # The timestamp of the last change [int]
+    quadruple = None  # A post-processed version of the data [4-tuple]
+    exc = None  # Any exception in reading or compilation [Exception]
 
     def __init__(self):
         self.fspath = ''
@@ -99,23 +167,10 @@ def get_resource_class(filename, raw, media_type):
 
         pass
 
-    elif media_type.startswith('text/') or media_type == 'application/json':
-
-        # For text formats we can perform a highly accurate test for
-        # dynamicity.
-
-        c = lambda s: s in raw
-        is_dynamic = c("") or c("^L")
-
     else:
+        # For other files, it is determined by the presence of [----] in the file
+        is_dynamic = can_split(raw)
 
-        # For binary formats we must rely on a less-accurate test. This is
-        # because a binary file can have s in it without being a resource--
-        # and I've actually seen, in the wild, a file with exactly two s. So
-        # we sniff the first few bytes.
-
-        s = lambda s: raw.startswith(s)
-        is_dynamic = s('"""') or s('import') or s('from')
 
     if not is_dynamic:
         Class = StaticResource
@@ -185,22 +240,22 @@ def get(request):
     # =====================
 
     mtime = os.stat(request.fs)[stat.ST_MTIME]
-    if entry.mtime == mtime:                                # cache hit
+    if entry.mtime == mtime:  # cache hit
         if entry.exc is not None:
             raise entry.exc
-    else:                                                   # cache miss
+    else:  # cache miss
         try:
             entry.resource = load(request, mtime)
-        except:     # capture any Exception
-            entry.exc = ( LoadError(traceback.format_exc())
+        except:  # capture any Exception
+            entry.exc = (LoadError(traceback.format_exc())
                         , sys.exc_info()[2]
                          )
-        else:       # reset any previous Exception
+        else:  # reset any previous Exception
             entry.exc = None
 
         entry.mtime = mtime
         if entry.exc is not None:
-            raise entry.exc[0] # TODO Why [0] here, and not above?
+            raise entry.exc[0]  # TODO Why [0] here, and not above?
 
 
     # Return

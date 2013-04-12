@@ -10,7 +10,7 @@ in the string "G/Y"
 """
 
 response.charset = "UTF-8"
-^L
+[----------------------------------------]
 {% extends doc.html %}
 {% block doc %}
 
@@ -111,7 +111,7 @@ data again before using it. Here&rsquo;s a simple illustration:</p>
 
     <li>Snowman conscientiously checks the request for path separators
     (&ldquo;/&rdquo;).</li>
-    
+
     <li>Snowman doesn&rsquo;t find any path separators and let&rsquo;s the
     request through.</li>
 
@@ -123,21 +123,21 @@ data again before using it. Here&rsquo;s a simple illustration:</p>
 
 </ol>
 
-<p>Obviously this is a contrived example but it makes the point. TR36 mentions 
+<p>Obviously this is a contrived example but it makes the point. TR36 mentions
 seven algorithms in Unicode and goes into the details of how to game them:</p>
 
 <ul>
-    <li><b>normalization</b>&mdash;e.g., folding multiple accent combinations 
+    <li><b>normalization</b>&mdash;e.g., folding multiple accent combinations
         together</li>
-    <li><b>fallbacks</b>&mdash;substituting <code>e</code> or 
+    <li><b>fallbacks</b>&mdash;substituting <code>e</code> or
         <code>&amp;#x24D4; for ⓔ</code></li>
-    <li><b>non-shortest-form</b>&mdash;conflating \xC1\x9C with \5C to both 
+    <li><b>non-shortest-form</b>&mdash;conflating \xC1\x9C with \5C to both
         mean backslash</li>
     <li><b>ill-formed sequences</b>&mdash;replacing or deleting bad bytes</li>
     <li><b>text comparison</b>&mdash;sorting, searching, matching</li>
-    <li><b>buffer overruns</b>&mdash;falsely assuming data will fit in a 
+    <li><b>buffer overruns</b>&mdash;falsely assuming data will fit in a
         certain amount of memory</li>
-    <li><b>deletion</b>&mdash;removing non-character data (different than 
+    <li><b>deletion</b>&mdash;removing non-character data (different than
         removing <i>bad</i> bytes)</li>
 </ul>
 
@@ -165,9 +165,9 @@ request
     line
         method           subset of ASCII, per spec
         uri
-            path         subset of ASCII, per spec (but WSGI servers do 
+            path         subset of ASCII, per spec (but WSGI servers do
                           things)
-            querystring  subset of ASCII, per spec (but IE sends raw 
+            querystring  subset of ASCII, per spec (but IE sends raw
                           UTF-8)
         version
     headers              ???
