@@ -9,3 +9,4 @@ __pycache__
 /build/
 /downloads/
 .coverage
+/.deps
