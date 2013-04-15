@@ -509,8 +509,15 @@ homepage = True
         <ul>
             <li><a href="/quick-start/" class="highlighted">Quick
                 Start</a></li>
-            <li><a href="/simplates/">Simplates</a></li>
-            <li><a href="/page-break/">Page Break, &#94;L</a></li>
+
+            <li><a href="/simplates/">Simplates</a>
+            <ul>
+                <li><a href="/simplates/static/">Static</a></li>
+                <li><a href="/simplates/rendered/">Rendered</a> (Templates)</li>
+                <li><a href="/simplates/negotiated/">Negotiated</a></li>
+                <li><a href="/simplates/json/">JSON</a></li>
+            </ul>
+            </li>
 
             <li>API
             <ul>
@@ -519,18 +526,7 @@ homepage = True
                 <li><a href="/api/website/">Website</a></li>
             </ul>
 
-            <li>Kinds of <a href="/simplates/">Simplates</a>
-            <ul>
-                <li><a href="/simplates/static/">Static</a></li>
-                <li><a href="/simplates/rendered/">Rendered</a></li>
-                <li><a href="/simplates/negotiated/">Negotiated</a></li>
-                <li><a href="/simplates/json/">JSON</a></li>
-            </ul>
-            </li>
-
             <li><a href="/hooks/">Hooks</a></li>
-            <li><a href="/simplates/rendered/">Templating</a>
-            (&ldquo;Rendered Simplates&rdquo;)</li>
             <li><a href="/unicode/">Unicode</a></li>
             <li><a href="/virtual-paths/">Virtual Paths</a></li>
         </ul>
@@ -578,9 +574,7 @@ homepage = True
 
                 <p>On the filesystem you have a <a
                     href="/simplates/">simplate</a>. This is one file with
-                three pages: import, request, and template. The &#94;L is a
-                <a href="/page-break/">page break</a>. It separates your
-                concerns.</p>
+                three pages: import, request, and template.</p>
 
             </div>
             <div class="clear"></div>
