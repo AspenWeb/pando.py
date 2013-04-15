@@ -1,13 +1,10 @@
 from textwrap import dedent
 
-import nose.tools
-
 from aspen import Response
 from aspen.testing import assert_raises, check
 from aspen.testing.fsfix import attach_teardown
 from tornado.template import Template
-from aspen.resources import split
-from aspen.resources.dynamic_resource import DynamicResource
+from aspen.resources.pagination import split
 
 
 

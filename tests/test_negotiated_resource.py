@@ -1,5 +1,5 @@
 from aspen import resources, Response
-from aspen.resources import Page
+from aspen.resources.pagination import Page
 from aspen.resources.negotiated_resource import NegotiatedResource
 from aspen.testing import assert_raises, attach_teardown, handle, mk, StubRequest
 from aspen.website import Website

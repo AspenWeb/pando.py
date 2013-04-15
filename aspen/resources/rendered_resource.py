@@ -21,7 +21,7 @@ Problems with tornado.template:
 """
 from aspen.resources.negotiated_resource import NegotiatedResource
 from aspen.utils import typecheck
-from aspen.resources import parse_specline
+from aspen.resources.pagination import parse_specline
 
 
 class RenderedResource(NegotiatedResource):
@@ -58,7 +58,7 @@ class RenderedResource(NegotiatedResource):
 
         #parse into parts.
         parts = parse_specline(specline)
-        
+
         #Assign parts, discard media type
         renderer = parts[1]
         media_type = self.media_type
