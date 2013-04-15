@@ -30,10 +30,17 @@ import stat
 import sys
 import traceback
 import re
-import functools
 
-# Paginate methods.
-#=================
+from aspen.exceptions import LoadError
+from aspen.resources.json_resource import JSONResource
+from aspen.resources.negotiated_resource import NegotiatedResource
+from aspen.resources.rendered_resource import RenderedResource
+from aspen.resources.socket_resource import SocketResource
+from aspen.resources.static_resource import StaticResource
+
+
+# Pagination methods
+# ==================
 
 SPLITTER = '^\[----+\](?P<header>.*?)(\n|$)'
 ESCAPED_SPLITTER = '^/(/*)(\[----+\].*?(\n|$))'
@@ -99,13 +106,6 @@ def can_split(raw, splitter=SPLITTER):
     '''Determine if a text block would be split by a splitter
     '''
     return bool(SPLITTER.search(raw))
-
-from aspen.exceptions import LoadError
-from aspen.resources.json_resource import JSONResource
-from aspen.resources.negotiated_resource import NegotiatedResource
-from aspen.resources.rendered_resource import RenderedResource
-from aspen.resources.socket_resource import SocketResource
-from aspen.resources.static_resource import StaticResource
 
 
 # Cache helpers
