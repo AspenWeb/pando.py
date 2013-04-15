@@ -78,7 +78,6 @@ def load(request, mtime):
 
     guess_with = request.fs
     is_spt = request.fs.endswith('.spt')
-    import pdb; pdb.set_trace()
     if is_spt:
         guess_with = guess_with[:-4]
     media_type = mimetypes.guess_type(guess_with, strict=False)[0]
