@@ -34,7 +34,7 @@ header. The <code>response.headers</code> attribute is the same as on <a
 would set a header in a simplate:</p>
 
 <pre>response.headers['X-My-Header'] = 'Greetings, program!'
-&#94;L
+\[----]
 Check your headers.</pre>
 
 
@@ -48,9 +48,9 @@ class. This works in <a href="/hooks/">hooks</a>, and in <a
 <p>Make a simplate named <code>fishing.html</code> with this content:</p>
 
 <pre>from aspen import Response
-&#94;L
+\[----]
 raise Response(200)
-&#94;L
+\[----]
 Let's go fishing!</pre>
 
 {{ screenshot("fishing.200") }}
@@ -63,9 +63,9 @@ really designed for <i>exceptions</i>, things like 404, etc.</p>
 <p>So change the HTTP code in <code>fishing.html</code>:</p>
 
 <pre>from aspen import Response
-&#94;L
+\[----]
 raise Response(404)
-&#94;L
+\[----]
 Let's go fishing!</pre>
 
 <p>You will get this:</p>
