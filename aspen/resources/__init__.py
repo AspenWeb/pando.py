@@ -31,7 +31,6 @@ import sys
 import traceback
 
 from aspen.exceptions import LoadError
-from aspen.resources import pagination
 from aspen.resources.json_resource import JSONResource
 from aspen.resources.negotiated_resource import NegotiatedResource
 from aspen.resources.rendered_resource import RenderedResource
@@ -62,61 +61,6 @@ class Entry:
 # Core loaders
 # ============
 
-def get_resource_class(filename, raw, media_type):
-    """Given raw file contents and a media type, return a Resource subclass.
-
-    This function encodes the algorithm for deciding what kind of Resource a
-    given file is. Is it a static file or a dynamic JSON resource or what? Etc.
-    The first step is to decide whether it's static or dynamic:
-
-        If media type is 'application/x-socket.io' then we know it's dynamic.
-
-        If media type is 'text/*' or 'application/json' then we look for page
-        breaks (^L). If there aren't any page breaks then it's a static file.
-        If it has at least one page break then it's a dynamic resource.
-
-        For all other media types we sniff the first few bytes of the file. If
-        it looks Python-y then it's dynamic, otherwise it's a static file. What
-        looks Python-y? Triple quotes for a leading docstring, or the beginning
-        of an import statement ("from" or "import").
-
-    Step two is to decide what kind of dynamic resource it is. JSON and Socket
-    are based on media type. Otherwise it's Rendered if there is a file
-    extension and Negotiated if not.
-
-    """
-
-    # XXX What is media_type coming in for a negotiated resource? Is it None?
-    # application/octet-stream? text/plain? Are we going to look for ^L or
-    # sniff the first few bytes? The answer is media_type_default. See .load.
-
-    is_dynamic = True
-
-    if media_type == 'application/x-socket.io':
-
-        # *.sock files are always dynamic.
-
-        pass
-
-    else:
-        # For other files, it is determined by the presence of [----] in the file
-        is_dynamic = pagination.can_split(raw)
-
-
-    if not is_dynamic:
-        Class = StaticResource
-    elif media_type == 'application/json':
-        Class = JSONResource
-    elif media_type == 'application/x-socket.io':
-        Class = SocketResource
-    elif '.' in os.path.basename(filename):
-        Class = RenderedResource
-    else:
-        Class = NegotiatedResource
-
-    return Class
-
-
 def load(request, mtime):
     """Given a Request and a mtime, return a Resource object (w/o caching).
     """
@@ -132,7 +76,12 @@ def load(request, mtime):
     # =====================
     # For a negotiated resource we will ignore this.
 
-    media_type = mimetypes.guess_type(request.fs, strict=False)[0]
+    guess_with = request.fs
+    is_spt = request.fs.endswith('.spt')
+    import pdb; pdb.set_trace()
+    if is_spt:
+        guess_with = guess_with[:-4]
+    media_type = mimetypes.guess_type(guess_with, strict=False)[0]
     if media_type is None:
         media_type = request.website.media_type_default
 
@@ -141,7 +90,17 @@ def load(request, mtime):
     # ================================
     # An instantiated resource is compiled as far as we can take it.
 
-    Class = get_resource_class(request.fs, raw, media_type)
+    if not is_spt:                                  # static
+        Class = StaticResource
+    elif media_type == 'application/json':          # json
+        Class = JSONResource
+    elif media_type == 'application/x-socket.io':   # socket
+        Class = SocketResource
+    elif '.' in os.path.basename(guess_with):       # rendered
+        Class = RenderedResource
+    else:                                           # negotiated
+        Class = NegotiatedResource
+
     resource = Class(request.website, request.fs, raw, media_type, mtime)
     return resource
 
