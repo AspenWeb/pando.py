@@ -104,6 +104,16 @@ def test_multiple_escapes():
 def test_long_break():
     check_escape('/[----------]', '[----------]')
 
+def test_escaped_pages():
+    raw = '''\
+1
+[----]
+2
+\[----]
+3
+'''
+    check_page_content(raw, ['1\n', '2\n[----]3\n'])
+
 #SPECLINE TESTS
 ###############
 
