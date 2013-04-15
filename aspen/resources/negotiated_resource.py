@@ -25,7 +25,7 @@ from aspen import Response
 import mimeparse
 from aspen.resources.dynamic_resource import DynamicResource
 from aspen.utils import typecheck
-from aspen.resources import parse_specline
+from aspen.resources.pagination import parse_specline
 
 
 renderer_re = re.compile(r'[a-z0-9.-]+$')

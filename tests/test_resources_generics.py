@@ -1,4 +1,4 @@
-from aspen import resources
+from aspen.resources import pagination
 
 #SPLIT TESTS
 ############
@@ -23,7 +23,7 @@ def check_page_content(raw, comp_pages):
                   for item in comp_pages]
 
     #execute resources.split
-    pages = list(resources.split(raw))
+    pages = list(pagination.split(raw))
 
     assert len(pages) == len(comp_pages)
 
@@ -79,7 +79,7 @@ page3
 #############
 
 def check_escape(content_to_escape, compare):
-    assert resources.escape(content_to_escape) == compare
+    assert pagination.escape(content_to_escape) == compare
 
 def test_basic_escape_1():
     check_escape('/[----]', '[----]')
@@ -118,7 +118,7 @@ def test_escaped_pages():
 ###############
 
 def check_specline(header, media_type, renderer):
-    assert resources.parse_specline(header) == (media_type, renderer)
+    assert pagination.parse_specline(header) == (media_type, renderer)
 
 def test_empty_header_1():
     check_specline('', '', '')
@@ -136,10 +136,16 @@ def test_basic_specline():
     check_specline('media/type via renderer', 'media/type', 'renderer')
 
 def test_funky_whitespace():
-    check_specline('  media/type    via   renderer  ', 'media/type', 'renderer')
+    check_specline( '  media/type    via   renderer  '
+                  , 'media/type'
+                  , 'renderer'
+                   )
 
 def test_whitespace_in_fields():
-    check_specline('media type via content renderer', 'media type', 'content renderer')
+    check_specline( 'media type via content renderer'
+                  , 'media type'
+                  , 'content renderer'
+                   )
 
 def test_extra_funky_whitespace():
     header = '   this is a  type   via some sort   of renderer    '

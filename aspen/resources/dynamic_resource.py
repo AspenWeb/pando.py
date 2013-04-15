@@ -1,5 +1,5 @@
 from aspen import Response
-from aspen.resources import split_and_escape, Page
+from aspen.resources.pagination import split_and_escape, Page
 from aspen.resources.resource import Resource
 
 
