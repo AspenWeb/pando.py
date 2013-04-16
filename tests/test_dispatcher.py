@@ -236,14 +236,14 @@ def test_virtual_path_directory():
     assert actual == expected, actual + " != " + expected
 
 def test_virtual_path_file():
-    mk(('foo/%bar.html', "Greetings, program!"))
-    expected = fix('foo/%bar.html')
+    mk(('foo/%bar.html.spt', "Greetings, program!"))
+    expected = fix('foo/%bar.html.spt')
     actual = check_virtual_paths('/foo/blah.html').fs
     assert actual == expected, actual
 
 def test_virtual_path_file_only_last_part():
-    mk(('foo/%bar.html', "Greetings, program!"))
-    expected = fix('foo/%bar.html')
+    mk(('foo/%bar.html.spt', "Greetings, program!"))
+    expected = fix('foo/%bar.html.spt')
     actual = check_virtual_paths('/foo/blah/baz.html').fs
     assert actual == expected, actual
 
@@ -252,28 +252,28 @@ def test_virtual_path_file_only_last_part____no_really():
     assert_raises_404(check_virtual_paths, '/foo/blah.html/')
 
 def test_virtual_path_file_key_val_set():
-    mk(('foo/%bar.html', "Greetings, program!"))
+    mk(('foo/%bar.html.spt', "Greetings, program!"))
     expected = {'bar': [u'blah']}
     actual = check_virtual_paths('/foo/blah.html').line.uri.path
     assert actual == expected, actual
 
 def test_virtual_path_file_key_val_not_cast():
-    mk(('foo/%bar.html', "Greetings, program!"))
+    mk(('foo/%bar.html.spt', "Greetings, program!"))
     expected = {'bar': [u'537']}
     actual = check_virtual_paths('/foo/537.html').line.uri.path
     assert actual == expected, actual
 
 def test_virtual_path_file_key_val_cast():
-    mk(('foo/%bar.int.html', "Greetings, program!"))
+    mk(('foo/%bar.int.html.spt', "Greetings, program!"))
     expected = {'bar': [537]}
     actual = check_virtual_paths('/foo/537.html').line.uri.path
     assert actual == expected, repr(actual) + " isn't " + repr(expected)
 
 def test_virtual_path_file_not_dir():
     mk( ('%foo/bar.html', "Greetings from bar!")
-      , ('%baz.html', "Greetings from baz!")
+      , ('%baz.html.spt', "Greetings from baz!")
        )
-    expected = fix('%baz.html')
+    expected = fix('%baz.html.spt')
     actual = check_virtual_paths('/bal.html').fs
     assert actual == expected, actual
 
@@ -283,9 +283,9 @@ def test_virtual_path_file_not_dir():
 
 def test_virtual_path__and_indirect_neg_file_not_dir():
     mk( ('%foo/bar.html', "Greetings from bar!")
-      , ('%baz', "Greetings from baz!")
+      , ('%baz.spt', "Greetings from baz!")
        )
-    expected = fix('%baz')
+    expected = fix('%baz.spt')
     actual = check_virtual_paths('/bal.html').fs
     assert actual == expected, actual
 
@@ -351,7 +351,7 @@ def test_trailing_on_virtual_paths_missing():
     assert actual == expected, actual
 
 def test_trailing_on_virtual_paths():
-    mk(('%foo/%bar/%baz/index.html.spt', "Greetings program!"))
+    mk(('%foo/%bar/%baz/index.html', "Greetings program!"))
     expected = fix('/%foo/%bar/%baz/index.html')
     actual = check_trailing_slash('/foo/bar/baz/').fs
     assert actual == expected, actual + " isn't " + expected
@@ -473,7 +473,7 @@ def test_file_matches_extension():
     mk( ('%value.json.spt', '{"Greetings,": "program!"}')
       , ('%value.txt.spt', "Greetings, program!")
        )
-    expected = "%value.json"
+    expected = "%value.json.spt"
     actual = os.path.basename(check_virtual_paths('/baz.json').fs)
     assert actual == expected, actual
 
@@ -481,7 +481,7 @@ def test_file_matches_other_extension():
     mk( ('%value.json.spt', '{"Greetings,": "program!"}')
       , ('%value.txt.spt', "Greetings, program!")
        )
-    expected = "%value.txt"
+    expected = "%value.txt.spt"
     actual = os.path.basename(check_virtual_paths('/baz.txt').fs)
     assert actual == expected, actual
 
