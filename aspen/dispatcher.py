@@ -16,7 +16,7 @@ def debug_noop(*args, **kwargs):
 def debug_stdout(func):
     print "DEBUG: " + str(func())
 
-debug = debug_noop
+debug = debug_stdout
 
 
 def splitext(name):
@@ -125,19 +125,29 @@ def dispatch_abstract(listnodes, is_leaf, traverse, find_index, noext_matched,
         for n in subnodes:
             if n.startswith('.'):               # don't serve hidden files
                 continue
-            if node == n:                       # exact name match
+            n_is_spt = n.endswith('.spt')
+            n_nospt, _ = splitext(n)
+            if node == n or (n_is_spt and node == n_nospt): # exact name or name.spt
                 found_direct = n
                 break
             n_is_leaf = is_leaf(traverse(curnode, n))
-            if node_noext == n and n_is_leaf:   # negotiated/indirect filename
-                found_indirect = n              #  match - only for files
-                continue
+            if n_is_leaf: # only files
+                          # negotiated/indirect filename
+                if node_noext == n or (n_is_spt and node_noext == n_nospt):
+                    found_indirect = n
+                    continue
             if not is_wild(n):
                 continue
             if not n_is_leaf:
                 debug(lambda: "not is_leaf " + n)
                 wildsubs.append(n)
                 continue
+            if not n_is_spt:
+                debug(lambda: "not is_spt " + n)
+                # only spts can be wild
+                continue
+
+            # if we get here, it's a wild leaf (file)
 
             # wild leafs are fallbacks if anything goes missing
             # though they still have to match extension
@@ -147,10 +157,10 @@ def dispatch_abstract(listnodes, is_leaf, traverse, find_index, noext_matched,
 
             wildwildvals = wildvals.copy()
             remaining = reduce(traverse, nodepath[depth:])
-            k, v = strip_matching_ext(n[1:], remaining)
+            k, v = strip_matching_ext(n_nospt[1:], remaining)
             k, v = _typecast(k, v)
             wildwildvals[k] = v
-            n_ext = splitext(n)[1]
+            n_ext = splitext(n_nospt)[1]
             wildleafs[n_ext] = (traverse(curnode, n), wildwildvals)
 
         if found_direct:                        # exact match
@@ -231,8 +241,8 @@ def intercept_socket(request):
     request.line.uri.path.decoded, request.socket = path, socket
 
 
-def match_index(request, indir):
-    for filename in request.website.indices:
+def match_index(indices, indir):
+    for filename in indices:
         index = os.path.join(indir, filename)
         if os.path.isfile(index):
             return index
@@ -267,7 +277,7 @@ def dispatch(request, pure_dispatch=False):
     listnodes = os.listdir
     is_leaf = os.path.isfile
     traverse = os.path.join
-    find_index = lambda x: match_index(request, x)
+    find_index = lambda x: match_index(request.website.indices, x)
     noext_matched = lambda x: update_neg_type(request, x)
     startdir = request.website.www_root
     pathsegs = request.line.uri.path.decoded.lstrip('/').split('/')

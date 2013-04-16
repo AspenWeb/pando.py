@@ -67,7 +67,8 @@ KNOBS = \
     , 'changes_reload':     (False, parse.yes_no)
     , 'charset_dynamic':    (u'UTF-8', parse.charset)
     , 'charset_static':     (None, parse.charset)
-    , 'indices':            ( lambda: [u'index.html', u'index.json', u'index']
+    , 'indices':            ( lambda: [u'index.html', u'index.json', u'index'] +
+                                      [u'index.html.spt', u'index.json.spt', u'index.spt']
                             , parse.list_
                              )
     , 'list_directories':   (False, parse.yes_no)
