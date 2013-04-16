@@ -2,11 +2,6 @@ import os
 import re
 import sys
 
-try:                # 2
-    from Cookie import CookieError, SimpleCookie
-except ImportError: # 3
-    from http.cookies import CookieError, SimpleCookie
-
 from aspen.utils import ascii_dammit
 from aspen.http import status_strings
 from aspen.http.baseheaders import BaseHeaders as Headers
