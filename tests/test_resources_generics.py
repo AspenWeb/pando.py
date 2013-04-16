@@ -29,9 +29,9 @@ def check_page_content(raw, comp_pages):
 
     for generated_page, (content, header) in zip(pages, comp_pages):
         if content is not None:
-            assert generated_page.content == content
+            assert generated_page.content == content, repr(generated_page.content) + " should be " + repr(content)
         if header is not None:
-            assert generated_page.header == header
+            assert generated_page.header == header, repr(generated_page.header) + " should be " + repr(header)
 
 def test_empty_content():
     check_page_content('', '')
@@ -78,31 +78,32 @@ page3
 #ESCAPE TESTS
 #############
 
-def check_escape(content_to_escape, compare):
-    assert pagination.escape(content_to_escape) == compare
+def check_escape(content_to_escape, expected):
+    actual = pagination.escape(content_to_escape)
+    assert actual == expected, repr(actual) + " should be " + repr(expected)
 
 def test_basic_escape_1():
-    check_escape('/[----]', '[----]')
+    check_escape('\[----]', '[----]')
 
 def test_basic_escape_2():
-    check_escape('////[----]', '///[----]')
+    check_escape('\\\\\\[----]', '\\\[----]')
 
 def test_inline_sep_ignored_1():
     check_escape('inline[----]break', 'inline[----]break')
 
 def test_inline_sep_ignored_2():
-    check_escape('inline///[----]break', 'inline///[----]break')
+    check_escape('inline\\\[----]break', 'inline\\\[----]break')
 
 def test_escape_preserves_extra_content():
-    check_escape('//[----] content ', '/[----] content ')
+    check_escape('\\\\[----] content ', '\[----] content ')
 
 def test_multiple_escapes():
-    to_escape = '1\n/[----]\n2\n/[----]'
+    to_escape = '1\n\[----]\n2\n\[----]'
     result = '1\n[----]\n2\n[----]'
     check_escape(to_escape, result)
 
 def test_long_break():
-    check_escape('/[----------]', '[----------]')
+    check_escape('\[----------]', '[----------]')
 
 def test_escaped_pages():
     raw = '''\
@@ -112,7 +113,7 @@ def test_escaped_pages():
 \[----]
 3
 '''
-    check_page_content(raw, ['1\n', '2\n[----]3\n'])
+    check_page_content(raw, ['1\n', '2\n\\[----]\n3\n'])
 
 #SPECLINE TESTS
 ###############

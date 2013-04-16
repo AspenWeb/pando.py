@@ -2,7 +2,7 @@ import re
 
 
 SPLITTER = '^\[----+\](?P<header>.*?)(\n|$)'
-ESCAPED_SPLITTER = '^/(/*)(\[----+\].*?(\n|$))'
+ESCAPED_SPLITTER = '^\\\\(\\\\*)(\[----+\].*?(\n|$))'
 SPECLINE_SPLIT = '(?:\s+|^)via\s+'
 
 SPLITTER = re.compile(SPLITTER, re.MULTILINE)
@@ -62,3 +62,9 @@ def parse_specline(header):
     '''
     parts = SPECLINE_SPLIT.split(header, 1) + ['']
     return parts[0].strip(), parts[1].strip()
+
+def can_split(raw, splitter=SPLITTER):
+    '''Determine if a text block would be split by a splitter
+    '''
+    return bool(SPLITTER.search(raw))
+
