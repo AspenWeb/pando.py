@@ -16,7 +16,7 @@ def debug_noop(*args, **kwargs):
 def debug_stdout(func):
     print "DEBUG: " + str(func())
 
-debug = debug_stdout
+debug = debug_stdout if 'ASPEN_DEBUG' in os.environ else debug_noop
 
 
 def splitext(name):
