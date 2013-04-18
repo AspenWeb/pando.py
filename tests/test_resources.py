@@ -27,7 +27,7 @@ def test_charset_static_barely_working():
     assert actual == expected, actual
 
 def test_charset_dynamic_barely_working():
-    response = check( "[----]\nGreetings, program!", 'index.html', False
+    response = check( "[----]\nGreetings, program!", 'index.html.spt', False
                     , argv=['--charset_dynamic=CHEESECODE']
                      )
     expected = 'text/html; charset=CHEESECODE'
@@ -92,7 +92,7 @@ Greetings, {{ foo }}!
 [-----------] text/html
 <h1>Greetings, {{ foo }}!</h1>
 """
-, filename='index')
+, filename='index.spt')
     assert actual == expected, actual
 
 
@@ -134,7 +134,7 @@ def test_raise_response_works():
 
 def test_location_preserved_for_response_raised_in_page_2():
     # https://github.com/zetaweb/aspen/issues/153
-    expected = ('index.html', 1)
+    expected = ('index.html.spt', 1)
     try: check("from aspen import Response; raise Response(404)\n[----]\n")
     except Response, response: actual = response.whence_raised()
     assert actual == expected, actual
