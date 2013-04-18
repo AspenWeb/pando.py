@@ -31,12 +31,12 @@ import sys
 import traceback
 
 from aspen.exceptions import LoadError
+from aspen.resources import pagination
 from aspen.resources.json_resource import JSONResource
 from aspen.resources.negotiated_resource import NegotiatedResource
 from aspen.resources.rendered_resource import RenderedResource
 from aspen.resources.socket_resource import SocketResource
 from aspen.resources.static_resource import StaticResource
-
 
 # Cache helpers
 # =============
@@ -71,6 +71,7 @@ def load(request, mtime):
 
     raw = open(request.fs, 'rb').read()
 
+    is_dynamic = pagination.can_split(raw)
 
     # Compute a media type.
     # =====================
@@ -89,7 +90,7 @@ def load(request, mtime):
     # ================================
     # An instantiated resource is compiled as far as we can take it.
 
-    if not is_spt:                                  # static
+    if not is_spt or not is_dynamic:                # static
         Class = StaticResource
     elif media_type == 'application/json':          # json
         Class = JSONResource

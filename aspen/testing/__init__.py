@@ -85,7 +85,7 @@ handle = Handle(['--www_root', FSFIX])
 def Resource(fs):
     return resources.load(StubRequest.from_fs(fs), 0)
 
-def check(content, filename="index.html", body=True, configure_aspen_py="",
+def check(content, filename="index.html.spt", body=True, configure_aspen_py="",
         response=None, argv=None):
     if argv is None:
         argv = []
