@@ -1,3 +1,73 @@
+import random
+impressions = ["""
+            <li>&ldquo;<a
+                href="http://logs.nodejs.org/node.js/2013-01-31#03:17:22.697">That's
+                cool, your files are your routes.</a> [...] <a
+                href="http://logs.nodejs.org/node.js/2013-01-31#03:29:24.657">That&rsquo;s
+                a crazy framework.</a>&mdash;asdf12 in #node.js</li>
+""", """
+            <li>&ldquo;<a
+                href="https://botbot.me/freenode/aspen/1792747/">Aspen is
+                cool.</a>&rdquo; &mdash;<a
+                href="https://twitter.com/clone1018">Luke Strickland</a></li>
+""", """
+            <li>&ldquo;<a href="https://botbot.me/freenode/gittip/1664393/">The
+                more I look at Aspen, the less odd it looks and the more I like
+                it.</a>&rdquo; &mdash;<a
+                href="https://twitter.com/sigmavirus24">Ian Cordasco</a></li>
+""", """
+            <li>&ldquo;<a
+                href="https://twitter.com/mcowger/status/253900188618473472">Aspen
+                is a lifesaver - loving how easy it is to use and get
+                working.</a>&rdquo; &mdash;Matt Cowger</li>
+""", """
+            <li>&ldquo;This is several orders of magnitude easier than every
+            other web framework.&rdquo; &mdash;<a
+                href="https://twitter.com/mrstevegross">Steve Gross</a></li>
+""", """
+            <li>&ldquo;<a
+                href="https://twitter.com/chrisumbel/status/211796409983307776">Refreshing
+                in a world of heavyweights.</a>&rdquo; &mdash;Chris Umbel</li>
+""", """
+            <li>&ldquo;<a
+                href="https://groups.google.com/forum/#!msg/aspen-users/rby92tQoBYI/diOu5J7OKOcJ">A
+                delight.</a>&rdquo; &mdash;Jussi Arpalahti</li>
+""", """
+            <li>&ldquo;<a
+                href="http://archlinux.me/dusty/2012/04/05/trembling-aspen/">It&rsquo;s
+                different.  Very different.</a>&rdquo; &mdash;Dusty
+            Phillips</li>
+""", """
+            <li>&ldquo;I&rsquo;m so glad someone has the guts to take on
+            MVC.&rdquo; &mdash;<a
+                href="https://twitter.com/pydanny">@pydanny</a></li>
+""", """
+            <li>&ldquo;I am afraid of this.&rdquo; &mdash;some guy at PyCon
+            2012</li>
+""", """
+            <li>&ldquo;Love it. It was super easy to set up. Really
+            Impressed.&rdquo; &mdash; <a
+                href="http://jordanmessina.com/">Jordan Messina</a> (via IRC)
+            </li>
+""", """
+            <li>&ldquo;<a
+                href="https://twitter.com/patcoll/status/136154129880989696">
+                Awesome. App Engine feels clunky in comparison.</a>&rdquo;
+            &mdash;Pat Collins </li>
+""", """
+            <li>&ldquo;<a href="/success/approximatrix.html"> A pleasure to
+                work with.</a>&rdquo; &mdash;Jeffrey Armstrong</li>
+""", """
+            <li>&ldquo;<a
+                href="http://www.youtube.com/watch?v=AYjPIMe0BhA#t=32m33s"> A
+                completely different approach.</a>&rdquo; &mdash;Richard
+            Jones</li>
+""", """
+            <li>&ldquo;<a
+                href="https://twitter.com/splee/status/78668600940048385">
+                Aspen seems insane to me.</a>&rdquo; &mdash;Lee McFadden</li>
+"""]
+
 [------------------]
 homepage = True
 [------------------]
@@ -264,76 +334,8 @@ homepage = True
 
         <h2>Impressions</h2>
 
-        <ul>
+        <ul>{{ random.choice(impressions) }}</ul>
 
-            <li>&ldquo;<a
-                href="http://logs.nodejs.org/node.js/2013-01-31#03:17:22.697">That's
-                cool, your files are your routes.</a> [...] <a
-                href="http://logs.nodejs.org/node.js/2013-01-31#03:29:24.657">That&rsquo;s
-                a crazy framework.</a>&mdash;asdf12 in #node.js</li>
-
-            <li>&ldquo;<a
-                href="https://botbot.me/freenode/aspen/1792747/">Aspen is
-                cool.</a>&rdquo; &mdash;<a
-                href="https://twitter.com/clone1018">Luke Strickland</a></li>
-
-            <li>&ldquo;<a href="https://botbot.me/freenode/gittip/1664393/">The
-                more I look at Aspen, the less odd it looks and the more I like
-                it.</a>&rdquo; &mdash;<a
-                href="https://twitter.com/sigmavirus24">Ian Cordasco</a></li>
-
-            <li>&ldquo;<a
-                href="https://twitter.com/mcowger/status/253900188618473472">Aspen
-                is a lifesaver - loving how easy it is to use and get
-                working.</a>&rdquo; &mdash;Matt Cowger</li>
-
-            <li>&ldquo;This is several orders of magnitude easier than every
-            other web framework.&rdquo; &mdash;<a
-                href="https://twitter.com/mrstevegross">Steve Gross</a></li>
-
-            <li>&ldquo;<a
-                href="https://twitter.com/chrisumbel/status/211796409983307776">Refreshing
-                in a world of heavyweights.</a>&rdquo; &mdash;Chris Umbel</li>
-
-            <li>&ldquo;<a
-                href="https://groups.google.com/forum/#!msg/aspen-users/rby92tQoBYI/diOu5J7OKOcJ">A
-                delight.</a>&rdquo; &mdash;Jussi Arpalahti</li>
-
-            <li>&ldquo;<a
-                href="http://archlinux.me/dusty/2012/04/05/trembling-aspen/">It&rsquo;s
-                different.  Very different.</a>&rdquo; &mdash;Dusty
-            Phillips</li>
-
-            <li>&ldquo;I&rsquo;m so glad someone has the guts to take on
-            MVC.&rdquo; &mdash;<a
-                href="https://twitter.com/pydanny">@pydanny</a></li>
-
-            <li>&ldquo;I am afraid of this.&rdquo; &mdash;some guy at PyCon
-            2012</li>
-
-            <li>&ldquo;Love it. It was super easy to set up. Really
-            Impressed.&rdquo; &mdash; <a
-                href="http://jordanmessina.com/">Jordan Messina</a> (via IRC)
-            </li>
-
-            <li>&ldquo;<a
-                href="https://twitter.com/patcoll/status/136154129880989696">
-                Awesome. App Engine feels clunky in comparison.</a>&rdquo;
-            &mdash;Pat Collins </li>
-
-            <li>&ldquo;<a href="/success/approximatrix.html"> A pleasure to
-                work with.</a>&rdquo; &mdash;Jeffrey Armstrong</li>
-
-            <li>&ldquo;<a
-                href="http://www.youtube.com/watch?v=AYjPIMe0BhA#t=32m33s"> A
-                completely different approach.</a>&rdquo; &mdash;Richard
-            Jones</li>
-
-            <li>&ldquo;<a
-                href="https://twitter.com/splee/status/78668600940048385">
-                Aspen seems insane to me.</a>&rdquo; &mdash;Lee McFadden</li>
-
-        </ul>
 
         <h2>Showcase
             <a href="mailto:chad@zetaweb.com">Something to add?</a>
@@ -341,29 +343,15 @@ homepage = True
 
         <ul>
 
-            <li><a href="https://www.gittip.com/">Gittip is a gift
-                economy</a></li>
+            <li><a href="https://www.gittip.com/">Gittip, a weekly gift
+                exchange</a></li>
 
             <li><a
                 href="http://keystone.readthedocs.org/en/latest/index.html">Keystone,
                 a web framework inspired by Aspen</a></li>
 
-            <li><a href="https://github.com/buchuki/trembling">Trembling, a
-                session and auth module for Aspen</a></li>
-
-            <li><a href="https://www.ihasamoney.com/">IHasAMoney.com, personal
-                finance for geeks</a></li>
-
-            <li><a href="http://www.plus45design.com/">plus45design</a></li>
-
-            <li><a href="http://pastie.org/pastes/3021242">Voice synthesizer
-                for your Mac</a> (<a
-                href="http://static.whit537.org/2011/for-david.png">screenshot</a>)</li>
-
-            <li><a href="https://github.com/whit537/pictionary">Pictionary demo
-                of Socket.IO integration</a></li>
-
-            <li><a href="http://www.burned.com/">Burned Media</a></li>
+            <li><a href="http://www.burned.com/">Burned Media, a personal
+            homepage</a></li>
 
             <li><a href="/success/approximatrix.html">Approximatrix, Solutions
                 for Numerical Computing</a></li>
@@ -374,6 +362,26 @@ homepage = True
             <li><a href="http://code.google.com/p/gheat/">Gheat, heatmaps for
                 Google Maps</a></li>
 
+            <li><a
+                href="https://github.com/gittip/aspen-python/tree/master/doc">Source
+                code for http://aspen.io/ itself</a></li>
+
+        </ul>
+
+
+        <h2>Demos
+            <a href="mailto:chad@zetaweb.com">Something to add?</a>
+        </h2>
+
+        <ul>
+
+            <li><a href="http://pastie.org/pastes/3021242">Voice synthesizer
+                for your Mac</a> (<a
+                href="http://static.whit537.org/2011/for-david.png">screenshot</a>)</li>
+
+            <li><a href="https://github.com/whit537/pictionary">Pictionary demo
+                of Socket.IO integration</a></li>
+
             <li><a href="https://github.com/whit537/aspen-socket-toys">A couple
                 demos of Aspen&rsquo;s Socket.IO integration</a></li>
 
@@ -382,10 +390,6 @@ homepage = True
 
             <li><a href="https://github.com/whit537/aspen-toy-blog">A toy blog,
                 demonstrating Aspen&rsquo;s core features</li>
-
-                <li><a
-                    href="https://github.com/gittip/aspen-python/tree/master/doc">Source
-                    code for http://aspen.io/ itself</a></li>
 
         </ul>
 
