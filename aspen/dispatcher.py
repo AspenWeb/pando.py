@@ -102,7 +102,7 @@ def dispatch_abstract(listnodes, is_leaf, traverse, find_index, noext_matched,
 
     for depth, node in enumerate(nodepath):
 
-        if not node and depth + 1 == len(nodepath): # empty path segment in 
+        if not node and depth + 1 == len(nodepath): # empty path segment in
             subnode = traverse(curnode, node)       #  last position, so look
             idx = find_index(subnode)               #  for index or 404
             if idx is None:
