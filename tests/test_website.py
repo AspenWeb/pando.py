@@ -26,19 +26,19 @@ Greetings, program!
     assert actual == expected, actual
 
 def test_fatal_error_response_is_returned():
-    mk(('index.html', "raise heck\n[----]\n"))
+    mk(('index.html.spt', "raise heck\n[----]\n"))
     expected = 500
     actual = handle().code
     assert actual == expected, actual
 
 def test_nice_error_response_is_returned():
-    mk(('index.html', "from aspen import Response\n[----]\nraise Response(500)\n[----]\n"))
+    mk(('index.html.spt', "from aspen import Response\n[----]\nraise Response(500)\n[----]\n"))
     expected = 500
     actual = handle().code
     assert actual == expected, actual
 
 def test_nice_error_response_is_returned_for_404():
-    mk(('index.html', "from aspen import Response\n[----]\nraise Response(404)\n[----]\n"))
+    mk(('index.html.spt', "from aspen import Response\n[----]\nraise Response(404)\n[----]\n"))
     expected = 404
     actual = handle().code
     assert actual == expected, actual
@@ -51,14 +51,13 @@ def test_autoindex_response_is_404_by_default():
 
 def test_autoindex_response_is_returned():
     mk(('README', "Greetings, program!"))
-    expected = True
-    actual = 'README' in handle('/', '--list_directories=TrUe').body
-    assert actual == expected, actual
+    body = handle('/', '--list_directories=TrUe').body
+    assert 'README' in body, body
 
 def test_resources_can_import_from_dot_aspen():
     mk( '.aspen'
       , ('.aspen/foo.py', 'bar = "baz"')
-      , ('index.html', "import foo\n[----]\nGreetings, {{ foo.bar }}!")
+      , ('index.html.spt', "import foo\n[----]\nGreetings, {{ foo.bar }}!")
        )
     expected = "Greetings, baz!"
     project_root = os.path.join(FSFIX, '.aspen')
@@ -75,7 +74,7 @@ def bar(response):
       , ( '.aspen/configure-aspen.py'
         , 'import foo\nwebsite.hooks.outbound.append(foo.bar)'
          )
-      , ('index.html', "raise heck\n[----]\n")
+      , ('index.html.spt', "raise heck\n[----]\n")
        )
 
     # Intentionally break the website object so as to trigger a double failure.
