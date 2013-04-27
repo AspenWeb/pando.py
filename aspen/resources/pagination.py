@@ -1,8 +1,8 @@
 import re
 
 
-SPLITTER = '^\[----+\](?P<header>.*?)(\n|$)'
-ESCAPED_SPLITTER = '^\\\\(\\\\*)(\[----+\].*?(\n|$))'
+SPLITTER = '^\[---+\](?P<header>.*?)(\n|$)'
+ESCAPED_SPLITTER = '^\\\\(\\\\*)(\[---+\].*?(\n|$))'
 SPECLINE_SPLIT = '(?:\s+|^)via\s+'
 
 SPLITTER = re.compile(SPLITTER, re.MULTILINE)

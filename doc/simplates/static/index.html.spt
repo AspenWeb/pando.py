@@ -7,7 +7,7 @@ doc_next = ("Rendered Simplates", "/simplates/rendered/")
 
 <p>Aspen can serve static files. If a file&rsquo;s file extension maps to
 <code>text/*</code> or <code>application/json</code>, then the file is served
-statically if there are no page separators (<code>[----]</code>) in it. For
+statically if there are no page separators (<code>[---]</code>) in it. For
 other media types it&rsquo;s a little more complicated, because a binary file
 can have page separators in it without being a simplate (I&rsquo;ve actually
 seen this in the wild in a favicon, but I lost it). For binary files, Aspen

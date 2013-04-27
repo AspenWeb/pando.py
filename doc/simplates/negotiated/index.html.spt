@@ -19,13 +19,13 @@ of the file is like this:</p>
 
 <pre>import foo, json
 
-\[----]
+\[---]
 data = foo.bar(request)
 
-\[----] #!pystache text/plain
+\[---] #!pystache text/plain
 {&#123; data }}
 
-\[----] application/json
+\[---] application/json
 {&#123; json.dumps(data) }}</pre>
 
 <p>The first two pages of the file are logic pages. Both are required. After

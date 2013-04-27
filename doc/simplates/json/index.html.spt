@@ -54,7 +54,7 @@ output if it contains anything else.</p>
 <p>Make a <code>greetings.json</code> file with this content:</p>
 
 <pre>import random
-\[----]
+\[---]
 n = random.choice(range(10))
 extra_excitement = "!" * n
 response.body = {'Greetings': 'program!' + extra_excitement}</pre>
