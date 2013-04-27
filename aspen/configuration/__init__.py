@@ -316,10 +316,9 @@ class Configurable(object):
         # mime.types
         # ==========
         # It turns out that init'ing mimetypes is somewhat expensive. This is
-        # showing up in testing, though in dev/production you wouldn't notice.
-        # Not sure why the test suite is slow now when it wasn't before though.
+        # significant in testing, though in dev/production you wouldn't notice.
         # In any case this means that if a devuser inits mimetypes themselves
-        # then we won't do so again here.
+        # then we won't do so again here, which is fine. Right?
 
         if not mimetypes.inited:
             mimetypes.init()
