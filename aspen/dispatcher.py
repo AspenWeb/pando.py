@@ -329,7 +329,7 @@ def dispatch(request, pure_dispatch=False):
         if result.match.endswith('/'):              # autoindex
             if not request.website.list_directories:
                 raise Response(404)
-            autoindex = request.website.ours_or_theirs('autoindex.html')
+            autoindex = request.website.ours_or_theirs('autoindex.html.spt')
             assert autoindex is not None # sanity check
             request.headers['X-Aspen-AutoIndexDir'] = result.match
             request.fs = autoindex

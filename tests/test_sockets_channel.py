@@ -14,7 +14,7 @@ def test_channel_is_instantiable():
     assert actual is expected, actual
 
 def test_channel_can_have_sockets_added_to_it():
-    mk(('echo.sock', 'channel.send(channel.recv())'))
+    mk(('echo.sock.spt', 'channel.send(channel.recv())'))
     socket = make_socket()
     channel = Channel('foo', ThreadedBuffer)
     channel.add(socket)
@@ -24,14 +24,14 @@ def test_channel_can_have_sockets_added_to_it():
     assert actual == expected, actual
 
 def test_channel_raises_AssertionError_on_double_add():
-    mk(('echo.sock', ''))
+    mk(('echo.sock.spt', ''))
     socket = make_socket()
     channel = Channel('foo', ThreadedBuffer)
     channel.add(socket)
     assert_raises(AssertionError, channel.add, socket)
 
 def test_channel_passes_send_on_to_one_socket():
-    mk(('echo.sock', ''))
+    mk(('echo.sock.spt', ''))
     socket = make_socket()
     channel = Channel('foo', ThreadedBuffer)
     channel.add(socket)
@@ -42,7 +42,7 @@ def test_channel_passes_send_on_to_one_socket():
     assert actual == expected, actual
 
 def test_channel_passes_send_on_to_four_sockets():
-    mk(('echo.sock', 'channel.send(channel.recv())'))
+    mk(('echo.sock.spt', 'channel.send(channel.recv())'))
     channel = Channel('foo', ThreadedBuffer)
     sockets = [make_socket(channel=channel) for i in range(4)]
     channel.send('foo')
