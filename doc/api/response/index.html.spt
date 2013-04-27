@@ -45,7 +45,7 @@ Check your headers.</pre>
 class. This works in <a href="/hooks/">hooks</a>, and in <a
     href="/simplates/">simplates</a>, page two.</p>
 
-<p>Make a simplate named <code>fishing.html</code> with this content:</p>
+<p>Make a simplate named <code>fishing.html.spt</code> with this content:</p>
 
 <pre>from aspen import Response
 \[---]
@@ -60,7 +60,7 @@ you don&rsquo;t is that when you <code>raise Response()</code> from a simplate,
 the template page of the simplate is skipped. This is because the feature is
 really designed for <i>exceptions</i>, things like 404, etc.</p>
 
-<p>So change the HTTP code in <code>fishing.html</code>:</p>
+<p>So change the HTTP code in <code>fishing.html.spt</code>:</p>
 
 <pre>from aspen import Response
 \[---]
