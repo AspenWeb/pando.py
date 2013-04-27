@@ -9,7 +9,7 @@ from aspen.renderers.tornado import Factory as TornadoFactory
 def get(**_kw):
     kw = dict( website = Website([])
              , fs = ''
-             , raw = '[----]\n[----] text/plain via tornado\n'
+             , raw = '[---]\n[---] text/plain via tornado\n'
              , media_type = ''
              , mtime = 0
               )
@@ -20,7 +20,7 @@ def get(**_kw):
 def test_negotiated_resource_is_instantiable():
     website = Website([])
     fs = ''
-    raw = '[----]\n[----] text/plain via tornado\n'
+    raw = '[---]\n[---] text/plain via tornado\n'
     media_type = ''
     mtime = 0
     actual = NegotiatedResource(website, fs, raw, media_type, mtime).__class__
@@ -109,10 +109,10 @@ def get_response(request, response):
     return resource.get_response(context)
 
 NEGOTIATED_RESOURCE = """\
-[----]
-[----] text/plain
+[---]
+[---] text/plain
 Greetings, program!
-[----] text/html
+[---] text/html
 <h1>Greetings, program!</h1>
 """
 

@@ -27,7 +27,7 @@ are installed. The way to specify a renderer is with a so-called
 simplate.</p>
 
 <pre>program = "program"
-\[----] via pystache
+\[---] via pystache
 Greetings, {&#123; program }}!</pre>
 
 
@@ -97,10 +97,10 @@ Content-Type header for text files. To alter the former, manually encode your
 unicode objects before expressing them. To alter the latter, set the header
 manually on the response object in page 2. Here&rsquo;s an example:</p>
 
-<pre>[----]
+<pre>[---]
 latinate = chr(181).decode('latin1')
 response.headers['Content-Type'] = 'text/plain; charset=latin1'
-\[----]
+\[---]
 {&#123; latinate.encode('latin1') }}</pre>
 
 

@@ -7,13 +7,13 @@ from aspen.testing.fsfix import attach_teardown
 
 def test_json_basically_works():
     expected = '{"Greetings": "program!"}'
-    actual = check( "[----]\nresponse.body = {'Greetings': 'program!'}"
+    actual = check( "[---]\nresponse.body = {'Greetings': 'program!'}"
                   , filename="foo.json.spt"
                    )
     assert actual == expected, actual
 
 def test_json_cant_have_more_than_one_page_break():
-    assert_raises(SyntaxError, check, "[----]\n[----]\n", filename="foo.json.spt")
+    assert_raises(SyntaxError, check, "[---]\n[---]\n", filename="foo.json.spt")
 
 def test_json_defaults_to_application_json_for_static_json():
     expected = 'application/json'
@@ -25,7 +25,7 @@ def test_json_defaults_to_application_json_for_static_json():
 
 def test_json_defaults_to_application_json_for_dynamic_json():
     expected = 'application/json'
-    actual = check( "[----]\nresponse.body = {'Greetings': 'program!'}"
+    actual = check( "[---]\nresponse.body = {'Greetings': 'program!'}"
                   , filename="foo.json"
                   , body=False
                    ).headers['Content-Type']
@@ -53,7 +53,7 @@ def test_json_content_type_is_configurable_from_the_command_line():
 def test_json_content_type_is_configurable_for_dynamic_json():
     configure_aspen_py = 'website.media_type_json = "floober/blah"'
     expected = 'floober/blah'
-    actual = check( "[----]\nresponse.body = {'Greetings': 'program!'}"
+    actual = check( "[---]\nresponse.body = {'Greetings': 'program!'}"
                   , filename="foo.json"
                   , body=False
                   , configure_aspen_py=configure_aspen_py
@@ -62,7 +62,7 @@ def test_json_content_type_is_configurable_for_dynamic_json():
 
 def test_json_handles_unicode():
     expected = '{"Greetings": "\u00b5"}'
-    actual = check( "[----]\nresponse.body = {'Greetings': unichr(181)}"
+    actual = check( "[---]\nresponse.body = {'Greetings': unichr(181)}"
                   , filename="foo.json.spt"
                    )
     assert actual == expected, actual
@@ -70,7 +70,7 @@ def test_json_handles_unicode():
 def test_json_doesnt_handle_non_ascii_bytestrings():
     assert_raises( UnicodeDecodeError
                  , check
-                 , "[----]\nresponse.body = {'Greetings': chr(181)}"
+                 , "[---]\nresponse.body = {'Greetings': chr(181)}"
                  , filename="foo.json.spt"
                   )
 
@@ -104,7 +104,7 @@ def test_json_handles_datetime():
 
 def test_json_handles_complex():
     expected = '{"complex": [1.0, 2.0]}'
-    actual = check( "[----]\nresponse.body = {'complex': complex(1,2)}"
+    actual = check( "[---]\nresponse.body = {'complex': complex(1,2)}"
                   , filename="foo.json.spt"
                    )
     assert actual == expected, actual
@@ -112,7 +112,7 @@ def test_json_handles_complex():
 def test_json_raises_TypeError_on_unknown_types():
     assert_raises( TypeError
                  , check
-                 , "class Foo: pass\n[----]\nresponse.body = Foo()"
+                 , "class Foo: pass\n[---]\nresponse.body = Foo()"
                  , filename="foo.json.spt"
                   )
 
