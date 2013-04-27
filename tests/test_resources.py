@@ -163,10 +163,14 @@ def test_unknown_mimetype_yields_default_mimetype():
     actual = response.headers['Content-Type']
     assert actual == expected, actual
 
-def test_templating_skipped_without_script():
+def test_templating_without_script_works():
     response = Response()
-    expected = "{{ foo }}"
-    actual = check("{{ foo }}", response=response)
+    expected = "index.html"
+
+    # I want a slash on the front of index.html but it's an artifact of
+    # StubRequest that we don't get one.
+
+    actual = check("{{ request.line.uri.path.raw }}", response=response)
     assert actual == expected, actual
 
 

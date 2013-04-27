@@ -6,13 +6,13 @@ from aspen.testing.fsfix import mk, attach_teardown
 
 
 def test_buffer_is_instantiable():
-    mk(('echo.sock', 'socket.send(socket.recv())'))
+    mk(('echo.sock.spt', 'socket.send(socket.recv())'))
     expected = Buffer
     actual = Buffer(make_socket(), 'foo').__class__
     assert actual is expected, actual
 
 def test_can_put_onto_buffer():
-    mk(('echo.sock', 'socket.send(socket.recv())'))
+    mk(('echo.sock.spt', 'socket.send(socket.recv())'))
     buffer = Buffer(make_socket(), 'foo')
     expected = [FFFD+'4'+FFFD+'1:::']
     buffer.put(Message.from_bytes('1:::'))
