@@ -201,7 +201,7 @@ def dispatch_abstract(listnodes, is_leaf, traverse, find_index, noext_matched,
         return DispatchResult( DispatchStatus.missing
                              , None
                              , None
-                             , "Node '" + str(node) +"' Not Found"
+                             , "Node '" + node.encode('utf-8') + "' Not Found"
                               )
     else:
         debug(lambda: "else clause tripped; testing is_leaf " + str(curnode))
