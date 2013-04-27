@@ -101,6 +101,11 @@ def get(request):
     # =========
 
     if len(parts) == 2:
+
+        # Note that since we're indexing on URI path instead of fs path,
+        # wildcard socket simplates like %foo.sock will end up differentiated
+        # here.
+
         path = request.line.uri.path.raw
         if path in __channels__:
             channel = __channels__[path]
