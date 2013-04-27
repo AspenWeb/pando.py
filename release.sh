@@ -11,7 +11,7 @@ confirm () {
     proceed=""
     while [ "$proceed" != "y" ]; do
         read -p"$1 (y/N) " proceed
-        if [ "$proceed" == "n" -o "$proceed" == "N" -o "$proceed" == "" ]
+        if [ "x$proceed" == "xn" -o "x$proceed" == "xN" -o "x$proceed" == "x" ]
         then
             return 1
         fi
