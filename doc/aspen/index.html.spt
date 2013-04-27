@@ -63,7 +63,8 @@ Options:
     --indices=INDICES   a comma-separated list of filenames to look for when a
                         directory is requested directly; prefix with + to
                         extend previous configuration instead of overriding
-                        [index.html, index.json]
+                        [index.html, index.json, index.html.spt, 
+                        index.json.spt]
     --list_directories=LIST_DIRECTORIES
                         if set to {yes,true,1}, aspen will serve a directory
                         listing when no index is available [no]

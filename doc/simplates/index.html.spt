@@ -22,7 +22,7 @@ Greetings, program!{&#123; extra_excitement &#125;}</pre>
 <code>[---]</code>.</p>
 
 <p>Assuming you&rsquo;ve gone through the <a href="/quick-start/">Quick
-    Start</a>, edit index.html with the above content, then refresh.</p>
+Start</a>, edit index.html.spt with the above content, then refresh.</p>
 
 {{ screenshot("extra-excitement") }}
 

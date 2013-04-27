@@ -14,8 +14,8 @@ directories and files on your filesystem.</p>
 
 <pre>$ mkdir %name</pre>
 
-<p>Then make an <code>index.html</code> <a href="/simplates/">simplate</a> in
-there with this content:</p>
+<p>Then make an <code>index.html.spt</code> <a href="/simplates/">simplate</a>
+in there with this content:</p>
 
 <pre>[---]
 Greetings, {&#123; path['name'] }}!</pre>
@@ -77,7 +77,7 @@ before the file extension, like <code>%month.int.html</code>).</p>
 
 <pre>$ mkdir "%year.int"</pre>
 
-<p>Then put an <code>index.html</code> in there with this content:
+<p>Then put an <code>index.html.spt</code> in there with this content:
 
 <pre>[---]
 Tonight we're going to party like it's {&#123; path['year'] }}!</pre>
