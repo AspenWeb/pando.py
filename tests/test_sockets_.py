@@ -16,11 +16,14 @@ def test_sockets_get_adds_channel():
     request = make_request()
     request.socket = '1/'
 
-    sockets.get(request) # handshake
+    try:
+        sockets.get(request) # handshake
 
-    expected = '/echo.sock'
-    actual = sockets.__channels__['/echo.sock'].name
-    assert actual == expected, actual
+        expected = '/echo.sock'
+        actual = sockets.__channels__['/echo.sock'].name
+        assert actual == expected, actual
+    finally:
+        sockets.__channels__['/echo.sock'].disconnect_all()
 
 def test_channel_survives_transportation():
     mk(('echo.sock.spt', '[----]\n'))
