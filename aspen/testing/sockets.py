@@ -6,14 +6,14 @@ from aspen.website import Website
 from aspen.testing import fix
 
 
-def make_request(filename='echo.sock'):
+def make_request(filename='echo.sock.spt'):
     request = Request(uri='/echo.sock')
     request.website = Website([])
     request.fs = fix(filename)
     return request
 
-def make_socket(filename='echo.sock', channel=None):
-    request = make_request(filename='echo.sock')
+def make_socket(filename='echo.sock.spt', channel=None):
+    request = make_request(filename='echo.sock.spt')
     if channel is None:
         channel = Channel(request.line.uri.path.raw, ThreadedBuffer)
     socket = Socket(request, channel)
@@ -21,7 +21,7 @@ def make_socket(filename='echo.sock', channel=None):
 
 class SocketInThread(object):
 
-    def __enter__(self, filename='echo.sock'):
+    def __enter__(self, filename='echo.sock.spt'):
         self.socket = make_socket(filename)
         self.socket.loop.start()
         return self.socket
