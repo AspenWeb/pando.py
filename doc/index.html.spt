@@ -1,6 +1,12 @@
 import random
 impressions = ["""
             <li>&ldquo;<a
+                href="https://github.com/gittip/aspen-python/issues/179#issuecomment-17178655">I'm 
+                finding Aspen frustrating to do simple things and easy to do 
+                complex things.</a>&rdquo; &mdash;<a 
+                href="http://joshuakehn.com/">Joshua Kehn</a></li>
+""", """
+            <li>&ldquo;<a
                 href="http://logs.nodejs.org/node.js/2013-01-31#03:17:22.697">That's
                 cool, your files are your routes.</a> [...] <a
                 href="http://logs.nodejs.org/node.js/2013-01-31#03:29:24.657">That&rsquo;s
