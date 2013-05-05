@@ -67,7 +67,8 @@ KNOBS = \
     , 'changes_reload':     (False, parse.yes_no)
     , 'charset_dynamic':    (u'UTF-8', parse.charset)
     , 'charset_static':     (None, parse.charset)
-    , 'indices':            ( lambda: [u'index.html', u'index.json', u'index']
+    , 'indices':            ( lambda: [u'index.html', u'index.json', u'index'] +
+                                      [u'index.html.spt', u'index.json.spt', u'index.spt']
                             , parse.list_
                              )
     , 'list_directories':   (False, parse.yes_no)
@@ -313,7 +314,14 @@ class Configurable(object):
         self.default_renderers_by_media_type.default = self.renderer_default
 
         # mime.types
-        mimetypes.init()
+        # ==========
+        # It turns out that init'ing mimetypes is somewhat expensive. This is
+        # significant in testing, though in dev/production you wouldn't notice.
+        # In any case this means that if a devuser inits mimetypes themselves
+        # then we won't do so again here, which is fine. Right?
+
+        if not mimetypes.inited:
+            mimetypes.init()
 
         # network_engine
         try:

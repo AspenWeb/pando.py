@@ -1,4 +1,5 @@
 from aspen import resources, Response
+from aspen.resources.pagination import Page
 from aspen.resources.negotiated_resource import NegotiatedResource
 from aspen.testing import assert_raises, attach_teardown, handle, mk, StubRequest
 from aspen.website import Website
@@ -8,7 +9,7 @@ from aspen.renderers.tornado import Factory as TornadoFactory
 def get(**_kw):
     kw = dict( website = Website([])
              , fs = ''
-             , raw = '^L^L #!tornado text/plain\n'
+             , raw = '[---]\n[---] text/plain via tornado\n'
              , media_type = ''
               )
     kw.update(_kw)
@@ -18,7 +19,7 @@ def get(**_kw):
 def test_negotiated_resource_is_instantiable():
     website = Website([])
     fs = ''
-    raw = '^L^L #!tornado text/plain\n'
+    raw = '[---]\n[---] text/plain via tornado\n'
     media_type = ''
     actual = NegotiatedResource(website, fs, raw, media_type).__class__
     assert actual is NegotiatedResource, actual
@@ -27,15 +28,15 @@ def test_negotiated_resource_is_instantiable():
 # compile_page
 
 def test_compile_page_chokes_on_truly_empty_page():
-    assert_raises(SyntaxError, get().compile_page, '\n', '')
+    assert_raises(SyntaxError, get().compile_page, Page(''))
 
 def test_compile_page_compiles_empty_page():
-    page = get().compile_page(' text/html\n', '')
+    page = get().compile_page(Page('', 'text/html'))
     actual = page[0]({}), page[1]
     assert actual == ('', 'text/html'), actual
 
 def test_compile_page_compiles_page():
-    page = get().compile_page(' text/html\nfoo bar', '')
+    page = get().compile_page(Page('foo bar', 'text/html'))
     actual = page[0]({}), page[1]
     assert actual == ('foo bar', 'text/html'), actual
 
@@ -43,7 +44,7 @@ def test_compile_page_compiles_page():
 # _parse_specline
 
 def test_parse_specline_parses_specline():
-    factory, media_type = get()._parse_specline('#!tornado media/type')
+    factory, media_type = get()._parse_specline('media/type via tornado')
     actual = (factory.__class__, media_type)
     assert actual == (TornadoFactory, 'media/type'), actual
 
@@ -53,13 +54,13 @@ def test_parse_specline_doesnt_require_renderer():
     assert actual == (TornadoFactory, 'media/type'), actual
 
 def test_parse_specline_requires_media_type():
-    assert_raises(SyntaxError, get()._parse_specline, '#!tornado')
+    assert_raises(SyntaxError, get()._parse_specline, 'via tornado')
 
 def test_parse_specline_raises_SyntaxError_if_renderer_is_malformed():
     assert_raises(SyntaxError, get()._parse_specline, 'tornado media/type')
 
 def test_parse_specline_raises_SyntaxError_if_media_type_is_malformed():
-    assert_raises(SyntaxError, get()._parse_specline, '#!tornado media-type')
+    assert_raises(SyntaxError, get()._parse_specline, 'media-type via tornado')
 
 def test_parse_specline_cant_mistake_malformed_media_type_for_renderer():
     assert_raises(SyntaxError, get()._parse_specline, 'media-type')
@@ -68,7 +69,7 @@ def test_parse_specline_cant_mistake_malformed_renderer_for_media_type():
     assert_raises(SyntaxError, get()._parse_specline, 'tornado')
 
 def test_parse_specline_enforces_order():
-    assert_raises(SyntaxError, get()._parse_specline, 'media/type #!tornado')
+    assert_raises(SyntaxError, get()._parse_specline, 'tornado via media/type')
 
 def test_parse_specline_obeys_default_by_media_type():
     resource = get()
@@ -93,8 +94,7 @@ def test_get_renderer_factory_can_raise_syntax_error():
                        , 'oo*gle'
                         )
     msg = err.args[0]
-    assert msg.startswith("Malformed renderer oo*gle. It must match"
-                    " #![a-z0-9.-]+."), msg
+    assert msg.startswith("Malformed renderer oo*gle. It must match"), msg
 
 
 # get_response
@@ -107,35 +107,35 @@ def get_response(request, response):
     return resource.get_response(context)
 
 NEGOTIATED_RESOURCE = """\
-^L
-^L text/plain
+[---]
+[---] text/plain
 Greetings, program!
-^L text/html
+[---] text/html
 <h1>Greetings, program!</h1>
 """
 
 def test_get_response_gets_response():
-    mk(('index', NEGOTIATED_RESOURCE))
+    mk(('index.spt', NEGOTIATED_RESOURCE))
     response = Response()
-    request = StubRequest.from_fs('index')
+    request = StubRequest.from_fs('index.spt')
     actual = get_response(request, response)
     assert actual is response, actual
 
 def test_get_response_is_happy_not_to_negotiate():
-    mk(('index', NEGOTIATED_RESOURCE))
-    request = StubRequest.from_fs('index')
+    mk(('index.spt', NEGOTIATED_RESOURCE))
+    request = StubRequest.from_fs('index.spt')
     actual = get_response(request, Response()).body
     assert actual == "Greetings, program!\n", actual
 
 def test_get_response_sets_content_type_when_it_doesnt_negotiate():
-    mk(('index', NEGOTIATED_RESOURCE))
-    request = StubRequest.from_fs('index')
+    mk(('index.spt', NEGOTIATED_RESOURCE))
+    request = StubRequest.from_fs('index.spt')
     actual = get_response(request, Response()).headers['Content-Type']
     assert actual == "text/plain; charset=UTF-8", actual
 
 def test_get_response_doesnt_reset_content_type_when_not_negotiating():
-    mk(('index', NEGOTIATED_RESOURCE))
-    request = StubRequest.from_fs('index')
+    mk(('index.spt', NEGOTIATED_RESOURCE))
+    request = StubRequest.from_fs('index.spt')
     response = Response()
     response.headers['Content-Type'] = 'never/mind'
     actual = get_response(request, response).headers['Content-Type']
@@ -143,22 +143,22 @@ def test_get_response_doesnt_reset_content_type_when_not_negotiating():
 
 
 def test_get_response_negotiates():
-    mk(('index', NEGOTIATED_RESOURCE))
-    request = StubRequest.from_fs('index')
+    mk(('index.spt', NEGOTIATED_RESOURCE))
+    request = StubRequest.from_fs('index.spt')
     request.headers['Accept'] = 'text/html'
     actual = get_response(request, Response()).body
     assert actual == "<h1>Greetings, program!</h1>\n", actual
 
 def test_get_response_sets_content_type_when_it_negotiates():
-    mk(('index', NEGOTIATED_RESOURCE))
-    request = StubRequest.from_fs('index')
+    mk(('index.spt', NEGOTIATED_RESOURCE))
+    request = StubRequest.from_fs('index.spt')
     request.headers['Accept'] = 'text/html'
     actual = get_response(request, Response()).headers['Content-Type']
     assert actual == "text/html; charset=UTF-8", actual
 
 def test_get_response_doesnt_reset_content_type_when_negotiating():
-    mk(('index', NEGOTIATED_RESOURCE))
-    request = StubRequest.from_fs('index')
+    mk(('index.spt', NEGOTIATED_RESOURCE))
+    request = StubRequest.from_fs('index.spt')
     request.headers['Accept'] = 'text/html'
     response = Response()
     response.headers['Content-Type'] = 'never/mind'
@@ -169,15 +169,15 @@ def test_get_response_doesnt_reset_content_type_when_negotiating():
     assert actual == "never/mind", actual
 
 def test_get_response_raises_406_if_need_be():
-    mk(('index', NEGOTIATED_RESOURCE))
-    request = StubRequest.from_fs('index')
+    mk(('index.spt', NEGOTIATED_RESOURCE))
+    request = StubRequest.from_fs('index.spt')
     request.headers['Accept'] = 'cheese/head'
     actual = assert_raises(Response, get_response, request, Response()).code
     assert actual == 406, actual
 
 def test_get_response_406_gives_list_of_acceptable_types():
-    mk(('index', NEGOTIATED_RESOURCE))
-    request = StubRequest.from_fs('index')
+    mk(('index.spt', NEGOTIATED_RESOURCE))
+    request = StubRequest.from_fs('index.spt')
     request.headers['Accept'] = 'cheese/head'
     actual = assert_raises(Response, get_response, request, Response()).body
     expected = "The following media types are available: text/plain, text/html."
@@ -202,16 +202,16 @@ website.default_renderers_by_media_type['text/plain'] = 'glubber'
 
 def test_can_override_default_renderers_by_mimetype():
     mk(('.aspen/configure-aspen.py', OVERRIDE_SIMPLATE),
-       ('index', NEGOTIATED_RESOURCE))
-    request = StubRequest.from_fs('index')
+       ('index.spt', NEGOTIATED_RESOURCE))
+    request = StubRequest.from_fs('index.spt')
     request.headers['Accept'] = 'text/plain'
     actual = get_response(request, Response()).body
     assert actual == "glubber", actual
 
 def test_can_override_default_renderer_entirely():
     mk(('.aspen/configure-aspen.py', OVERRIDE_SIMPLATE),
-       ('index', NEGOTIATED_RESOURCE))
-    request = StubRequest.from_fs('index')
+       ('index.spt', NEGOTIATED_RESOURCE))
+    request = StubRequest.from_fs('index.spt')
     request.headers['Accept'] = 'text/plain'
     actual = get_response(request, Response()).body
     assert actual == "glubber", actual
@@ -220,73 +220,73 @@ def test_can_override_default_renderer_entirely():
 # indirect
 
 INDIRECTLY_NEGOTIATED_RESOURCE = """\
-^L
+[-------]
 foo = "program"
-^L text/html
+[-------] text/html
 <h1>Greetings, {{ foo }}!</h1>
-^L text/plain
+[-------] text/plain
 Greetings, {{ foo }}!"""
 
 def test_indirect_negotiation_sets_media_type():
-    mk(('/foo', INDIRECTLY_NEGOTIATED_RESOURCE))
+    mk(('/foo.spt', INDIRECTLY_NEGOTIATED_RESOURCE))
     response = handle('/foo.html')
     expected = "<h1>Greetings, program!</h1>\n"
     actual = response.body
     assert actual == expected, actual
 
 def test_indirect_negotiation_sets_media_type_to_secondary():
-    mk(('/foo', INDIRECTLY_NEGOTIATED_RESOURCE))
+    mk(('/foo.spt', INDIRECTLY_NEGOTIATED_RESOURCE))
     response = handle('/foo.txt')
     expected = "Greetings, program!"
     actual = response.body
     assert actual == expected, actual
 
 def test_indirect_negotiation_with_unsupported_media_type_is_404():
-    mk(('/foo', INDIRECTLY_NEGOTIATED_RESOURCE))
+    mk(('/foo.spt', INDIRECTLY_NEGOTIATED_RESOURCE))
     response = handle('/foo.jpg')
     actual = response.code
     assert actual == 404, actual
 
 
 INDIRECTLY_NEGOTIATED_VIRTUAL_RESOURCE = """\
-^L
-^L text/html
+[-------]
+[-------] text/html
 <h1>Greetings, {{ path['foo'] }}!</h1>
-^L text/plain
+[-------] text/plain
 Greetings, {{ path['foo'] }}!"""
 
 
 def test_negotiated_inside_virtual_path():
-    mk(('/%foo/bar', INDIRECTLY_NEGOTIATED_VIRTUAL_RESOURCE ))
+    mk(('/%foo/bar.spt', INDIRECTLY_NEGOTIATED_VIRTUAL_RESOURCE ))
     response = handle('/program/bar.txt')
     expected = "Greetings, program!"
     actual = response.body
     assert actual == expected, actual
 
 INDIRECTLY_NEGOTIATED_VIRTUAL_RESOURCE_STARTYPE = """\
-^L
-^L */*
+[-------]
+[-------] */*
 Unknown request type, {{ path['foo'] }}!
-^L text/html
+[-------] text/html
 <h1>Greetings, {{ path['foo'] }}!</h1>
-^L text/*
+[-------] text/*
 Greetings, {{ path['foo'] }}!"""
 
 def test_negotiated_inside_virtual_path_with_startypes_present():
-    mk(('/%foo/bar', INDIRECTLY_NEGOTIATED_VIRTUAL_RESOURCE_STARTYPE ))
+    mk(('/%foo/bar.spt', INDIRECTLY_NEGOTIATED_VIRTUAL_RESOURCE_STARTYPE ))
     response = handle('/program/bar.html')
     actual = response.body
     assert '<h1>' in actual
 
 def test_negotiated_inside_virtual_path_with_startype_partial_match():
-    mk(('/%foo/bar', INDIRECTLY_NEGOTIATED_VIRTUAL_RESOURCE_STARTYPE ))
+    mk(('/%foo/bar.spt', INDIRECTLY_NEGOTIATED_VIRTUAL_RESOURCE_STARTYPE ))
     response = handle('/program/bar.txt')
     expected = "Greetings, program!"
     actual = response.body
     assert actual == expected, "got " + repr(actual) + " instead of " + repr(expected)
 
 def test_negotiated_inside_virtual_path_with_startype_fallback():
-    mk(('/%foo/bar', INDIRECTLY_NEGOTIATED_VIRTUAL_RESOURCE_STARTYPE ))
+    mk(('/%foo/bar.spt', INDIRECTLY_NEGOTIATED_VIRTUAL_RESOURCE_STARTYPE ))
     response = handle('/program/bar.jpg')
     expected = "Unknown request type, program!"
     actual = response.body.strip()

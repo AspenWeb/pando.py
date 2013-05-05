@@ -1,0 +1,42 @@
+doc_title = 'Quick Start'
+doc_next = ('Simplates', '/simplates/')
+[----------------------------------------]
+{% extends doc.html %}
+{% block doc %}
+
+<p>Given: <a
+    href="http://en.wikipedia.org/wiki/POSIX#POSIX-oriented_operating_systems">POSIX</a>
+and <a href="http://pypi.python.org/pypi/virtualenv">virtualenv</a>
+
+<p>Step 1: Make a
+sandbox:</p>
+
+<pre>$ virtualenv foo
+$ cd foo
+$ . bin/activate</pre>
+
+<p>Step 2: Install <a href="http://pypi.python.org/pypi/aspen">aspen from
+    PyPI</a>:</p>
+
+<pre>(foo)$ pip install aspen
+blah
+blah
+blah</pre>
+
+<p>Step 3: Create a website root:</p>
+
+<pre>(foo)$ mkdir www
+(foo)$ cd www</pre>
+
+<p>Step 4: Create a web page, and start aspen inside it:</p>
+
+<pre>(foo)$ echo Greetings, program! > index.html.spt
+(foo)$ aspen
+Greetings, program! Welcome to port 8080.</pre>
+
+<p>Step 5: Check <a href="http://localhost:8080/">localhost</a> for
+your new page!</p>
+
+{{ screenshot("greetings-program") }}
+
+{% end %}

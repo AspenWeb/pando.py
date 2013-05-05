@@ -17,11 +17,10 @@ class SocketResource(DynamicResource):
         """Extend to add empty pages to the front if there are less than three.
         """
         pages = DynamicResource.parse_into_pages(self, raw)
-        while len(pages) < 3:
-            pages = [''] + pages
+        self._prepend_empty_pages(pages, 3)
         return pages
 
-    def compile_page(self, page, padding):
+    def compile_page(self, page):
         """Given two bytestrings, return a code object.
 
         This method depends on self.fs.
@@ -29,10 +28,7 @@ class SocketResource(DynamicResource):
         """
         # See DynamicResource.compile_pages for an explanation of this
         # algorithm.
-        page = page.replace('\r\n', '\n')
-        page = padding + page
-        page = compile(page, self.fs, 'exec')
-        return page
+        return compile(page.padded_content, self.fs, 'exec')
 
     def exec_second(self, socket, request):
         """Given a Request, return a context dictionary.

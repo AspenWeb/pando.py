@@ -1,0 +1,191 @@
+doc_title = "Unicode"
+doc_next = ('Virtual Paths', '/virtual-paths/')
+
+"""
+
+ERRATA IN #36
+Canonical_Represenation
+in the string "G/Y"
+
+"""
+
+response.charset = "UTF-8"
+[----------------------------------------]
+{% extends doc.html %}
+{% block doc %}
+
+<style>
+    /* http://nicewebtype.com/notes/2009/10/30/how-to-use-css-font-face/
+     * http://www.fontsquirrel.com/fontface/generator
+     * http://users.teilar.gr/~g1951d/
+     */
+    @font-face {
+        font-family: "LinearB";
+        src: url('linear-b.eot');
+        src: url("linear-b.eot?#iefix")  format("embedded-opentype")
+           , url("linear-b.woff")        format("woff")
+           , url("linear-b.ttf")         format("truetype")
+           , url("linear-b.svg#LinearB") format("svg")
+            ;
+    }
+</style>
+
+<p><a
+    href="http://www.unicode.org/announcements/quotations.html#rossum">According
+    to Guido</a>, Python &ldquo;has excellent support for Unicode, and will
+keep getting better.&rdquo;</a> The same is true of ... oh no! <a
+href="http://www.fileformat.info/info/unicode/char/2603/index.htm">Snowman</a>
+is being attacked by <a
+    href="http://www.fileformat.info/info/unicode/char/2604/index.htm">Comet</a>!
+But, look! <a
+    href="http://www.fileformat.info/info/unicode/char/10082/index.htm">Linear
+    Buck</a>, hero from beyond the <a
+    href="http://en.wikipedia.org/wiki/Plane_(Unicode)#Basic_Multilingual_Plane">Basic
+    Multilingual Plane</a>, is coming to his rescue! Hooray for Linear
+Buck!</p>
+
+<p style="font-size: 24px; line-height: 24px; text-align: center;">
+    <span style="margin-left: 80px;">☄</span><br />
+    <br />
+    ☃
+    <span style="margin-right: 80px; font-family: 'MPH 2B Damase', LinearB">𐂂</span>
+</p>
+
+<p>In designing Aspen&rsquo;s Unicode handling, the following priorities have
+been in view:</p>
+
+<ol>
+
+    <li>Aspen should handle Unicode securely.</li>
+
+    <li>Aspen should observe standards.</li>
+
+    <li>Aspen should interoperate with consumer-grade web browsers (Internet
+    Explorer, etc.) where they diverge from standards.</li>
+
+    <li>Aspen should enable access to raw bytestrings for advanced use
+    cases.</li>
+
+</ol>
+
+<p>This document describes Aspen&rsquo;s approach to Unicode security, and then
+describes Aspen&rsquo;s algorithms for decoding Requests and encoding
+Responses, with reference to the <i>de jure</i> standards, <i>de facto</i> browser
+behavior, and advanced use cases.</p>
+
+
+<h2>Security</h2>
+
+<p>The canonical reference for security issues related to Unicode is this
+Technical Report from the Unicode Consortium:</p>
+
+<ul>
+
+    <li><a href="http://unicode.org/reports/tr36/">#36: Unicode Security
+        Considerations</a></li>
+
+</ul>
+
+<p>Most of the discussion revolves around spoofing websites by registering
+visually confusing domain names such as <code>payp&#x430;l.com</code>, where
+the second &lsquo;a&rsquo; is actually <a
+    href="http://unicode.org/cldr/utility/confusables.jsp?a=paypal">from the
+    Cyrillic and not the Latin alphabet</a>. That&rsquo;s a problem for browser
+vendors to solve, and for you to take advantage of, if you&rsquo;re a Bad Guy
+like Comet (just watch out for Linear Buck!).</p>
+
+<p>What Snowman has to worry about are the &ldquo;Non-Visual Security
+Issues.&rdquo; The basic idea is that any algorithm that mutates character data
+is a chance for Comet to game that algorithm. If Comet can sneak in an extra
+path separator or remove a quotation mark, then she may be able to traverse
+Snowman&rsquo;s filesystem or inject some extra SQL. What is Snowman to do?</p>
+
+<p style="text-align: center; font-size: larger;">Validate late!</p>
+
+<p>After validating your inputs, make sure that you don&rsquo;t transcode the
+data again before using it. Here&rsquo;s a simple illustration:</p>
+
+<ol>
+
+    <li>Comet sends a request for <code>/..%2Fetc%2Fpassword</code>.</li>
+
+    <li>Snowman conscientiously checks the request for path separators
+    (&ldquo;/&rdquo;).</li>
+
+    <li>Snowman doesn&rsquo;t find any path separators and let&rsquo;s the
+    request through.</li>
+
+    <li>Later on in his program, Snowman decodes the percent-encoding in this
+    value. Guess what %2F decodes to.</li>
+
+    <li>Finally, Snowman runs <code>open("/../etc/password").read()</code> and
+    returns the result to Comet.</li>
+
+</ol>
+
+<p>Obviously this is a contrived example but it makes the point. TR36 mentions
+seven algorithms in Unicode and goes into the details of how to game them:</p>
+
+<ul>
+    <li><b>normalization</b>&mdash;e.g., folding multiple accent combinations
+        together</li>
+    <li><b>fallbacks</b>&mdash;substituting <code>e</code> or
+        <code>&amp;#x24D4; for ⓔ</code></li>
+    <li><b>non-shortest-form</b>&mdash;conflating \xC1\x9C with \5C to both
+        mean backslash</li>
+    <li><b>ill-formed sequences</b>&mdash;replacing or deleting bad bytes</li>
+    <li><b>text comparison</b>&mdash;sorting, searching, matching</li>
+    <li><b>buffer overruns</b>&mdash;falsely assuming data will fit in a
+        certain amount of memory</li>
+    <li><b>deletion</b>&mdash;removing non-character data (different than
+        removing <i>bad</i> bytes)</li>
+</ul>
+
+<p>The good news is that Python handles almost all of these for us, and Aspen
+handles the rest. If Aspen is given an HTTP Request that doesn&rsquo;t decode
+cleanly according to the algorithm below, then it returns a 400 Bad
+Request.</p>
+
+<!--
+<a href="http://web.lookout.net/">Chris Weber's Blog</a><br />
+<a href="http://web.archive.org/web/20110726051829/http://chardet.feedparser.org/docs/faq.html">chardet</a><br />
+<a href="https://docs.google.com/spreadsheet/pub?hl=en_US&key=0At1OFOiVqCrvdFo3aFc1elhXS2pnVkpxOFZORjQ1cUE&hl=en_US&gid=4">URL Normalizing Results</a><br />
+<a href="http://www.python.org/dev/peps/pep-0383/">PEP 383</a><br />
+<a href="http://bugs.python.org/issue13997">Clearly explain the bare minimum Python 3 users should know about Unicode</a><br />
+<a href="http://bugs.python.org/issue14015">surrogateescape largely missing from documentation</a>
+-->
+
+<h2>Decoding Requests</h2>
+
+<p>Here are the parts of the <a href="/request/">Request</a> with notes on how
+Aspen decodes them:</p>
+
+<pre>
+request
+    line
+        method           subset of ASCII, per spec
+        uri
+            path         subset of ASCII, per spec (but WSGI servers do
+                          things)
+            querystring  subset of ASCII, per spec (but IE sends raw
+                          UTF-8)
+        version
+    headers              ???
+    body                 ???
+</pre>
+
+<p>If a browser or other program sends anything else to Aspen, it&rsquo;ll get
+400 Bad Request.</p>
+
+
+
+<h2>Encoding Responses</h2>
+
+<p>The Aspen <a href="/response/">Response</a> object takes body as a
+bytestring or iterable of bytestrings. If you set response.charset in a
+template resource then that will be added to Content-Type if your mimetype is
+of major type 'text'. There is no default charset for static resources, which
+means HTTP-conformant clients will try ISO-8859-1, but most will probably try
+to guess based on how the bytes smell.</p>
+
+{% end %}

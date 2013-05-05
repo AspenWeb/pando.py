@@ -12,11 +12,12 @@ def test_sockets_get_nonsock_returns_None():
     assert actual is expected, actual
 
 def test_sockets_get_adds_channel():
-    mk(('echo.sock', ''))
+    mk(('echo.sock.spt', '[---]\n'))
     request = make_request()
     request.socket = '1/'
+
     try:
-        response = sockets.get(request) # handshake
+        sockets.get(request) # handshake
 
         expected = '/echo.sock'
         actual = sockets.__channels__['/echo.sock'].name
@@ -25,7 +26,7 @@ def test_sockets_get_adds_channel():
         sockets.__channels__['/echo.sock'].disconnect_all()
 
 def test_channel_survives_transportation():
-    mk(('echo.sock', ''))
+    mk(('echo.sock.spt', '[---]\n'))
     request = make_request()
     request.socket = '1/'
     response = sockets.get(request) # handshake

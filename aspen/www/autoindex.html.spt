@@ -1,0 +1,145 @@
+"""Define a handler that generates an index for directories.
+
+Color scheme: http://colorschemedesigner.com/#0.21Tw0w0w0w0
+
+"""
+import os
+import stat
+from datetime import datetime
+
+import aspen
+
+
+KB = 1024
+MB = KB * 1024
+GB = MB * 1024
+TB = GB * 1024
+PB = TB * 1024
+EB = PB * 1024
+
+def _get_size(stats):
+    """Given a stat struct, return a size string.
+    """
+    size = float(stats[stat.ST_SIZE])
+    if size < KB:
+        return '%d &nbsp;&nbsp;&nbsp;B' % (size)
+    elif size < MB:
+        return '%.1f kB' % (size / KB)
+    elif size < GB:
+        return '%.1f MB' % (size / MB)
+    elif size < TB:
+        return '%.1f GB' % (size / GB)
+    elif size < PB:
+        return '%.1f TB' % (size / TB) # :^)
+    elif size < EB:
+        return '%.1f PB' % (size / PB) # :^D
+    else:
+        return '%.1f EB' % (size / EB) # 8^D
+
+
+def _get_time(stats):
+    """Given a stat struct, return a date stamp string.
+    """
+    return str(datetime.fromtimestamp(stats[stat.ST_MTIME]))
+
+
+# Get the directory to list.
+# ==========================
+# Support the case where we are in the directory where this file actually
+# lives!
+
+fspath = request.headers.get('X-Aspen-AutoIndexDir', os.path.dirname(__file__))
+assert os.path.isdir(fspath) # sanity check
+
+urlpath = fspath[len(request.website.www_root):] + os.sep
+urlpath = '/'.join(urlpath.split(os.sep))
+title = urlpath and urlpath or '/'
+
+
+# Gather dirs, files, and others under this directory.
+# ====================================================
+# We have to loop here and again below in order to guarantee sorted output.
+
+dirs = []
+files = []
+others = []
+for name in os.listdir(fspath):
+    if name.startswith('.'): # hidden files
+        continue
+
+    _fspath = os.path.join(fspath, name)
+
+    if os.path.isdir(_fspath):
+        el = dirs
+    elif os.path.isfile(_fspath):
+        el = files
+    else:
+        el = others
+
+    _urlpath = urlpath + name
+    stats = os.stat(_fspath)
+    x = (stats, _fspath, _urlpath, name)
+    el.append(x)
+
+dirs.sort()
+files.sort()
+others.sort()
+
+[----------------------------------------]
+<html>
+    <head>
+        <title>{{ title }}</title>
+        <style>
+            body {font-family: "Trebuchet MS", sans-serif;}
+            table {font-family: monospace;}
+            .dir {font-weight: bold;}
+            .file {}
+            td {padding: 0 1em 0 0; white-space: nowrap;}
+            td.size {text-align: right;}
+            th {text-align: left; white-space: nowrap;}
+            tr:hover {background: #eef;}
+            #footer {font-size: smaller; font-style: italic;}
+        </style>
+    </head>
+    <body>
+        <h1>{{ title }}</h1>
+        <table>
+            <tr>
+                <th class="name">Name</th>
+                <th>Size</th>
+                <th>Last Modified</th>
+            </tr>
+
+            {% if fspath != request.website.www_root %}
+            <tr>
+                <td class="odd"><a href="../">../</a></td>
+                <td>&nbsp;</td>
+                <td>&nbsp;</td>
+            </tr>
+            {% end %}
+
+            {% for el in (dirs, files, others) %}
+            {% for stats, _fspath, _urlpath, name in el %}
+            <tr>
+                {% if os.path.isdir(_fspath) %}
+                <td class="dir"><a href="{{ _urlpath }}/">{{ name }}/</a></td>
+                <td>&nbsp;</td>
+                {% elif os.path.isfile(_fspath) %}
+                <td class="file"><a href="{{ _urlpath }}">{{ name }}</a></td>
+                <td class="size">{{ _get_size(stats) }}</td>
+                {% else %}
+                <td class="other">{{ name }}</li>
+                <td>&nbsp;</td>
+                {% end %}
+                <td class="mtime">{{ _get_time(stats) }}</td>
+            </tr>
+            {% end %}
+            {% end %}
+        </table>
+        <hr />
+        <div id="footer">
+            This index was brought to you by <a href="http://aspen.io/"> Aspen
+                v{{ aspen.__version__ }}</a>.
+        </div>
+    </body>
+</html>

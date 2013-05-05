@@ -21,6 +21,7 @@ Problems with tornado.template:
 """
 from aspen.resources.negotiated_resource import NegotiatedResource
 from aspen.utils import typecheck
+from aspen.resources.pagination import parse_specline
 
 
 class RenderedResource(NegotiatedResource):
@@ -34,7 +35,7 @@ class RenderedResource(NegotiatedResource):
 
     """
 
-    min_pages = 2
+    min_pages = 1
     max_pages = 4
 
 
@@ -42,10 +43,7 @@ class RenderedResource(NegotiatedResource):
         """Extend to insert page one if needed.
         """
         pages = NegotiatedResource.parse_into_pages(self, raw)
-        npages = len(pages)
-        assert npages in (2, 3, 4), npages  # sanity check
-        if npages == 2:
-            pages = [''] + pages
+        self._prepend_empty_pages(pages, 3)
         return pages
 
 
@@ -58,13 +56,16 @@ class RenderedResource(NegotiatedResource):
         """
         typecheck(specline, str)
 
-        renderer = specline
-        media_type = self.media_type
+        #parse into parts.
+        parts = parse_specline(specline)
 
+        #Assign parts, discard media type
+        renderer = parts[1]
+        media_type = self.media_type
         if not renderer:
             renderer = self.website.default_renderers_by_media_type[media_type]
-            renderer = "#!" + renderer
 
+        #Hydrate and validate renderer
         make_renderer = self._get_renderer_factory(media_type, renderer)
 
         return (make_renderer, media_type)

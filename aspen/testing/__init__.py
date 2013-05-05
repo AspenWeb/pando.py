@@ -43,7 +43,10 @@ class StubRequest:
         """Takes a path under FSFIX using / as the path separator.
         """
         fs = os.sep.join(fs.split(os.sep))
-        request = Request.from_wsgi(StubWSGIRequest(fs))
+        uri_path = fs
+        if fs.endswith('.spt'):
+            uri_path = fs[:-4]
+        request = Request.from_wsgi(StubWSGIRequest(uri_path))
         website = Website([ '--www_root', FSFIX
                           , '--project_root', os.path.join(FSFIX, '.aspen')
                            ] + list(a))
@@ -85,7 +88,7 @@ handle = Handle(['--www_root', FSFIX])
 def Resource(fs):
     return resources.load(StubRequest.from_fs(fs))
 
-def check(content, filename="index.html", body=True, configure_aspen_py="",
+def check(content, filename="index.html.spt", body=True, configure_aspen_py="",
         response=None, argv=None):
     if argv is None:
         argv = []

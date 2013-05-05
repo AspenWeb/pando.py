@@ -1,0 +1,77 @@
+doc_title = "mime.types"
+doc_next = []
+
+
+"""
+Here's how to configure mimetypes:
+
+import mimetypes
+mimetypes.knownfiles = ['mymime.types']
+mimetypes.init()
+"""
+[----------------------------------------]
+{% extends doc.html %}
+{% block doc %}
+
+<p>Aspen automatically sets the <code>Content-Type</code> response header based
+on the file extension of the simplate file being served (you can override this
+behavior by setting the header manually in your simplates). Aspen instructs the
+<a
+    href="http://docs.python.org/library/mimetypes.html"><code>mimetypes</code></a>
+module in the Python standard library to use the following mappings to
+determine which <code>Content-Type</code> to use for which file extension.</p>
+
+<ul>
+    <li>The default <code>type_map</code> in your Python installation's
+    <code>mimetypes</code> module</li>
+    <li>a <code>mime.types</code> file bundled with Aspen</li>
+    <li><code>${<a href="/api/website/">website</a>.project_root}/mime.types</code></li>
+</ul>
+
+<p>Later definitions override earlier ones.</p>
+
+<h4>Example</h4>
+
+<p>Let&rsquo;s say that you want to use the <code>.smpl</code> file extension
+to denote simplates on your filesystem. You might want to do this because
+it&rsquo;s easier to configure your text editor based on a unique
+extension.</p>
+
+<p>Create a file named <code>greetings.smpl</code> with this content:</p>
+
+<pre>&lt;h1&gt;Greetings, program!&lt;/h1&gt;</pre>
+
+<p>Now <a href="http://localhost:8080/greetings.smpl">hit it</a> with your
+browser:</p>
+
+{{ screenshot("text.plain") }}
+
+You get a <code>text/plain</code> response, because the <code>.smpl</code>
+extension is unknown to Aspen, and <code>text/plain</code> is Aspen&rsquo;s
+default (you can change this default in <code><a
+        href="/configure-aspen.py/">configure-aspen.py</a></code>).</p>
+
+<p>Now put the following line in a file named <code>mime.types</code> in your
+site&rsquo;s <code><a href="/project_root/">project_root</a></code> directory
+(note the lack of a period before <code>smpl</code>).</p>
+
+<pre>text/html  smpl</pre>
+
+<p>Restart <code>aspen</code> to pick up the new <code>mime.types</code> file,
+and then hit <code>foo.smpl</code> again. You should now have a rendered HTML
+file:</p>
+
+{{ screenshot("text.html") }}
+
+
+<h3>JSON</h3>
+
+<p>Aspen has special support for <a href="/simplates/json/">JSON simplates</a>.
+If you want to send something besides <code>application/json</code> for JSON
+files, use the <code>media_type_json</code> <a
+    href="/configuration/">configuration
+    knob</a>.</p>
+
+{% end %}
+
+

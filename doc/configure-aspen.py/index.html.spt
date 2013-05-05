@@ -1,0 +1,20 @@
+doc_title = "configure-aspen.py"
+doc_next = []
+[----------------------------------------]
+{% extends doc.html %}
+{% block doc %}
+
+<p>Aspen can be configured via configuration scripts in Python syntax. If <a
+    href="/project_root/">project_root</a> is defined and it contains a file
+named <code>configure-aspen.py</code>, then that script will be the last
+configuration script to run before Aspen starts up. Additional configuration
+scripts can be specified as a comma-separated list, set in the environment as
+<code>ASPEN_CONFIGURATION_SCRIPTS</code> or on the command line as
+<code>--configuration_scripts</code>. There is a <a
+    href="/api/website/">website</a> object in each script&rsquo;s namespace
+that can be used to configure aspen, including <a href="/hooks/">registering
+    hook callbacks</a>.</p>
+
+
+{% end %}
+
