@@ -11,7 +11,7 @@ confirm () {
     proceed=""
     while [ "$proceed" != "y" ]; do
         read -p"$1 (y/N) " proceed
-        if [ "x$proceed" == "xn" -o "x$proceed" == "xN" -o "x$proceed" == "x" ]
+        if [ "$proceed" = "n" -o "$proceed" = "N" -o "$proceed" = "" ]
         then
             return 1
         fi
@@ -20,7 +20,10 @@ confirm () {
 }
 
 # Real work.
-if [ "`git tag | grep $1`" ]; then
+if [ -z "$1" ]; then
+    echo "Specify a version to release."
+    exit 1
+elif [ "`git tag | grep $1`" ]; then
     echo "Version $1 is already git tagged."
 else
     confirm "Tag version $1 and upload to PyPI and push to github and heroku?"
