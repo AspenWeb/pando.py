@@ -175,7 +175,7 @@ class Website(Configurable):
 
             fs = self.ours_or_theirs(str(response.code) + '.html')
             if fs is None:
-                fs = self.ours_or_theirs('error.html')
+                fs = self.ours_or_theirs('error.html.spt')
             if fs is not None:
                 request.fs = fs
                 request.original_resource = request.resource
