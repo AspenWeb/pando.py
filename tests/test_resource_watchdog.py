@@ -22,6 +22,8 @@ def test_watchdog_basically_works():
 
     # now change the file
     open(fix('filea.txt'), 'w+').write('valueb')
+    print fix('filea.txt')
+    import os; os.system("cat %s" % fix('filea.txt')); print
     time.sleep(1)
 
     # and verify that the file is served correctly again
