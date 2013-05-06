@@ -44,23 +44,29 @@ try:                    # python2.6+
 except ImportError:     # < python2.6
     from backcompat import namedtuple
 
+
 # Cache helpers
 # =============
 
 __cache__ = dict()  # cache, keyed to filesystem path
 
-class Cache_Invalidator(watchdog.events.FileSystemEventHandler):
+
+class CacheInvalidator(watchdog.events.FileSystemEventHandler):
     def on_modified(self, event):
         if not event.is_directory and event.src_path in __cache__.keys():
             del __cache__[event.src_path]
 
-CacheEntry = namedtuple('CacheEntry', 'resource exc' )
+
+CacheEntry = namedtuple('CacheEntry', 'resource exc')
+
 
 def watcher_for(path):
-    """turn on resource watching for the specified path ; return the observer object"""
+    """Given a filesystem path, return an Observer instance that tracks it.
+    """
     watcher = Observer()
-    watcher.schedule(Cache_Invalidator(), path=path, recursive=True)
+    watcher.schedule(CacheInvalidator(), path=path, recursive=True)
     return watcher
+
 
 # Core loaders
 # ============
