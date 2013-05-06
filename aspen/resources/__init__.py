@@ -52,7 +52,7 @@ __cache__ = dict()  # cache, keyed to filesystem path
 
 
 class CacheInvalidator(watchdog.events.FileSystemEventHandler):
-    def on_modified(self, event):
+    def on_any_event(self, event):
         if not event.is_directory and event.src_path in __cache__.keys():
             del __cache__[event.src_path]
 
