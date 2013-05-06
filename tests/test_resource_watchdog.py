@@ -1,42 +1,34 @@
-
 import time
-import os.path
-import tempfile
 
 from aspen import resources
 from aspen.testing.client import TestClient
+from aspen.testing.fsfix import fix, FSFIX, mk, attach_teardown
 from aspen.website import Website
 
 
-def _writedata(filename, data):
-    f = file(filename, 'w')
-    f.write(data)
-    f.close()
-
 def test_watchdog_basically_works():
     # make temp website to serve out
-    www_root = tempfile.mkdtemp('test_watchdog')
-    tfbase = 'filea.txt'
-    testfile = os.path.join(www_root, tfbase)
-    _writedata(testfile, 'valuea')
-    website = Website(['-w', www_root] )
+    mk(('filea.txt', 'valuea'))
+    website = Website(['-w', FSFIX])
 
     # start a watchdog (normally done in website.start())
-    watchdog = resources.watcher_for(www_root)
+    watchdog = resources.watcher_for(FSFIX)
     watchdog.start()
 
     # verify the file is served correctly
     client = TestClient(website)
-    response = client.get('/'+tfbase )
+    response = client.get('/filea.txt')
     assert 'valuea' in response.body, response.body + " didn't contain valuea"
 
     # now change the file
-    _writedata(testfile, 'valueb')
+    open(fix('filea.txt'), 'w+').write('valueb')
     time.sleep(1)
 
     # and verify that the file is served correctly again
-    response = client.get('/'+tfbase )
+    response = client.get('/filea.txt')
     assert 'valueb' in response.body, response.body + " didn't contain valueb"
 
     watchdog.stop()
 
+
+attach_teardown(globals())
