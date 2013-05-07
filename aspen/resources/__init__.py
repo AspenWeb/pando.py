@@ -56,6 +56,10 @@ class CacheInvalidator(watchdog.events.FileSystemEventHandler):
         if not event.is_directory and event.src_path in __cache__.keys():
             del __cache__[event.src_path]
 
+    # because different OS 'observers' work differently, and don't
+    # always fire on_any, run the same code on *any* change
+    on_created = on_deleted = on_modified = on_moved = on_any_event
+
 
 CacheEntry = namedtuple('CacheEntry', 'resource exc')
 
