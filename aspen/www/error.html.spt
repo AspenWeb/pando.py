@@ -4,8 +4,10 @@ try:
     from pygments.formatters import HtmlFormatter
     from StringIO import StringIO
     pygmentize = True
-except ImportError as exc:
+except ImportError:
     from aspen.logging import log
+    import sys
+    exc = sys.exc_info()[1]
     log("Cannot import pygments: " + str(exc))
     pygmentize = False
 
