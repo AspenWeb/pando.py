@@ -1,3 +1,4 @@
+import io
 import os
 
 from aspen.testing import handle, StubRequest
@@ -102,6 +103,46 @@ def test_website_doesnt_clobber_outbound():
     actual = len(website.hooks.outbound)
     assert actual == expected, actual
 
+
+class TestMiddleware(object):
+    """Simple WSGI middleware for testing."""
+
+    def __init__(self, app):
+        self.app = app
+
+    def __call__(self, environ, start_response):
+        if environ['PATH_INFO'] == '/middleware':
+            start_response('200 OK', [('Content-Type', 'text/plain')])
+            return ['TestMiddleware']
+        return self.app(environ, start_response)
+
+
+def build_environ(path):
+    """Build WSGI environ for testing."""
+    return {
+        'REQUEST_METHOD': 'GET',
+        'PATH_INFO': path,
+        'QUERY_STRING': '',
+        'SERVER_SOFTWARE': 'build_environ/1.0',
+        'SERVER_PROTOCOL': 'HTTP/1.1',
+        'wsgi.input': io.BytesIO()
+    }
+
+
+def test_call_wraps_wsgi_middleware():
+    website = Website([])
+    website.wsgi_app = TestMiddleware(website.wsgi_app)
+    respond = [False, False]
+    def start_response_should_404(status, headers):
+        assert status.lower().strip() == '404 not found'
+        respond[0] = True
+    website(build_environ('/'), start_response_should_404)
+    assert respond[0]
+    def start_response_should_200(status, headers):
+        assert status.lower().strip() == '200 ok'
+        respond[1] = True
+    website(build_environ('/middleware'), start_response_should_200)
+    assert respond[1]
 
 
 attach_teardown(globals())
