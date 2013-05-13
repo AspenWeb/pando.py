@@ -60,7 +60,7 @@ class TestClient(object):
     Example usage in a test::
 
         def test_api_handles_posts():
-            client = TestClient()
+            client = TestClient(website)
 
             # We need to get ourselves a token!
             response = client.get('/')
