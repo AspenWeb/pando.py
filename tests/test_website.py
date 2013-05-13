@@ -1,5 +1,5 @@
-import io
 import os
+import StringIO
 
 from aspen.testing import handle, StubRequest
 from aspen.testing.fsfix import attach_teardown, FSFIX, mk
@@ -125,7 +125,7 @@ def build_environ(path):
         'QUERY_STRING': '',
         'SERVER_SOFTWARE': 'build_environ/1.0',
         'SERVER_PROTOCOL': 'HTTP/1.1',
-        'wsgi.input': io.BytesIO()
+        'wsgi.input': StringIO.StringIO()
     }
 
 
