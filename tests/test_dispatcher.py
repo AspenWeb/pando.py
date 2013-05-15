@@ -446,6 +446,31 @@ def test_intercept_socket_intercepts_transported():
     expected = ('/foo.sock', '1/websocket/46327hfjew3')
     assert actual == expected, actual
 
+# URI pathsegment parameters
+
+def _extract_params(path):
+    return dispatcher.extract_rfc2396_params(path.lstrip('/').split('/'))
+
+def test_extract_path_params_with_none():
+    request = Request(uri="/foo/bar")
+    actual = _extract_params(request.line.uri.path.decoded)
+    expected = (['foo', 'bar'], [{}, {}]) 
+    assert actual == expected
+
+def test_extract_path_params_simple():
+    request = Request(uri="/foo;a=1;b=2;c/bar;a=2;b=1")
+    actual = _extract_params(request.line.uri.path.decoded)
+    expected = (['foo', 'bar'], [{'a':'1', 'b':'2', 'c':[]}, {'a':'2', 'b':'1'}]) 
+    assert actual == expected
+
+def test_extract_path_params_complex():
+    request = Request(uri="/foo;a=1;b=2,3;c/bar;a=2,ab;b=1")
+    actual = _extract_params(request.line.uri.path.decoded)
+    expected = (['foo', 'bar'], [{'a':'1', 'b':['2', '3'], 'c':[]}, {'a':[ '2', 'ab' ], 'b':'1'}]) 
+    assert actual == expected
+
+
+
 
 # mongs
 # =====
