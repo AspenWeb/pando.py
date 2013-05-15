@@ -238,6 +238,32 @@ def extract_socket_info(path):
     return path, socket
 
 
+def extract_rfc2396_params(pathsegs):
+    """RFC2396 section 3.3 says that path components of a URI can have
+    'a sequence of parameters, indicated by the semicolon ";" character.'
+    and that ' Within a path segment, the characters "/", ";", "=", and 
+    "?" are reserved.'  This way you can do 
+    /frisbee;color=red;size=small/logo;sponsor=w3c;color=black/image.jpg
+    and each path segment gets its own params.
+    """
+    newsegs = []
+    seg_info = []
+    for component in pathsegs:
+        parts = component.split(';')
+        newsegs.append(parts[0])
+        seg_info.append({})
+        for p in parts[1:]:
+            if '=' in p:
+                k, v = p.split('=', 1)
+            else:
+                k, v = p, []
+            if ',' in v:
+                seg_info[-1][k] = v.split(',')
+            else:
+                seg_info[-1][k] = v
+    return newsegs, seg_info
+
+
 def match_index(indices, indir):
     for filename in indices:
         index = os.path.join(indir, filename)
@@ -267,6 +293,10 @@ def dispatch(request, pure_dispatch=False):
 
     request.line.uri.path.decoded, request.socket = extract_socket_info(request.line.uri.path.decoded)
 
+    # Handle URI pathseg params
+    pathsegs = request.line.uri.path.decoded.lstrip('/').split('/')
+    pathsegs, request.line.uri.path.params = extract_rfc2396_params(pathsegs)
+    request.line.uri.path.segments = pathsegs
 
     # Set up the real environment for the dispatcher.
     # ===============================================
@@ -277,7 +307,6 @@ def dispatch(request, pure_dispatch=False):
     find_index = lambda x: match_index(request.website.indices, x)
     noext_matched = lambda x: update_neg_type(request, x)
     startdir = request.website.www_root
-    pathsegs = request.line.uri.path.decoded.lstrip('/').split('/')
 
 
     # Dispatch!
