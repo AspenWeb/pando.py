@@ -219,7 +219,7 @@ def dispatch_abstract(listnodes, is_leaf, traverse, find_index, noext_matched,
                           )
 
 
-def intercept_socket(request):
+def extract_socket_info(path):
     """Given a request object, return a tuple of (str, None) or (str, str).
 
     Intercept socket requests. We modify the filesystem path so that your
@@ -227,18 +227,15 @@ def intercept_socket(request):
     /foo.sock/blah/blah/blah/.
 
     """
-    path = request.line.uri.path.decoded
     if path.endswith('.sock'):
-        # request.line.uri.path.raw does not include querystring.
+        # request path does not include 'querystring'.
         raise Response(404)
+    socket = None
     parts = path.rsplit('.sock/', 1)
-    if len(parts) == 1:
-        path = parts[0]
-        socket = None
-    else:
+    if len(parts) > 1:
         path = parts[0] + '.sock'
         socket = parts[1]
-    request.line.uri.path.decoded, request.socket = path, socket
+    return path, socket
 
 
 def match_index(indices, indir):
@@ -261,14 +258,14 @@ def dispatch(request, pure_dispatch=False):
 
     This is all side-effecty on the request object, setting, at the least,
     request.fs, and at worst other random contents including but not limited
-    to: request.line.uri.path, request.headers,
+    to: request.line.uri.path, request.headers, request.socket
 
     """
 
     # Handle websockets.
     # ==================
 
-    intercept_socket(request)
+    request.line.uri.path.decoded, request.socket = extract_socket_info(request.line.uri.path.decoded)
 
 
     # Set up the real environment for the dispatcher.

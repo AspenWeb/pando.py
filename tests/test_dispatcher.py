@@ -436,18 +436,14 @@ def test_intercept_socket_protects_direct_access():
 
 def test_intercept_socket_intercepts_handshake():
     request = Request(uri="/foo.sock/1")
-    dispatcher.intercept_socket(request)
-
+    actual = dispatcher.extract_socket_info(request.line.uri.path.decoded)
     expected = ('/foo.sock', '1')
-    actual = (request.line.uri.path.decoded, request.socket)
     assert actual == expected, actual
 
 def test_intercept_socket_intercepts_transported():
     request = Request(uri="/foo.sock/1/websocket/46327hfjew3?foo=bar")
-    dispatcher.intercept_socket(request)
-
+    actual = dispatcher.extract_socket_info(request.line.uri.path.decoded)
     expected = ('/foo.sock', '1/websocket/46327hfjew3')
-    actual = (request.line.uri.path.decoded, request.socket)
     assert actual == expected, actual
 
 
