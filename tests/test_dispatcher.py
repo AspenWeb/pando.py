@@ -236,14 +236,14 @@ def test_virtual_path_directory():
     assert actual == expected, actual + " != " + expected
 
 def test_virtual_path_file():
-    mk(('foo/%bar.html', "Greetings, program!"))
-    expected = fix('foo/%bar.html')
+    mk(('foo/%bar.html.spt', "Greetings, program!"))
+    expected = fix('foo/%bar.html.spt')
     actual = check_virtual_paths('/foo/blah.html').fs
     assert actual == expected, actual
 
 def test_virtual_path_file_only_last_part():
-    mk(('foo/%bar.html', "Greetings, program!"))
-    expected = fix('foo/%bar.html')
+    mk(('foo/%bar.html.spt', "Greetings, program!"))
+    expected = fix('foo/%bar.html.spt')
     actual = check_virtual_paths('/foo/blah/baz.html').fs
     assert actual == expected, actual
 
@@ -252,28 +252,28 @@ def test_virtual_path_file_only_last_part____no_really():
     assert_raises_404(check_virtual_paths, '/foo/blah.html/')
 
 def test_virtual_path_file_key_val_set():
-    mk(('foo/%bar.html', "Greetings, program!"))
+    mk(('foo/%bar.html.spt', "Greetings, program!"))
     expected = {'bar': [u'blah']}
     actual = check_virtual_paths('/foo/blah.html').line.uri.path
     assert actual == expected, actual
 
 def test_virtual_path_file_key_val_not_cast():
-    mk(('foo/%bar.html', "Greetings, program!"))
+    mk(('foo/%bar.html.spt', "Greetings, program!"))
     expected = {'bar': [u'537']}
     actual = check_virtual_paths('/foo/537.html').line.uri.path
     assert actual == expected, actual
 
 def test_virtual_path_file_key_val_cast():
-    mk(('foo/%bar.int.html', "Greetings, program!"))
+    mk(('foo/%bar.int.html.spt', "Greetings, program!"))
     expected = {'bar': [537]}
     actual = check_virtual_paths('/foo/537.html').line.uri.path
     assert actual == expected, repr(actual) + " isn't " + repr(expected)
 
 def test_virtual_path_file_not_dir():
     mk( ('%foo/bar.html', "Greetings from bar!")
-      , ('%baz.html', "Greetings from baz!")
+      , ('%baz.html.spt', "Greetings from baz!")
        )
-    expected = fix('%baz.html')
+    expected = fix('%baz.html.spt')
     actual = check_virtual_paths('/bal.html').fs
     assert actual == expected, actual
 
@@ -283,9 +283,9 @@ def test_virtual_path_file_not_dir():
 
 def test_virtual_path__and_indirect_neg_file_not_dir():
     mk( ('%foo/bar.html', "Greetings from bar!")
-      , ('%baz', "Greetings from baz!")
+      , ('%baz.spt', "Greetings from baz!")
        )
-    expected = fix('%baz')
+    expected = fix('%baz.spt')
     actual = check_virtual_paths('/bal.html').fs
     assert actual == expected, actual
 
@@ -361,22 +361,26 @@ def test_trailing_on_virtual_paths():
 # ====
 
 def test_virtual_path_docs_1():
-    mk(('%name/index.html', "[------]\nGreetings, {{ path['name'] }}!"))
+    mk(('%name/index.html.spt', "[------]\nGreetings, {{ path['name'] }}!"))
     response = handle('/aspen/')
     expected = "Greetings, aspen!"
     actual = response.body
     assert actual == expected, actual
 
 def test_virtual_path_docs_2():
-    mk(('%name/index.html', "[--------]\nGreetings, {{ path['name'] }}!"))
+    mk(('%name/index.html.spt', "[--------]\nGreetings, {{ path['name'] }}!"))
     response = handle('/python/')
     expected = "Greetings, python!"
     actual = response.body
     assert actual == expected, actual
 
 def test_virtual_path_docs_3():
-    mk( ('%name/index.html', "[---------]\nGreetings, {{ path['name'] }}!")
-      , ('%name/%cheese.txt', "[---------]\n{{ path['name'].title() }} likes {{ path['cheese'] }} cheese.")
+    mk( ( '%name/index.html.spt'
+        , "[---------]\nGreetings, {{ path['name'] }}!"
+         )
+      , ( '%name/%cheese.txt.spt'
+        , "[---------]\n{{ path['name'].title() }} likes {{ path['cheese'] }} cheese."
+         )
        )
     response = handle('/chad/cheddar.txt')
     expected = "Chad likes cheddar cheese."
@@ -384,8 +388,12 @@ def test_virtual_path_docs_3():
     assert actual == expected, actual
 
 def test_virtual_path_docs_4():
-    mk( ('%name/index.html', "[---------]\nGreetings, {{ path['name'] }}!")
-      , ('%name/%cheese.txt', "{{ path['name'].title() }} likes {{ path['cheese'] }} cheese.")
+    mk( ( '%name/index.html.spt'
+        , "[---------]\nGreetings, {{ path['name'] }}!"
+         )
+      , ( '%name/%cheese.txt.spt'
+        , "{{ path['name'].title() }} likes {{ path['cheese'] }} cheese."
+         )
        )
     response = handle('/chad/cheddar.txt/')
     expected = 404
@@ -393,9 +401,13 @@ def test_virtual_path_docs_4():
     assert actual == expected, actual
 
 def test_virtual_path_docs_5():
-    mk( ('%name/index.html', "[----------]\nGreetings, {{ path['name'] }}!")
-      , ('%name/%cheese.txt', "{{ path['name'].title() }} likes {{ path['cheese'] }} cheese.")
-      , ( '%year.int/index.html'
+    mk( ( '%name/index.html.spt'
+        , "[----------]\nGreetings, {{ path['name'] }}!"
+         )
+      , ( '%name/%cheese.txt.spt'
+        , "{{ path['name'].title() }} likes {{ path['cheese'] }} cheese."
+         )
+      , ( '%year.int/index.html.spt'
         , "[----------]\nTonight we're going to party like it's {{ path['year'] }}!"
          )
        )
@@ -405,7 +417,7 @@ def test_virtual_path_docs_5():
     assert actual == expected, actual
 
 def test_virtual_path_docs_6():
-    mk( ( '%year.int/index.html'
+    mk( ( '%year.int/index.html.spt'
         , "[----------]\nTonight we're going to party like it's {{ path['year'] }}!"
          )
        )
@@ -424,18 +436,14 @@ def test_intercept_socket_protects_direct_access():
 
 def test_intercept_socket_intercepts_handshake():
     request = Request(uri="/foo.sock/1")
-    dispatcher.intercept_socket(request)
-
+    actual = dispatcher.extract_socket_info(request.line.uri.path.decoded)
     expected = ('/foo.sock', '1')
-    actual = (request.line.uri.path.decoded, request.socket)
     assert actual == expected, actual
 
 def test_intercept_socket_intercepts_transported():
     request = Request(uri="/foo.sock/1/websocket/46327hfjew3?foo=bar")
-    dispatcher.intercept_socket(request)
-
+    actual = dispatcher.extract_socket_info(request.line.uri.path.decoded)
     expected = ('/foo.sock', '1/websocket/46327hfjew3')
-    actual = (request.line.uri.path.decoded, request.socket)
     assert actual == expected, actual
 
 
@@ -444,49 +452,49 @@ def test_intercept_socket_intercepts_transported():
 # These surfaced when porting mongs from Aspen 0.8.
 
 def test_virtual_path_parts_can_be_empty():
-    mk(('foo/%bar/index.html', "Greetings, program!"))
+    mk(('foo/%bar/index.html.spt', "Greetings, program!"))
     expected = {u'bar': [u'']}
     actual = check_virtual_paths('/foo//').line.uri.path
     assert actual == expected, actual
 
 def test_file_matches_in_face_of_dir():
-    mk( ('%page/index.html', 'Nothing to see here.')
-      , ('%value.txt', "Greetings, program!")
+    mk( ('%page/index.html.spt', 'Nothing to see here.')
+      , ('%value.txt.spt', "Greetings, program!")
        )
     expected = {'value': [u'baz']}
     actual = check_virtual_paths('/baz.txt').line.uri.path
     assert actual == expected, actual
 
 def test_file_matches_extension():
-    mk( ('%value.json', '{"Greetings,": "program!"}')
-      , ('%value.txt', "Greetings, program!")
+    mk( ('%value.json.spt', '{"Greetings,": "program!"}')
+      , ('%value.txt.spt', "Greetings, program!")
        )
-    expected = "%value.json"
+    expected = "%value.json.spt"
     actual = os.path.basename(check_virtual_paths('/baz.json').fs)
     assert actual == expected, actual
 
 def test_file_matches_other_extension():
-    mk( ('%value.json', '{"Greetings,": "program!"}')
-      , ('%value.txt', "Greetings, program!")
+    mk( ('%value.json.spt', '{"Greetings,": "program!"}')
+      , ('%value.txt.spt', "Greetings, program!")
        )
-    expected = "%value.txt"
+    expected = "%value.txt.spt"
     actual = os.path.basename(check_virtual_paths('/baz.txt').fs)
     assert actual == expected, actual
 
 def test_virtual_file_with_no_extension_works():
-    mk(('%value', '{"Greetings,": "program!"}'))
+    mk(('%value.spt', '{"Greetings,": "program!"}'))
     check_virtual_paths('/baz.txt')
     assert NoException
 
 def test_normal_file_with_no_extension_works():
-    mk( ('%value', '{"Greetings,": "program!"}')
+    mk( ('%value.spt', '{"Greetings,": "program!"}')
       , ('value', '{"Greetings,": "program!"}')
        )
     check_virtual_paths('/baz.txt')
     assert NoException
 
 def test_file_with_no_extension_matches():
-    mk( ('%value', '{"Greetings,": "program!"}')
+    mk( ('%value.spt', '{"Greetings,": "program!"}')
       , ('value', '{"Greetings,": "program!"}')
        )
     expected = {'value': [u'baz']}
@@ -494,7 +502,7 @@ def test_file_with_no_extension_matches():
     assert actual == expected, actual
 
 def test_aspen_favicon_doesnt_get_clobbered_by_virtual_path():
-    mk('%value')
+    mk('%value.spt')
     request = StubRequest.from_fs('/favicon.ico')
     dispatcher.dispatch(request)
     expected = {}
@@ -502,7 +510,7 @@ def test_aspen_favicon_doesnt_get_clobbered_by_virtual_path():
     assert actual == expected, actual
 
 def test_robots_txt_also_shouldnt_be_redirected():
-    mk('%value')
+    mk('%value.spt')
     request = StubRequest.from_fs('/robots.txt')
     err = assert_raises(Response, dispatcher.dispatch, request)
     actual = err.code

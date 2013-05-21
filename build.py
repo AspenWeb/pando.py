@@ -113,7 +113,7 @@ def clean_build():
 
 # Jython
 # ======
-JYTHON_URL="http://search.maven.org/remotecontent?filepath=org/python/jython-installer/2.5.3/jython-installer-2.5.3.jar" 
+JYTHON_URL="http://search.maven.org/remotecontent?filepath=org/python/jython-installer/2.7-b1/jython-installer-2.7-b1.jar"
 
 def _jython_home():
     if not os.path.exists('jython_home'):
@@ -127,8 +127,6 @@ def _jenv():
     jenv['PATH'] = os.path.join('.', 'jython_home', 'bin') + ':' + jenv['PATH']
     args = [ 'jython' ] + ENV_ARGS + [ '--python=jython', 'jenv' ] 
     run(*args, env=jenv)
-    # always required for jython since it's ~= python 2.5
-    run(_virt('pip', 'jenv'), 'install', 'simplejson')
 
 def clean_jenv():
     shell('find', '.', '-name', '*.class', '-delete')

@@ -27,7 +27,7 @@ def test_charset_static_barely_working():
     assert actual == expected, actual
 
 def test_charset_dynamic_barely_working():
-    response = check( "[----]\nGreetings, program!", 'index.html', False
+    response = check( "[---]\nGreetings, program!", 'index.html.spt', False
                     , argv=['--charset_dynamic=CHEESECODE']
                      )
     expected = 'text/html; charset=CHEESECODE'
@@ -92,7 +92,7 @@ Greetings, {{ foo }}!
 [-----------] text/html
 <h1>Greetings, {{ foo }}!</h1>
 """
-, filename='index')
+, filename='index.spt')
     assert actual == expected, actual
 
 
@@ -134,8 +134,8 @@ def test_raise_response_works():
 
 def test_location_preserved_for_response_raised_in_page_2():
     # https://github.com/zetaweb/aspen/issues/153
-    expected = ('index.html', 1)
-    try: check("from aspen import Response; raise Response(404)\n[----]\n")
+    expected = ('index.html.spt', 1)
+    try: check("from aspen import Response; raise Response(404)\n[---]\n")
     except Response, response: actual = response.whence_raised()
     assert actual == expected, actual
 
@@ -163,10 +163,14 @@ def test_unknown_mimetype_yields_default_mimetype():
     actual = response.headers['Content-Type']
     assert actual == expected, actual
 
-def test_templating_skipped_without_script():
+def test_templating_without_script_works():
     response = Response()
-    expected = "{{ foo }}"
-    actual = check("{{ foo }}", response=response)
+    expected = "index.html"
+
+    # I want a slash on the front of index.html but it's an artifact of
+    # StubRequest that we don't get one.
+
+    actual = check("{{ request.line.uri.path.raw }}", response=response)
     assert actual == expected, actual
 
 
@@ -177,16 +181,16 @@ def check_offsets(raw, offsets):
     assert actual == offsets, actual
 
 def test_offset_calculation_basic():
-    check_offsets('\n\n\n[----]\n\n', [0, 4])
+    check_offsets('\n\n\n[---]\n\n', [0, 4])
 
 def test_offset_calculation_for_empty_file():
     check_offsets('', [0])
 
 def test_offset_calculation_advanced():
     raw = (
-        '\n\n\n[----]\n'
-        'cheese\n[----]\n'
-        '\n\n\n\n\n\n[----]\n'
+        '\n\n\n[---]\n'
+        'cheese\n[---]\n'
+        '\n\n\n\n\n\n[---]\n'
         'Monkey\nHead\n') #Be careful: this is implicit concation, not a tuple
     check_offsets(raw, [0, 4, 6, 13])
 

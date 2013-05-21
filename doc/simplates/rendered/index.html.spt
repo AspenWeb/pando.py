@@ -27,12 +27,9 @@ are installed. The way to specify a renderer is with a so-called
 simplate.</p>
 
 <pre>program = "program"
-\[----] via pystache
+\[---] via pystache
 Greetings, {&#123; program }}!</pre>
 
-<p>Pull requests are especially welcome for <a
-    href="https://github.com/whit537/aspen/blob/master/aspen/renderers/__init__.py">new
-    renderers</a>.</p>
 
 <p>You can set the default renderer for a given media type in <a
     href="/configure-aspen.py/">configure-aspen.py</a> like so:</p>
@@ -100,10 +97,10 @@ Content-Type header for text files. To alter the former, manually encode your
 unicode objects before expressing them. To alter the latter, set the header
 manually on the response object in page 2. Here&rsquo;s an example:</p>
 
-<pre>\[----]
+<pre>[---]
 latinate = chr(181).decode('latin1')
 response.headers['Content-Type'] = 'text/plain; charset=latin1'
-\[----]
+\[---]
 {&#123; latinate.encode('latin1') }}</pre>
 
 

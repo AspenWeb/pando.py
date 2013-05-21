@@ -11,18 +11,18 @@ are Aspen&rsquo;s main attraction. Here&rsquo;s what a simplate looks like:</p>
 """
 import random
 
-\[----]
+\[---]
 n = random.choice(range(10))
 extra_excitement = "!" * n
 
-\[----]
+\[---]
 Greetings, program!{&#123; extra_excitement &#125;}</pre>
 
 <p>Simplates are a single file with one or more pages. The page separator is
-<code>[----]</code>.</p>
+<code>[---]</code>.</p>
 
 <p>Assuming you&rsquo;ve gone through the <a href="/quick-start/">Quick
-    Start</a>, edit index.html with the above content, then refresh.</p>
+Start</a>, edit index.html.spt with the above content, then refresh.</p>
 
 {{ screenshot("extra-excitement") }}
 
@@ -68,7 +68,7 @@ resources. Media types are inferred from the file extension.</p>
 <ol>
 
     <li><a href="/simplates/static/"><b>Static Simplates</b></a>&mdash;Any
-    text/* or application/json file with no \[----] in it is served directly as
+    text/* or application/json file with no \[---] in it is served directly as
     a static file. Other media types are static unless they start with a
     docstring or an import.</li>
 
