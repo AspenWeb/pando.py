@@ -3,6 +3,7 @@ import os
 import sys
 import traceback
 from os.path import join, isfile
+from first import first
 
 import aspen
 from aspen import dispatcher, resources, sockets
@@ -173,9 +174,10 @@ class Website(Configurable):
             # Delegate to any error simplate.
             # ===============================
 
-            fs = self.ours_or_theirs(str(response.code) + '.html')
-            if fs is None:
-                fs = self.ours_or_theirs('error.html')
+            rc = str(response.code)
+            possibles = [ rc + ".html", rc + ".html.spt", "error.html", "error.html.spt" ]
+            fs = first( self.ours_or_theirs(errpage) for errpage in possibles )
+
             if fs is not None:
                 request.fs = fs
                 request.original_resource = request.resource

@@ -30,7 +30,7 @@ blah</pre>
 
 <p>Step 4: Create a web page, and start aspen inside it:</p>
 
-<pre>(foo)$ echo Greetings, program! > index.html
+<pre>(foo)$ echo Greetings, program! > index.html.spt
 (foo)$ aspen
 Greetings, program! Welcome to port 8080.</pre>
 

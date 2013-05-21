@@ -35,7 +35,7 @@ class RenderedResource(NegotiatedResource):
 
     """
 
-    min_pages = 2
+    min_pages = 1
     max_pages = 4
 
 

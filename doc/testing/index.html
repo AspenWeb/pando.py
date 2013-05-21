@@ -1,0 +1,46 @@
+doc_title = "Testing"
+doc_next = ''
+
+
+{% extends doc.html %}
+{% block doc %}
+
+<p>Aspen includes an <code><a
+        href="https://github.com/whit537/aspen/tree/master/aspen/testing/">aspen.testing</a></code>
+module that provides helpers for testing Aspen in general and <a
+    href="/simplates/">Simplates</a> in particular. The most valuable is
+this:</p>
+
+<pre>
+def teardown():
+    """Standard teardown function.
+    
+    - reset the current working directory
+    - remove FSFIX = %{tempdir}/fsfix
+    - reset Aspen's global state
+    - remove '.aspen' from sys.path
+    - remove 'foo' from sys.modules
+    - remove logging handlers
+
+    """
+
+def attach_teardown(context):
+    """Given a namespace dictionary, attach the teardown function.
+
+    This function is designed for nose and will raise NotImplementedError at
+    runtime with an additional ImportError traceback if nose is not available.
+    To use it put this line at the end of your test modules:
+
+        attach_teardown(globals())
+
+    """
+</pre>
+
+
+<h2>Example</h2>
+
+<p>Here&rsquo;s an example of a :</p>
+
+<pre>from aspen.testing import *
+
+{% end %}

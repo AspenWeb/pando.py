@@ -8,14 +8,14 @@ from aspen.testing.sockets import make_socket, SocketInThread
 
 
 def test_socket_is_instantiable():
-    mk(('echo.sock', ''))
+    mk(('echo.sock.spt', ''))
 
     expected = Socket
     actual = make_socket().__class__
     assert actual is expected, actual
 
 def test_two_sockets_are_instantiable():
-    mk(('echo.sock', ''))
+    mk(('echo.sock.spt', ''))
 
     socket1 = make_socket()
     socket2 = make_socket()
@@ -25,7 +25,7 @@ def test_two_sockets_are_instantiable():
     assert actual == expected, actual
 
 def test_socket_can_shake_hands():
-    mk(('echo.sock', ''))
+    mk(('echo.sock.spt', ''))
     socket = make_socket()
     response = socket.shake_hands()
     expected = '15:10:xhr-polling'
@@ -33,7 +33,7 @@ def test_socket_can_shake_hands():
     assert actual == expected, actual
 
 def test_socket_can_barely_function():
-    mk(('echo.sock', 'socket.send("Greetings, program!")'))
+    mk(('echo.sock.spt', 'socket.send("Greetings, program!")'))
 
     socket = make_socket()
     socket.tick()
@@ -45,7 +45,7 @@ def test_socket_can_barely_function():
     assert actual == expected, actual
 
 def test_socket_can_echo():
-    mk(('echo.sock', 'socket.send(socket.recv())'))
+    mk(('echo.sock.spt', 'socket.send(socket.recv())'))
 
     with SocketInThread() as socket:
         socket._send('3::/echo.sock:Greetings, program!')

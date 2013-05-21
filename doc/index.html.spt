@@ -1,3 +1,79 @@
+import random
+impressions = ["""
+            <li>&ldquo;<a
+                href="https://github.com/gittip/aspen-python/issues/179#issuecomment-17178655">I'm 
+                finding Aspen frustrating to do simple things and easy to do 
+                complex things.</a>&rdquo; &mdash;<a 
+                href="http://joshuakehn.com/">Joshua Kehn</a></li>
+""", """
+            <li>&ldquo;<a
+                href="http://logs.nodejs.org/node.js/2013-01-31#03:17:22.697">That's
+                cool, your files are your routes.</a> [...] <a
+                href="http://logs.nodejs.org/node.js/2013-01-31#03:29:24.657">That&rsquo;s
+                a crazy framework.</a>&mdash;asdf12 in #node.js</li>
+""", """
+            <li>&ldquo;<a
+                href="https://botbot.me/freenode/aspen/1792747/">Aspen is
+                cool.</a>&rdquo; &mdash;<a
+                href="https://twitter.com/clone1018">Luke Strickland</a></li>
+""", """
+            <li>&ldquo;<a href="https://botbot.me/freenode/gittip/1664393/">The
+                more I look at Aspen, the less odd it looks and the more I like
+                it.</a>&rdquo; &mdash;<a
+                href="https://twitter.com/sigmavirus24">Ian Cordasco</a></li>
+""", """
+            <li>&ldquo;<a
+                href="https://twitter.com/mcowger/status/253900188618473472">Aspen
+                is a lifesaver - loving how easy it is to use and get
+                working.</a>&rdquo; &mdash;Matt Cowger</li>
+""", """
+            <li>&ldquo;This is several orders of magnitude easier than every
+            other web framework.&rdquo; &mdash;<a
+                href="https://twitter.com/mrstevegross">Steve Gross</a></li>
+""", """
+            <li>&ldquo;<a
+                href="https://twitter.com/chrisumbel/status/211796409983307776">Refreshing
+                in a world of heavyweights.</a>&rdquo; &mdash;Chris Umbel</li>
+""", """
+            <li>&ldquo;<a
+                href="https://groups.google.com/forum/#!msg/aspen-users/rby92tQoBYI/diOu5J7OKOcJ">A
+                delight.</a>&rdquo; &mdash;Jussi Arpalahti</li>
+""", """
+            <li>&ldquo;<a
+                href="http://archlinux.me/dusty/2012/04/05/trembling-aspen/">It&rsquo;s
+                different.  Very different.</a>&rdquo; &mdash;Dusty
+            Phillips</li>
+""", """
+            <li>&ldquo;I&rsquo;m so glad someone has the guts to take on
+            MVC.&rdquo; &mdash;<a
+                href="https://twitter.com/pydanny">@pydanny</a></li>
+""", """
+            <li>&ldquo;I am afraid of this.&rdquo; &mdash;some guy at PyCon
+            2012</li>
+""", """
+            <li>&ldquo;Love it. It was super easy to set up. Really
+            Impressed.&rdquo; &mdash; <a
+                href="http://jordanmessina.com/">Jordan Messina</a> (via IRC)
+            </li>
+""", """
+            <li>&ldquo;<a
+                href="https://twitter.com/patcoll/status/136154129880989696">
+                Awesome. App Engine feels clunky in comparison.</a>&rdquo;
+            &mdash;Pat Collins </li>
+""", """
+            <li>&ldquo;<a href="/success/approximatrix.html"> A pleasure to
+                work with.</a>&rdquo; &mdash;Jeffrey Armstrong</li>
+""", """
+            <li>&ldquo;<a
+                href="http://www.youtube.com/watch?v=AYjPIMe0BhA#t=32m33s"> A
+                completely different approach.</a>&rdquo; &mdash;Richard
+            Jones</li>
+""", """
+            <li>&ldquo;<a
+                href="https://twitter.com/splee/status/78668600940048385">
+                Aspen seems insane to me.</a>&rdquo; &mdash;Lee McFadden</li>
+"""]
+
 [------------------]
 homepage = True
 [------------------]
@@ -264,76 +340,8 @@ homepage = True
 
         <h2>Impressions</h2>
 
-        <ul>
+        <ul>{{ random.choice(impressions) }}</ul>
 
-            <li>&ldquo;<a
-                href="http://logs.nodejs.org/node.js/2013-01-31#03:17:22.697">That's
-                cool, your files are your routes.</a> [...] <a
-                href="http://logs.nodejs.org/node.js/2013-01-31#03:29:24.657">That&rsquo;s
-                a crazy framework.</a>&mdash;asdf12 in #node.js</li>
-
-            <li>&ldquo;<a
-                href="https://botbot.me/freenode/aspen/1792747/">Aspen is
-                cool.</a>&rdquo; &mdash;<a
-                href="https://twitter.com/clone1018">Luke Strickland</a></li>
-
-            <li>&ldquo;<a href="https://botbot.me/freenode/gittip/1664393/">The
-                more I look at Aspen, the less odd it looks and the more I like
-                it.</a>&rdquo; &mdash;<a
-                href="https://twitter.com/sigmavirus24">Ian Cordasco</a></li>
-
-            <li>&ldquo;<a
-                href="https://twitter.com/mcowger/status/253900188618473472">Aspen
-                is a lifesaver - loving how easy it is to use and get
-                working.</a>&rdquo; &mdash;Matt Cowger</li>
-
-            <li>&ldquo;This is several orders of magnitude easier than every
-            other web framework.&rdquo; &mdash;<a
-                href="https://twitter.com/mrstevegross">Steve Gross</a></li>
-
-            <li>&ldquo;<a
-                href="https://twitter.com/chrisumbel/status/211796409983307776">Refreshing
-                in a world of heavyweights.</a>&rdquo; &mdash;Chris Umbel</li>
-
-            <li>&ldquo;<a
-                href="https://groups.google.com/forum/#!msg/aspen-users/rby92tQoBYI/diOu5J7OKOcJ">A
-                delight.</a>&rdquo; &mdash;Jussi Arpalahti</li>
-
-            <li>&ldquo;<a
-                href="http://archlinux.me/dusty/2012/04/05/trembling-aspen/">It&rsquo;s
-                different.  Very different.</a>&rdquo; &mdash;Dusty
-            Phillips</li>
-
-            <li>&ldquo;I&rsquo;m so glad someone has the guts to take on
-            MVC.&rdquo; &mdash;<a
-                href="https://twitter.com/pydanny">@pydanny</a></li>
-
-            <li>&ldquo;I am afraid of this.&rdquo; &mdash;some guy at PyCon
-            2012</li>
-
-            <li>&ldquo;Love it. It was super easy to set up. Really
-            Impressed.&rdquo; &mdash; <a
-                href="http://jordanmessina.com/">Jordan Messina</a> (via IRC)
-            </li>
-
-            <li>&ldquo;<a
-                href="https://twitter.com/patcoll/status/136154129880989696">
-                Awesome. App Engine feels clunky in comparison.</a>&rdquo;
-            &mdash;Pat Collins </li>
-
-            <li>&ldquo;<a href="/success/approximatrix.html"> A pleasure to
-                work with.</a>&rdquo; &mdash;Jeffrey Armstrong</li>
-
-            <li>&ldquo;<a
-                href="http://www.youtube.com/watch?v=AYjPIMe0BhA#t=32m33s"> A
-                completely different approach.</a>&rdquo; &mdash;Richard
-            Jones</li>
-
-            <li>&ldquo;<a
-                href="https://twitter.com/splee/status/78668600940048385">
-                Aspen seems insane to me.</a>&rdquo; &mdash;Lee McFadden</li>
-
-        </ul>
 
         <h2>Showcase
             <a href="mailto:chad@zetaweb.com">Something to add?</a>
@@ -341,29 +349,15 @@ homepage = True
 
         <ul>
 
-            <li><a href="https://www.gittip.com/">Gittip is a gift
-                economy</a></li>
+            <li><a href="https://www.gittip.com/">Gittip, a weekly gift
+                exchange</a></li>
 
             <li><a
                 href="http://keystone.readthedocs.org/en/latest/index.html">Keystone,
                 a web framework inspired by Aspen</a></li>
 
-            <li><a href="https://github.com/buchuki/trembling">Trembling, a
-                session and auth module for Aspen</a></li>
-
-            <li><a href="https://www.ihasamoney.com/">IHasAMoney.com, personal
-                finance for geeks</a></li>
-
-            <li><a href="http://www.plus45design.com/">plus45design</a></li>
-
-            <li><a href="http://pastie.org/pastes/3021242">Voice synthesizer
-                for your Mac</a> (<a
-                href="http://static.whit537.org/2011/for-david.png">screenshot</a>)</li>
-
-            <li><a href="https://github.com/whit537/pictionary">Pictionary demo
-                of Socket.IO integration</a></li>
-
-            <li><a href="http://www.burned.com/">Burned Media</a></li>
+            <li><a href="http://www.burned.com/">Burned Media, a personal
+            homepage</a></li>
 
             <li><a href="/success/approximatrix.html">Approximatrix, Solutions
                 for Numerical Computing</a></li>
@@ -374,6 +368,26 @@ homepage = True
             <li><a href="http://code.google.com/p/gheat/">Gheat, heatmaps for
                 Google Maps</a></li>
 
+            <li><a
+                href="https://github.com/gittip/aspen-python/tree/master/doc">Source
+                code for http://aspen.io/ itself</a></li>
+
+        </ul>
+
+
+        <h2>Demos
+            <a href="mailto:chad@zetaweb.com">Something to add?</a>
+        </h2>
+
+        <ul>
+
+            <li><a href="http://pastie.org/pastes/3021242">Voice synthesizer
+                for your Mac</a> (<a
+                href="http://static.whit537.org/2011/for-david.png">screenshot</a>)</li>
+
+            <li><a href="https://github.com/whit537/pictionary">Pictionary demo
+                of Socket.IO integration</a></li>
+
             <li><a href="https://github.com/whit537/aspen-socket-toys">A couple
                 demos of Aspen&rsquo;s Socket.IO integration</a></li>
 
@@ -381,124 +395,9 @@ homepage = True
                 diesel talking to a STOMP server</a></li>
 
             <li><a href="https://github.com/whit537/aspen-toy-blog">A toy blog,
-                demonstrating Aspen&rsquo;s core features</li>
-
-                <li><a
-                    href="https://github.com/gittip/aspen-python/tree/master/doc">Source
-                    code for http://aspen.io/ itself</a></li>
+                demonstrating Aspen&rsquo;s core features</a></li>
 
         </ul>
-
-
-        <!--
-        <div id="appearances">
-
-            <h2>Appearances
-                <a href="mailto:chad@zetaweb.com">Something to add?</a>
-            </h2>
-
-            <ul>
-
-                <li><em>2012-10-11</em> PJ will be giving an internal tech talk
-                on Aspen at this company, <a
-                    href="http://smartbear.com/">SmartBear</a>.</li>
-
-                <li><strike><em>2012-09-13 - 2012-09-16</em></strike> Chad will
-                be at the <a
-                    href="http://www.kickstarter.com/projects/waxpancake/xoxo-festival">XOXO
-                    Festival</a> in Portland</li>
-
-                <li><strike><em>2012-07-28 - 2012-07-29</em></strike> Chad will
-                be giving a tutorial at <a
-                    href="http://pyohio.org/">PyOhio</a></li>
-
-                <li><strike><em>2012-06-27</em></strike> <a
-                    href="https://twitter.com/pghpy">PghPython</a> monthly
-                meeting</li>
-
-                <li><strike><em>2012-06-09</em></strike> <a
-                    href="http://pghtechfest.com/">PghTechFest</a>, Chad gave
-                talks on Aspen and Mongs</li>
-
-                <li>
-                    <strike><em>2012-05-10</em></strike> Aspen sprint, 6pm
-                    <a href="http://www.maya.com/">MAYA</a>
-                </li>
-
-                <li>
-                    <strike><em>2012-04-25</em></strike> <a
-                        href="http://pghpython.org/events">PghPython</a>, 7pm
-                    Vivisimo</a>
-                </li>
-                <li>
-                    <strike><em>2012-03-28</em></strike> <a
-                        href="http://pghpython.org/events">PghPython</a>, 7pm
-                    Vivisimo</a>
-                </li>
-                <li>
-                    <strike><em>2012-03-09&mdash;2012-03-13</em></strike> <a
-                        href="https://us.pycon.org/2012/">PyCon</a>
-                </li>
-                <li>
-                    <strike><em>2012-03-08</em></strike> <a
-                        href="https://us.pycon.org/2012/community/WebDevSummit/">PyWeb
-                        Summit</a>
-                </li>
-                <li>
-                    <strike><em>2012-02-01</em></strike> Monthly sprint, 7-9pm US/Eastern. Pittsburgh location TBD and/or
-                    <a href="irc://irc.freenode.net/#aspen">IRC</a>.
-                </li>
-                <li>
-                    <strike><em>2012-01-05</em></strike> Monthly sprint, 7-9pm US/Eastern.
-                    <a href="http://tinyurl.com/crazy-mocha-south-side">Crazy Mocha</a> or
-                    <a href="irc://irc.freenode.net/#aspen">IRC</a>.</li>
-                <li>
-                    <strike><em>2011-12-14</em></strike> Monthly sprint, 7-9pm US/Eastern.
-                    <a href="http://tinyurl.com/crzymcha">Crazy Mocha</a> or
-                    <a href="irc://irc.freenode.net/#aspen">IRC</a>.
-                    Whiteboard, Socket.IO disconnect.
-                </li>
-                <li>
-                    <strike><em>2011-11-09</em></strike> Monthly sprint, 7-9pm US/Eastern.
-                    <a href="http://tinyurl.com/crzymcha">Crazy Mocha</a> or
-                    <a href="irc://irc.freenode.net/#aspen">IRC</a>. Homepage refresh. Socket.IO for Windows
-                </li>
-                <li>
-                    <strike><em>2011-10-12</em></strike> Monthly sprint, 7-9pm US/Eastern.
-                    <a href="http://tinyurl.com/crzymcha">Crazy Mocha</a> or
-                    <a href="irc://irc.freenode.net/#aspen">IRC</a>.  Ported to Windows.
-                </li>
-                <li>
-                    <strike><em>2011-09-28</em></strike> Chad Whitacre gave a short intro to Aspen at
-                    <a href="http://pghpython.org/">PghPython</a>.
-                </li>
-                <li>
-                    <strike><em>2011-08-21</em></strike> Richard Jones included Aspen in his
-                    <a href="http://blag.whit537.org/2011/08/aspen-marching-to-different-drummer.html">micro-framework battle</a>.
-                </li>
-                <li>
-                    <strike><em>2011-07-30</em></strike> Chad Whitacre spoke about
-                    <a href="http://blip.tv/pyohio/aspen-a-next-generation-web-framework-5436552">the design philosophy behind Aspen</a> at
-                    <a href="http://pyohio.org/">PyOhio</a>.
-                </li>
-                <li>
-                    <strike><em>2011-07-05</em></strike> Jason Coombs gave an impromptu lightening talk about Aspen at
-                    <a href="http://dcpython.org/">DC Python</a>.
-                </li>
-                <li>
-                    <strike><em>2011-06-08</em></strike> Kevin LaTona
-                    <a href="http://www.studiosola.com/seapyaspen/">introduced Aspen</a> to
-                    <a href="http://www.seapig.org/">SeaPIG</a>.
-                </li>
-                <li>
-                    <strike><em>2011-06-07</em></strike> Chad Whitacre released
-                    <a href="http://whit537.org/mongs/">Mongs</a> while at
-                    <a href="http://www.10gen.com/conferences/mongonyc2011">MongoNYC</a>.
-                </li>
-            </ul>
-
-        </div>
-        -->
 
 
     </div></div>

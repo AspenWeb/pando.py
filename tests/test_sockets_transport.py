@@ -12,7 +12,7 @@ from aspen.testing.fsfix import attach_teardown, mk
 
 
 def make_transport(content='', state=0):
-    mk(('echo.sock', content))
+    mk(('echo.sock.spt', content))
     socket = make_socket()
     transport = XHRPollingTransport(socket)
     transport.timeout = 0.05 # for testing, could screw up the test
