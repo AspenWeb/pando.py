@@ -4,6 +4,18 @@ from operator import itemgetter as _itemgetter
 from keyword import iskeyword as _iskeyword
 import sys as _sys
 
+try:
+    from hashlib import md5
+except ImportError:
+    from md5 import new as md5
+
+try:                # Python >= 2.6
+    from collections import Callable
+    def is_callable(obj):
+        return isinstance(obj, Callable)
+except ImportError: # Python < 2.6
+    from operator import isCallable as is_callable
+
 try:                # 2
     from Cookie import CookieError, SimpleCookie
 except ImportError: # 3
