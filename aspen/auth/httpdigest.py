@@ -6,11 +6,7 @@
 
 import random, time, re
 
-try:
-    from hashlib import md5
-except ImportError:
-    from md5 import new as md5
-
+from aspen.backcompat import md5
 
 class MalformedAuthenticationHeader(Exception): pass
 

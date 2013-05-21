@@ -2,13 +2,8 @@
 """
 import mimetypes
 import os
-try:                    # python2.6+
-    from collections import namedtuple
-except ImportError:     # < python2.6
-    from backcompat import namedtuple
-
 from aspen import Response
-
+from backcompat import namedtuple
 
 def debug_noop(*args, **kwargs):
     pass
