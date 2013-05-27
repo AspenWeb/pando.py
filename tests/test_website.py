@@ -134,12 +134,12 @@ def test_call_wraps_wsgi_middleware():
     website.wsgi_app = TestMiddleware(website.wsgi_app)
     respond = [False, False]
     def start_response_should_404(status, headers):
-        assert status.lower().strip() == '404 not found'
+        assert status.lower().strip() == '404 not found', status
         respond[0] = True
     website(build_environ('/'), start_response_should_404)
     assert respond[0]
     def start_response_should_200(status, headers):
-        assert status.lower().strip() == '200 ok'
+        assert status.lower().strip() == '200 ok', status
         respond[1] = True
     website(build_environ('/middleware'), start_response_should_200)
     assert respond[1]
