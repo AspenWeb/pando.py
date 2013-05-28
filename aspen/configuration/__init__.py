@@ -7,6 +7,7 @@ import os
 import socket
 import sys
 import traceback
+import pkg_resources
 
 import aspen
 import aspen.logging
@@ -288,6 +289,9 @@ class Configurable(object):
                 make_renderer = err
                 err.info = sys.exc_info()
             self.renderer_factories[name] = make_renderer
+
+        for entrypoint in pkg_resources.iter_entry_points(group='aspen.renderers'):
+            self.renderer_factories[entrypoint.name] = entrypoint.load()
 
         default_renderer = self.renderer_factories[self.renderer_default]
         if isinstance(default_renderer, ImportError):
