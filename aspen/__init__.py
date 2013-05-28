@@ -16,10 +16,14 @@ __version__ = dist.version
 WINDOWS = sys.platform[:3] == 'win'
 NETWORK_ENGINES = ['cheroot', 'cherrypy', 'diesel', 'eventlet', 'gevent',
                    'pants', 'rocket', 'tornado', 'twisted']
+
 RENDERERS = ['jinja2',
-            'pystache',
             'tornado',
             'stdlib_format',
             'stdlib_percent',
             'stdlib_template'
             ]
+
+for entrypoint in pkg_resources.iter_entry_points(group='aspen.renderers'):
+    RENDERERS.append(entrypoint.name)
+
