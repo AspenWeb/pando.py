@@ -176,8 +176,8 @@ def test_parse_list_extends():
 
 
 def test_parse_renderer_good():
-    actual = parse.renderer(u'pystache')
-    assert actual == u'pystache', actual
+    actual = parse.renderer(u'stdlib_percent')
+    assert actual == u'stdlib_percent', actual
 
 def test_parse_renderer_bad():
     assert_raises(ValueError, parse.renderer, u'floober')
