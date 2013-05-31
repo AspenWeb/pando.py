@@ -28,7 +28,7 @@ setup( author = 'Chad Whitacre'
                       'Simplates are the main attraction.')
      , entry_points = { 'console_scripts': [ 'aspen = aspen.server:main'
                                            , 'thrash = thrash:main'
-                                           , 'fcgi_aspen = fcgi_aspen:main'
+                                           , 'fcgi_aspen = fcgi_aspen:main [fcgi]'
                                             ] }
      , name = 'aspen'
      , packages = find_packages(exclude=[ 'aspen.tests'
@@ -46,4 +46,6 @@ setup( author = 'Chad Whitacre'
                           , 'tornado==1.2.1'
                           , 'first==2.0.0'
                            ]
+     , extras_require = { 'fcgi' : [ 'flup' ]
+                        }
       )
