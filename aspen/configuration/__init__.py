@@ -75,7 +75,7 @@ KNOBS = \
     , 'list_directories':   (False, parse.yes_no)
     , 'media_type_default': ('text/plain', parse.media_type)
     , 'media_type_json':    ('application/json', parse.media_type)
-    , 'renderer_default':   ('tornado', parse.renderer)
+    , 'renderer_default':   ('stdlib_percent', parse.renderer)
     , 'show_tracebacks':    (False, parse.yes_no)
      }
 
@@ -328,19 +328,27 @@ class Configurable(object):
             mimetypes.init()
 
         # network_engine
-        try:
-            capture = {}
-            python_syntax = 'from aspen.network_engines.%s_ import Engine'
-            exec python_syntax % self.network_engine in capture
-            Engine = capture['Engine']
-        except ImportError:
-            # ANSI colors:
-            #   http://stackoverflow.com/questions/287871/
-            #   http://en.wikipedia.org/wiki/ANSI_escape_code#CSI_codes
-            #   XXX consider http://pypi.python.org/pypi/colorama
-            msg = "\033[1;31mImportError loading the %s network engine:\033[0m"
-            aspen.log_dammit(msg % self.network_engine)
-            raise
+
+    	## Try modules
+    	ENGINES = {}
+        for entrypoint in pkg_resources.iter_entry_points(group='aspen.network_engines'):
+            ENGINES[entrypoint.name] = entrypoint.load()
+        if self.network_engine in ENGINES:
+            Engine = ENGINES[self.network_engine].Engine
+        else:
+            try:
+                capture = {}
+                python_syntax = 'from aspen.network_engines.%s_ import Engine'
+                exec python_syntax % self.network_engine in capture
+                Engine = capture['Engine']
+            except ImportError:
+                # ANSI colors:
+                #   http://stackoverflow.com/questions/287871/
+                #   http://en.wikipedia.org/wiki/ANSI_escape_code#CSI_codes
+                #   XXX consider http://pypi.python.org/pypi/colorama
+                msg = "\033[1;31mImportError loading the %s network engine:\033[0m"
+                aspen.log_dammit(msg % self.network_engine)
+                raise
         self.network_engine = Engine(self.network_engine, self)
 
         # network_address, network_sockfam, network_port
