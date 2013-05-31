@@ -1,5 +1,4 @@
 import os
-import re
 import sys
 import os.path
 from optparse import make_option
@@ -10,7 +9,7 @@ from fabricate import main, run, shell, autoclean
 # We satisfy dependencies using local tarballs, to ensure that we can build 
 # without a network connection. They're kept in our repo in ./vendor.
 
-ASPEN_DEPS = [ 'Cheroot-4.0.0beta.tar.gz', 'mimeparse-0.1.3.tar.gz', 'tornado-1.2.1.tar.gz' ]
+ASPEN_DEPS = [ 'Cheroot-4.0.0beta.tar.gz', 'mimeparse-0.1.3.tar.gz', 'tornado-1.2.1.tar.gz', 'first-2.0.0.tar.gz' ]
 
 TEST_DEPS = [ 'coverage-3.5.3.tar.gz', 'nose-1.1.2.tar.gz', 'nosexcover-1.0.7.tar.gz', 'snot-0.6.tar.gz' ]
 
@@ -113,7 +112,7 @@ def clean_build():
 
 # Jython
 # ======
-JYTHON_URL="http://search.maven.org/remotecontent?filepath=org/python/jython-installer/2.5.3/jython-installer-2.5.3.jar" 
+JYTHON_URL="http://search.maven.org/remotecontent?filepath=org/python/jython-installer/2.7-b1/jython-installer-2.7-b1.jar"
 
 def _jython_home():
     if not os.path.exists('jython_home'):
@@ -127,8 +126,6 @@ def _jenv():
     jenv['PATH'] = os.path.join('.', 'jython_home', 'bin') + ':' + jenv['PATH']
     args = [ 'jython' ] + ENV_ARGS + [ '--python=jython', 'jenv' ] 
     run(*args, env=jenv)
-    # always required for jython since it's ~= python 2.5
-    run(_virt('pip', 'jenv'), 'install', 'simplejson')
 
 def clean_jenv():
     shell('find', '.', '-name', '*.class', '-delete')

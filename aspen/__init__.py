@@ -1,12 +1,7 @@
 import sys
 import pkg_resources
 
-try:                # Python >= 2.6
-    from collections import Callable
-    def is_callable(obj):
-        return isinstance(obj, Callable)
-except ImportError: # Python < 2.6
-    from operator import isCallable as is_callable
+from backcompat import is_callable
 
 # imports of convenience
 from aspen.http.response import Response

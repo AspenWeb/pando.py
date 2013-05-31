@@ -1,4 +1,4 @@
-from Cookie import CookieError, SimpleCookie
+from aspen.backcompat import CookieError, SimpleCookie
 
 from aspen.http.mapping import CaseInsensitiveMapping
 from aspen.utils import typecheck

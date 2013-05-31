@@ -45,5 +45,6 @@ setup( author = 'Chad Whitacre'
                           , 'mimeparse==0.1.3'
                           , 'watchdog==0.6.0'
                           , 'tornado==1.2.1'
+                          , 'first==2.0.0'
                            ]
       )
