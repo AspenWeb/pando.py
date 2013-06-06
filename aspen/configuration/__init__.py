@@ -329,13 +329,16 @@ class Configurable(object):
 
         # network_engine
 
-    	## Try modules
-    	ENGINES = {}
+        ## Load modules
+        ENGINES = {}
         for entrypoint in pkg_resources.iter_entry_points(group='aspen.network_engines'):
             ENGINES[entrypoint.name] = entrypoint.load()
+        
         if self.network_engine in ENGINES:
+            # found in a module
             Engine = ENGINES[self.network_engine].Engine
         else:
+            # look for a built-in one
             try:
                 capture = {}
                 python_syntax = 'from aspen.network_engines.%s_ import Engine'
