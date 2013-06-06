@@ -27,3 +27,5 @@ RENDERERS = [ 'stdlib_format'
 for entrypoint in pkg_resources.iter_entry_points(group='aspen.renderers'):
     RENDERERS.append(entrypoint.name)
 
+RENDERERS.sort()
+
