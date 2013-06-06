@@ -76,7 +76,8 @@ Options:
                         [application/json]
     --renderer_default=RENDERER_DEFAULT
                         the renderer to use by default; one of
-                        {jinja2,pystache,tornado} [tornado]
+                        {stdlib_percent,stdlib_format,stdlib_template,jinja2,
+                         pystache,tornado} [stdlib_percent]
     --show_tracebacks=SHOW_TRACEBACKS
                         if set to {yes,true,1}, 500s will have a traceback in
                         the browser [no]
