@@ -79,7 +79,7 @@ def clean_smoke():
 def test():
     aspen()
     dev()
-    shell(_virt('nosetests'), '-sx', 'tests/', ignore_status=True, silent=False)
+    shell(_virt('nosetests'), '-s', 'tests/', ignore_status=True, silent=False)
 
 def pylint():
     _env()
