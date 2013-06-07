@@ -9,7 +9,7 @@ from fabricate import main, run, shell, autoclean
 # We satisfy dependencies using local tarballs, to ensure that we can build 
 # without a network connection. They're kept in our repo in ./vendor.
 
-ASPEN_DEPS = [ 'Cheroot-4.0.0beta.tar.gz', 'mimeparse-0.1.3.tar.gz', 'tornado-1.2.1.tar.gz', 'first-2.0.0.tar.gz' ]
+ASPEN_DEPS = [ 'Cheroot-4.0.0beta.tar.gz', 'mimeparse-0.1.3.tar.gz', 'first-2.0.0.tar.gz' ]
 
 TEST_DEPS = [ 'coverage-3.5.3.tar.gz', 'nose-1.1.2.tar.gz', 'nosexcover-1.0.7.tar.gz', 'snot-0.6.tar.gz' ]
 
