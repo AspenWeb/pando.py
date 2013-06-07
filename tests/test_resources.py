@@ -41,6 +41,7 @@ def test_resource_pages_work():
 
 def test_utf8():
     expected = unichr(1758).encode('utf8')
+    expected = unichr(1758)
     actual = check("""
 "#empty first page"
 [------------------]
@@ -82,8 +83,9 @@ Greetings, %(foo)s!
 eg = """
 latinate = chr(181).decode('latin1')
 response.headers['Content-Type'] = 'text/plain; charset=latin1'
+r = latinate.encode('latin1')
 [-------------------------------------]
-{{ latinate.encode('latin1') }}"""
+%(r)s"""
 
 def test_content_type_is_right_in_template_doc_unicode_example():
     response = check(eg, body=False)
@@ -149,7 +151,7 @@ def test_templating_without_script_works():
     # I want a slash on the front of index.html but it's an artifact of
     # StubRequest that we don't get one.
 
-    actual = check("%(request.line.uri.path.raw)s", response=response)
+    actual = check("[-----] via stdlib_format\n{request.line.uri.path.raw}", response=response)
     assert actual == expected, actual
 
 

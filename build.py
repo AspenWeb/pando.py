@@ -81,6 +81,11 @@ def test():
     dev()
     shell(_virt('nosetests'), '-sx', 'tests/', ignore_status=True, silent=False)
 
+def test_all():
+    aspen()
+    dev()
+    shell(_virt('nosetests'), '-s', 'tests/', ignore_status=True, silent=False)
+
 def pylint():
     _env()
     run(_virt('pip'), 'install', 'pylint')
