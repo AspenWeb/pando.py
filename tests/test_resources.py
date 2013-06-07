@@ -113,14 +113,15 @@ def test_raise_response_works():
     actual = response.code
     assert actual == expected, actual
 
-def test_location_preserved_for_response_raised_in_page_2():
-    # https://github.com/zetaweb/aspen/issues/153
+def test_exception_location_preserved_for_response_raised_in_page_2():
+    # https://github.com/gittip/aspen-python/issues/153
     expected = ('index.html.spt', 1)
     try: check("from aspen import Response; raise Response(404)\n[---]\n")
     except Response, response: actual = response.whence_raised()
     assert actual == expected, actual
 
-def test_location_preserved_for_response_raised_under_page_3():
+def test_exception_location_preserved_for_response_raised_under_page_3():
+    # https://github.com/gittip/aspen-python/issues/153
     expected = ('http/mapping.py', 25)
     try: check("[-----]\n%(missing_variable)s")
     except Response, response: actual = response.whence_raised()
