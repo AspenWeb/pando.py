@@ -184,8 +184,8 @@ def test_parse_renderer_bad():
 
 
 def test_parse_network_engine_good():
-    actual = parse.network_engine(u'cherrypy')
-    assert actual == 'cherrypy', actual
+    actual = parse.network_engine(u'cheroot')
+    assert actual == 'cheroot', actual
 
 def test_parse_network_engine_bad():
     assert_raises(ValueError, parse.network_engine, u'floober')
