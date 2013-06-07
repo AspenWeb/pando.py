@@ -3,9 +3,7 @@ from textwrap import dedent
 from aspen import Response
 from aspen.testing import assert_raises, check
 from aspen.testing.fsfix import attach_teardown
-from tornado.template import Template
 from aspen.resources.pagination import split
-
 
 
 # Tests
@@ -85,7 +83,7 @@ latinate = chr(181).decode('latin1')
 response.headers['Content-Type'] = 'text/plain; charset=latin1'
 r = latinate.encode('latin1')
 [-------------------------------------]
-%(r)s"""
+ %(r)s"""
 
 def test_content_type_is_right_in_template_doc_unicode_example():
     response = check(eg, body=False)
@@ -125,7 +123,7 @@ def test_exception_location_preserved_for_response_raised_under_page_3():
     expected = ('http/mapping.py', 25)
     try: check("[-----]\n%(missing_variable)s")
     except Response, response: actual = response.whence_raised()
-    assert actual == expected, actual
+    assert actual == expected, actual + " != expected " + expected
 
 def test_website_is_in_context():
     expected = "It worked."
