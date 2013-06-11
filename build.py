@@ -169,4 +169,7 @@ extra_options = [
         make_option('--python', action="store", dest="python", default="python"),
         ]
 
-main(extra_options=extra_options, default='show_targets')
+main( extra_options=extra_options
+    , default='show_targets'
+    , ignoreprefix="python"  # workaround for gh190
+     )
