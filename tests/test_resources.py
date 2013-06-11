@@ -118,13 +118,6 @@ def test_exception_location_preserved_for_response_raised_in_page_2():
     except Response, response: actual = response.whence_raised()
     assert actual == expected, actual
 
-def test_exception_location_preserved_for_response_raised_under_page_3():
-    # https://github.com/gittip/aspen-python/issues/153
-    expected = ('http/mapping.py', 25)
-    try: check("[-----]\n%(missing_variable)s")
-    except Response, response: actual = response.whence_raised()
-    assert actual == expected, actual + " != expected " + expected
-
 def test_website_is_in_context():
     expected = "It worked."
     actual = check("""
