@@ -36,11 +36,6 @@ def _typecast(key, value):
             value = int(value)
         except ValueError:
             raise Response(404)
-    else:                       # otherwise it's URL-quoted ASCII
-        try:
-            value = value.decode('ASCII')
-        except UnicodeDecodeError:
-            raise Response(400)
     debug(lambda: "typecasted " + key + ", " + repr(value))
     return key, value
 
