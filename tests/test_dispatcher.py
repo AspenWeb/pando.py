@@ -201,7 +201,7 @@ def test_virtual_path_sets_request_path():
 
 def test_virtual_path_sets_unicode_request_path():
     mk(('%bar/foo.html', "Greetings, program!"))
-    expected = {'bar': [u'blah']}
+    expected = {'bar': [u'\u2603']}
     actual = check_virtual_paths('/%E2%98%83/foo.html').line.uri.path
     assert actual == expected, actual
 
