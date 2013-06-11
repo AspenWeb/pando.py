@@ -4,6 +4,7 @@ import mimetypes
 import os
 
 from aspen import Response
+from aspen.utils import typecheck
 from backcompat import namedtuple
 
 def debug_noop(*args, **kwargs):
@@ -25,8 +26,9 @@ def splitext(name):
 
 
 def _typecast(key, value):
-    """Given two strings, return a string, and an int or string.
+    """Given two unicodes, return a unicode, and an int or unicode.
     """
+    typecheck(key, unicode, value, unicode)
     debug(lambda: "typecasting " + key + ", " + value)
     if key.endswith('.int'):    # you can typecast to int
         key = key[:-4]
