@@ -1,8 +1,7 @@
-# deprecated in favor of build.py
+# pass-through to build.py
 
 show_targets %:
-	@echo "make is deprecated. Trying 'python build.py $@'"...
+	@echo "Passing through to 'python build.py $@'"...
 	@python build.py $@ || python build.py
 
 .PHONY: show_targets
-
