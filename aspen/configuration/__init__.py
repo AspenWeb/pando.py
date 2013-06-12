@@ -7,6 +7,7 @@ import os
 import socket
 import sys
 import traceback
+import pkg_resources
 
 import aspen
 import aspen.logging
@@ -74,7 +75,7 @@ KNOBS = \
     , 'list_directories':   (False, parse.yes_no)
     , 'media_type_default': ('text/plain', parse.media_type)
     , 'media_type_json':    ('application/json', parse.media_type)
-    , 'renderer_default':   ('tornado', parse.renderer)
+    , 'renderer_default':   ('stdlib_percent', parse.renderer)
     , 'show_tracebacks':    (False, parse.yes_no)
      }
 
@@ -289,6 +290,9 @@ class Configurable(object):
                 err.info = sys.exc_info()
             self.renderer_factories[name] = make_renderer
 
+        for entrypoint in pkg_resources.iter_entry_points(group='aspen.renderers'):
+            self.renderer_factories[entrypoint.name] = entrypoint.load()
+
         default_renderer = self.renderer_factories[self.renderer_default]
         if isinstance(default_renderer, ImportError):
             msg = "\033[1;31mImportError loading the default renderer, %s:\033[0m"
@@ -324,19 +328,30 @@ class Configurable(object):
             mimetypes.init()
 
         # network_engine
-        try:
-            capture = {}
-            python_syntax = 'from aspen.network_engines.%s_ import Engine'
-            exec python_syntax % self.network_engine in capture
-            Engine = capture['Engine']
-        except ImportError:
-            # ANSI colors:
-            #   http://stackoverflow.com/questions/287871/
-            #   http://en.wikipedia.org/wiki/ANSI_escape_code#CSI_codes
-            #   XXX consider http://pypi.python.org/pypi/colorama
-            msg = "\033[1;31mImportError loading the %s network engine:\033[0m"
-            aspen.log_dammit(msg % self.network_engine)
-            raise
+
+        ## Load modules
+        ENGINES = {}
+        for entrypoint in pkg_resources.iter_entry_points(group='aspen.network_engines'):
+            ENGINES[entrypoint.name] = entrypoint.load()
+        
+        if self.network_engine in ENGINES:
+            # found in a module
+            Engine = ENGINES[self.network_engine].Engine
+        else:
+            # look for a built-in one
+            try:
+                capture = {}
+                python_syntax = 'from aspen.network_engines.%s_ import Engine'
+                exec python_syntax % self.network_engine in capture
+                Engine = capture['Engine']
+            except ImportError:
+                # ANSI colors:
+                #   http://stackoverflow.com/questions/287871/
+                #   http://en.wikipedia.org/wiki/ANSI_escape_code#CSI_codes
+                #   XXX consider http://pypi.python.org/pypi/colorama
+                msg = "\033[1;31mImportError loading the %s network engine:\033[0m"
+                aspen.log_dammit(msg % self.network_engine)
+                raise
         self.network_engine = Engine(self.network_engine, self)
 
         # network_address, network_sockfam, network_port

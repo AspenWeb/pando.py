@@ -3,13 +3,14 @@ from aspen.resources.pagination import Page
 from aspen.resources.negotiated_resource import NegotiatedResource
 from aspen.testing import assert_raises, attach_teardown, handle, mk, StubRequest
 from aspen.website import Website
-from aspen.renderers.tornado import Factory as TornadoFactory
+from aspen.renderers.stdlib_template import Factory as TemplateFactory
+from aspen.renderers.stdlib_percent import Factory as PercentFactory
 
 
 def get(**_kw):
     kw = dict( website = Website([])
              , fs = ''
-             , raw = '[---]\n[---] text/plain via tornado\n'
+             , raw = '[---]\n[---] text/plain via stdlib_template\n'
              , media_type = ''
               )
     kw.update(_kw)
@@ -19,7 +20,7 @@ def get(**_kw):
 def test_negotiated_resource_is_instantiable():
     website = Website([])
     fs = ''
-    raw = '[---]\n[---] text/plain via tornado\n'
+    raw = '[---]\n[---] text/plain via stdlib_template\n'
     media_type = ''
     actual = NegotiatedResource(website, fs, raw, media_type).__class__
     assert actual is NegotiatedResource, actual
@@ -44,32 +45,32 @@ def test_compile_page_compiles_page():
 # _parse_specline
 
 def test_parse_specline_parses_specline():
-    factory, media_type = get()._parse_specline('media/type via tornado')
+    factory, media_type = get()._parse_specline('media/type via stdlib_template')
     actual = (factory.__class__, media_type)
-    assert actual == (TornadoFactory, 'media/type'), actual
+    assert actual == (TemplateFactory, 'media/type'), actual
 
 def test_parse_specline_doesnt_require_renderer():
     factory, media_type = get()._parse_specline('media/type')
     actual = (factory.__class__, media_type)
-    assert actual == (TornadoFactory, 'media/type'), actual
+    assert actual == (PercentFactory, 'media/type') 
 
 def test_parse_specline_requires_media_type():
-    assert_raises(SyntaxError, get()._parse_specline, 'via tornado')
+    assert_raises(SyntaxError, get()._parse_specline, 'via stdlib_template')
 
 def test_parse_specline_raises_SyntaxError_if_renderer_is_malformed():
-    assert_raises(SyntaxError, get()._parse_specline, 'tornado media/type')
+    assert_raises(SyntaxError, get()._parse_specline, 'stdlib_template media/type')
 
 def test_parse_specline_raises_SyntaxError_if_media_type_is_malformed():
-    assert_raises(SyntaxError, get()._parse_specline, 'media-type via tornado')
+    assert_raises(SyntaxError, get()._parse_specline, 'media-type via stdlib_template')
 
 def test_parse_specline_cant_mistake_malformed_media_type_for_renderer():
     assert_raises(SyntaxError, get()._parse_specline, 'media-type')
 
 def test_parse_specline_cant_mistake_malformed_renderer_for_media_type():
-    assert_raises(SyntaxError, get()._parse_specline, 'tornado')
+    assert_raises(SyntaxError, get()._parse_specline, 'stdlib_template')
 
 def test_parse_specline_enforces_order():
-    assert_raises(SyntaxError, get()._parse_specline, 'tornado via media/type')
+    assert_raises(SyntaxError, get()._parse_specline, 'stdlib_template via media/type')
 
 def test_parse_specline_obeys_default_by_media_type():
     resource = get()
@@ -223,9 +224,9 @@ INDIRECTLY_NEGOTIATED_RESOURCE = """\
 [-------]
 foo = "program"
 [-------] text/html
-<h1>Greetings, {{ foo }}!</h1>
+<h1>Greetings, %(foo)s!</h1>
 [-------] text/plain
-Greetings, {{ foo }}!"""
+Greetings, %(foo)s!"""
 
 def test_indirect_negotiation_sets_media_type():
     mk(('/foo.spt', INDIRECTLY_NEGOTIATED_RESOURCE))
@@ -250,10 +251,11 @@ def test_indirect_negotiation_with_unsupported_media_type_is_404():
 
 INDIRECTLY_NEGOTIATED_VIRTUAL_RESOURCE = """\
 [-------]
+foo = path['foo']
 [-------] text/html
-<h1>Greetings, {{ path['foo'] }}!</h1>
+<h1>Greetings, %(foo)s!</h1>
 [-------] text/plain
-Greetings, {{ path['foo'] }}!"""
+Greetings, %(foo)s!"""
 
 
 def test_negotiated_inside_virtual_path():
@@ -265,12 +267,13 @@ def test_negotiated_inside_virtual_path():
 
 INDIRECTLY_NEGOTIATED_VIRTUAL_RESOURCE_STARTYPE = """\
 [-------]
+foo = path['foo']
 [-------] */*
-Unknown request type, {{ path['foo'] }}!
+Unknown request type, %(foo)s!
 [-------] text/html
-<h1>Greetings, {{ path['foo'] }}!</h1>
+<h1>Greetings, %(foo)s!</h1>
 [-------] text/*
-Greetings, {{ path['foo'] }}!"""
+Greetings, %(foo)s!"""
 
 def test_negotiated_inside_virtual_path_with_startypes_present():
     mk(('/%foo/bar.spt', INDIRECTLY_NEGOTIATED_VIRTUAL_RESOURCE_STARTYPE ))

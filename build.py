@@ -6,21 +6,21 @@ from fabricate import main, run, shell, autoclean
 
 # Core Executables
 # ================
-# We satisfy dependencies using local tarballs, to ensure that we can build 
+# We satisfy dependencies using local tarballs, to ensure that we can build
 # without a network connection. They're kept in our repo in ./vendor.
 
-ASPEN_DEPS = [ 'Cheroot-4.0.0beta.tar.gz', 'mimeparse-0.1.3.tar.gz', 'tornado-1.2.1.tar.gz', 'first-2.0.0.tar.gz' ]
+ASPEN_DEPS = [ 'Cheroot-4.0.0beta.tar.gz', 'mimeparse-0.1.3.tar.gz', 'first-2.0.0.tar.gz' ]
 
 TEST_DEPS = [ 'coverage-3.5.3.tar.gz', 'nose-1.1.2.tar.gz', 'nosexcover-1.0.7.tar.gz', 'snot-0.6.tar.gz' ]
 
 def _virt(cmd, envdir='env'):
     return os.path.join(envdir, 'bin', cmd)
 
-ENV_ARGS = [  
-            './vendor/virtualenv-1.7.1.2.py', 
+ENV_ARGS = [
+            './vendor/virtualenv-1.7.1.2.py',
             '--distribute',
             '--unzip-setuptools',
-            '--prompt="[aspen] "',
+            '--prompt=[aspen] ',
             '--never-download',
             '--extra-search-dir=./vendor/',
             ]
@@ -79,7 +79,7 @@ def clean_smoke():
 def test():
     aspen()
     dev()
-    shell(_virt('nosetests'), '-sx', 'tests/', ignore_status=True, silent=False)
+    shell(_virt('nosetests'), '-s', 'tests/', ignore_status=True, silent=False)
 
 def pylint():
     _env()
@@ -90,9 +90,9 @@ def analyse():
     pylint()
     dev()
     aspen()
-    run(_virt('nosetests'), 
-            '--with-xcoverage', 
-            '--with-xunit', 'tests', 
+    run(_virt('nosetests'),
+            '--with-xcoverage',
+            '--with-xunit', 'tests',
             '--cover-package', 'aspen', ignore_status=True)
     print('done!')
 
@@ -124,7 +124,7 @@ def _jenv():
     _jython_home()
     jenv = dict(os.environ)
     jenv['PATH'] = os.path.join('.', 'jython_home', 'bin') + ':' + jenv['PATH']
-    args = [ 'jython' ] + ENV_ARGS + [ '--python=jython', 'jenv' ] 
+    args = [ 'jython' ] + ENV_ARGS + [ '--python=jython', 'jenv' ]
     run(*args, env=jenv)
 
 def clean_jenv():
@@ -159,14 +159,17 @@ def show_targets():
     pylint - run pylint on the source
     clean - remove all build artifacts
     clean_{env,jenv,smoke,test,jtest} - clean some build artifacts
-    
-    jython_test - install jython and run unit tests with code coverage. 
+
+    jython_test - install jython and run unit tests with code coverage.
                   (requires java)
     """)
     sys.exit()
 
-extra_options = [ 
+extra_options = [
         make_option('--python', action="store", dest="python", default="python"),
         ]
 
-main(extra_options=extra_options, default='show_targets')
+main( extra_options=extra_options
+    , default='show_targets'
+    , ignoreprefix="python"  # workaround for gh190
+     )

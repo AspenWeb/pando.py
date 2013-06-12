@@ -199,6 +199,12 @@ def test_virtual_path_sets_request_path():
     actual = check_virtual_paths('/blah/foo.html').line.uri.path
     assert actual == expected, actual
 
+def test_virtual_path_sets_unicode_request_path():
+    mk(('%bar/foo.html', "Greetings, program!"))
+    expected = {'bar': [u'\u2603']}
+    actual = check_virtual_paths('/%E2%98%83/foo.html').line.uri.path
+    assert actual == expected, actual
+
 def test_virtual_path_typecasts_to_int():
     mk(('%year.int/foo.html', "Greetings, program!"))
     expected = {'year': [1999]}
@@ -360,56 +366,49 @@ def test_trailing_on_virtual_paths():
 # Docs
 # ====
 
+GREETINGS_NAME_SPT = "[-----]\nname = path['name']\n[------]\nGreetings, %(name)s!"
+
 def test_virtual_path_docs_1():
-    mk(('%name/index.html.spt', "[------]\nGreetings, {{ path['name'] }}!"))
-    response = handle('/aspen/')
+    mk(('%name/index.html.spt', GREETINGS_NAME_SPT))
     expected = "Greetings, aspen!"
+    #import pdb; pdb.set_trace()
+    response = handle('/aspen/')
     actual = response.body
-    assert actual == expected, actual
+    assert actual == expected, repr(actual) + " from " + repr(response)
 
 def test_virtual_path_docs_2():
-    mk(('%name/index.html.spt', "[--------]\nGreetings, {{ path['name'] }}!"))
-    response = handle('/python/')
+    mk(('%name/index.html.spt', GREETINGS_NAME_SPT))
     expected = "Greetings, python!"
+    response = handle('/python/')
     actual = response.body
     assert actual == expected, actual
 
+NAME_LIKES_CHEESE_SPT = "name = path['name'].title()\ncheese = path['cheese']\n[---------]\n%(name)s likes %(cheese)s cheese."
+
 def test_virtual_path_docs_3():
-    mk( ( '%name/index.html.spt'
-        , "[---------]\nGreetings, {{ path['name'] }}!"
-         )
-      , ( '%name/%cheese.txt.spt'
-        , "[---------]\n{{ path['name'].title() }} likes {{ path['cheese'] }} cheese."
-         )
-       )
+    mk( ( '%name/index.html.spt', GREETINGS_NAME_SPT),
+        ( '%name/%cheese.txt.spt', NAME_LIKES_CHEESE_SPT)
+      )
     response = handle('/chad/cheddar.txt')
     expected = "Chad likes cheddar cheese."
     actual = response.body
     assert actual == expected, actual
 
 def test_virtual_path_docs_4():
-    mk( ( '%name/index.html.spt'
-        , "[---------]\nGreetings, {{ path['name'] }}!"
-         )
-      , ( '%name/%cheese.txt.spt'
-        , "{{ path['name'].title() }} likes {{ path['cheese'] }} cheese."
-         )
+    mk( ( '%name/index.html.spt', GREETINGS_NAME_SPT),
+        ( '%name/%cheese.txt.spt', NAME_LIKES_CHEESE_SPT)
        )
     response = handle('/chad/cheddar.txt/')
     expected = 404
     actual = response.code
     assert actual == expected, actual
 
+PARTY_LIKE_YEAR_SPT = "year = path['year']\n[----------]\nTonight we're going to party like it's %(year)s!"
+
 def test_virtual_path_docs_5():
-    mk( ( '%name/index.html.spt'
-        , "[----------]\nGreetings, {{ path['name'] }}!"
-         )
-      , ( '%name/%cheese.txt.spt'
-        , "{{ path['name'].title() }} likes {{ path['cheese'] }} cheese."
-         )
-      , ( '%year.int/index.html.spt'
-        , "[----------]\nTonight we're going to party like it's {{ path['year'] }}!"
-         )
+    mk( ( '%name/index.html.spt', GREETINGS_NAME_SPT),
+        ( '%name/%cheese.txt.spt', NAME_LIKES_CHEESE_SPT),
+        ( '%year.int/index.html.spt', PARTY_LIKE_YEAR_SPT)
        )
     response = handle('/1999/')
     expected = "Greetings, 1999!"
@@ -417,10 +416,7 @@ def test_virtual_path_docs_5():
     assert actual == expected, actual
 
 def test_virtual_path_docs_6():
-    mk( ( '%year.int/index.html.spt'
-        , "[----------]\nTonight we're going to party like it's {{ path['year'] }}!"
-         )
-       )
+    mk( ( '%year.int/index.html.spt', PARTY_LIKE_YEAR_SPT))
     response = handle('/1999/')
     expected = "Tonight we're going to party like it's 1999!"
     actual = response.body

@@ -28,7 +28,7 @@ from aspen.utils import typecheck
 from aspen.resources.pagination import parse_specline
 
 
-renderer_re = re.compile(r'[a-z0-9.-]+$')
+renderer_re = re.compile(r'[a-z0-9.-_]+$')
 media_type_re = re.compile(r'[A-Za-z0-9.+*-]+/[A-Za-z0-9.+*-]+$')
 
 

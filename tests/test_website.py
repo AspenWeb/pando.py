@@ -58,7 +58,7 @@ def test_autoindex_response_is_returned():
 def test_resources_can_import_from_dot_aspen():
     mk( '.aspen'
       , ('.aspen/foo.py', 'bar = "baz"')
-      , ('index.html.spt', "import foo\n[---]\nGreetings, {{ foo.bar }}!")
+      , ('index.html.spt', "from foo import bar\n[---]\nGreetings, %(bar)s!")
        )
     expected = "Greetings, baz!"
     project_root = os.path.join(FSFIX, '.aspen')

@@ -11,7 +11,7 @@ from aspen.website import Website
 from aspen.testing.fsfix import fix, attach_teardown, FSFIX, mk, teardown
 
 
-__all__ = ['assert_raises', 'attach_teardown', 'fix', 'teardown']
+__all__ = ['assert_raises', 'attach_teardown', 'fix', 'teardown', 'handle']
 
 
 class Stub:

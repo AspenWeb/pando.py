@@ -14,12 +14,18 @@ Response, json, is_callable, log, log_dammit
 dist = pkg_resources.get_distribution('aspen')
 __version__ = dist.version
 WINDOWS = sys.platform[:3] == 'win'
-NETWORK_ENGINES = ['cheroot', 'cherrypy', 'diesel', 'eventlet', 'gevent',
-                   'pants', 'rocket', 'tornado', 'twisted']
-RENDERERS = ['jinja2',
-            'pystache',
-            'tornado',
-            'stdlib_format',
-            'stdlib_percent',
-            'stdlib_template'
+NETWORK_ENGINES = ['cheroot']
+
+for entrypoint in pkg_resources.iter_entry_points(group='aspen.network_engines'):
+    NETWORK_ENGINES.append(entrypoint.name)
+
+RENDERERS = [ 'stdlib_format'
+            , 'stdlib_percent'
+            , 'stdlib_template'
             ]
+
+for entrypoint in pkg_resources.iter_entry_points(group='aspen.renderers'):
+    RENDERERS.append(entrypoint.name)
+
+RENDERERS.sort()
+
