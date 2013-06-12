@@ -291,7 +291,9 @@ class Configurable(object):
             self.renderer_factories[name] = make_renderer
 
         for entrypoint in pkg_resources.iter_entry_points(group='aspen.renderers'):
-            self.renderer_factories[entrypoint.name] = entrypoint.load()
+            render_module = entrypoint.load()
+            self.renderer_factories[entrypoint.name] = render_module.Factory(self)
+	    aspen.log_dammit("Found plugin for renderer '%s'" % entrypoint.name) 
 
         default_renderer = self.renderer_factories[self.renderer_default]
         if isinstance(default_renderer, ImportError):

@@ -10,5 +10,7 @@ opts['show_ga'] = parse.yes_no(os.environ.get( 'ASPEN_IO_SHOW_GA'
 opts['base'] = ''
 opts['version'] = open('../version.txt').read()[:-len('-dev')]
 
+# no idea why this doesn't work
+#website.renderer_default = 'tornado'
 
 website.hooks.inbound_early = [inbound]
