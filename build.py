@@ -60,7 +60,8 @@ def clean():
 
 def docs():
     aspen()
-    shell(_virt('aspen'), '-a:5370', '-wdoc', '-pdoc/.aspen', '--changes_reload=1')
+    run(_virt('pip'), 'install', 'aspen-tornado')
+    shell(_virt('aspen'), '-a:5370', '-wdoc', '-pdoc/.aspen', '--changes_reload=1', silent=False)
 
 smoke_dir = 'smoke-test'
 def smoke():
