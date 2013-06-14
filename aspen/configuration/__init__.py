@@ -1,6 +1,5 @@
 """Define configuration objects.
 """
-import collections
 import errno
 import mimetypes
 import os
@@ -8,6 +7,7 @@ import socket
 import sys
 import traceback
 import pkg_resources
+from collections import defaultdict
 
 import aspen
 import aspen.logging
@@ -17,34 +17,6 @@ from aspen.configuration import parse
 from aspen.configuration.exceptions import ConfigurationError
 from aspen.configuration.options import OptionParser, DEFAULT
 from aspen.utils import ascii_dammit
-
-
-# Nicer defaultdict
-# =================
-
-NO_DEFAULT = object()
-
-
-class NicerDefaultDict(collections.defaultdict):
-    """Subclass to support .default assignment.
-    """
-
-    __default = ''
-    def _get_default(self, name):
-        """property getter for default property"""
-        return self.__default
-    def _set_default(self, value):
-        """property setter for default property"""
-        self.default_factory = lambda: value
-        self.__default = value
-    default = property(_get_default, _set_default)
-
-
-    def get(self, name, default=NO_DEFAULT):
-        if default is NO_DEFAULT:
-            default = self.default
-        collections.defaultdict.get(self, name, default)
-
 
 # Defaults
 # ========
@@ -79,6 +51,7 @@ KNOBS = \
     , 'show_tracebacks':    (False, parse.yes_no)
      }
 
+DEFAULT_CONFIG_FILE = 'configure-aspen.py'
 
 # Configurable
 # ============
@@ -238,7 +211,6 @@ class Configurable(object):
         if self.project_root is None:
             aspen.log_dammit("project_root not configured (no template bases, "
                              "etc.).")
-            configure_aspen_py = None
         else:
             # canonicalize it
             if not os.path.isabs(self.project_root):
@@ -259,7 +231,7 @@ class Configurable(object):
 
             # configure-aspen.py
             configure_aspen_py = os.path.join( self.project_root
-                                             , 'configure-aspen.py'
+                                             , DEFAULT_CONFIG_FILE
                                               )
             self.configuration_scripts.append(configure_aspen_py)  # last word
 
@@ -276,9 +248,9 @@ class Configurable(object):
         self.www_root = os.path.realpath(self.www_root)
         os.chdir(self.www_root)
 
-        # renderers
+        # load renderers
         self.renderer_factories = {}
-        for name in aspen.RENDERERS:
+        for name in aspen.BUILTIN_RENDERERS:
             # Pre-populate renderers so we can report on ImportErrors early
             try:
                 capture = {}
@@ -293,31 +265,9 @@ class Configurable(object):
         for entrypoint in pkg_resources.iter_entry_points(group='aspen.renderers'):
             render_module = entrypoint.load()
             self.renderer_factories[entrypoint.name] = render_module.Factory(self)
-	    aspen.log_dammit("Found plugin for renderer '%s'" % entrypoint.name) 
+            aspen.log_dammit("Found plugin for renderer '%s'" % entrypoint.name) 
 
-        default_renderer = self.renderer_factories[self.renderer_default]
-        if isinstance(default_renderer, ImportError):
-            msg = "\033[1;31mImportError loading the default renderer, %s:\033[0m"
-            aspen.log_dammit(msg % self.renderer_default)
-            sys.excepthook(*default_renderer.info)
-            raise default_renderer
-
-        aspen.log_dammit("Renderers (*ed are unavailable, CAPS is default):")
-        width = max(map(len, self.renderer_factories))
-        for name, factory in self.renderer_factories.items():
-            star = " "
-            if isinstance(factory, ImportError):
-                star = "*"
-                error = "ImportError: " + factory.args[0]
-            else:
-                error = ""
-            if name == self.renderer_default:
-                name = name.upper()
-            name = name.ljust(width + 2)
-            aspen.log_dammit(" %s%s%s" % (star, name, error))
-
-        self.default_renderers_by_media_type = NicerDefaultDict()
-        self.default_renderers_by_media_type.default = self.renderer_default
+        self.default_renderers_by_media_type = defaultdict(lambda: self.renderer_default) 
 
         # mime.types
         # ==========
@@ -390,10 +340,39 @@ class Configurable(object):
         self.reset_outbound()
         self.reset_shutdown()
 
+        self.run_config_scripts()
+        self.show_renderers()
 
+    def show_renderers(self):
+        aspen.log_dammit("Renderers (*ed are unavailable, CAPS is default):")
+        width = max(map(len, self.renderer_factories))
+        for name, factory in self.renderer_factories.items():
+            star = " "
+            if isinstance(factory, ImportError):
+                star = "*"
+                error = "ImportError: " + factory.args[0]
+            else:
+                error = ""
+            if name == self.renderer_default:
+                name = name.upper()
+            name = name.ljust(width + 2)
+            aspen.log_dammit(" %s%s%s" % (star, name, error))
+
+        default_renderer = self.renderer_factories[self.renderer_default]
+        if isinstance(default_renderer, ImportError):
+            msg = "\033[1;31mImportError loading the default renderer, %s:\033[0m"
+            aspen.log_dammit(msg % self.renderer_default)
+            sys.excepthook(*default_renderer.info)
+            raise default_renderer
+
+
+    def run_config_scripts(self):
         # Finally, exec any configuration scripts.
         # ========================================
         # The user gets self as 'website' inside their configuration scripts.
+        default_cfg_filename = None
+	if self.project_root is not None:
+            default_cfg_filename = os.path.join(self.project_root, DEFAULT_CONFIG_FILE)
 
         for filepath in self.configuration_scripts:
             if not filepath.startswith(os.sep):
@@ -409,26 +388,34 @@ class Configurable(object):
                 # I was checking os.path.isfile for these, but then we have a
                 # race condition that smells to me like a potential security
                 # vulnerability.
+
+		## determine if it's a default configscript or a specified one
+                cfgtype = "configuration"
+		if filepath == default_cfg_filename:
+		    cfgtype = "default " + cfgtype
+		## pick the right error mesage
                 if err.errno == errno.ENOENT:
-                    msg = ("The configuration script %s doesn't seem to "
-                           "exist.")
+                    msg = ("The %s script %s doesn't seem to exist.")
                 elif err.errno == errno.EACCES:
                     msg = ("It appears that you don't have permission to read "
-                           "the configuration script %s.")
+                           "the %s script %s.")
                 else:
-                    msg = ("There was a problem reading the configuration "
-                           "script %s:")
+                    msg = ("There was a problem reading the %s script %s:")
                     msg += os.sep + traceback.format_exc()
-                if configure_aspen_py is not None:
-                    if filepath == configure_aspen_py:
-                        # Special-case this magically-named configuration file.
-                        aspen.log("Default configuration script not found: %s."
-                                  % filepath)
-                    else:
-                        raise ConfigurationError(msg % filepath)
-                # XXX smelly ... bug here? second else pls?
+                ## do message-string substitutions
+		msg = msg % (cfgtype, filepath)
+		## output the message
+		if not "default" in cfgtype:
+                   # if you specify a config file, it's an error if there's a problem
+                   raise ConfigurationError(msg)
+	        else:
+                   # problems with default config files are okay, but get logged
+		   aspen.log(msg)
             else:
+                aspen.log_dammit("Loading configuration file '{}' (possibly changing settings)".format(filepath))
                 execution.if_changes(filepath)
+
+
 
 
     # Override these in subclasses to implement default logic.

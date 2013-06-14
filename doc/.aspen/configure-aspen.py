@@ -11,6 +11,7 @@ opts['base'] = ''
 opts['version'] = open('../version.txt').read()[:-len('-dev')]
 
 # no idea why this doesn't work
-#website.renderer_default = 'tornado'
+website.renderer_default = 'tornado'
+open('/tmp/debugout','a').write('doccnf:' + website.renderer_default + '\n')
 
 website.hooks.inbound_early = [inbound]

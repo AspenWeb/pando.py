@@ -62,7 +62,7 @@ def docs():
     aspen()
     run(_virt('pip'), 'install', 'aspen-tornado')
     run(_virt('pip'), 'install', 'pygments')
-    shell(_virt('aspen'), '-a:5370', '-wdoc', '-pdoc/.aspen', '--changes_reload=1', '--renderer_default=tornado', silent=False)
+    shell(_virt('aspen'), '-a:5370', '-wdoc', '-pdoc/.aspen', '--changes_reload=1', silent=False)
 
 smoke_dir = 'smoke-test'
 def smoke():
