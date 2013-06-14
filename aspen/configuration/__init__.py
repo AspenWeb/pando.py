@@ -412,7 +412,7 @@ class Configurable(object):
                    # problems with default config files are okay, but get logged
 		   aspen.log(msg)
             else:
-                aspen.log_dammit("Loading configuration file '{}' (possibly changing settings)".format(filepath))
+                aspen.log_dammit("Loading configuration file '%s' (possibly changing settings)" % filepath)
                 execution.if_changes(filepath)
 
 
