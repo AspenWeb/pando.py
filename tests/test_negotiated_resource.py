@@ -83,7 +83,7 @@ def test_parse_specline_obeys_default_by_media_type():
 
 def test_parse_specline_obeys_default_by_media_type_default():
     resource = get()
-    resource.website.default_renderers_by_media_type.default = 'glubber'
+    resource.website.default_renderers_by_media_type.default_factory = lambda: 'glubber'
     err = assert_raises(ValueError, resource._parse_specline, 'media/type')
     msg = err.args[0]
     assert msg.startswith("Unknown renderer for media/type: glubber."), msg

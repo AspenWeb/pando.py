@@ -4,8 +4,10 @@ import socket
 import aspen
 from aspen.configuration import Configurable, ConfigurationError, parse
 from aspen.configuration.options import OptionParser, DEFAULT
-from aspen.testing import assert_raises
+from aspen.testing import assert_raises, StubRequest, fix
 from aspen.testing.fsfix import attach_teardown, FSFIX, mk
+#from aspen.testing import handle
+from aspen.website import Website
 
 
 def test_everything_defaults_to_empty_string():
@@ -115,7 +117,29 @@ def test_configuration_scripts_works_at_all():
     actual = opts.configuration_scripts
     assert actual == expected, actual
 
+def test_configuration_script_can_set_renderer_default():
+    CONFIG = """
+website.renderer_default="stdlib_format"
+    """
+    SIMPLATE = """
+name="program"
+[----]
+Greetings, {name}!
+    """
+    mk(
+       ('.aspen/configure-aspen.py', CONFIG),
+       ('index.html.spt', SIMPLATE)
+      )
+    w = Website(['--www_root', FSFIX, '-p', fix('.aspen') ])
+    request = StubRequest('/')
+    request.website = w
+    response = w.handle_safely(request)
+    actual = response.body.strip()
+    expected = 'Greetings, program!'
+    assert actual == expected, actual
 
+
+# Tests of parsing perversities
 
 def test_parse_charset_good():
     actual = parse.charset(u'UTF-8')
