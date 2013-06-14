@@ -317,8 +317,8 @@ homepage = True
         <h2>Continuous Integration</h2>
 
         <ul>
-            <li><a href="http://travis-ci.org/gittip/aspen">Travis CI</a>&mdash;
-                <img id="travis" src="https://secure.travis-ci.org/gittip/aspen.png?branch=master" alt="Build Status" /></li>
+            <li><a href="http://travis-ci.org/gittip/aspen-python">Travis CI</a>&mdash;
+                <img id="travis" src="https://secure.travis-ci.org/gittip/aspen-python.png?branch=master" alt="Build Status" /></li>
             <li><a href="https://aspen.ci.cloudbees.com/">Jenkins</a> (registration required)
                 <!-- Requires reg?! img id="jenkins" src="https://aspen.ci.cloudbees.com/job/aspen/badge/icon" alt="Build Status" /--></li>
         </ul>
