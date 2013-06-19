@@ -1,23 +1,4 @@
 """Implements rendered resources.
-
-Problems with tornado.template:
-
-    - no option to fail silently
-    - Loader cache doesn't account for mtime
-    - Is this a bug?
-
-        {{ foo }}
-        {% for foo in [1,2,3] %}
-        {% end %}
-
-    - can't do this:
-
-        {% if ... %}
-            {% extends %}
-        {% else %}
-            {% extends %}
-        {% end %}
-
 """
 from aspen.resources.negotiated_resource import NegotiatedResource
 from aspen.utils import typecheck

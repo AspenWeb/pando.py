@@ -4,9 +4,25 @@ from operator import itemgetter as _itemgetter
 from keyword import iskeyword as _iskeyword
 import sys as _sys
 
+try:
+    from hashlib import md5
+except ImportError:
+    from md5 import new as md5
+
+try:                # Python >= 2.6
+    from collections import Callable
+    def is_callable(obj):
+        return isinstance(obj, Callable)
+except ImportError: # Python < 2.6
+    from operator import isCallable as is_callable
+
+try:                # 2
+    from Cookie import CookieError, SimpleCookie
+except ImportError: # 3
+    from http.cookies import CookieError, SimpleCookie
 
 
-def namedtuple(typename, field_names, verbose=False, rename=False):
+def _namedtuple(typename, field_names, verbose=False, rename=False):
     """Returns a new subclass of tuple with named fields.
 
     >>> Point = namedtuple('Point', 'x y')
@@ -144,5 +160,10 @@ def namedtuple_test():
     import doctest
     TestResults = namedtuple('TestResults', 'failed attempted')
     print TestResults(*doctest.testmod())
+
+try:                    # python2.6+
+    from collections import namedtuple
+except ImportError:     # < python2.6
+    namedtuple = _namedtuple
 
 

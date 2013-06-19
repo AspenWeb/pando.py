@@ -85,10 +85,44 @@ dirs.sort()
 files.sort()
 others.sort()
 
-[----------------------------------------]
+updir = "" if fspath == request.website.www_root else """
+            <tr>
+                <td class="odd"><a href="../">../</a></td>
+                <td>&nbsp;</td>
+                <td>&nbsp;</td>
+            </tr>
+"""
+
+listdir = ""
+
+for el in (dirs, files, others):
+    for stats, _fspath, _urlpath, name in el:
+        listdir += """
+            <tr>\n"""
+        if os.path.isdir(_fspath):
+            listdir += """
+                <td class="dir"><a href="%(_urlpath)s/">%(name)s/</a></td>
+                <td>&nbsp;</td>\n""" % locals()
+        elif os.path.isfile(_fspath):
+            statsize = _get_size(stats)
+            listdir += """
+                <td class="file"><a href="%(_urlpath)s">%(name)s</a></td>
+                <td class="size">%(statsize)s</td>\n""" % locals()
+        else:
+            listdir += """
+                <td class="other">%(name)s</li>
+                <td>&nbsp;</td>\n""" % locals()
+        stattime = _get_time(stats)
+        listdir += """
+        <td class="mtime">%(stattime)s</td>
+        </tr>\n""" % locals()
+
+aspen_version = aspen.__version__
+
+[----------------------------------------] via stdlib_percent
 <html>
     <head>
-        <title>{{ title }}</title>
+        <title>%(title)s</title>
         <style>
             body {font-family: "Trebuchet MS", sans-serif;}
             table {font-family: monospace;}
@@ -102,7 +136,7 @@ others.sort()
         </style>
     </head>
     <body>
-        <h1>{{ title }}</h1>
+        <h1>%(title)s</h1>
         <table>
             <tr>
                 <th class="name">Name</th>
@@ -110,36 +144,14 @@ others.sort()
                 <th>Last Modified</th>
             </tr>
 
-            {% if fspath != request.website.www_root %}
-            <tr>
-                <td class="odd"><a href="../">../</a></td>
-                <td>&nbsp;</td>
-                <td>&nbsp;</td>
-            </tr>
-            {% end %}
+            %(updir)s
 
-            {% for el in (dirs, files, others) %}
-            {% for stats, _fspath, _urlpath, name in el %}
-            <tr>
-                {% if os.path.isdir(_fspath) %}
-                <td class="dir"><a href="{{ _urlpath }}/">{{ name }}/</a></td>
-                <td>&nbsp;</td>
-                {% elif os.path.isfile(_fspath) %}
-                <td class="file"><a href="{{ _urlpath }}">{{ name }}</a></td>
-                <td class="size">{{ _get_size(stats) }}</td>
-                {% else %}
-                <td class="other">{{ name }}</li>
-                <td>&nbsp;</td>
-                {% end %}
-                <td class="mtime">{{ _get_time(stats) }}</td>
-            </tr>
-            {% end %}
-            {% end %}
+            %(listdir)s
         </table>
         <hr />
         <div id="footer">
             This index was brought to you by <a href="http://aspen.io/"> Aspen
-                v{{ aspen.__version__ }}</a>.
+                v%(aspen_version)s</a>.
         </div>
     </body>
 </html>

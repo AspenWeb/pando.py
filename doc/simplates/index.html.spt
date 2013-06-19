@@ -50,7 +50,7 @@ imports and constants. The second is run once for each request.</p>
 response   a response object</pre>
 
 <p>The <a href="rendered/">template page</a> uses the template language from
-    Tornado by default, though others are available.</p>
+    python by default, though others are available.</p>
 
 <p>All simplate pages are cached in a compiled state. This cache is invalidated
 whenever the underlying file changes, so simplate changes are always

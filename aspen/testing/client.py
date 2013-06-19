@@ -90,7 +90,7 @@ class TestClient(object):
 
     def perform_request(self, request, cookie_info):
         request.website = self.test_website
-        self.add_cookie_info(request, cookie_info)
+        self.add_cookie_info(request, **(cookie_info or {}))
         response = self.test_website.handle_safely(request)
         if response.headers.cookie:
             self.cookies.update(response.headers.cookie)

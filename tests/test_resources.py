@@ -3,9 +3,7 @@ from textwrap import dedent
 from aspen import Response
 from aspen.testing import assert_raises, check
 from aspen.testing.fsfix import attach_teardown
-from tornado.template import Template
 from aspen.resources.pagination import split
-
 
 
 # Tests
@@ -36,40 +34,20 @@ def test_charset_dynamic_barely_working():
 
 def test_resource_pages_work():
     expected = "Greetings, bar!"
-    actual = check("foo = 'bar'\n[--------]\nGreetings, {{ foo }}!")
+    actual = check("foo = 'bar'\n[--------]\nGreetings, %(foo)s!")
     assert actual == expected, actual
-
-def test_resource_templating_set():
-    expected = "1, 2, 3, 4"
-    actual = check(dedent("""
-        foo = [1,2,3,4]
-        nfoo = len(foo)
-
-        [----------------]
-        {% set i = 0 %}
-        {% for x in foo %}{% set i += 1 %}{{ x }}{% if i < nfoo %}, {% end %}{% end %}
-            """)).strip()
-    assert actual == expected, actual
-
-def test_tornado_utf8_works_without_whitespace():
-    expected = unichr(1758).encode('utf8')
-    actual = Template(u"{{ text }}").generate(text=unichr(1758))
-    assert actual == expected, actual
-
-#def test_tornado_utf8_breaks_with_whitespace():
-#    template = Template(u" {{ text }}")
-#    assert_raises(UnicodeDecodeError, template.generate, text=unichr(1758))
 
 def test_utf8():
     expected = unichr(1758).encode('utf8')
+    expected = unichr(1758)
     actual = check("""
 "#empty first page"
 [------------------]
 text = unichr(1758)
 [------------------]
-{{ text }}
+%(text)s
     """).strip()
-    assert actual == expected, actual
+    assert actual == expected, repr(actual) + " != expected " + repr(expected)
 
 def test_resources_dont_leak_whitespace():
     """This aims to resolve https://github.com/whit537/aspen/issues/8.
@@ -78,7 +56,7 @@ def test_resources_dont_leak_whitespace():
         [--------------]
         foo = [1,2,3,4]
         [--------------]
-        {{repr(foo)}}"""))
+        %(foo)r"""))
     expected = "[1, 2, 3, 4]"
     assert actual == expected, repr(actual)
 
@@ -88,9 +66,9 @@ def test_negotiated_resource_doesnt_break():
 [-----------]
 foo = 'bar'
 [-----------] text/plain
-Greetings, {{ foo }}!
+Greetings, %(foo)s!
 [-----------] text/html
-<h1>Greetings, {{ foo }}!</h1>
+<h1>Greetings, %(foo)s!</h1>
 """
 , filename='index.spt')
     assert actual == expected, actual
@@ -103,8 +81,9 @@ Greetings, {{ foo }}!
 eg = """
 latinate = chr(181).decode('latin1')
 response.headers['Content-Type'] = 'text/plain; charset=latin1'
+r = latinate.encode('latin1')
 [-------------------------------------]
-{{ latinate.encode('latin1') }}"""
+ %(r)s"""
 
 def test_content_type_is_right_in_template_doc_unicode_example():
     response = check(eg, body=False)
@@ -132,16 +111,10 @@ def test_raise_response_works():
     actual = response.code
     assert actual == expected, actual
 
-def test_location_preserved_for_response_raised_in_page_2():
-    # https://github.com/zetaweb/aspen/issues/153
+def test_exception_location_preserved_for_response_raised_in_page_2():
+    # https://github.com/gittip/aspen-python/issues/153
     expected = ('index.html.spt', 1)
     try: check("from aspen import Response; raise Response(404)\n[---]\n")
-    except Response, response: actual = response.whence_raised()
-    assert actual == expected, actual
-
-def test_location_preserved_for_response_raised_under_page_3():
-    expected = ('http/mapping.py', 25)
-    try: check("[-----]\n{{ request.body['missing'] }}")
     except Response, response: actual = response.whence_raised()
     assert actual == expected, actual
 
@@ -170,7 +143,7 @@ def test_templating_without_script_works():
     # I want a slash on the front of index.html but it's an artifact of
     # StubRequest that we don't get one.
 
-    actual = check("{{ request.line.uri.path.raw }}", response=response)
+    actual = check("[-----] via stdlib_format\n{request.line.uri.path.raw}", response=response)
     assert actual == expected, actual
 
 

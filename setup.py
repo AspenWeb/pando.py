@@ -13,7 +13,6 @@ classifiers = [ 'Development Status :: 4 - Beta'
               , 'Operating System :: MacOS :: MacOS X'
               , 'Operating System :: Microsoft :: Windows'
               , 'Operating System :: POSIX'
-              , 'Programming Language :: Python :: 2.5'
               , 'Programming Language :: Python :: 2.6'
               , 'Programming Language :: Python :: 2.7'
               , 'Programming Language :: Python :: Implementation :: CPython'
@@ -28,7 +27,7 @@ setup( author = 'Chad Whitacre'
                       'Simplates are the main attraction.')
      , entry_points = { 'console_scripts': [ 'aspen = aspen.server:main'
                                            , 'thrash = thrash:main'
-                                           , 'fcgi_aspen = fcgi_aspen:main'
+                                           , 'fcgi_aspen = fcgi_aspen:main [fcgi]'
                                             ] }
      , name = 'aspen'
      , packages = find_packages(exclude=[ 'aspen.tests'
@@ -43,7 +42,8 @@ setup( author = 'Chad Whitacre'
                                  ]}
      , install_requires = [ 'Cheroot==4.0.0beta'
                           , 'mimeparse==0.1.3'
-                          , 'tornado==1.2.1'
                           , 'first==2.0.0'
                            ]
+     , extras_require = { 'fcgi' : [ 'flup' ]
+                        }
       )
