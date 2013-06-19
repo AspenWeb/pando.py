@@ -127,7 +127,7 @@ def OptionParser():
     extended.add_option( "--renderer_default"
                     , help=( "the renderer to use by default; one of "
                            + "{%s}" % ','.join(aspen.RENDERERS)
-                           + " [tornado]"
+                           + " [stdlib_percent]"
                             )
                     , default=DEFAULT
                      )

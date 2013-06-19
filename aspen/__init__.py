@@ -19,10 +19,12 @@ NETWORK_ENGINES = ['cheroot']
 for entrypoint in pkg_resources.iter_entry_points(group='aspen.network_engines'):
     NETWORK_ENGINES.append(entrypoint.name)
 
-RENDERERS = [ 'stdlib_format'
+BUILTIN_RENDERERS = [ 'stdlib_format'
             , 'stdlib_percent'
             , 'stdlib_template'
             ]
+
+RENDERERS = BUILTIN_RENDERERS[:]
 
 for entrypoint in pkg_resources.iter_entry_points(group='aspen.renderers'):
     RENDERERS.append(entrypoint.name)
