@@ -2,19 +2,20 @@
 """
 import mimetypes
 import os
-try:                    # python2.6+
-    from collections import namedtuple
-except ImportError:     # < python2.6
-    from backcompat import namedtuple
 
 from aspen import Response
-
+from aspen.utils import typecheck
+from backcompat import namedtuple
 
 def debug_noop(*args, **kwargs):
     pass
 
 def debug_stdout(func):
-    print "DEBUG: " + str(func())
+    r = func()
+    try:
+        print "DEBUG: " + r
+    except Exception:
+        print "DEBUG: " + repr(r)
 
 debug = debug_stdout if 'ASPEN_DEBUG' in os.environ else debug_noop
 
@@ -25,8 +26,9 @@ def splitext(name):
 
 
 def _typecast(key, value):
-    """Given two strings, return a string, and an int or string.
+    """Given two unicodes, return a unicode, and an int or unicode.
     """
+    typecheck(key, unicode, value, unicode)
     debug(lambda: "typecasting " + key + ", " + value)
     if key.endswith('.int'):    # you can typecast to int
         key = key[:-4]
@@ -34,11 +36,6 @@ def _typecast(key, value):
             value = int(value)
         except ValueError:
             raise Response(404)
-    else:                       # otherwise it's URL-quoted ASCII
-        try:
-            value = value.decode('ASCII')
-        except UnicodeDecodeError:
-            raise Response(400)
     debug(lambda: "typecasted " + key + ", " + repr(value))
     return key, value
 
@@ -48,8 +45,8 @@ def strip_matching_ext(a, b):
     """
     aparts = splitext(a)
     bparts = splitext(b)
-    debug_ext = lambda: ( "exts: " + str(a) + "( " + str(aparts[1]) + " ) and "
-                        + str(b) + "( " + str(bparts[1]) + " )"
+    debug_ext = lambda: ( "exts: " + repr(a) + "( " + repr(aparts[1]) + " ) and "
+                        + repr(b) + "( " + repr(bparts[1]) + " )"
                          )
     if aparts[1] == bparts[1]:
         debug(lambda: debug_ext() + " matches")
@@ -164,12 +161,12 @@ def dispatch_abstract(listnodes, is_leaf, traverse, find_index, noext_matched,
             wildleafs[n_ext] = (traverse(curnode, n), wildwildvals)
 
         if found_direct:                        # exact match
-            debug(lambda: "Exact match " + str(node))
+            debug(lambda: "Exact match " + repr(node))
             curnode = traverse(curnode, found_direct)
             continue
 
         if found_indirect:                      # matched but no extension
-            debug(lambda: "Indirect match " + str(node))
+            debug(lambda: "Indirect match " + repr(node))
             noext_matched(node)
             curnode = traverse(curnode, found_indirect)
             continue
@@ -184,9 +181,9 @@ def dispatch_abstract(listnodes, is_leaf, traverse, find_index, noext_matched,
         if wildleaf_fallback and (last_pathseg or not wildsubs):
             ext = lastnode_ext if lastnode_ext in wildleafs else None
             curnode, wildvals = wildleafs[ext]
-            debug( lambda: "Wildcard leaf match " + str(curnode)
-                 + " because last_pathseg:" + str(last_pathseg)
-                 + " and ext " + str(ext)
+            debug( lambda: "Wildcard leaf match " + repr(curnode)
+                 + " because last_pathseg:" + repr(last_pathseg)
+                 + " and ext " + repr(ext)
                   )
             break
 
@@ -195,13 +192,13 @@ def dispatch_abstract(listnodes, is_leaf, traverse, find_index, noext_matched,
             k, v = _typecast(n[1:], node)
             wildvals[k] = v
             curnode = traverse(curnode, n)
-            debug(lambda: "Wildcard subnode match " + str(n))
+            debug(lambda: "Wildcard subnode match " + repr(n))
             continue
 
         return DispatchResult( DispatchStatus.missing
                              , None
                              , None
-                             , "Node '" + node.encode('utf-8') + "' Not Found"
+                             , "Node " + repr(node) +" Not Found"
                               )
     else:
         debug(lambda: "else clause tripped; testing is_leaf " + str(curnode))

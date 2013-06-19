@@ -30,9 +30,18 @@ class Website(Configurable):
         """
         self.configure(argv)
 
-
     def __call__(self, environ, start_response):
+        return self.wsgi_app(environ, start_response)
+
+    def wsgi_app(self, environ, start_response):
         """WSGI interface.
+
+        Wrap this method instead of the website object itself
+        when to use WSGI middleware::
+
+            website = Website()
+            website.wsgi_app = WSGIMiddleware(website.wsgi_app)
+
         """
         request = Request.from_wsgi(environ) # too big to fail :-/
         request.website = self

@@ -4,8 +4,10 @@ import socket
 import aspen
 from aspen.configuration import Configurable, ConfigurationError, parse
 from aspen.configuration.options import OptionParser, DEFAULT
-from aspen.testing import assert_raises
+from aspen.testing import assert_raises, StubRequest, fix
 from aspen.testing.fsfix import attach_teardown, FSFIX, mk
+#from aspen.testing import handle
+from aspen.website import Website
 
 
 def test_everything_defaults_to_empty_string():
@@ -115,7 +117,29 @@ def test_configuration_scripts_works_at_all():
     actual = opts.configuration_scripts
     assert actual == expected, actual
 
+def test_configuration_script_can_set_renderer_default():
+    CONFIG = """
+website.renderer_default="stdlib_format"
+    """
+    SIMPLATE = """
+name="program"
+[----]
+Greetings, {name}!
+    """
+    mk(
+       ('.aspen/configure-aspen.py', CONFIG),
+       ('index.html.spt', SIMPLATE)
+      )
+    w = Website(['--www_root', FSFIX, '-p', fix('.aspen') ])
+    request = StubRequest('/')
+    request.website = w
+    response = w.handle_safely(request)
+    actual = response.body.strip()
+    expected = 'Greetings, program!'
+    assert actual == expected, actual
 
+
+# Tests of parsing perversities
 
 def test_parse_charset_good():
     actual = parse.charset(u'UTF-8')
@@ -176,16 +200,16 @@ def test_parse_list_extends():
 
 
 def test_parse_renderer_good():
-    actual = parse.renderer(u'pystache')
-    assert actual == u'pystache', actual
+    actual = parse.renderer(u'stdlib_percent')
+    assert actual == u'stdlib_percent', actual
 
 def test_parse_renderer_bad():
     assert_raises(ValueError, parse.renderer, u'floober')
 
 
 def test_parse_network_engine_good():
-    actual = parse.network_engine(u'cherrypy')
-    assert actual == 'cherrypy', actual
+    actual = parse.network_engine(u'cheroot')
+    assert actual == 'cheroot', actual
 
 def test_parse_network_engine_bad():
     assert_raises(ValueError, parse.network_engine, u'floober')

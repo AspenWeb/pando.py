@@ -1,4 +1,3 @@
-from aspen.utils import ascii_dammit
 
 
 NO_DEFAULT = object()
@@ -22,7 +21,7 @@ class Mapping(dict):
             return dict.__getitem__(self, name)[-1]
         except KeyError:
             from aspen import Response
-            raise Response(400, "Missing key: %s" % ascii_dammit(name))
+            raise Response(400, "Missing key: %s" % repr(name))
 
     def __setitem__(self, name, value):
         """Given a name and value, clobber any existing values.
