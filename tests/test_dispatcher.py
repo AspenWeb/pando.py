@@ -354,14 +354,14 @@ def test_dispatcher_passes_through_virtual_dir_with_trailing_slash():
 def test_dispatcher_redirects_dir_without_trailing_slash():
     mk('foo')
     response = assert_raises(Response, check_trailing_slash, '/foo')
-    expected = (301, '/foo/')
+    expected = (302, '/foo/')
     actual = (response.code, response.headers['Location'])
     assert actual == expected, actual
 
 def test_dispatcher_redirects_virtual_dir_without_trailing_slash():
     mk('%foo')
     response = assert_raises(Response, check_trailing_slash, '/foo')
-    expected = (301, '/foo/')
+    expected = (302, '/foo/')
     actual = (response.code, response.headers['Location'])
     assert actual == expected, actual
 
