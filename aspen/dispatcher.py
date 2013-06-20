@@ -297,16 +297,17 @@ def dispatch(request, pure_dispatch=False):
 
     debug(lambda: "dispatch_abstract returned: " + repr(result))
 
-    matchbase, matchname = result.match.rsplit(os.path.sep,1)
-    if pathsegs[-1] != '' and matchname in request.website.indices and \
-            is_first_index(request.website.indices, matchbase, matchname):
-        # asked for something that maps to a default index file; redirect to / per issue #175
-        debug(lambda: "found default index '%s' maps into %r" % (pathsegs[-1], request.website.indices))
-        uri = request.line.uri
-        location = uri.path.raw[:-len(pathsegs[-1])]
-        if uri.querystring.raw:
-            location += '?' + uri.querystring.raw
-        raise Response(302, headers={'Location': location})
+    if result.match:
+        matchbase, matchname = result.match.rsplit(os.path.sep,1)
+        if pathsegs[-1] != '' and matchname in request.website.indices and \
+                is_first_index(request.website.indices, matchbase, matchname):
+            # asked for something that maps to a default index file; redirect to / per issue #175
+            debug(lambda: "found default index '%s' maps into %r" % (pathsegs[-1], request.website.indices))
+            uri = request.line.uri
+            location = uri.path.raw[:-len(pathsegs[-1])]
+            if uri.querystring.raw:
+                location += '?' + uri.querystring.raw
+            raise Response(302, headers={'Location': location})
 
     if not pure_dispatch:
 
