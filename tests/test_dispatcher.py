@@ -85,25 +85,6 @@ def test_configure_aspen_py_setting_strips_commas():
     actual = check_index('/').fs
     assert actual == expected, actual
 
-def test_configure_aspen_py_setting_strips_many_commas():
-    mk(('default.html', "Greetings, program!"))
-    expected = fix('default.html')
-    actual = check_index('/', '--indices', 'index.html,,default.html').fs
-    assert actual == expected, actual
-
-def test_configure_aspen_py_setting_ignores_blanks():
-    mk(('default.html', "Greetings, program!"))
-    expected = fix('default.html')
-    actual = check_index('/', '--indices', 'index.html, ,default.html').fs
-    assert actual == expected, actual
-
-def test_configure_aspen_py_setting_works_with_only_comma():
-    mk(('default.html', "Greetings, program!"))
-    expected = fix('default.html')
-    actual = check_index('/', '--indices', 'index.html, ,default.html').fs
-    assert actual == expected, actual
-
-
 # Negotiated Fall-through
 # =======================
 
