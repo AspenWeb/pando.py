@@ -355,7 +355,7 @@ def dispatch(request, pure_dispatch=False):
         location = uri.path.raw + '/'
         if uri.querystring.raw:
             location += '?' + uri.querystring.raw
-        raise Response(301, headers={'Location': location})
+        raise Response(302, headers={'Location': location})
 
     elif result.status == DispatchStatus.missing:   # 404
         raise Response(404)
