@@ -138,6 +138,12 @@ Greetings, {name}!
     expected = 'Greetings, program!'
     assert actual == expected, actual
 
+def test_configuration_script_ignores_blank_indexfilenames():
+    w = Website(['--indices', 'index.html,, ,default.html'])
+    assert w.indices[0] == 'index.html'
+    assert w.indices[1] == 'default.html'
+    assert len(w.indices) == 2, "Too many indexfile entries"
+
 
 # Tests of parsing perversities
 
