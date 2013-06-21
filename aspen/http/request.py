@@ -50,7 +50,7 @@ from aspen.utils import ascii_dammit, typecheck
 quoted_slash_re = re.compile("%2F", re.IGNORECASE)
 
 
-def make_franken_uri(path, querystr):
+def make_franken_uri(path, qs):
     """Given two bytestrings, return a bytestring.
 
     We want to pass ASCII to Request. However, our friendly neighborhood WSGI
@@ -75,15 +75,15 @@ def make_franken_uri(path, querystr):
             parts = [urllib.quote(x) for x in quoted_slash_re.split(path)]
             path = "%2F".join(parts)
 
-    if querystr:
+    if qs:
         try:
-            querystr.decode('ASCII')
+            qs.decode('ASCII')
         except UnicodeDecodeError:
             # Cross our fingers and hope we have UTF-8 bytes from MSIE.
-            querystr = urllib.quote_plus(querystr)
-        querystr = '?' + querystr
+            qs = urllib.quote_plus(qs)
+        qs = '?' + qs
 
-    return path + querystr
+    return path + qs
 
 
 def make_franken_headers(environ):
