@@ -68,8 +68,12 @@ def make_franken_uri(path, qs):
     """
     if path:
         try:
-            path.decode('ASCII')
+            path.decode('ASCII')    # NB: We throw away this unicode!
         except UnicodeDecodeError:
+
+            # XXX How would we get non-ASCII here? The lookout.net post
+            # indicates that all browsers send ASCII for the path.
+
             # Some servers (gevent) clobber %2F inside of paths, such
             # that we see /foo%2Fbar/ as /foo/bar/. The %2F is lost to us.
             parts = [urllib.quote(x) for x in quoted_slash_re.split(path)]
@@ -77,9 +81,11 @@ def make_franken_uri(path, qs):
 
     if qs:
         try:
-            qs.decode('ASCII')
+            qs.decode('ASCII')      # NB: We throw away this unicode!
         except UnicodeDecodeError:
-            # Cross our fingers and hope we have UTF-8 bytes from MSIE.
+            # Cross our fingers and hope we have UTF-8 bytes from MSIE. Let's
+            # perform the percent-encoding that we would expect MSIE to have
+            # done for us.
             qs = urllib.quote_plus(qs)
         qs = '?' + qs
 
