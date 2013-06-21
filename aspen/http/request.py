@@ -485,10 +485,18 @@ class Querystring(Mapping):
         """
         self.decoded = urllib.unquote_plus(raw).decode('UTF-8')
         self.raw = raw
-        Mapping.__init__(self, cgi.parse_qs( self.decoded
-                                           , keep_blank_values = True
-                                           , strict_parsing = False
-                                            ))
+
+        # parse_qs does its own unquote_plus'ing ...
+        as_dict = cgi.parse_qs( raw
+                              , keep_blank_values = True
+                              , strict_parsing = False
+                               )
+
+        # ... but doesn't decode to unicode.
+        for k, vals in as_dict.items():
+            as_dict[k.decode('UTF-8')] = [v.decode('UTF-8') for v in vals]
+
+        Mapping.__init__(self, as_dict)
 
 
 # Request -> Line -> Version
