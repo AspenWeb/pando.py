@@ -26,6 +26,11 @@ if [ -z "$1" ]; then
 elif [ "`git tag | grep $1`" ]; then
     echo "Version $1 is already git tagged."
 else
+    confirm "Did you add to the Changelog?"
+    if [ $? -ne 0 ]; then
+        echo "Go do that first."
+        exit 1
+    fi
     confirm "Tag version $1 and upload to PyPI and push to github and heroku?"
     if [ $? -eq 0 ]; then
         printf "$1" > version.txt
