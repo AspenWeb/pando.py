@@ -1,6 +1,28 @@
 Aspen-python Changelog
 ======================
 
+0.25.1 - Released 2013-06-21 by @pjz
+------------------------------------
+
+* A fairly minor release... unless you were hit by one of the now-fixed bugs
+
+* Fixed #195 - qs drops URL Encoded + and & signs
+
+* Fixed #196 - hangs w/ gevent on Ctrl-C
+
+* Changed redirects to be less-permanent 302s instead of 301s
+
+* Fixed issue #175 - redirect default index files to / ; 
+  Makes URLs prettier!
+
+* Fix configuration parser list-parsing bug discovered while fixing
+  #175. The configuration parser was preserving empty-string items in its
+  parsing of comma-separated lists.
+
+* Fixed the heroku config (used for the aspen.io site) to explicitly require
+  aspen-tornado since it's no longer installed by default
+
+
 0.25.0 - Released 2013-06-14 by @pjz
 ------------------------------------
 
