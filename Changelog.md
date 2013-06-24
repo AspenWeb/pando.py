@@ -4,7 +4,7 @@ Aspen-python Changelog
 0.25.1 - Released 2013-06-21 by @pjz
 ------------------------------------
 
-* A fairly minor release... unless you were hit by one of the now-fixed bugs
+A fairly minor release... unless you were hit by one of the now-fixed bugs:
 
 * Fixed #195 - qs drops URL Encoded + and & signs
 
@@ -15,8 +15,8 @@ Aspen-python Changelog
 * Fixed issue #175 - redirect default index files to / ; 
   Makes URLs prettier!
 
-* Fix configuration parser list-parsing bug discovered while fixing
-  #175. The configuration parser was preserving empty-string items in its
+* Fix configuration parser list-parsing bug discovered while fixing #175. 
+  The configuration parser was preserving empty-string items in its
   parsing of comma-separated lists.
 
 * Fixed the heroku config (used for the aspen.io site) to explicitly require
