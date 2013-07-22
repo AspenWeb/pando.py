@@ -692,5 +692,5 @@ class Body(Mapping):
                                , environ = environ
                                , headers = headers
                                , keep_blank_values = True
-                               , strict_parsing = True
+                               , strict_parsing = False
                                 )
