@@ -1,6 +1,12 @@
 Aspen-python Changelog
 ======================
 
+0.25.2 - Released 2013-07-22 by @whit537
+----------------------------------------
+
+* Fixed #207 - we shouldn't strict_parse request bodies
+
+
 0.25.1 - Released 2013-06-21 by @pjz
 ------------------------------------
 
