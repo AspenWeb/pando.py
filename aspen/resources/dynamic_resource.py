@@ -83,10 +83,16 @@ class DynamicResource(Resource):
         pages = list(split_and_escape(raw))
         npages = len(pages)
 
-
-        # Check for too few pages. This is a sanity check as get_resource_class
-        # should guarantee this. Bug if it fails.
-        assert npages >= self.min_pages, npages
+        # Check for too few pages. 
+        if npages < self.min_pages:
+            type_name = self.__class__.__name__[:-len('resource')]
+            msg = "%s resources must have at least %s pages; %s has %s."
+            msg %= ( type_name
+                   , ORDINALS[self.min_pages]
+                   , self.fs
+                   , ORDINALS[npages]
+                    )
+            raise SyntaxError(msg)
 
         # Check for too many pages. This is user error.
         if self.max_pages is not None and npages > self.max_pages:
