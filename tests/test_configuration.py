@@ -70,6 +70,11 @@ def test_configuration_scripts_really_doesnt_do_anything_special():
     expected = 'Cheese is lovely.'
     assert actual == expected, actual
 
+def test_configuration_scripts_arent_confused_by_io_errors():
+    c = Configurable()
+    args = '-p tests --configuration_scripts=_config_test.py'.split()
+    actual = assert_raises(IOError, c.configure, args)
+    assert actual.strerror == 'No such file or directory'
 
 def test_www_root_defaults_to_cwd():
     mk()
