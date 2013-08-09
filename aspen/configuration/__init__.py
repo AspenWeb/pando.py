@@ -385,6 +385,10 @@ class Configurable(object):
             try:
                 execfile(filepath, {'website': self})
             except IOError, err:
+                # Re-raise the error if it happened inside the script.
+                if err.filename != filepath:
+                    raise
+
                 # I was checking os.path.isfile for these, but then we have a
                 # race condition that smells to me like a potential security
                 # vulnerability.
