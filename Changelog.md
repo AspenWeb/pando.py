@@ -1,6 +1,12 @@
 Aspen-python Changelog
 ======================
 
+0.25.3 - Released 2013-08-09 by @whit537
+----------------------------------------
+
+* Fixed #212 - don't wrongly swallow IOError in configure-aspen.py
+
+
 0.25.2 - Released 2013-07-22 by @whit537
 ----------------------------------------
 
