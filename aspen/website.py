@@ -76,7 +76,6 @@ class Website(Configurable):
             response = self.handle(request)
         except Response, response:
             response.request = request
-            response = self.hooks.run('error_late', response) # FIXME: should this be here?
         except:
             response = self.handle_error(request)
 
