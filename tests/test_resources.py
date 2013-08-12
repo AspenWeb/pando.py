@@ -46,7 +46,7 @@ def test_resource_dunder_all_limits_vars():
                               "Greetings, %(foo)s!"
                              )
     # in production, KeyError is turned into a 500 by an outer wrapper
-    assert actual == KeyError, actual
+    assert type(actual) == KeyError, actual
 
 def test_utf8():
     expected = unichr(1758).encode('utf8')
