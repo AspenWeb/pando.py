@@ -49,6 +49,12 @@ class DynamicResource(Resource):
             self.process_raised_response(response)
             raise
 
+        # if __all__ is defined, only pass those variables to templates
+        # if __all__ is not defined, pass full context to templates
+
+        if '__all__' in context:
+            newcontext = dict([ (k, context[k]) for k in context['__all__'] ])
+            context = newcontext
 
         # Hook.
         # =====
