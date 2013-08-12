@@ -50,7 +50,7 @@ from aspen.utils import ascii_dammit, typecheck
 quoted_slash_re = re.compile("%2F", re.IGNORECASE)
 
 
-def make_franken_uri(path, querystr):
+def make_franken_uri(path, qs):
     """Given two bytestrings, return a bytestring.
 
     We want to pass ASCII to Request. However, our friendly neighborhood WSGI
@@ -68,22 +68,28 @@ def make_franken_uri(path, querystr):
     """
     if path:
         try:
-            path.decode('ASCII')
+            path.decode('ASCII')    # NB: We throw away this unicode!
         except UnicodeDecodeError:
+
+            # XXX How would we get non-ASCII here? The lookout.net post
+            # indicates that all browsers send ASCII for the path.
+
             # Some servers (gevent) clobber %2F inside of paths, such
             # that we see /foo%2Fbar/ as /foo/bar/. The %2F is lost to us.
             parts = [urllib.quote(x) for x in quoted_slash_re.split(path)]
             path = "%2F".join(parts)
 
-    if querystr:
+    if qs:
         try:
-            querystr.decode('ASCII')
+            qs.decode('ASCII')      # NB: We throw away this unicode!
         except UnicodeDecodeError:
-            # Cross our fingers and hope we have UTF-8 bytes from MSIE.
-            querystr = urllib.quote_plus(querystr)
-        querystr = '?' + querystr
+            # Cross our fingers and hope we have UTF-8 bytes from MSIE. Let's
+            # perform the percent-encoding that we would expect MSIE to have
+            # done for us.
+            qs = urllib.quote_plus(qs)
+        qs = '?' + qs
 
-    return path + querystr
+    return path + qs
 
 
 def make_franken_headers(environ):
@@ -479,10 +485,18 @@ class Querystring(Mapping):
         """
         self.decoded = urllib.unquote_plus(raw).decode('UTF-8')
         self.raw = raw
-        Mapping.__init__(self, cgi.parse_qs( self.decoded
-                                           , keep_blank_values = True
-                                           , strict_parsing = False
-                                            ))
+
+        # parse_qs does its own unquote_plus'ing ...
+        as_dict = cgi.parse_qs( raw
+                              , keep_blank_values = True
+                              , strict_parsing = False
+                               )
+
+        # ... but doesn't decode to unicode.
+        for k, vals in as_dict.items():
+            as_dict[k.decode('UTF-8')] = [v.decode('UTF-8') for v in vals]
+
+        Mapping.__init__(self, as_dict)
 
 
 # Request -> Line -> Version
@@ -678,5 +692,5 @@ class Body(Mapping):
                                , environ = environ
                                , headers = headers
                                , keep_blank_values = True
-                               , strict_parsing = True
+                               , strict_parsing = False
                                 )

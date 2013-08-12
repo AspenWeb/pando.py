@@ -28,6 +28,10 @@ def test_body_is_unparsed_for_empty_content_type():
     actual = make_body("cheese=yes", headers={})
     assert actual == {}, actual
 
+def test_body_gives_empty_dict_for_empty_body():
+    actual = make_body("")
+    assert actual == {}, actual
+
 def test_body_barely_works():
     body = make_body("cheese=yes")
     actual = body['cheese']

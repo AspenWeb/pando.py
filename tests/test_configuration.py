@@ -70,6 +70,12 @@ def test_configuration_scripts_really_doesnt_do_anything_special():
     expected = 'Cheese is lovely.'
     assert actual == expected, actual
 
+def test_configuration_scripts_arent_confused_by_io_errors():
+    CONFIG = "open('this file should not exist')\n"
+    mk(('configure-aspen.py', CONFIG))
+    c = Configurable()
+    actual = assert_raises(IOError, c.configure, ['-p', FSFIX])
+    assert actual.strerror == 'No such file or directory'
 
 def test_www_root_defaults_to_cwd():
     mk()
@@ -137,6 +143,12 @@ Greetings, {name}!
     actual = response.body.strip()
     expected = 'Greetings, program!'
     assert actual == expected, actual
+
+def test_configuration_script_ignores_blank_indexfilenames():
+    w = Website(['--indices', 'index.html,, ,default.html'])
+    assert w.indices[0] == 'index.html'
+    assert w.indices[1] == 'default.html'
+    assert len(w.indices) == 2, "Too many indexfile entries"
 
 
 # Tests of parsing perversities

@@ -123,7 +123,15 @@ def main(argv=None):
     """
     try:
         _main(argv)
-    except SystemExit:
+    except (SystemExit, KeyboardInterrupt):
+
+        # Under some (most?) network engines, a SIGINT will be trapped by the
+        # SIGINT signal handler above. However, gevent does "something" with
+        # signals and our signal handler never fires. However, we *do* get a
+        # KeyboardInterrupt here in that case. *shrug*
+        #
+        # See: https://github.com/gittip/aspen-python/issues/196
+
         pass
     except:
         import aspen, aspen.execution, time, traceback
