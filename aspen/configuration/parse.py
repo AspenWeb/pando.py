@@ -43,17 +43,18 @@ def list_(value):
 
     """
     typecheck(value, unicode)
-    extend = False
-    if value.startswith('+'):
-        extend = True
+    extend = value.startswith('+')
+    if extend:
         value = value[1:]
-    stripped = [x.strip() for x in value.split(',')]
-    seen = set()
+
+    # populate out with a single copy
+    # of each non-empty item, preserving order
     out = []
-    for x in stripped:
-        if x not in seen:
-            out.append(x)
-            seen.add(x)
+    for v in value.split(','):
+        v = v.strip()
+        if v and not v in out:
+            out.append(v)
+
     return (extend, out)
 
 def network_engine(value):

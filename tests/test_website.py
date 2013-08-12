@@ -32,6 +32,14 @@ def test_fatal_error_response_is_returned():
     actual = handle().code
     assert actual == expected, actual
 
+def test_redirect_has_only_location():
+    mk(('index.html.spt', "from aspen import Response\n[---]\nrequest.redirect('http://elsewhere', code=304)\n[---]\n"))
+    actual = handle()
+    assert actual.code == 304
+    headers = actual.headers
+    assert len(headers) == 1, headers
+    assert headers.get('Location') is not None, headers
+
 def test_nice_error_response_is_returned():
     mk(('index.html.spt', "from aspen import Response\n[---]\nraise Response(500)\n[---]\n"))
     expected = 500

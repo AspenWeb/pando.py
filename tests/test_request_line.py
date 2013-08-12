@@ -405,6 +405,6 @@ def test_querystring_chokes_on_bad_unicode():
 def test_querystring_unquotes_plus():
     querystring = Querystring("baz=+%2B")
     assert querystring.decoded == u"baz= +", querystring.decoded
-
+    assert querystring['baz'] == " +"
 
 attach_teardown(globals())

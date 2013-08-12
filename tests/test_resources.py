@@ -37,6 +37,17 @@ def test_resource_pages_work():
     actual = check("foo = 'bar'\n[--------]\nGreetings, %(foo)s!")
     assert actual == expected, actual
 
+def test_resource_dunder_all_limits_vars():
+    actual = assert_raises( KeyError
+                            , check
+                            , "foo = 'bar'\n"
+                              "__all__ = []\n"
+                              "[---------]\n"
+                              "Greetings, %(foo)s!"
+                             )
+    # in production, KeyError is turned into a 500 by an outer wrapper
+    assert type(actual) == KeyError, actual
+
 def test_utf8():
     expected = unichr(1758).encode('utf8')
     expected = unichr(1758)

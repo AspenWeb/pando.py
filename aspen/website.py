@@ -74,6 +74,8 @@ class Website(Configurable):
         try:
             request = self.do_inbound(request)
             response = self.handle(request)
+        except Response, response:
+            response.request = request
         except:
             response = self.handle_error(request)
 

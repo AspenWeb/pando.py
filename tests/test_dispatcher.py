@@ -11,6 +11,12 @@ def assert_raises_404(func, *args):
     assert response.code == 404, "Got " + str(response.code) + " instead of 404"
     return response
 
+def assert_raises_302(func, *args):
+    response = assert_raises(Response, func, *args)
+    assert response.code == 302, "Got " + str(response.code) + " instead of 302"
+    return response
+
+
 # Indices
 # =======
 
@@ -85,23 +91,33 @@ def test_configure_aspen_py_setting_strips_commas():
     actual = check_index('/').fs
     assert actual == expected, actual
 
-def test_configure_aspen_py_setting_strips_many_commas():
-    mk(('default.html', "Greetings, program!"))
-    expected = fix('default.html')
-    actual = check_index('/', '--indices', 'index.html,,default.html').fs
-    assert actual == expected, actual
+def test_redirect_indices_to_slash():
+    mk( ( '.aspen/configure-aspen.py'
+        , 'website.indices = ["index.html", "default.html"]')
+      , ('index.html', "Greetings, program!")
+       )
+    assert_raises_302(check_index, '/index.html')
 
-def test_configure_aspen_py_setting_ignores_blanks():
-    mk(('default.html', "Greetings, program!"))
-    expected = fix('default.html')
-    actual = check_index('/', '--indices', 'index.html, ,default.html').fs
-    assert actual == expected, actual
+def test_redirect_second_index_to_slash():
+    mk( ( '.aspen/configure-aspen.py'
+        , 'website.indices = ["index.html", "default.html"]')
+      , ('default.html', "Greetings, program!")
+       )
+    assert_raises_302(check_index, '/default.html')
 
-def test_configure_aspen_py_setting_works_with_only_comma():
-    mk(('default.html', "Greetings, program!"))
+def test_dont_redirect_second_index_if_first():
+    mk( ( '.aspen/configure-aspen.py'
+        , 'website.indices = ["index.html", "default.html"]')
+      , ('default.html', "Greetings, program!")
+      , ('index.html', "Greetings, program!")
+       )
+    # first index redirects
+    assert_raises_302(check_index, '/index.html')
+    # second shouldn't
     expected = fix('default.html')
-    actual = check_index('/', '--indices', 'index.html, ,default.html').fs
+    actual = check_index('/default.html').fs
     assert actual == expected, actual
+ 
 
 
 # Negotiated Fall-through
@@ -338,14 +354,14 @@ def test_dispatcher_passes_through_virtual_dir_with_trailing_slash():
 def test_dispatcher_redirects_dir_without_trailing_slash():
     mk('foo')
     response = assert_raises(Response, check_trailing_slash, '/foo')
-    expected = (301, '/foo/')
+    expected = (302, '/foo/')
     actual = (response.code, response.headers['Location'])
     assert actual == expected, actual
 
 def test_dispatcher_redirects_virtual_dir_without_trailing_slash():
     mk('%foo')
     response = assert_raises(Response, check_trailing_slash, '/foo')
-    expected = (301, '/foo/')
+    expected = (302, '/foo/')
     actual = (response.code, response.headers['Location'])
     assert actual == expected, actual
 
