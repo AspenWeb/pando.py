@@ -1,6 +1,13 @@
 Aspen-python Changelog
 ======================
 
+0.?? - Released
+---------------
+
+* Fixed #165 - make it explicit which variables are available to templates
+  By default all variables are available.  If you want to limit that, put
+  the list of variable names in __all__
+
 0.25.3 - Released 2013-08-09 by @whit537
 ----------------------------------------
 
