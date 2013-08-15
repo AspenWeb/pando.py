@@ -138,6 +138,6 @@ class TestClient(object):
                                    **extra)
         return self.perform_request(request, cookie_info)
 
-    def get(self, path, cookie_info=None, **extra):
+    def get(self, path, cookie_info={}, **extra):
         request = self.get_request(path, "GET")
         return self.perform_request(request, cookie_info)

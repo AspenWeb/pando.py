@@ -12,7 +12,6 @@ def get(**_kw):
              , fs = ''
              , raw = '[---]\n[---] text/plain via stdlib_template\n'
              , media_type = ''
-             , mtime = 0
               )
     kw.update(_kw)
     return NegotiatedResource(**kw)
@@ -23,8 +22,7 @@ def test_negotiated_resource_is_instantiable():
     fs = ''
     raw = '[---]\n[---] text/plain via stdlib_template\n'
     media_type = ''
-    mtime = 0
-    actual = NegotiatedResource(website, fs, raw, media_type, mtime).__class__
+    actual = NegotiatedResource(website, fs, raw, media_type).__class__
     assert actual is NegotiatedResource, actual
 
 
@@ -106,7 +104,7 @@ def get_response(request, response):
     context = { 'request': request
               , 'response': response
                }
-    resource = resources.load(request, 0)
+    resource = resources.load(request)
     return resource.get_response(context)
 
 NEGOTIATED_RESOURCE = """\

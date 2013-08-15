@@ -57,12 +57,15 @@ class Website(Configurable):
     def start(self):
         aspen.log_dammit("Starting up Aspen website.")
         self.hooks.run('startup', self)
+	self._resource_watcher = resources.watcher_for(self.www_root)
+	self._resource_watcher.start()
         self.network_engine.start()
 
     def stop(self):
         aspen.log_dammit("Shutting down Aspen website.")
         self.hooks.run('shutdown', self)
         self.network_engine.stop()
+	self._resource_watcher.stop()
 
 
     # Request Handling
