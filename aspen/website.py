@@ -165,10 +165,10 @@ class Website(Configurable):
             response = Response(500, tb_1)
             response.request = request
 
-        if 200 <= response.code < 300:
+        if 200 <= response.code < 400:
 
-            # The app raised a Response(2xx). Act as if nothing
-            # happened. This is unusual but allowed.
+            # The app raised a Response(2xx) or Response(3xx).
+            # Act as if nothing happened. This is unusual but allowed.
 
             pass
 
