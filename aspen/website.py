@@ -74,8 +74,6 @@ class Website(Configurable):
         try:
             request = self.do_inbound(request)
             response = self.handle(request)
-        except Response, response:
-            response.request = request
         except:
             response = self.handle_error(request)
 
@@ -143,7 +141,7 @@ class Website(Configurable):
         """Given a request, return a response.
         """
         try:                        # nice error messages
-            tb_1 = self.log_error()
+            tb_1 = traceback.format_exc()
             request = self.hooks.run('error_early', request)
             response = self.handle_error_nicely(tb_1, request)
         except Response, response:  # error simplate raised Response
@@ -154,12 +152,6 @@ class Website(Configurable):
         response.request = request
         response = self.hooks.run('error_late', response)
         return response
-
-
-    def log_error(self):
-        tb_1 = traceback.format_exc()
-        aspen.log_dammit(tb_1)
-        return tb_1
 
 
     def handle_error_nicely(self, tb_1, request):
@@ -173,10 +165,18 @@ class Website(Configurable):
             response = Response(500, tb_1)
             response.request = request
 
-        if 200 <= response.code < 300:
+        if 500 <= response.code < 600:
+            # Log tracebacks for Reponse(5xx).
+            aspen.log_dammit(tb_1)
 
-            # The app raised a Response(2xx). Act as if nothing
-            # happened. This is unusual but allowed.
+            # TODO Switch to the logging module and use something like this:
+            # log_level = [DEBUG,INFO,WARNING,ERROR][(response.code/100)-2]
+            # logging.log(log_level, tb_1)
+
+        if 200 <= response.code < 300 or response.code == 304:
+
+            # The app raised a Response(2xx) or Response(304).
+            # Act as if nothing happened. This is unusual but allowed.
 
             pass
 
