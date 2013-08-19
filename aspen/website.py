@@ -165,9 +165,17 @@ class Website(Configurable):
             response = Response(500, tb_1)
             response.request = request
 
-        if 200 <= response.code < 400:
+        if 500 <= response.code < 600:
+            # Log tracebacks for Reponse(5xx).
+            aspen.log_dammit(tb_1)
 
-            # The app raised a Response(2xx) or Response(3xx).
+            # TODO Switch to the logging module and use something like this:
+            # log_level = [DEBUG,INFO,WARNING,ERROR][(response.code/100)-2]
+            # logging.log(log_level, tb_1)
+
+        if 200 <= response.code < 300 or response.code == 304:
+
+            # The app raised a Response(2xx) or Response(304).
             # Act as if nothing happened. This is unusual but allowed.
 
             pass
