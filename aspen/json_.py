@@ -88,6 +88,9 @@ def dump(*a, **kw):
     lazy_check()
     if 'cls' not in kw:
         kw['cls'] = FriendlyEncoder
+    if 'separators' not in kw:
+        # Minify by default.
+        kw['separators'] = (',', ':')
     return _json.dump(*a, **kw)
 
 def loads(*a, **kw):
@@ -98,5 +101,8 @@ def dumps(*a, **kw):
     lazy_check()
     if 'cls' not in kw:
         kw['cls'] = FriendlyEncoder
+    if 'separators' not in kw:
+        # Minify by default.
+        kw['separators'] = (',', ':')
     return _json.dumps(*a, **kw)
 

@@ -80,7 +80,7 @@ def test_json_data_decoded():
     assert actual == expected, actual
 
 def test_json_roundtrip():
-    bytes = '4:deadbeef:/cheese.sock:{"foo": "bar"}'
+    bytes = '4:deadbeef:/cheese.sock:{"foo":"bar"}'
     message = Message.from_bytes(bytes)
     expected = bytes
     actual = str(message)
