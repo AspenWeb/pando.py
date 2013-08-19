@@ -6,7 +6,9 @@ from aspen.testing.fsfix import attach_teardown
 
 
 def test_json_basically_works():
-    expected = '{"Greetings": "program!"}'
+    expected = '''{
+    "Greetings": "program!"
+}'''
     actual = check( "[---]\nresponse.body = {'Greetings': 'program!'}"
                   , filename="foo.json.spt"
                    )
@@ -61,7 +63,9 @@ def test_json_content_type_is_configurable_for_dynamic_json():
     assert actual == expected, actual
 
 def test_json_handles_unicode():
-    expected = '{"Greetings": "\u00b5"}'
+    expected = '''{
+    "Greetings": "\u00b5"
+}'''
     actual = check( "[---]\nresponse.body = {'Greetings': unichr(181)}"
                   , filename="foo.json.spt"
                    )
@@ -75,7 +79,9 @@ def test_json_doesnt_handle_non_ascii_bytestrings():
                   )
 
 def test_json_handles_time():
-    expected = '{"seen": "19:30:00"}'
+    expected = '''{
+    "seen": "19:30:00"
+}'''
     actual = check( "import datetime\n"
                   + "[---------------]\n"
                   + "response.body = {'seen': datetime.time(19, 30)}"
@@ -84,7 +90,9 @@ def test_json_handles_time():
     assert actual == expected, actual
 
 def test_json_handles_date():
-    expected = '{"created": "2011-05-09"}'
+    expected = '''{
+    "created": "2011-05-09"
+}'''
     actual = check( "import datetime\n"
                   + "[---------------]\n"
                   + "response.body = {'created': datetime.date(2011, 5, 9)}"
@@ -93,7 +101,9 @@ def test_json_handles_date():
     assert actual == expected, actual
 
 def test_json_handles_datetime():
-    expected = '{"timestamp": "2011-05-09T00:00:00"}'
+    expected = '''{
+    "timestamp": "2011-05-09T00:00:00"
+}'''
     actual = check( "import datetime\n"
                   + "[---------------]\n"
                   + "response.body = { 'timestamp'"
@@ -103,11 +113,17 @@ def test_json_handles_datetime():
     assert actual == expected, actual
 
 def test_json_handles_complex():
-    expected = '{"complex": [1.0, 2.0]}'
+    # Note: json seems to put spaces after commas.
+    expected = '''{
+    "complex": [
+        1.0, 
+        2.0
+    ]
+}'''
     actual = check( "[---]\nresponse.body = {'complex': complex(1,2)}"
                   , filename="foo.json.spt"
                    )
-    assert actual == expected, actual
+    assert actual == expected
 
 def test_json_raises_TypeError_on_unknown_types():
     assert_raises( TypeError
@@ -128,7 +144,9 @@ def test_aspen_json_dump_dumps():
     json.dump({"cheese": "puffs"}, fp)
     fp.seek(0)
     actual = fp.read()
-    assert actual == '{"cheese": "puffs"}', actual
+    assert actual == '''{
+    "cheese": "puffs"
+}''', actual
 
 def test_aspen_json_loads_loads():
     actual = json.loads('{"cheese": "puffs"}')
@@ -136,7 +154,9 @@ def test_aspen_json_loads_loads():
 
 def test_aspen_json_dumps_dumps():
     actual = json.dumps({'cheese': 'puffs'})
-    assert actual == '{"cheese": "puffs"}', actual
+    assert actual == '''{
+    "cheese": "puffs"
+}''', actual
 
 
 # Teardown

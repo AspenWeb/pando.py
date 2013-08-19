@@ -74,20 +74,26 @@ def test_data_passes_through():
     assert actual == expected, actual
 
 def test_json_data_decoded():
-    message = Message.from_bytes('4:deadbeef:/cheese.sock:{"foo": "bar"}')
+    message = Message.from_bytes('''4:deadbeef:/cheese.sock:{
+    "foo": "bar"
+}''')
     expected = {"foo": "bar"}
     actual = message.data
     assert actual == expected, actual
 
 def test_json_roundtrip():
-    bytes = '4:deadbeef:/cheese.sock:{"foo": "bar"}'
+    bytes = '''4:deadbeef:/cheese.sock:{
+    "foo": "bar"
+}'''
     message = Message.from_bytes(bytes)
     expected = bytes
     actual = str(message)
     assert actual == expected, actual
 
 def test_event_data_decoded():
-    message = Message.from_bytes('5:::{"name": "bar", "args": []}')
+    message = Message.from_bytes('''5:::{
+    "name": "bar", "args": []
+}''')
     expected = {u'args': [], u'name': 'bar'}
     actual = message.data
     assert actual == expected, actual
