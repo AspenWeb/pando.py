@@ -113,17 +113,19 @@ def test_json_handles_datetime():
     assert actual == expected, actual
 
 def test_json_handles_complex():
-    # Note: json seems to put spaces after commas.
+    # The json module puts spaces after commas, but simplejson does not.
+    from aspen import json_
+    trailing_space = json_._json.__name__ == 'json'
     expected = '''{
     "complex": [
-        1.0, 
+        1.0,%s
         2.0
     ]
-}'''
+}''' % (' ' if trailing_space else '')
     actual = check( "[---]\nresponse.body = {'complex': complex(1,2)}"
                   , filename="foo.json.spt"
                    )
-    assert actual == expected
+    assert actual == expected, actual
 
 def test_json_raises_TypeError_on_unknown_types():
     assert_raises( TypeError
