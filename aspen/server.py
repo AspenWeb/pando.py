@@ -143,3 +143,6 @@ def main(argv=None):
                 time.sleep(1)
         except KeyboardInterrupt:
             raise SystemExit
+
+if __name__ == '__main__':
+    main()
