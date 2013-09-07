@@ -1,4 +1,5 @@
 from aspen import Response
+from aspen.http.request import Request
 from aspen.http.mapping import Mapping
 from aspen.http.request import Line, Method, URI, Version, Path, Querystring
 from aspen.testing import assert_raises, attach_teardown
@@ -366,6 +367,40 @@ def test_path_unquotes_and_decodes_UTF_8():
 def test_path_doesnt_unquote_plus():
     path = Path("/+%2B.html")
     assert path.decoded == u"/++.html", path.decoded
+
+# Path params
+# ===========
+
+def _extract_params(uri):
+#    return dispatcher.extract_rfc2396_params(path.lstrip('/').split('/'))
+    params = [ segment.params for segment in uri.path.segments ]
+    segments = [ unicode(segment) for segment in uri.path.segments ]
+    return ( segments, params )
+
+def test_extract_path_params_with_none():
+    request = Request(uri="/foo/bar")
+    actual = _extract_params(request.line.uri)
+    expected = (['foo', 'bar'], [{}, {}]) 
+    assert actual == expected, actual
+
+def test_extract_path_params_simple():
+    request = Request(uri="/foo;a=1;b=2;c/bar;a=2;b=1")
+    actual = _extract_params(request.line.uri)
+    expected = (['foo', 'bar'], [{'a':['1'], 'b':['2'], 'c':[[]]}, {'a':['2'], 'b':['1']}]) 
+    assert actual == expected, actual
+
+def test_extract_path_params_complex():
+    request = Request(uri="/foo;a=1;b=2,3;c;a=2;b=4/bar;a=2,ab;b=1")
+    actual = _extract_params(request.line.uri)
+    expected = (['foo', 'bar'], [{'a':['1','2'], 'b':['2,3', '4'], 'c':[[]]}, {'a':[ '2,ab' ], 'b':['1']}]) 
+    assert actual == expected, actual
+
+def test_path_params_api():
+    request = Request(uri="/foo;a=1;b=2;b=3;c/bar;a=2,ab;b=1")
+    segs, params = (['foo', 'bar'], [{'a':['1'], 'b':['2', '3'], 'c':[[]]}, {'a':[ '2,ab' ], 'b':['1']}]) 
+    assert request.line.uri.path.segments == segs, request.line.uri.path.segments
+    assert request.line.uri.path.segments[0].params == params[0]
+    assert request.line.uri.path.segments[1].params == params[1]
 
 
 # Querystring

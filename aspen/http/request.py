@@ -482,16 +482,13 @@ def extract_rfc2396_params(path):
     segments_with_params = []
     for component in pathsegs:
         parts = component.split(';')
-        params = {}
+        params = Mapping()
         for p in parts[1:]:
             if '=' in p:
                 k, v = p.split('=', 1)
             else:
                 k, v = p, []
-            if ',' in v:
-                params[k] = v.split(',')
-            else:
-                params[k] = v
+            params.add(k, v)
         segments_with_params.append(UnicodeWithParams(parts[0], params))
     return segments_with_params
 
