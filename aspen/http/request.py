@@ -467,7 +467,7 @@ class URI(unicode):
         obj.path = path
         obj.querystring = querystring
         obj.raw = raw
-        obj.path.segments = extract_rfc2396_params(path) 
+        obj.path.parts = extract_rfc2396_params(path) 
         return obj
 
 def extract_rfc2396_params(path):
@@ -487,7 +487,7 @@ def extract_rfc2396_params(path):
             if '=' in p:
                 k, v = p.split('=', 1)
             else:
-                k, v = p, []
+                k, v = p, ''
             params.add(k, v)
         segments_with_params.append(UnicodeWithParams(parts[0], params))
     return segments_with_params
