@@ -1,6 +1,7 @@
 from aspen import Response
 from aspen.testing import assert_raises
 from aspen.testing.fsfix import attach_teardown
+from aspen.exceptions import CRLFInjection
 
 
 def test_response_is_a_wsgi_callable():
@@ -41,6 +42,12 @@ def test_response_body_as_iterable_comes_through_untouched():
 
 def test_response_body_cannot_be_unicode():
     exc = assert_raises(TypeError, Response, body=u"Greetings, program!")
+
+def test_response_headers_protect_against_crlf_injection():
+    response = Response()
+    def inject():
+        response.headers['Location'] = 'foo\r\nbar'
+    assert_raises(CRLFInjection, inject)
 
 
 attach_teardown(globals())
