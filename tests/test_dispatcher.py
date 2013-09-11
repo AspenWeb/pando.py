@@ -361,10 +361,16 @@ def test_trailing_on_virtual_paths():
 # path part params
 # ================
 
-def test_path_part_params_works():
+def test_path_part_without_params_works():
     mk(('foo/index.html', "Greetings program!"))
-    expected = fix('/foo;a=1/')
+    expected = fix('/foo/index.html')
     actual = check('/foo/').fs
+    assert actual == expected, actual + " isn't " + expected
+
+def test_path_part_with_params_works():
+    mk(('foo/index.html', "Greetings program!"))
+    expected = fix('/foo/index.html')
+    actual = check('/foo;a=1/').fs
     assert actual == expected, actual + " isn't " + expected
 
 
