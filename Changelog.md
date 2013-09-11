@@ -6,12 +6,18 @@ Aspen-python Changelog
 
 * Fixed #165 - make it explicit which variables are available to templates
   By default all variables are available.  If you want to limit that, put
-  the list of variable names in __all__
+  the list of variable names in `__all__`
+
 
 0.25.3 - Released 2013-08-09 by @whit537
 ----------------------------------------
 
 * Fixed #212 - don't wrongly swallow IOError in configure-aspen.py
+
+* Fixed #210 - better error message for negotiated simplate with not enough 
+  pages
+
+* Fixed #209 - tracebacks for raise Response are scary
 
 
 0.25.2 - Released 2013-07-22 by @whit537
