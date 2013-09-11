@@ -358,6 +358,16 @@ def test_trailing_on_virtual_paths():
     assert actual == expected, actual + " isn't " + expected
 
 
+# path part params
+# ================
+
+def test_path_part_params_works():
+    mk(('foo/index.html', "Greetings program!"))
+    expected = fix('/foo;a=1/')
+    actual = check('/foo/').fs
+    assert actual == expected, actual + " isn't " + expected
+
+
 # Docs
 # ====
 
@@ -366,7 +376,6 @@ GREETINGS_NAME_SPT = "[-----]\nname = path['name']\n[------]\nGreetings, %(name)
 def test_virtual_path_docs_1():
     mk(('%name/index.html.spt', GREETINGS_NAME_SPT))
     expected = "Greetings, aspen!"
-    #import pdb; pdb.set_trace()
     response = handle('/aspen/')
     actual = response.body
     assert actual == expected, repr(actual) + " from " + repr(response)
@@ -436,6 +445,7 @@ def test_intercept_socket_intercepts_transported():
     actual = dispatcher.extract_socket_info(request.line.uri.path.decoded)
     expected = ('/foo.sock', '1/websocket/46327hfjew3')
     assert actual == expected, actual
+
 
 # mongs
 # =====
