@@ -39,6 +39,18 @@ inside of simplate:</p>
 <pre>foo = qs["foo"]
 </pre>
 
+Even advanced <a href="http://tools.ietf.org/html/rfc2396.html">RFC2396</a> URL parameters
+are handily available:</p>
+
+<table>
+
+    <tr><td>request.line.uri.path.parts</td><td>List of UnicodeWithParams</td><td></td><td></td></tr>
+    <tr><td>request.line.uri.path.parts[*].params</td><td>Mapping</td><td></td><td></td></tr>
+
+</table>
+
+So if <pre>/foo/index.html.spt</pre> gets a request that looks like <pre>/foo;a=1;b;a=3/</pre>, the values of
+<pre>a</a> are in <pre>request.line.uri.path.parts[0].params['a']</pre>. And it's also true that <pre>b in request.line.uri.path.parts[0].params</pre>.
 
 <p>There are also booleans for each of the <a
     href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html">standard HTTP
@@ -84,6 +96,8 @@ str, is also dealt with lazily.</p>
     <tr><td>request.line.uri.path</td><td>Path</td><td>Mapping</td><td></td></tr>
     <tr><td>request.line.uri.path.raw</td><td>str</td><td></td><td></td></tr>
     <tr><td>request.line.uri.path.decoded</td><td>unicode</td><td></td><td></td></tr>
+    <tr><td>request.line.uri.path.parts</td><td>List of UnicodeWithParams</td><td></td><td></td></tr>
+    <tr><td>request.line.uri.path.parts[*].params</td><td>Mapping</td><td></td><td></td></tr>
     <tr><td>request.line.uri.querystring</td><td>Querystring</td><td>Mapping</td><td></td></tr>
     <tr><td>request.line.uri.querystring.raw</td><td>str</td><td></td></tr>
     <tr><td>request.line.uri.querystring.decoded&nbsp;</td><td>unicode</td><td></td><td></td></tr>
