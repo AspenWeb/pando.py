@@ -363,8 +363,14 @@ def test_trailing_on_virtual_paths():
 
 def test_path_part_params_works():
     mk(('foo/index.html', "Greetings program!"))
-    expected = fix('/foo;a=1/')
-    actual = check('/foo/').fs
+    expected = fix('/foo/index.html')
+    actual = check('/foo;a=1/').fs
+    assert actual == expected, actual + " isn't " + expected
+
+def test_path_part_params_vpath():
+    mk(('%bar/index.html', "Greetings program!"))
+    expected = fix('/%bar/index.html')
+    actual = check('/foo;a=1;b=;a=2;b=3/').fs
     assert actual == expected, actual + " isn't " + expected
 
 

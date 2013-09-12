@@ -6,6 +6,7 @@ import os
 from aspen import Response
 from aspen.utils import typecheck
 from backcompat import namedtuple
+from aspen.http.request import UnicodeWithParams
 
 def debug_noop(*args, **kwargs):
     pass
@@ -28,7 +29,7 @@ def splitext(name):
 def _typecast(key, value):
     """Given two unicodes, return a unicode, and an int or unicode.
     """
-    typecheck(key, unicode, value, unicode)
+    typecheck(key, (unicode, UnicodeWithParams), value, (unicode, UnicodeWithParams))
     debug(lambda: "typecasting " + key + ", " + value)
     if key.endswith('.int'):    # you can typecast to int
         key = key[:-4]
@@ -270,8 +271,8 @@ def dispatch(request, pure_dispatch=False):
 
     request.line.uri.path.decoded, request.socket = extract_socket_info(request.line.uri.path.decoded)
 
-    # Handle URI pathsegs
-    pathsegs = request.line.uri.path.decoded.lstrip('/').split('/')
+    # Handle URI path parts
+    pathparts = request.line.uri.path.parts
 
     # Set up the real environment for the dispatcher.
     # ===============================================
@@ -292,19 +293,19 @@ def dispatch(request, pure_dispatch=False):
                               , find_index
                               , noext_matched
                               , startdir
-                              , pathsegs
+                              , pathparts
                                )
 
     debug(lambda: "dispatch_abstract returned: " + repr(result))
 
     if result.match:
         matchbase, matchname = result.match.rsplit(os.path.sep,1)
-        if pathsegs[-1] != '' and matchname in request.website.indices and \
+        if pathparts[-1] != '' and matchname in request.website.indices and \
                 is_first_index(request.website.indices, matchbase, matchname):
             # asked for something that maps to a default index file; redirect to / per issue #175
-            debug(lambda: "found default index '%s' maps into %r" % (pathsegs[-1], request.website.indices))
+            debug(lambda: "found default index '%s' maps into %r" % (pathparts[-1], request.website.indices))
             uri = request.line.uri
-            location = uri.path.raw[:-len(pathsegs[-1])]
+            location = uri.path.raw[:-len(pathparts[-1])]
             if uri.querystring.raw:
                 location += '?' + uri.querystring.raw
             raise Response(302, headers={'Location': location})
