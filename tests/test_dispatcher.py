@@ -373,6 +373,30 @@ def test_path_part_params_vpath():
     actual = check('/foo;a=1;b=;a=2;b=3/').fs
     assert actual == expected, actual + " isn't " + expected
 
+def test_path_part_params_static_file():
+    mk(('/foo/bar.html', "Greetings program!"))
+    expected = fix('/foo/bar.html')
+    actual = check('/foo/bar.html;a=1;b=;a=2;b=3').fs
+    assert actual == expected, actual + " isn't " + expected
+
+def test_path_part_params_simplate():
+    mk(('/foo/bar.html.spt', "Greetings program!"))
+    expected = fix('/foo/bar.html.spt')
+    actual = check('/foo/bar.html;a=1;b=;a=2;b=3').fs
+    assert actual == expected, actual + " isn't " + expected
+
+def test_path_part_params_negotiated_simplate():
+    mk(('/foo/bar.spt', "Greetings program!"))
+    expected = fix('/foo/bar.spt')
+    actual = check('/foo/bar.html;a=1;b=;a=2;b=3').fs
+    assert actual == expected, actual + " isn't " + expected
+
+def test_path_part_params_greedy_simplate():
+    mk(('/foo/%bar.spt', "Greetings program!"))
+    expected = fix('/foo/%bar.spt')
+    actual = check('/foo/baz/buz;a=1;b=;a=2;b=3/blam.html').fs
+    assert actual == expected, actual + " isn't " + expected
+
 
 # Docs
 # ====
