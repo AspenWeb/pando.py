@@ -467,7 +467,6 @@ class URI(unicode):
         obj.path = path
         obj.querystring = querystring
         obj.raw = raw
-        obj.path.parts = extract_rfc2396_params(path) 
         return obj
 
 def extract_rfc2396_params(path):
@@ -477,19 +476,26 @@ def extract_rfc2396_params(path):
     "?" are reserved.'  This way you can do 
     /frisbee;color=red;size=small/logo;sponsor=w3c;color=black/image.jpg
     and each path segment gets its own params.
+
+    * path should be raw so we don't split or operate on a decoded character
+    * output is decoded
     """
-    pathsegs = path.decoded.lstrip('/').split('/')
+    pathsegs = path.lstrip('/').split('/')
+    def decode(input): 
+        return urllib.unquote(input).decode('UTF-8')
+    
     segments_with_params = []
     for component in pathsegs:
         parts = component.split(';')
         params = Mapping()
+        segment = decode(parts[0])
         for p in parts[1:]:
             if '=' in p:
                 k, v = p.split('=', 1)
             else:
                 k, v = p, ''
-            params.add(k, v)
-        segments_with_params.append(UnicodeWithParams(parts[0], params))
+            params.add(decode(k), decode(v))
+        segments_with_params.append(UnicodeWithParams(segment, params))
     return segments_with_params
 
 
@@ -503,8 +509,9 @@ class Path(Mapping):
     """
 
     def __init__(self, raw):
-        self.decoded = urllib.unquote(raw).decode('UTF-8')
         self.raw = raw
+        self.decoded = urllib.unquote(raw).decode('UTF-8')
+        self.parts = extract_rfc2396_params(raw) 
 
 
 # Request -> Line -> URI -> Querystring
