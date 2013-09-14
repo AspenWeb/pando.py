@@ -187,7 +187,13 @@ of the file that was uploaded.</p>
 <h3>Path Parts</h3>
 
 <p>Aspen <code>Path</code> objects have a <code>parts</code> attribute, which
-is a list of <code>UnicodeWithParams</code> objects. <a
+is a list of <code>UnicodeWithParams</code> objects. So if you're in a simplate
+at <code>/foo/bar/baz.html.spt</code>, then <code>path.parts[1]</code> will be
+<code>'bar'</code> and <code>path.parts[2]</code> will be
+<code>'baz.html'</code>.</p>
+
+
+<p><a
   href="http://tools.ietf.org/html/rfc2396.html">RFC2396</a> specifies a syntax
 for attaching parameters to each path part, and Aspen exposes these in a
 <code>params</code> attribute (which is a <code>Mapping</code> object) on each
@@ -214,6 +220,8 @@ for attaching parameters to each path part, and Aspen exposes these in a
 </pre>
 
 and you'll get:
+
+{{ screenshot("path-part-params") }}
 
 {% end %}
 

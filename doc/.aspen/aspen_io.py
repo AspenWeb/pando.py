@@ -1,9 +1,4 @@
 """Helpers for the http://aspen.io/ website.
-
-This is where we implement serving images from a CDN in production. All files
-must use the img and screenshot helpers defined herein to participate in this
-system.
-
 """
 from os.path import dirname
 
