@@ -8,7 +8,7 @@ we use to model each:
             - method            Method      ASCII
             - uri               URI
                 - path          Path
-                  - segments    list of UnicodeWithParams
+                  - parts       list of UnicodeWithParams
                 - querystring   Querystring
             - version           Version     ASCII
         - headers               Headers     str
