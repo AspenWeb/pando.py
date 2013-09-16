@@ -402,8 +402,8 @@ def test_extract_path_params_complex():
 
 def test_path_params_api():
     request = Request(uri="/foo;a=1;b=2;b=3;c/bar;a=2,ab;b=1")
-    segs, params = (['foo', 'bar'], [{'a':['1'], 'b':['2', '3'], 'c':['']}, {'a':[ '2,ab' ], 'b':['1']}])
-    assert request.line.uri.path.parts == segs, request.line.uri.path.parts
+    parts, params = (['foo', 'bar'], [{'a':['1'], 'b':['2', '3'], 'c':['']}, {'a':[ '2,ab' ], 'b':['1']}])
+    assert request.line.uri.path.parts == parts, request.line.uri.path.parts
     assert request.line.uri.path.parts[0].params == params[0]
     assert request.line.uri.path.parts[1].params == params[1]
 
