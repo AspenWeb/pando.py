@@ -39,7 +39,6 @@ inside of simplate:</p>
 <pre>foo = qs["foo"]
 </pre>
 
-
 <p>There are also booleans for each of the <a
     href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html">standard HTTP
     methods</a>, so simplates in a <a
@@ -84,6 +83,7 @@ str, is also dealt with lazily.</p>
     <tr><td>request.line.uri.path</td><td>Path</td><td>Mapping</td><td></td></tr>
     <tr><td>request.line.uri.path.raw</td><td>str</td><td></td><td></td></tr>
     <tr><td>request.line.uri.path.decoded</td><td>unicode</td><td></td><td></td></tr>
+    <tr><td>request.line.uri.path.parts</td><td>List of UnicodeWithParams</td><td></td><td>see <a href="#path-parts">below</a></td></tr>
     <tr><td>request.line.uri.querystring</td><td>Querystring</td><td>Mapping</td><td></td></tr>
     <tr><td>request.line.uri.querystring.raw</td><td>str</td><td></td></tr>
     <tr><td>request.line.uri.querystring.decoded&nbsp;</td><td>unicode</td><td></td><td></td></tr>
@@ -105,6 +105,7 @@ str, is also dealt with lazily.</p>
     <tr><td>request.body</td><td><a href="#mapping">Body</a></td><td></td></tr>
     <tr><td>request.body.raw</td><td>str</td></tr>
 </table>
+
 
 <p>Here are the methods on the Request object:</p>
 
@@ -180,6 +181,47 @@ are file uploads will be instances of the standard library&rsquo;s <a
 Each such object has <code>filename</code>, <code>value</code>, and
 <code>type</code> attributes with the name, bytes, and advertised Content-Type
 of the file that was uploaded.</p>
+
+
+<a name="path-parts"></a>
+<h3>Path Parts</h3>
+
+<p>Aspen <code>Path</code> objects have a <code>parts</code> attribute, which
+is a list of <code>UnicodeWithParams</code> objects. So if you're in a simplate
+at <code>/foo/bar/baz.html.spt</code>, then <code>path.parts[1]</code> will be
+<code>'bar'</code> and <code>path.parts[2]</code> will be
+<code>'baz.html'</code>.</p>
+
+
+<p><a
+  href="http://tools.ietf.org/html/rfc2396.html">RFC2396</a> specifies a syntax
+for attaching parameters to each path part, and Aspen exposes these in a
+<code>params</code> attribute (which is a <code>Mapping</code> object) on each
+<code>unicode</code> in the <code>path.parts</code> list.</p>
+
+<p>Say what?</p>
+
+<p>If you have:</p>
+
+<pre>/foo/index.html.spt
+</pre>
+
+<p>and you hit it with:</p>
+
+<pre>/foo;a=1;b;a=3/
+</pre>
+
+<p>then you can do:</p>
+
+<pre>if 'b' in path.parts[0].params:
+    a = path.parts[0].params['a']
+\[---]
+%(a)s
+</pre>
+
+and you'll get:
+
+{{ screenshot("path-part-params") }}
 
 {% end %}
 

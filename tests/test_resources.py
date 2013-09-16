@@ -1,8 +1,8 @@
 from textwrap import dedent
 
 from aspen import Response
-from aspen.testing import assert_raises, check
-from aspen.testing.fsfix import attach_teardown
+from aspen.testing import assert_raises, check, handle
+from aspen.testing.fsfix import attach_teardown, mk
 from aspen.resources.pagination import split
 
 
@@ -47,6 +47,16 @@ def test_resource_dunder_all_limits_vars():
                              )
     # in production, KeyError is turned into a 500 by an outer wrapper
     assert type(actual) == KeyError, actual
+
+def test_path_part_params_are_available():
+    mk(('/foo/index.html.spt', """
+if 'b' in path.parts[0].params:
+    a = path.parts[0].params['a']
+[---]
+%(a)s"""))
+    expected = "3"
+    actual = handle('/foo;a=1;b;a=3/').body
+    assert actual == expected, actual + " isn't " + expected
 
 def test_utf8():
     expected = unichr(1758).encode('utf8')
