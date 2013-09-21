@@ -5,6 +5,11 @@ without assert: 0.79 seconds
 with assert: 0.95 seconds
 
 """
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
 import time
 
 start = time.time()

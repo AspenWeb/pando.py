@@ -1,4 +1,8 @@
-from __future__ import with_statement # for Python 2.5
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
 import time
 
 from aspen.sockets import FFFD
@@ -38,7 +42,7 @@ def test_socket_can_barely_function():
     socket = make_socket()
     socket.tick()
 
-    expected = FFFD+'33'+FFFD+'3::/echo.sock:Greetings, program!'
+    expected = FFFD+b'33'+FFFD+b'3::/echo.sock:Greetings, program!'
     actual = socket._recv()
     if actual is not None:
         actual = actual.next()
@@ -48,10 +52,10 @@ def test_socket_can_echo():
     mk(('echo.sock.spt', 'socket.send(socket.recv())'))
 
     with SocketInThread() as socket:
-        socket._send('3::/echo.sock:Greetings, program!')
+        socket._send(b'3::/echo.sock:Greetings, program!')
         time.sleep(0.05) # give the resource time to tick
 
-        expected = FFFD+'33'+FFFD+'3::/echo.sock:Greetings, program!'
+        expected = FFFD+b'33'+FFFD+b'3::/echo.sock:Greetings, program!'
         actual = socket._recv()
         if actual is not None:
             actual = actual.next()
