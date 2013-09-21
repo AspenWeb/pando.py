@@ -1,3 +1,8 @@
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
 import re
 
 
@@ -15,7 +20,7 @@ class Page(object):
 
     def __init__(self, content, header='', offset=0):
         self.content = content
-        self.header = header
+        self.header = header.decode('ascii')
         self.offset = offset
 
     @property

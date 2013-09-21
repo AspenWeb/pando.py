@@ -1,5 +1,10 @@
 """Implements rendered resources.
 """
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
 from aspen.resources.negotiated_resource import NegotiatedResource
 from aspen.utils import typecheck
 from aspen.resources.pagination import parse_specline
@@ -35,8 +40,6 @@ class RenderedResource(NegotiatedResource):
         They don't have a media type, and the renderer is optional.
 
         """
-        typecheck(specline, str)
-
         #parse into parts.
         parts = parse_specline(specline)
 

@@ -19,9 +19,9 @@ class Stub:
 
 class StubBody:
     def read(self):
-        return ''
+        return b''
     def __iter__(self):
-        yield ''
+        yield b''
 
 def StubWSGIRequest(path='/'):
     environ = {}
@@ -82,7 +82,7 @@ class Handle(object):
         response = website.handle_safely(request)
         return response
 
-handle = Handle(['--www_root', FSFIX])
+handle = Handle(['--www_root', FSFIX, '--show_tracebacks=yes'])
 
 
 def Resource(fs):
