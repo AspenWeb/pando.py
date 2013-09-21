@@ -60,9 +60,8 @@ class Response(Exception):
         """
         if not isinstance(code, int):
             raise TypeError("'code' must be an integer")
-        elif not isinstance(body, str) and not hasattr(body, '__iter__'):
-            raise TypeError("'body' must be a bytestring or iterable of "
-                            "bytestrings")
+        elif not isinstance(body, basestring) and not hasattr(body, '__iter__'):
+            raise TypeError("'body' must be a string or iterable of strings")
         elif headers is not None and not isinstance(headers, (dict, list)):
             raise TypeError("'headers' must be a dictionary or a list of " +
                             "2-tuples")
@@ -102,8 +101,9 @@ class Response(Exception):
 
         start_response(wsgi_status, wsgi_headers)
         body = self.body
-        if isinstance(body, str):
+        if isinstance(body, basestring):
             body = [body]
+        body = (x.encode('ascii') if isinstance(x, unicode) else x for x in body)
         return CloseWrapper(self.request, body)
 
     def __repr__(self):

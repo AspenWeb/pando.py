@@ -12,6 +12,11 @@ To use:
     # install it
     website.hooks.inbound_early.register(auth)
 """
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
 
 import base64
 
@@ -64,7 +69,7 @@ class BasicAuth(object):
             Authorized' response. Has a reasonable default
         :realm - the name of the auth realm
         """
-        failhtml = html or '''Not Authorized. <a href="#">Try again.</a>'''
+        failhtml = html or b'''Not Authorized. <a href="#">Try again.</a>'''
         self.verify_password = verify_password
         fail_header = { 'WWW-Authenticate': 'Basic realm="%s"' % realm }
         self.fail_401 = Response(401, failhtml, fail_header)

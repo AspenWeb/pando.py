@@ -1,5 +1,10 @@
 """Define configuration objects.
 """
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
 import errno
 import mimetypes
 import os
@@ -47,7 +52,7 @@ KNOBS = \
     , 'list_directories':   (False, parse.yes_no)
     , 'media_type_default': ('text/plain', parse.media_type)
     , 'media_type_json':    ('application/json', parse.media_type)
-    , 'renderer_default':   ('stdlib_percent', parse.renderer)
+    , 'renderer_default':   (b'stdlib_percent', parse.renderer)
     , 'show_tracebacks':    (False, parse.yes_no)
      }
 
