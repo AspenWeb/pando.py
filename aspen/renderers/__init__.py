@@ -70,6 +70,10 @@ machinery is inadequate for some reason let's evolve the machinery so all
 renderers behave consistently for users. Thanks.
 
 """
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
 
 
 # abstract bases

@@ -7,6 +7,11 @@ Socket.IO packets contain one or more frames of this format:
 Alternately, a packet can contain a single encoded-message, without framing.
 
 """
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
 from aspen.sockets import FFFD
 from aspen.sockets.message import Message
 
@@ -28,7 +33,7 @@ class Packet(object):
             frames = frames[1:] # discard initial empty string
             nframes = len(frames)
             if nframes % 2 != 0:
-                msg = "There are an odd number of frames in this packet: "
+                msg = b"There are an odd number of frames in this packet: "
                 msg += self.bytes
                 raise SyntaxError(msg)
             while frames:
@@ -40,4 +45,4 @@ class Packet(object):
 
 def frame(bytes):
     bytes = str(bytes)
-    return "%s%d%s%s" % (FFFD, len(bytes), FFFD, bytes)
+    return b"%s%d%s%s" % (FFFD, len(bytes), FFFD, bytes)
