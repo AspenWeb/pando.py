@@ -1,3 +1,9 @@
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
+
 import os
 import re
 import sys
@@ -71,14 +77,14 @@ class Response(Exception):
         Exception.__init__(self)
         self.code = code
         self.body = body
-        self.headers = Headers('')
+        self.headers = Headers(b'')
         self.charset = charset
         if headers:
             if isinstance(headers, dict):
                 headers = headers.items()
             for k, v in headers:
                 self.headers[k] = v
-        self.headers.cookie.load(self.headers.get('Cookie', ''))
+        self.headers.cookie.load(self.headers.get('Cookie', b''))
 
     def __call__(self, environ, start_response):
         wsgi_status = str(self)
