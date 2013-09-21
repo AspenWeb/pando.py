@@ -16,6 +16,11 @@ that your application will have its own wrapper(s).
 Unicode objects are encoded as UTF-8. Bytestrings are passed through as-is.
 
 """
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
 from __future__ import with_statement
 import os
 import pprint
@@ -57,7 +62,8 @@ def log(*messages, **kw):
                     # Log lines can get interleaved, but that's okay, because
                     # we prepend lines with thread identifiers that can be used
                     # to reassemble log messages per-thread.
-                    print fmt % line
+                    print(line.decode('utf8'))
+                    print(fmt % line.decode('utf8'))
                     sys.stdout.flush()
 
 

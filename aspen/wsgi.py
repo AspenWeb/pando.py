@@ -6,6 +6,11 @@ want it to be. Here, it's only instantiated when someone passes this to
 gunicorn, spawning, etc.
 
 """
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
 from aspen.website import Website
 
 website = Website([])
