@@ -107,8 +107,8 @@ def test_headers_access_is_case_insensitive():
 
 def test_goad_passes_method_through():
     environ = {}
-    environ['REQUEST_METHOD'] = '\xdead\xbeef'
-    environ['SERVER_PROTOCOL'] = ''
+    environ['REQUEST_METHOD'] = b'\xdead\xbeef'
+    environ['SERVER_PROTOCOL'] = b''
     environ['wsgi.input'] = None
 
     expected = ('\xdead\xbeef', '', '', '', '', None)
@@ -117,11 +117,11 @@ def test_goad_passes_method_through():
 
 def test_goad_makes_franken_uri():
     environ = {}
-    environ['REQUEST_METHOD'] = ''
-    environ['SERVER_PROTOCOL'] = ''
-    environ['PATH_INFO'] = '/cheese'
-    environ['QUERY_STRING'] = 'foo=bar'
-    environ['wsgi.input'] = ''
+    environ['REQUEST_METHOD'] = b''
+    environ['SERVER_PROTOCOL'] = b''
+    environ['PATH_INFO'] = b'/cheese'
+    environ['QUERY_STRING'] = b'foo=bar'
+    environ['wsgi.input'] = b''
 
     expected = ('', '/cheese?foo=bar', '', '', '', '')
     actual = kick_against_goad(environ)
@@ -129,8 +129,8 @@ def test_goad_makes_franken_uri():
 
 def test_goad_passes_version_through():
     environ = {}
-    environ['REQUEST_METHOD'] = ''
-    environ['SERVER_PROTOCOL'] = '\xdead\xbeef'
+    environ['REQUEST_METHOD'] = b''
+    environ['SERVER_PROTOCOL'] = b'\xdead\xbeef'
     environ['wsgi.input'] = None
 
     expected = ('', '', '', '\xdead\xbeef', '', None)
@@ -139,10 +139,10 @@ def test_goad_passes_version_through():
 
 def test_goad_makes_franken_headers():
     environ = {}
-    environ['REQUEST_METHOD'] = ''
-    environ['SERVER_PROTOCOL'] = ''
-    environ['HTTP_FOO_BAR'] = 'baz=buz'
-    environ['wsgi.input'] = ''
+    environ['REQUEST_METHOD'] = b''
+    environ['SERVER_PROTOCOL'] = b''
+    environ['HTTP_FOO_BAR'] = b'baz=buz'
+    environ['wsgi.input'] = b''
 
     expected = ('', '', '', '', 'FOO-BAR: baz=buz', '')
     actual = kick_against_goad(environ)
@@ -150,9 +150,9 @@ def test_goad_makes_franken_headers():
 
 def test_goad_passes_body_through():
     environ = {}
-    environ['REQUEST_METHOD'] = ''
-    environ['SERVER_PROTOCOL'] = ''
-    environ['wsgi.input'] = '\xdead\xbeef'
+    environ['REQUEST_METHOD'] = b''
+    environ['SERVER_PROTOCOL'] = b''
+    environ['wsgi.input'] = b'\xdead\xbeef'
 
     expected = ('', '', '', '', '', '\xdead\xbeef')
     actual = kick_against_goad(environ)

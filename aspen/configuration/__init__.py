@@ -31,8 +31,8 @@ from aspen.utils import ascii_dammit
 
 KNOBS = \
     { 'configuration_scripts': (lambda: [], parse.list_)
-    , 'network_engine':     (u'cheroot', parse.network_engine)
-    , 'network_address':    ( ((u'0.0.0.0', 8080), socket.AF_INET)
+    , 'network_engine':     ('cheroot', parse.network_engine)
+    , 'network_address':    ( (('0.0.0.0', 8080), socket.AF_INET)
                             , parse.network_address
                              )
     , 'project_root':       (None, parse.identity)
@@ -43,16 +43,16 @@ KNOBS = \
     # Extended Options
     # 'name':               (default, from_unicode)
     , 'changes_reload':     (False, parse.yes_no)
-    , 'charset_dynamic':    (u'UTF-8', parse.charset)
+    , 'charset_dynamic':    ('UTF-8', parse.charset)
     , 'charset_static':     (None, parse.charset)
-    , 'indices':            ( lambda: [u'index.html', u'index.json', u'index'] +
-                                      [u'index.html.spt', u'index.json.spt', u'index.spt']
+    , 'indices':            ( lambda: ['index.html', 'index.json', 'index'] +
+                                      ['index.html.spt', 'index.json.spt', 'index.spt']
                             , parse.list_
                              )
     , 'list_directories':   (False, parse.yes_no)
     , 'media_type_default': ('text/plain', parse.media_type)
     , 'media_type_json':    ('application/json', parse.media_type)
-    , 'renderer_default':   (b'stdlib_percent', parse.renderer)
+    , 'renderer_default':   ('stdlib_percent', parse.renderer)
     , 'show_tracebacks':    (False, parse.yes_no)
      }
 
@@ -91,11 +91,11 @@ class Configurable(object):
         return out % (name, hydrated, context + name_in_context)
 
     def set(self, name, raw, from_unicode, context, name_in_context):
-        assert isinstance(raw, str), "%s isn't a bytestring" % name
-
         error = None
         try:
-            value = raw.decode('US-ASCII')
+            value = raw
+            if isinstance(value, str):
+                value = raw.decode('US-ASCII')
             hydrated = from_unicode(value)
         except UnicodeDecodeError, error:
             value = ascii_dammit(value)

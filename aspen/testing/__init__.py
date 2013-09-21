@@ -1,3 +1,8 @@
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
 import os
 import sys
 
@@ -9,6 +14,7 @@ from aspen import resources
 from aspen.http.request import Request
 from aspen.website import Website
 from aspen.testing.fsfix import fix, attach_teardown, FSFIX, mk, teardown
+from aspen.utils import typecheck
 
 
 __all__ = ['assert_raises', 'attach_teardown', 'fix', 'teardown', 'handle']
@@ -23,19 +29,20 @@ class StubBody:
     def __iter__(self):
         yield b''
 
-def StubWSGIRequest(path='/'):
+def StubWSGIRequest(path=b'/'):
     environ = {}
     environ['PATH_INFO'] = path
-    environ['REMOTE_ADDR'] = '0.0.0.0'
-    environ['REQUEST_METHOD'] = 'GET'
-    environ['SERVER_PROTOCOL'] = 'HTTP/1.1'
-    environ['HTTP_HOST'] = 'localhost'
+    environ['REMOTE_ADDR'] = b'0.0.0.0'
+    environ['REQUEST_METHOD'] = b'GET'
+    environ['SERVER_PROTOCOL'] = b'HTTP/1.1'
+    environ['HTTP_HOST'] = b'localhost'
     environ['wsgi.input'] = StubBody()
     return environ
 
 class StubRequest:
 
-    def __call__(cls, uripath='/'):
+    def __call__(cls, uripath=b'/'):
+        typecheck(uripath, str)
         return Request.from_wsgi(StubWSGIRequest(uripath))
 
     @classmethod
@@ -76,6 +83,7 @@ class Handle(object):
         it's limited. But it's a something. Kind of. Almost.
 
         """
+        path = path.encode('ascii') # StubRequest/Request takes bytestings only.
         website = Website(self.argv + list(a))
         request = StubRequest(path)
         request.website = website
