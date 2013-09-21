@@ -1,3 +1,8 @@
+#from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
 import re
 import sys
 from StringIO import StringIO
@@ -46,6 +51,6 @@ def test_log_dammit_works():
     assert actual == ["yes", "rly", "{}", "[]", "None"], actual
 
 def test_logging_unicode_works():
-    actual = capture(u"oh \u2614 heck", level=4)
-    assert actual == ["oh \xe2\x98\x94 heck"], actual
+    actual = capture("oh \u2614 heck", level=4)
+    assert actual == ["oh \u2614 heck"], actual
 
