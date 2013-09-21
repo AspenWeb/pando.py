@@ -1,3 +1,8 @@
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
 import os
 import socket
 
@@ -137,7 +142,7 @@ Greetings, {name}!
        ('index.html.spt', SIMPLATE)
       )
     w = Website(['--www_root', FSFIX, '-p', fix('.aspen'), '--show_tracebacks=yes'])
-    request = StubRequest('/')
+    request = StubRequest(b'/')
     request.website = w
     response = w.handle_safely(request)
     actual = response.body.strip()

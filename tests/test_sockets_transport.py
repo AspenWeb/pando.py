@@ -1,3 +1,8 @@
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
 import time
 from collections import deque
 from cStringIO import StringIO
@@ -84,7 +89,7 @@ def test_transport_GET_gets_data_from_socket():
     request = Request('GET')
     response = transport.respond(request)
 
-    expected = FFFD+'23'+FFFD+'3:::Greetings, program!'
+    expected = FFFD+b'23'+FFFD+b'3:::Greetings, program!'
     actual = response.body.next()
     assert actual == expected, actual
 
@@ -110,7 +115,7 @@ def test_transport_handles_roundtrip():
     request = Request('GET', '/echo.sock')
     response = transport.respond(request)
 
-    expected = FFFD+"18"+FFFD+"3::/echo.sock:ping"
+    expected = FFFD+b"18"+FFFD+b"3::/echo.sock:ping"
     actual = response.body.next()
     assert actual == expected, actual
 

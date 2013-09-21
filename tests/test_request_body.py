@@ -1,3 +1,8 @@
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
 from StringIO import StringIO
 
 from aspen.http.request import Body, Headers
@@ -6,6 +11,8 @@ FORMDATA = object()
 WWWFORM = object()
 
 def make_body(raw, headers=None, content_type=WWWFORM):
+    if isinstance(raw, unicode):
+        raw = raw.encode('ascii')
     if headers is None:
         if content_type is FORMDATA:
             content_type = "multipart/form-data; boundary=AaB03x"
@@ -15,7 +22,7 @@ def make_body(raw, headers=None, content_type=WWWFORM):
     headers['Host'] = 'Blah'
     return Body( Headers(headers)
                , StringIO(raw)
-               , ""
+               , b""
                 )
 
 
