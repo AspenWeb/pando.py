@@ -63,7 +63,7 @@ class Message(object):
     def _set_type(self, type_):
         try:
             type_ = int(type_)
-            assert type_ in range(9)
+            assert type_ in list(range(9))
         except (ValueError, AssertionError), exc:
             raise ValueError("The message type is not in 0..8: %s." % type_)
         self.__type = type_
