@@ -73,7 +73,7 @@ def test_transport_POST_gives_data_to_socket():
 
     request = Request( 'POST'
                      , '/echo.sock'
-                     , body=StringIO('3::/echo.sock:Greetings, program!')
+                     , body=StringIO(b'3::/echo.sock:Greetings, program!')
                       )
     transport.respond(request)
 
@@ -83,7 +83,7 @@ def test_transport_POST_gives_data_to_socket():
 
 def test_transport_GET_gets_data_from_socket():
     transport = make_transport(state=1)
-    message = Message.from_bytes("3:::Greetings, program!")
+    message = Message.from_bytes(b"3:::Greetings, program!")
     transport.socket.outgoing.put(message)
 
     request = Request('GET')
@@ -108,7 +108,7 @@ def test_transport_GET_blocks_for_empty_socket():
 def test_transport_handles_roundtrip():
     transport = make_transport(state=1, content="socket.send(socket.recv())")
 
-    request = Request('POST', '/echo.sock', body=StringIO("3::/echo.sock:ping"))
+    request = Request('POST', '/echo.sock', body=StringIO(b"3::/echo.sock:ping"))
     transport.respond(request)
     transport.socket.tick() # do it manually
 
