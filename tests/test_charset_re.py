@@ -1,5 +1,5 @@
 from aspen.http.response import charset_re
-from aspen.testing import attach_teardown
+from aspen.testing import teardown_function
 
 
 m = lambda s: charset_re.match(s) is not None
@@ -44,5 +44,3 @@ def test_charset_re_windows1252():
 def test_charset_re_matches_valid_perl():
     assert m(":_()+.-")
 
-
-attach_teardown(globals())
