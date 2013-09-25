@@ -5,7 +5,7 @@ from aspen.sockets.channel import Channel
 from aspen.sockets.message import Message
 from aspen.testing.sockets import make_socket
 from aspen.testing import assert_raises
-from aspen.testing.fsfix import mk, attach_teardown
+from aspen.testing.fsfix import mk, teardown_function
 
 
 def test_channel_is_instantiable():
@@ -52,4 +52,4 @@ def test_channel_passes_send_on_to_four_sockets():
         actual = socket.outgoing.queue
         assert actual == expected, actual
 
-attach_teardown(globals())
+

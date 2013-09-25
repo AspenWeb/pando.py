@@ -1,5 +1,5 @@
 from aspen import Response
-from aspen.testing import assert_raises, attach_teardown
+from aspen.testing import assert_raises, teardown_function
 
 from aspen.http.mapping import Mapping, CaseInsensitiveMapping
 
@@ -224,4 +224,4 @@ def est_querystring_is_case_sensitive():
     assert actual == expected, actual
 
 
-attach_teardown(globals())
+

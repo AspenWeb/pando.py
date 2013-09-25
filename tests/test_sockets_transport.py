@@ -8,7 +8,7 @@ from aspen.sockets import FFFD
 from aspen.sockets.transport import XHRPollingTransport
 from aspen.sockets.message import Message
 from aspen.testing.sockets import make_socket, make_request
-from aspen.testing.fsfix import attach_teardown, mk
+from aspen.testing.fsfix import teardown_function, mk
 
 
 def make_transport(content='', state=0):
@@ -115,4 +115,4 @@ def test_transport_handles_roundtrip():
     assert actual == expected, actual
 
 
-attach_teardown(globals())
+
