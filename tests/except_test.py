@@ -22,4 +22,4 @@ for i in range(10000000):
         pass
 
 end = time.time()
-print "%5.2f" % (end - start)
+print("%5.2f" % (end - start))
