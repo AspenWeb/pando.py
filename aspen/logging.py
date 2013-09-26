@@ -62,7 +62,6 @@ def log(*messages, **kw):
                     # Log lines can get interleaved, but that's okay, because
                     # we prepend lines with thread identifiers that can be used
                     # to reassemble log messages per-thread.
-                    print(line.decode('utf8'))
                     print(fmt % line.decode('utf8'))
                     sys.stdout.flush()
 
