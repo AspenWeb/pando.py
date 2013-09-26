@@ -10,12 +10,6 @@ import tempfile
 import traceback
 from os.path import dirname, isdir, join, realpath
 from aspen import resources, sockets
-try:
-    from nose.tools import with_setup
-except ImportError:
-    with_setup = None
-    nose_tb = traceback.format_exc()
-
 
 CWD = os.getcwd()
 FSFIX = os.path.realpath(os.path.join(tempfile.gettempdir(), b'fsfix'))
@@ -72,6 +66,9 @@ def rm():
     if isdir(FSFIX):
         shutil.rmtree(FSFIX)
 
+def teardown_function(function):
+    teardown()
+
 def teardown():
     """Standard teardown function.
 
@@ -99,27 +96,6 @@ def teardown():
     aspen.execution.clear_changes()
 
 teardown() # start clean
-
-def attach_teardown(context):
-    """Given a namespace dictionary, attach the teardown function.
-
-    This function is designed for nose and will raise NotImplementedError at
-    runtime with an additional ImportError traceback if nose is not available.
-    To use it put this line at the end of your test modules:
-
-        attach_teardown(globals())
-
-    """
-    if with_setup is None:
-        raise NotImplementedError("This function is designed for nose, which "
-                                  "couldn't be imported:" + os.sep + nose_tb)
-    for name, func in context.items():
-        if name.startswith('test_'):
-            func = with_setup(teardown=teardown)(func) # non-destructive
-
-def torndown(func):
-    func.teardown = teardown
-    return func
 
 def path(*parts):
     """Given relative path parts, convert to absolute path on the filesystem.

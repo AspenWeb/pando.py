@@ -13,11 +13,11 @@ if aspen.logging.LOGGING_THRESHOLD == -1:
 from aspen import resources
 from aspen.http.request import Request
 from aspen.website import Website
-from aspen.testing.fsfix import fix, attach_teardown, FSFIX, mk, teardown
 from aspen.utils import typecheck
+from aspen.testing.fsfix import fix, FSFIX, mk, teardown, teardown_function
 
 
-__all__ = ['assert_raises', 'attach_teardown', 'fix', 'teardown', 'handle']
+__all__ = ['assert_raises', 'fix', 'teardown', 'handle', 'teardown_function']
 
 
 class Stub:
