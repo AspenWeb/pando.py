@@ -1,7 +1,7 @@
 from aspen.sockets import FFFD
 from aspen.sockets.packet import Packet
 from aspen.sockets.message import Message
-from aspen.testing import assert_raises, attach_teardown
+from aspen.testing import assert_raises, teardown_function
 
 
 def test_packet_Packetable_with_unframed_bytes():
@@ -32,4 +32,4 @@ def test_packet_with_odd_frames_tells_you_that():
     assert actual == expected, actual
 
 
-attach_teardown(globals())
+

@@ -1,6 +1,6 @@
 from aspen import Response
 from aspen.testing import assert_raises
-from aspen.testing.fsfix import attach_teardown
+from aspen.testing.fsfix import teardown_function
 from aspen.exceptions import CRLFInjection
 
 
@@ -50,4 +50,4 @@ def test_response_headers_protect_against_crlf_injection():
     assert_raises(CRLFInjection, inject)
 
 
-attach_teardown(globals())
+
