@@ -212,7 +212,6 @@ class Request(str):
                             )
             obj.context = Context(obj)
         except UnicodeError:
-            raise
             # Figure out where the error occurred.
             # ====================================
             # This gives us *something* to go on when we have a Request we
