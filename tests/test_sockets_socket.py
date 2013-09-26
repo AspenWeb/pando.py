@@ -3,7 +3,7 @@ import time
 
 from aspen.sockets import FFFD
 from aspen.sockets.socket import Socket
-from aspen.testing.fsfix import mk, attach_teardown
+from aspen.testing.fsfix import mk, teardown_function
 from aspen.testing.sockets import make_socket, SocketInThread
 
 
@@ -57,4 +57,4 @@ def test_socket_can_echo():
             actual = actual.next()
         assert actual == expected, actual
 
-attach_teardown(globals())
+

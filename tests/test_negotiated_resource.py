@@ -1,7 +1,7 @@
 from aspen import resources, Response
 from aspen.resources.pagination import Page
 from aspen.resources.negotiated_resource import NegotiatedResource
-from aspen.testing import assert_raises, attach_teardown, handle, mk, StubRequest
+from aspen.testing import assert_raises, teardown_function, handle, mk, StubRequest
 from aspen.website import Website
 from aspen.renderers.stdlib_template import Factory as TemplateFactory
 from aspen.renderers.stdlib_percent import Factory as PercentFactory
@@ -300,4 +300,4 @@ def test_negotiated_inside_virtual_path_with_startype_fallback():
 
 
 
-attach_teardown(globals())
+

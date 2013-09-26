@@ -2,7 +2,7 @@ from aspen.sockets import FFFD
 from aspen.sockets.buffer import ThreadedBuffer as Buffer
 from aspen.sockets.message import Message
 from aspen.testing.sockets import make_socket
-from aspen.testing.fsfix import mk, attach_teardown
+from aspen.testing.fsfix import mk, teardown_function
 
 
 def test_buffer_is_instantiable():
@@ -33,4 +33,4 @@ def test_buffer_flush_performance():
     assert nout > 500
 
 
-attach_teardown(globals())
+

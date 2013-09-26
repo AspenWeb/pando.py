@@ -2,7 +2,7 @@ from aspen import Response
 from aspen.http.request import kick_against_goad, Request
 from aspen.http.baseheaders import BaseHeaders
 from aspen.testing import assert_raises, StubRequest
-from aspen.testing.fsfix import attach_teardown
+from aspen.testing.fsfix import teardown_function
 
 
 def test_request_line_raw_works():
@@ -177,4 +177,4 @@ def test_request_redirect_permanent_convenience():
     assert actual == 301, actual
 
 
-attach_teardown(globals())
+
