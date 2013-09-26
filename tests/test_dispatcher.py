@@ -3,7 +3,7 @@ import os
 from aspen import dispatcher, Response
 from aspen.http.request import Request
 from aspen.testing import assert_raises, handle, NoException, StubRequest
-from aspen.testing import attach_teardown, fix, mk
+from aspen.testing import teardown_function, fix, mk
 
 # Helpers
 # =======
@@ -546,4 +546,4 @@ def test_robots_txt_also_shouldnt_be_redirected():
     actual = err.code
     assert actual == 404, actual
 
-attach_teardown(globals())
+
