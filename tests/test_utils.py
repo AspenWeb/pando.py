@@ -4,7 +4,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import aspen.utils # this happens to install the 'repr' error strategy
-from aspen.testing import assert_raises, attach_teardown
+from aspen.testing import assert_raises, teardown_function
 from aspen.utils import ascii_dammit, unicode_dammit, to_age, utcnow
 from datetime import datetime
 
@@ -51,4 +51,4 @@ def test_to_age_formatting_works():
     actual = to_age(utcnow(), fmt_past="Cheese, for %(age)s!")
     assert actual == "Cheese, for just a moment!", actual
 
-attach_teardown(globals())
+

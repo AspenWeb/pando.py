@@ -7,7 +7,7 @@ from textwrap import dedent
 
 from aspen import Response
 from aspen.testing import assert_raises, check, handle
-from aspen.testing.fsfix import attach_teardown, mk
+from aspen.testing.fsfix import teardown_function, mk
 from aspen.resources.pagination import split
 
 
@@ -198,4 +198,4 @@ def test_offset_calculation_advanced():
 # Teardown
 # ========
 
-attach_teardown(globals())
+

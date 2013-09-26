@@ -4,7 +4,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from aspen.sockets.message import Message
-from aspen.testing import assert_raises, attach_teardown
+from aspen.testing import assert_raises, teardown_function
 
 
 def test_message_can_be_instantiated_from_bytes():
@@ -131,4 +131,4 @@ def test_event_data_with_reserved_name_raises_ValueError():
     assert actual == expected, actual
 
 
-attach_teardown(globals())
+

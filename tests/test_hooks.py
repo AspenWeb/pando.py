@@ -4,7 +4,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from aspen.hooks import Hooks
-from aspen.testing import attach_teardown
+from aspen.testing import teardown_function
 
 
 def test_hooks_is_barely_instantiable():
@@ -19,4 +19,4 @@ def test_hooks_can_Be_run():
     assert actual is thing, actual
 
 
-attach_teardown(globals())
+

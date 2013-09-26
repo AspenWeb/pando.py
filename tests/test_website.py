@@ -7,7 +7,7 @@ import os
 import StringIO
 
 from aspen.testing import handle, StubRequest
-from aspen.testing.fsfix import attach_teardown, FSFIX, mk
+from aspen.testing.fsfix import teardown_function, FSFIX, mk
 from aspen.website import Website
 
 
@@ -158,4 +158,4 @@ def test_call_wraps_wsgi_middleware():
     assert respond[1]
 
 
-attach_teardown(globals())
+

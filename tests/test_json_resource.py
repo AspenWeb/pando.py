@@ -7,7 +7,7 @@ import StringIO
 
 from aspen import json
 from aspen.testing import assert_raises, check
-from aspen.testing.fsfix import attach_teardown
+from aspen.testing.fsfix import teardown_function
 
 
 def test_json_basically_works():
@@ -169,4 +169,4 @@ def test_aspen_json_dumps_dumps():
 # Teardown
 # ========
 
-attach_teardown(globals())
+

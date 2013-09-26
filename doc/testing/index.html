@@ -23,17 +23,6 @@ def teardown():
     - remove logging handlers
 
     """
-
-def attach_teardown(context):
-    """Given a namespace dictionary, attach the teardown function.
-
-    This function is designed for nose and will raise NotImplementedError at
-    runtime with an additional ImportError traceback if nose is not available.
-    To use it put this line at the end of your test modules:
-
-        attach_teardown(globals())
-
-    """
 </pre>
 
 

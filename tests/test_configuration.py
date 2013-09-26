@@ -10,7 +10,7 @@ import aspen
 from aspen.configuration import Configurable, ConfigurationError, parse
 from aspen.configuration.options import OptionParser, DEFAULT
 from aspen.testing import assert_raises, StubRequest, fix
-from aspen.testing.fsfix import attach_teardown, FSFIX, mk
+from aspen.testing.fsfix import teardown_function, FSFIX, mk
 #from aspen.testing import handle
 from aspen.website import Website
 
@@ -273,4 +273,3 @@ def test_parse_network_address_with_port_too_high():
     actual = assert_raises(ValueError, parse.network_address, u':65536').args[0]
     assert actual == "invalid port (out of range)", actual
 
-attach_teardown(globals())
