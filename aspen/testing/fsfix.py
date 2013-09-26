@@ -92,10 +92,6 @@ def teardown():
 
 teardown() # start clean
 
-def torndown(func):
-    func.teardown = teardown
-    return func
-
 def path(*parts):
     """Given relative path parts, convert to absolute path on the filesystem.
     """
