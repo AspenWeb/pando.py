@@ -22,7 +22,7 @@ class BaseHeaders(CaseInsensitiveMapping):
         if isinstance(d, str):
             def genheaders():
                 for line in d.splitlines():
-                    k, v = line.split(':', 1)
+                    k, v = line.split(b':', 1)
                     yield k.strip(), v.strip()
         else:
             genheaders = d.iteritems
