@@ -12,14 +12,15 @@ from __future__ import unicode_literals
 
 import time
 
-start = time.time()
+if __name__ == '__main__':
+    start = time.time()
 
-for i in range(10000000):
-    try:
-        raise Exception
-        pass
-    except Exception:
-        pass
+    for i in range(10000000):
+        try:
+            raise Exception
+            pass
+        except Exception:
+            pass
 
-end = time.time()
-print("%5.2f" % (end - start))
+    end = time.time()
+    print("%5.2f" % (end - start))
