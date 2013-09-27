@@ -19,6 +19,11 @@ mimetype computed from the file extension. It is a SyntaxError for a file to
 have both an extension *and* multiple content pages.
 
 """
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
 import re
 
 from aspen import Response
@@ -115,8 +120,6 @@ class NegotiatedResource(DynamicResource):
         passed in it's interpreted as a media type.
 
         """
-        typecheck(specline, str)
-
         # Parse into parts
         parts = parse_specline(specline)
 
@@ -142,7 +145,6 @@ class NegotiatedResource(DynamicResource):
     def _get_renderer_factory(self, media_type, renderer):
         """Given two bytestrings, return a renderer factory or None.
         """
-        typecheck(media_type, str, renderer, str)
         if renderer_re.match(renderer) is None:
             possible =', '.join(sorted(self.website.renderer_factories.keys()))
             msg = ("Malformed renderer %s. It must match %s. Possible "

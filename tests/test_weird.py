@@ -4,6 +4,11 @@ Python caches some of its import machinery, and if you try really hard, you can
 shoot yourself in the foot with that.
 
 """
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
 import os
 import sys
 from pprint import pformat
@@ -17,10 +22,10 @@ FSFIX = os.path.realpath('fsfix')
 def log(a, *b):
     return  # turn off logging now that this works
     if not b:
-        print a.rjust(30)
+        print(a.rjust(30))
     else:
         for line in b:
-            print a.rjust(30)+": ", line
+            print(a.rjust(30)+": ", line)
 
 
 def rm():

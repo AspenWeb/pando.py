@@ -1,3 +1,8 @@
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
 import os
 import sys
 import shutil
@@ -7,7 +12,7 @@ from os.path import dirname, isdir, join, realpath
 from aspen import resources, sockets
 
 CWD = os.getcwd()
-FSFIX = os.path.realpath(os.path.join(tempfile.gettempdir(), 'fsfix'))
+FSFIX = os.path.realpath(os.path.join(tempfile.gettempdir(), b'fsfix'))
 
 
 def convert_path(path):
@@ -45,14 +50,14 @@ def mk(*treedef):
                 os.makedirs(parent)
             file(path, 'w').write(contents)
 
-def fix(path=''):
+def fix(path=b''):
     """Given a relative path, return an absolute path under FSFIX.
 
     The incoming path is in UNIX form (/foo/bar.html). The outgoing path is in
     native form, with symlinks removed.
 
     """
-    path = os.sep.join([FSFIX] + path.split('/'))
+    path = os.sep.join([FSFIX] + path.split(b'/'))
     return realpath(path)
 
 def rm():
