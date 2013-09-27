@@ -4,6 +4,11 @@ Each of these is guaranteed to be passed a unicode object as read from the
 environment or the command line.
 
 """
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
 import os
 import socket
 

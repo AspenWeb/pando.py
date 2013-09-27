@@ -1,11 +1,16 @@
 """Implement Aspen's filesystem dispatch algorithm.
 """
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
 import mimetypes
 import os
 
 from aspen import Response
 from aspen.utils import typecheck
-from backcompat import namedtuple
+from .backcompat import namedtuple
 from aspen.http.request import UnicodeWithParams
 
 def debug_noop(*args, **kwargs):
@@ -14,9 +19,9 @@ def debug_noop(*args, **kwargs):
 def debug_stdout(func):
     r = func()
     try:
-        print "DEBUG: " + r
+        print("DEBUG: " + r)
     except Exception:
-        print "DEBUG: " + repr(r)
+        print("DEBUG: " + repr(r))
 
 debug = debug_stdout if 'ASPEN_DEBUG' in os.environ else debug_noop
 

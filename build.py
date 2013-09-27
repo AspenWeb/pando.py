@@ -93,12 +93,12 @@ def analyse():
     dev()
     aspen()
     run(_virt('py.test'),
-            '--junit-xml=testresults.xml',
+            '--junitxml=testresults.xml',
             '--cov-report', 'term',
             '--cov-report', 'xml',
             '--cov', 'aspen',
             'tests/',
-            ignore_status=True)
+            ignore_status=False)
     print('done!')
 
 def clean_test():

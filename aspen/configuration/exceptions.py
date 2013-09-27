@@ -1,6 +1,11 @@
 """
 Exceptions used by Aspen's configuration module
 """
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
 
 class ConfigurationError(StandardError):
     """This is an error in any part of our configuration.

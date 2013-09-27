@@ -5,6 +5,11 @@ flavors: threaded and evented. The Buffer object is part of Aspen's Socket.IO
 implementation.
 
 """
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
 import time
 
 from aspen.sockets.buffer import ThreadedBuffer

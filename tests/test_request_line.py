@@ -1,3 +1,8 @@
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
 from aspen import Response
 from aspen.http.request import Request
 from aspen.http.mapping import Mapping
@@ -52,7 +57,7 @@ def test_method_raw_works():
     assert method.raw == "GET", method.raw
 
 def test_method_raw_is_bytestring():
-    method = Method("GET")
+    method = Method(b"GET")
     assert isinstance(method.raw, str), method.raw
 
 def test_method_cant_have_more_attributes():
@@ -73,11 +78,11 @@ def test_method_can_be_big():
     assert Method(big) == big
 
 def test_method_we_cap_it_at_64_bytes_just_cause____I_mean___come_on___right():
-    big = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz--!"
+    big = b"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz--!"
     assert assert_raises(Response, Method, big).code == 501
 
 def test_method_cant_be_non_ASCII():
-    assert assert_raises(Response, Method, "\x80").code == 501
+    assert assert_raises(Response, Method, b"\x80").code == 501
 
 def test_method_can_be_valid_perl():
     assert Method("!#$%&'*+-.^_`|~") == u"!#$%&'*+-.^_`|~"
@@ -156,7 +161,7 @@ def test_uri_works_at_all():
     assert actual == expected, actual
 
 def test_a_nice_unicode_uri():
-    uri = URI("http://%E2%98%84:bar@localhost:5370/+%E2%98%84.html?%E2%98%84=%E2%98%84+bar")
+    uri = URI(b"http://%E2%98%84:bar@localhost:5370/+%E2%98%84.html?%E2%98%84=%E2%98%84+bar")
     assert uri == "http://%E2%98%84:bar@localhost:5370/+%E2%98%84.html?%E2%98%84=%E2%98%84+bar", uri
 
 
@@ -257,11 +262,11 @@ def test_uri_non_ASCII_worketh_not():
     assert_raises(UnicodeDecodeError, URI, chr(128))
 
 def test_uri_encoded_username_is_unencoded_properly():
-    uri = URI("http://%e2%98%84:secret@www.example.com/foo.html")
+    uri = URI(b"http://%e2%98%84:secret@www.example.com/foo.html")
     assert uri.username == u'\u2604', uri.username
 
 def test_uri_encoded_password_is_unencoded_properly():
-    uri = URI("http://foobar:%e2%98%84@www.example.com/foo.html")
+    uri = URI(b"http://foobar:%e2%98%84@www.example.com/foo.html")
     assert uri.password == u'\u2604', uri.password
 
 def test_uri_international_domain_name_comes_out_properly():
@@ -296,19 +301,19 @@ def test_version_can_be_HTTP_1_1():
     assert actual == expected, actual
 
 def test_version_cant_be_HTTP_1_2():
-    assert assert_raises(Response, Version, "HTTP/1.2").code == 505
+    assert assert_raises(Response, Version, b"HTTP/1.2").code == 505
 
 def test_version_cant_be_junk():
-    assert assert_raises(Response, Version, "http flah flah").code == 400
+    assert assert_raises(Response, Version, b"http flah flah").code == 400
 
 def test_version_cant_even_be_lowercase():
-    assert assert_raises(Response, Version, "http/1.1").code == 400
+    assert assert_raises(Response, Version, b"http/1.1").code == 400
 
 def test_version_cant_even_be_lowercase():
-    assert assert_raises(Response, Version, "http/1.1").code == 400
+    assert assert_raises(Response, Version, b"http/1.1").code == 400
 
 def test_version_with_garbage_is_safe():
-    r = assert_raises(Response, Version, "HTTP\xef/1.1")
+    r = assert_raises(Response, Version, b"HTTP\xef/1.1")
     assert r.code == 400, r.code
     assert r.body == "Bad HTTP version: HTTP\\xef/1.1.", r.body
 
@@ -331,7 +336,7 @@ def test_version_info_is_tuple():
     assert actual == expected, actual
 
 def test_version_raw_is_bytestring():
-    version = Version("HTTP/0.9")
+    version = Version(b"HTTP/0.9")
     expected = str
     actual = version.raw.__class__
     assert actual is expected, actual
@@ -349,7 +354,7 @@ def test_path_has_raw_set():
     assert path.raw == "/bar.html", path.raw
 
 def test_path_raw_is_str():
-    path = Path("/bar.html")
+    path = Path(b"/bar.html")
     assert isinstance(path.raw, str)
 
 def test_path_has_decoded_set():
@@ -361,7 +366,7 @@ def test_path_decoded_is_unicode():
     assert isinstance(path.decoded, unicode)
 
 def test_path_unquotes_and_decodes_UTF_8():
-    path = Path("/%e2%98%84.html")
+    path = Path(b"/%e2%98%84.html")
     assert path.decoded == u"/\u2604.html", path.decoded
 
 def test_path_doesnt_unquote_plus():
@@ -412,35 +417,35 @@ def test_path_params_api():
 # ===========
 
 def test_querystring_starts_full():
-    querystring = Querystring("baz=buz")
+    querystring = Querystring(b"baz=buz")
     assert querystring == {'baz': [u'buz']}, querystring
 
 def test_querystring_has_raw_set():
-    querystring = Querystring("baz=buz")
+    querystring = Querystring(b"baz=buz")
     assert querystring.raw == "baz=buz", querystring.raw
 
 def test_querystring_raw_is_str():
-    querystring = Querystring("baz=buz")
+    querystring = Querystring(b"baz=buz")
     assert isinstance(querystring.raw, str)
 
 def test_querystring_has_decoded_set():
-    querystring = Querystring("baz=buz")
+    querystring = Querystring(b"baz=buz")
     assert querystring.decoded == u"baz=buz", querystring.decoded
 
 def test_querystring_decoded_is_unicode():
-    querystring = Querystring("baz=buz")
+    querystring = Querystring(b"baz=buz")
     assert isinstance(querystring.decoded, unicode)
 
 def test_querystring_unquotes_and_decodes_UTF_8():
-    querystring = Querystring("baz=%e2%98%84")
+    querystring = Querystring(b"baz=%e2%98%84")
     assert querystring.decoded == u"baz=\u2604", querystring.decoded
 
 def test_querystring_comes_out_UTF_8():
-    querystring = Querystring("baz=%e2%98%84")
+    querystring = Querystring(b"baz=%e2%98%84")
     assert querystring['baz'] == u"\u2604", querystring['baz']
 
 def test_querystring_chokes_on_bad_unicode():
-    assert_raises(UnicodeDecodeError, Querystring, "baz=%e2%98")
+    assert_raises(UnicodeDecodeError, Querystring, b"baz=%e2%98")
 
 def test_querystring_unquotes_plus():
     querystring = Querystring("baz=+%2B")

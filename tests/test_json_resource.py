@@ -1,3 +1,8 @@
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
 import StringIO
 
 from aspen import json
@@ -63,7 +68,7 @@ def test_json_content_type_is_configurable_for_dynamic_json():
     assert actual == expected, actual
 
 def test_json_handles_unicode():
-    expected = '''{
+    expected = b'''{
     "Greetings": "\u00b5"
 }'''
     actual = check( "[---]\nresponse.body = {'Greetings': unichr(181)}"
