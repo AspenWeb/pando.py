@@ -98,7 +98,7 @@ def analyse():
             '--cov-report', 'xml',
             '--cov', 'aspen',
             'tests/',
-            ignore_status=True)
+            ignore_status=False)
     print('done!')
 
 def clean_test():
