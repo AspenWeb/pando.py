@@ -1,3 +1,8 @@
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
 import os
 import StringIO
 
@@ -128,11 +133,11 @@ class TestMiddleware(object):
 def build_environ(path):
     """Build WSGI environ for testing."""
     return {
-        'REQUEST_METHOD': 'GET',
+        'REQUEST_METHOD': b'GET',
         'PATH_INFO': path,
-        'QUERY_STRING': '',
-        'SERVER_SOFTWARE': 'build_environ/1.0',
-        'SERVER_PROTOCOL': 'HTTP/1.1',
+        'QUERY_STRING': b'',
+        'SERVER_SOFTWARE': b'build_environ/1.0',
+        'SERVER_PROTOCOL': b'HTTP/1.1',
         'wsgi.input': StringIO.StringIO()
     }
 

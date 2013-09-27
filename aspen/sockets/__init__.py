@@ -42,6 +42,11 @@ should be immediately terminable assuming your application and its dependencies
 cooperate ;-).
 
 """
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
 from aspen import Response
 
 FFFD = u'\ufffd'.encode('utf-8')

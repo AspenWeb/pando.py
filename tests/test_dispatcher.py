@@ -1,3 +1,8 @@
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
 import os
 
 from aspen import dispatcher, Response
@@ -21,7 +26,7 @@ def assert_raises_302(func, *args):
 def check(path, *a):
     """Given a URI path, return a dispatched request object.
     """
-    request = StubRequest.from_fs(path, *a)
+    request = StubRequest.from_fs(path.encode('ascii'), *a)
     dispatcher.dispatch(request)
     return request
 

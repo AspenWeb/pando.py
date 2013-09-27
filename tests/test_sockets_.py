@@ -1,3 +1,8 @@
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
 from aspen import sockets
 from aspen.http.request import Request
 from aspen.testing import mk, teardown_function
