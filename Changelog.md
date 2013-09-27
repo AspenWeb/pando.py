@@ -1,8 +1,22 @@
 Aspen-python Changelog
 ======================
 
-0.?? - Released
----------------
+0.26 - Released Fri Sep 27 by @pjz
+----------------------------------
+
+* Fixed #226 - converted from nosetests to py.test - this got us much
+  nicer assert handling for debugging.
+
+* Fixed #225 - added 'from future' imports to the whole thing to 1) prep
+  for py3k and 2) help fix unicode handling (Thanks @nejstastnejsistene !)
+
+* Fixed #42 - added support for rfc2396 key/value pairs in URLs (tl;dr is
+  that /foo;a=b;a=c;d=e/ will go to /foo/ with an easy way to get the values
+  of a (==['b','c']) and d (==['e'])
+
+* Added some CRLF-injection protection (Thanks Berkay Aydin!)
+
+* Added module entrypoint to allow 'python -m aspen.server' (Thanks @jaraco !)
 
 * Fixed #165 - make it explicit which variables are available to templates
   By default all variables are available.  If you want to limit that, put
