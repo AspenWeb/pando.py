@@ -1,2 +1,3 @@
-Aspen's documentation is an Aspen website. So start aspen in this directory,
-and then hit http://localhost:8080/ to see the docs locally.
+Aspen's documentation is an Aspen website. So check out this repo
+and run 'make docs' from the top level; it will start up an 
+aspen server on http://localhost:5370/
