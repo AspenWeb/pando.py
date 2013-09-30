@@ -61,9 +61,17 @@ def test_json_content_type_is_configurable_for_dynamic_json():
     configure_aspen_py = 'website.media_type_json = "floober/blah"'
     expected = 'floober/blah'
     actual = check( "[---]\nresponse.body = {'Greetings': 'program!'}"
-                  , filename="foo.json"
+                  , filename="foo.json.spt"
                   , body=False
                   , configure_aspen_py=configure_aspen_py
+                   ).headers['Content-Type']
+    assert actual == expected, actual
+
+def test_json_content_type_is_per_file_configurable():
+    expected = 'floober/blah'
+    actual = check( "[---]\nresponse.body = {'Greetings': 'program!'}\nresponse.headers['Content-Type'] = 'floober/blah'\n"
+                  , filename="foo.json.spt"
+                  , body=False
                    ).headers['Content-Type']
     assert actual == expected, actual
 
