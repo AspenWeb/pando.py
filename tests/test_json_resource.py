@@ -33,7 +33,7 @@ def test_json_defaults_to_application_json_for_static_json():
 def test_json_defaults_to_application_json_for_dynamic_json():
     expected = 'application/json'
     actual = check( "[---]\nresponse.body = {'Greetings': 'program!'}"
-                  , filename="foo.json"
+                  , filename="foo.json.spt"
                   , body=False
                    ).headers['Content-Type']
     assert actual == expected, actual
