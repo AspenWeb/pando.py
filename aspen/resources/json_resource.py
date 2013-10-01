@@ -32,4 +32,6 @@ class JSONResource(DynamicResource):
         """
         if not isinstance(response.body, basestring):
             response.body = json.dumps(response.body)
-        response.headers['Content-Type'] = self.website.media_type_json
+            
+        if 'Content-Type' not in response.headers:
+            response.headers['Content-Type'] = self.website.media_type_json
