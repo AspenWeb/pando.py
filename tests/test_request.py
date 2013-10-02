@@ -97,7 +97,7 @@ def test_headers_access_gets_a_value():
 
 def test_headers_access_gets_last_value():
     headers = BaseHeaders(b"Foo: Bar\r\nFoo: Baz")
-    expected = "Baz"
+    expected = b"Baz"
     actual = headers['Foo']
     assert actual == expected, actual
 
@@ -105,6 +105,12 @@ def test_headers_access_is_case_insensitive():
     headers = BaseHeaders(b"Foo: Bar")
     expected = b"Bar"
     actual = headers['foo']
+    assert actual == expected, actual
+
+def test_headers_dont_unicodify_cookie():
+    headers = BaseHeaders(b"Cookie: somecookiedata")
+    expected = b"somecookiedata"
+    actual = headers[b'Cookie']
     assert actual == expected, actual
 
 
