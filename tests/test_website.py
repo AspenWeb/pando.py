@@ -18,7 +18,7 @@ def test_basic():
     website = Website([])
     expected = os.getcwd()
     actual = website.www_root
-    assert actual == expected, actual
+    assert actual == expected
 
 def test_normal_response_is_returned():
     mk(('index.html', "Greetings, program!"))
@@ -29,44 +29,44 @@ Content-Type: text/html
 Greetings, program!
 """.splitlines())
     actual = handle()._to_http('1.1')
-    assert actual == expected, actual
+    assert actual == expected
 
 def test_fatal_error_response_is_returned():
     mk(('index.html.spt', "raise heck\n[---]\n"))
     expected = 500
     actual = handle().code
-    assert actual == expected, actual
+    assert actual == expected
 
 def test_redirect_has_only_location():
     mk(('index.html.spt', "from aspen import Response\n[---]\nrequest.redirect('http://elsewhere', code=304)\n[---]\n"))
     actual = handle()
     assert actual.code == 304
     headers = actual.headers
-    assert len(headers) == 1, headers
-    assert headers.get('Location') is not None, headers
+    assert len(headers) == 1
+    assert headers.get('Location') is not None
 
 def test_nice_error_response_is_returned():
     mk(('index.html.spt', "from aspen import Response\n[---]\nraise Response(500)\n[---]\n"))
     expected = 500
     actual = handle().code
-    assert actual == expected, actual
+    assert actual == expected
 
 def test_nice_error_response_is_returned_for_404():
     mk(('index.html.spt', "from aspen import Response\n[---]\nraise Response(404)\n[---]\n"))
     expected = 404
     actual = handle().code
-    assert actual == expected, actual
+    assert actual == expected
 
 def test_autoindex_response_is_404_by_default():
     mk(('README', "Greetings, program!"))
     expected = 404
     actual = handle().code
-    assert actual == expected, actual
+    assert actual == expected
 
 def test_autoindex_response_is_returned():
     mk(('README', "Greetings, program!"))
     body = handle('/', '--list_directories=TrUe').body
-    assert 'README' in body, body
+    assert 'README' in body
 
 def test_resources_can_import_from_dot_aspen():
     mk( '.aspen'
@@ -76,7 +76,7 @@ def test_resources_can_import_from_dot_aspen():
     expected = "Greetings, baz!"
     project_root = os.path.join(FSFIX, '.aspen')
     actual = handle('/', '--project_root='+project_root).body
-    assert actual == expected, actual
+    assert actual == expected
 
 
 def test_double_failure_still_sets_response_dot_request():
@@ -100,7 +100,7 @@ def bar(response):
 
     expected = 500
     actual = response.code
-    assert actual == expected, actual
+    assert actual == expected
 
 
 def test_website_doesnt_clobber_outbound():
@@ -114,7 +114,7 @@ def test_website_doesnt_clobber_outbound():
 
     expected = 2
     actual = len(website.hooks.outbound)
-    assert actual == expected, actual
+    assert actual == expected
 
 
 class TestMiddleware(object):
@@ -147,12 +147,12 @@ def test_call_wraps_wsgi_middleware():
     website.wsgi_app = TestMiddleware(website.wsgi_app)
     respond = [False, False]
     def start_response_should_404(status, headers):
-        assert status.lower().strip() == '404 not found', status
+        assert status.lower().strip() == '404 not found'
         respond[0] = True
     website(build_environ('/'), start_response_should_404)
     assert respond[0]
     def start_response_should_200(status, headers):
-        assert status.lower().strip() == '200 ok', status
+        assert status.lower().strip() == '200 ok'
         respond[1] = True
     website(build_environ('/middleware'), start_response_should_200)
     assert respond[1]
