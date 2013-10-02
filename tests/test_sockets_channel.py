@@ -1,10 +1,11 @@
 from collections import deque
 
+from pytest import raises
+
 from aspen.sockets.buffer import ThreadedBuffer
 from aspen.sockets.channel import Channel
 from aspen.sockets.message import Message
 from aspen.testing.sockets import make_socket
-from aspen.testing import assert_raises
 from aspen.testing.fsfix import mk, teardown_function
 
 
@@ -28,7 +29,7 @@ def test_channel_raises_AssertionError_on_double_add():
     socket = make_socket()
     channel = Channel('foo', ThreadedBuffer)
     channel.add(socket)
-    assert_raises(AssertionError, channel.add, socket)
+    raises(AssertionError, channel.add, socket)
 
 def test_channel_passes_send_on_to_one_socket():
     mk(('echo.sock.spt', ''))

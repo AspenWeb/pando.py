@@ -3,8 +3,9 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from pytest import raises
+
 from aspen import Response
-from aspen.testing import assert_raises
 from aspen.testing.fsfix import teardown_function
 from aspen.exceptions import CRLFInjection
 
@@ -55,7 +56,7 @@ def test_response_headers_protect_against_crlf_injection():
     response = Response()
     def inject():
         response.headers['Location'] = 'foo\r\nbar'
-    assert_raises(CRLFInjection, inject)
+    raises(CRLFInjection, inject)
 
 
 

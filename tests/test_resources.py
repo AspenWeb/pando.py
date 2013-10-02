@@ -4,9 +4,10 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from textwrap import dedent
+from pytest import raises
 
 from aspen import Response
-from aspen.testing import assert_raises, check, handle
+from aspen.testing import check, handle
 from aspen.testing.fsfix import teardown_function, mk
 from aspen.resources.pagination import split
 
@@ -43,13 +44,13 @@ def test_resource_pages_work():
     assert actual == expected
 
 def test_resource_dunder_all_limits_vars():
-    actual = assert_raises( KeyError
+    actual = raises( KeyError
                             , check
                             , "foo = 'bar'\n"
                               "__all__ = []\n"
                               "[---------]\n"
                               "Greetings, %(foo)s!"
-                             )
+                             ).value
     # in production, KeyError is turned into a 500 by an outer wrapper
     assert type(actual) == KeyError
 
@@ -128,12 +129,12 @@ def test_body_is_right_in_template_doc_unicode_example():
 
 def test_raise_response_works():
     expected = 404
-    response = assert_raises( Response
+    response = raises( Response
                             , check
                             , "from aspen import Response\n"
                               "raise Response(404)\n"
                               "[---------]\n"
-                             )
+                             ).value
     actual = response.code
     assert actual == expected
 

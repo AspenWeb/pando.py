@@ -5,8 +5,10 @@ from __future__ import unicode_literals
 
 import StringIO
 
+from pytest import raises
+
 from aspen import json
-from aspen.testing import assert_raises, check
+from aspen.testing import check
 from aspen.testing.fsfix import teardown_function
 
 
@@ -20,7 +22,7 @@ def test_json_basically_works():
     assert actual == expected
 
 def test_json_cant_have_more_than_one_page_break():
-    assert_raises(SyntaxError, check, "[---]\n[---]\n", filename="foo.json.spt")
+    raises(SyntaxError, check, "[---]\n[---]\n", filename="foo.json.spt")
 
 def test_json_defaults_to_application_json_for_static_json():
     expected = 'application/json'
@@ -85,7 +87,7 @@ def test_json_handles_unicode():
     assert actual == expected
 
 def test_json_doesnt_handle_non_ascii_bytestrings():
-    assert_raises( UnicodeDecodeError
+    raises( UnicodeDecodeError
                  , check
                  , "[---]\nresponse.body = {'Greetings': chr(181)}"
                  , filename="foo.json.spt"
@@ -141,7 +143,7 @@ def test_json_handles_complex():
     assert actual == expected
 
 def test_json_raises_TypeError_on_unknown_types():
-    assert_raises( TypeError
+    raises( TypeError
                  , check
                  , "class Foo: pass\n[---]\nresponse.body = Foo()"
                  , filename="foo.json.spt"

@@ -3,8 +3,10 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from pytest import raises
+
 from aspen import Response
-from aspen.testing import assert_raises, teardown_function
+from aspen.testing import teardown_function
 
 from aspen.http.mapping import Mapping, CaseInsensitiveMapping
 
@@ -86,11 +88,11 @@ def test_mapping_deleting_a_key_removes_it_entirely():
 
 def test_accessing_missing_key_raises_Response():
     m = Mapping()
-    assert_raises(Response, lambda k: m[k], 'foo')
+    raises(Response, lambda k: m[k], 'foo')
 
 def test_mapping_calling_ones_with_missing_key_raises_Response():
     m = Mapping()
-    assert_raises(Response, m.ones, 'foo')
+    raises(Response, m.ones, 'foo')
 
 def test_mapping_pop_returns_the_last_item():
     m = Mapping()
