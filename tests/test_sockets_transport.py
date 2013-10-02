@@ -31,7 +31,7 @@ def test_transport_instantiable():
 
     expected = XHRPollingTransport
     actual = transport.__class__
-    assert actual is expected, actual
+    assert actual is expected
 
 def test_transport_can_minimally_respond():
     transport = make_transport()
@@ -39,7 +39,7 @@ def test_transport_can_minimally_respond():
 
     expected = Response
     actual = transport.respond(request).__class__
-    assert actual is expected, actual
+    assert actual is expected
 
 def test_transport_starts_in_state_0():
     transport = make_transport()
@@ -47,7 +47,7 @@ def test_transport_starts_in_state_0():
 
     expected = 0
     actual = transport.state
-    assert actual == expected, actual
+    assert actual == expected
 
 def test_transport_goes_to_state_1_after_first_request():
     transport = make_transport()
@@ -56,7 +56,7 @@ def test_transport_goes_to_state_1_after_first_request():
 
     expected = 1
     actual = transport.state
-    assert actual == expected, actual
+    assert actual == expected
 
 def test_transport_stays_in_state_1_after_second_request():
     transport = make_transport()
@@ -66,7 +66,7 @@ def test_transport_stays_in_state_1_after_second_request():
 
     expected = 1
     actual = transport.state
-    assert actual == expected, actual
+    assert actual == expected
 
 def test_transport_POST_gives_data_to_socket():
     transport = make_transport(state=1)
@@ -79,7 +79,7 @@ def test_transport_POST_gives_data_to_socket():
 
     expected = deque(['Greetings, program!'])
     actual = transport.socket.incoming.queue
-    assert actual == expected, actual
+    assert actual == expected
 
 def test_transport_GET_gets_data_from_socket():
     transport = make_transport(state=1)
@@ -91,7 +91,7 @@ def test_transport_GET_gets_data_from_socket():
 
     expected = FFFD+b'23'+FFFD+b'3:::Greetings, program!'
     actual = response.body.next()
-    assert actual == expected, actual
+    assert actual == expected
 
 def test_transport_GET_blocks_for_empty_socket():
     transport = make_transport(state=1)
@@ -103,7 +103,7 @@ def test_transport_GET_blocks_for_empty_socket():
 
     expected = transport.timeout
     actual = round(end - start, 4)
-    assert actual > expected, actual
+    assert actual > expected
 
 def test_transport_handles_roundtrip():
     transport = make_transport(state=1, content="socket.send(socket.recv())")
@@ -117,7 +117,7 @@ def test_transport_handles_roundtrip():
 
     expected = FFFD+b"18"+FFFD+b"3::/echo.sock:ping"
     actual = response.body.next()
-    assert actual == expected, actual
+    assert actual == expected
 
 
 

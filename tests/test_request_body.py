@@ -29,20 +29,20 @@ def make_body(raw, headers=None, content_type=WWWFORM):
 def test_body_is_instantiable():
     body = make_body("cheese=yes")
     actual = body.__class__.__name__
-    assert actual == "Body", actual
+    assert actual == "Body"
 
 def test_body_is_unparsed_for_empty_content_type():
     actual = make_body("cheese=yes", headers={})
-    assert actual == {}, actual
+    assert actual == {}
 
 def test_body_gives_empty_dict_for_empty_body():
     actual = make_body("")
-    assert actual == {}, actual
+    assert actual == {}
 
 def test_body_barely_works():
     body = make_body("cheese=yes")
     actual = body['cheese']
-    assert actual == "yes", actual
+    assert actual == "yes"
 
 
 UPLOAD = """\
@@ -61,16 +61,16 @@ Content-Type: text/plain
 def test_body_barely_works_for_form_data():
     body = make_body(UPLOAD, content_type=FORMDATA)
     actual = body['files'].filename
-    assert actual == "file1.txt", actual
+    assert actual == "file1.txt"
 
 def test_simple_values_are_simple():
     body = make_body(UPLOAD, content_type=FORMDATA)
     actual = body['submit-name']
-    assert actual == "Larry", actual
+    assert actual == "Larry"
 
 def test_params_doesnt_break_www_form():
     body = make_body("statement=foo"
                     , content_type="application/x-www-form-urlencoded; charset=UTF-8; cheese=yummy"
                      )
     actual = body['statement']
-    assert actual == "foo", actual
+    assert actual == "foo"
