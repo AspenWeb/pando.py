@@ -15,13 +15,13 @@ def test_response_is_a_wsgi_callable():
         pass
     expected = ["Greetings, program!"]
     actual = list(response({}, start_response).body)
-    assert actual == expected, actual
+    assert actual == expected
 
 def test_response_body_can_be_bytestring():
     response = Response(body=b"Greetings, program!")
     expected = "Greetings, program!"
     actual = response.body
-    assert actual == expected, actual
+    assert actual == expected
 
 def test_response_body_as_bytestring_results_in_an_iterable():
     response = Response(body=b"Greetings, program!")
@@ -29,13 +29,13 @@ def test_response_body_as_bytestring_results_in_an_iterable():
         pass
     expected = ["Greetings, program!"]
     actual = list(response({}, start_response).body)
-    assert actual == expected, actual
+    assert actual == expected
 
 def test_response_body_can_be_iterable():
     response = Response(body=["Greetings, ", "program!"])
     expected = ["Greetings, ", "program!"]
     actual = response.body
-    assert actual == expected, actual
+    assert actual == expected
 
 def test_response_body_as_iterable_comes_through_untouched():
     response = Response(body=["Greetings, ", "program!"])
@@ -43,7 +43,7 @@ def test_response_body_as_iterable_comes_through_untouched():
         pass
     expected = ["Greetings, ", "program!"]
     actual = list(response({}, start_response).body)
-    assert actual == expected, actual
+    assert actual == expected
 
 def test_response_body_can_be_unicode():
     try:

@@ -15,19 +15,19 @@ from aspen.testing import assert_raises, teardown_function
 
 def test_line_works():
     line = Line("GET", "/", "HTTP/0.9")
-    assert line == u"GET / HTTP/0.9", line
+    assert line == u"GET / HTTP/0.9"
 
 def test_line_has_method():
     line = Line("GET", "/", "HTTP/0.9")
-    assert line.method == u"GET", line.method
+    assert line.method == u"GET"
 
 def test_line_has_uri():
     line = Line("GET", "/", "HTTP/0.9")
-    assert line.uri == u"/", line.uri
+    assert line.uri == u"/"
 
 def test_line_has_version():
     line = Line("GET", "/", "HTTP/0.9")
-    assert line.version == u"HTTP/0.9", line.version
+    assert line.version == u"HTTP/0.9"
 
 def test_line_chokes_on_non_ASCII_in_uri():
     assert_raises(UnicodeDecodeError, Line, "GET", chr(128), "HTTP/1.1")
@@ -38,27 +38,27 @@ def test_line_chokes_on_non_ASCII_in_uri():
 
 def test_method_works():
     method = Method("GET")
-    assert method == u"GET", method
+    assert method == u"GET"
 
 def test_method_is_unicode_subclass():
     method = Method("GET")
-    assert issubclass(method.__class__, unicode), method.__class__
+    assert issubclass(method.__class__, unicode)
 
 def test_method_is_unicode_instance():
     method = Method("GET")
-    assert isinstance(method, unicode), method
+    assert isinstance(method, unicode)
 
 def test_method_is_basestring_instance():
     method = Method("GET")
-    assert isinstance(method, basestring), method
+    assert isinstance(method, basestring)
 
 def test_method_raw_works():
     method = Method("GET")
-    assert method.raw == "GET", method.raw
+    assert method.raw == "GET"
 
 def test_method_raw_is_bytestring():
     method = Method(b"GET")
-    assert isinstance(method.raw, str), method.raw
+    assert isinstance(method.raw, str)
 
 def test_method_cant_have_more_attributes():
     method = Method("GET")
@@ -158,7 +158,7 @@ def test_uri_works_at_all():
     uri = URI("/")
     expected = u"/"
     actual = uri
-    assert actual == expected, actual
+    assert actual == expected
 
 def test_a_nice_unicode_uri():
     uri = URI(b"http://%E2%98%84:bar@localhost:5370/+%E2%98%84.html?%E2%98%84=%E2%98%84+bar")
@@ -288,17 +288,17 @@ def test_uri_raw_is_available_on_something():
 def test_version_can_be_HTTP_0_9():
     actual = Version("HTTP/0.9")
     expected = u"HTTP/0.9"
-    assert actual == expected, actual
+    assert actual == expected
 
 def test_version_can_be_HTTP_1_0():
     actual = Version("HTTP/1.0")
     expected = u"HTTP/1.0"
-    assert actual == expected, actual
+    assert actual == expected
 
 def test_version_can_be_HTTP_1_1():
     actual = Version("HTTP/1.1")
     expected = u"HTTP/1.1"
-    assert actual == expected, actual
+    assert actual == expected
 
 def test_version_cant_be_HTTP_1_2():
     assert assert_raises(Response, Version, b"HTTP/1.2").code == 505
@@ -321,25 +321,25 @@ def test_version_major_is_int():
     version = Version("HTTP/1.0")
     expected = 1
     actual = version.major
-    assert actual == expected, actual
+    assert actual == expected
 
 def test_version_major_is_int():
     version = Version("HTTP/0.9")
     expected = 9
     actual = version.minor
-    assert actual == expected, actual
+    assert actual == expected
 
 def test_version_info_is_tuple():
     version = Version("HTTP/0.9")
     expected = (0, 9)
     actual = version.info
-    assert actual == expected, actual
+    assert actual == expected
 
 def test_version_raw_is_bytestring():
     version = Version(b"HTTP/0.9")
     expected = str
     actual = version.raw.__class__
-    assert actual is expected, actual
+    assert actual is expected
 
 
 # Path
@@ -391,19 +391,19 @@ def test_extract_path_params_with_none():
     request = Request(uri="/foo/bar")
     actual = _extract_params(request.line.uri)
     expected = (['foo', 'bar'], [{}, {}])
-    assert actual == expected, actual
+    assert actual == expected
 
 def test_extract_path_params_simple():
     request = Request(uri="/foo;a=1;b=2;c/bar;a=2;b=1")
     actual = _extract_params(request.line.uri)
     expected = (['foo', 'bar'], [{'a':['1'], 'b':['2'], 'c':['']}, {'a':['2'], 'b':['1']}])
-    assert actual == expected, actual
+    assert actual == expected
 
 def test_extract_path_params_complex():
     request = Request(uri="/foo;a=1;b=2,3;c;a=2;b=4/bar;a=2,ab;b=1")
     actual = _extract_params(request.line.uri)
     expected = (['foo', 'bar'], [{'a':['1','2'], 'b':['2,3', '4'], 'c':['']}, {'a':[ '2,ab' ], 'b':['1']}])
-    assert actual == expected, actual
+    assert actual == expected
 
 def test_path_params_api():
     request = Request(uri="/foo;a=1;b=2;b=3;c/bar;a=2,ab;b=1")

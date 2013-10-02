@@ -12,17 +12,17 @@ from aspen.testing import assert_raises, teardown_function
 def test_packet_Packetable_with_unframed_bytes():
     expected = [Message.from_bytes(b'1:::')]
     actual = list(Packet(b'1:::'))
-    assert actual == expected, actual
+    assert actual == expected
 
 def test_packet_Packetable_with_framed_bytes():
     expected = [Message.from_bytes(b'1:::')]
     actual = list(Packet(FFFD + b'4' + FFFD + b'1:::'))
-    assert actual == expected, actual
+    assert actual == expected
 
 def test_packet_Packetable_with_multiple_frames():
     expected = [Message.from_bytes(x) for x in (b'0:::', b'1:::')]
     actual = list(Packet(FFFD+b'4'+FFFD+b'0:::'+FFFD+b'4'+FFFD+b'1:::'))
-    assert actual == expected, repr(actual)
+    assert actual == expected
 
 def test_packet_with_odd_frames_raises_SyntaxError():
     Packet_ = lambda s: list(Packet(s)) # assert_raises chokes on generator
@@ -34,7 +34,7 @@ def test_packet_with_odd_frames_tells_you_that():
     exc = assert_raises(SyntaxError, Packet_, packet)
     expected = b"There are an odd number of frames in this packet: %s" % packet
     actual = exc.args[0]
-    assert actual == expected, actual
+    assert actual == expected
 
 
 
