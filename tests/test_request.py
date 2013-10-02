@@ -3,10 +3,12 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from pytest import raises
+
 from aspen import Response
 from aspen.http.request import kick_against_goad, Request
 from aspen.http.baseheaders import BaseHeaders
-from aspen.testing import assert_raises, StubRequest
+from aspen.testing import StubRequest
 from aspen.testing.fsfix import teardown_function
 
 
@@ -23,7 +25,7 @@ def test_raw_is_raw():
     assert actual == expected
 
 def test_blank_by_default():
-    assert_raises(AttributeError, lambda: Request().version)
+    raises(AttributeError, lambda: Request().version)
 
 def test_request_line_version_defaults_to_HTTP_1_1():
     request = StubRequest()
@@ -52,13 +54,13 @@ def test_allow_allows_allowed():
 def test_allow_disallows_disallowed():
     request = StubRequest()
     expected = 405
-    actual = assert_raises(Response, request.allow, 'POST').code
+    actual = raises(Response, request.allow, 'POST').value.code
     assert actual == expected
 
 def test_allow_can_handle_lowercase():
     request = StubRequest()
     expected = 405
-    actual = assert_raises(Response, request.allow, 'post').code
+    actual = raises(Response, request.allow, 'post').value.code
     assert actual == expected
 
 def test_methods_start_with_GET():
@@ -172,19 +174,19 @@ def test_goad_passes_body_through():
 
 def test_request_redirect_works_on_instance():
     request = Request()
-    actual = assert_raises(Response, request.redirect, '/').code
+    actual = raises(Response, request.redirect, '/').value.code
     assert actual == 302
 
 def test_request_redirect_works_on_class():
-    actual = assert_raises(Response, Request.redirect, '/').code
+    actual = raises(Response, Request.redirect, '/').value.code
     assert actual == 302
 
 def test_request_redirect_code_is_settable():
-    actual = assert_raises(Response, Request.redirect, '/', code=8675309).code
+    actual = raises(Response, Request.redirect, '/', code=8675309).value.code
     assert actual == 8675309
 
 def test_request_redirect_permanent_convenience():
-    actual = assert_raises(Response, Request.redirect, '/', permanent=True).code
+    actual = raises(Response, Request.redirect, '/', permanent=True).value.code
     assert actual == 301
 
 

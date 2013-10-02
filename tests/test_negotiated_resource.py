@@ -3,10 +3,12 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from pytest import raises
+
 from aspen import resources, Response
 from aspen.resources.pagination import Page
 from aspen.resources.negotiated_resource import NegotiatedResource
-from aspen.testing import assert_raises, teardown_function, handle, mk, StubRequest
+from aspen.testing import teardown_function, handle, mk, StubRequest
 from aspen.website import Website
 from aspen.renderers.stdlib_template import Factory as TemplateFactory
 from aspen.renderers.stdlib_percent import Factory as PercentFactory
@@ -36,7 +38,7 @@ def test_negotiated_resource_is_instantiable():
 # compile_page
 
 def test_compile_page_chokes_on_truly_empty_page():
-    assert_raises(SyntaxError, get().compile_page, Page(''))
+    raises(SyntaxError, get().compile_page, Page(''))
 
 def test_compile_page_compiles_empty_page():
     page = get().compile_page(Page('', 'text/html'))
@@ -62,45 +64,45 @@ def test_parse_specline_doesnt_require_renderer():
     assert actual == (PercentFactory, 'media/type') 
 
 def test_parse_specline_requires_media_type():
-    assert_raises(SyntaxError, get()._parse_specline, 'via stdlib_template')
+    raises(SyntaxError, get()._parse_specline, 'via stdlib_template')
 
 def test_parse_specline_raises_SyntaxError_if_renderer_is_malformed():
-    assert_raises(SyntaxError, get()._parse_specline, 'stdlib_template media/type')
+    raises(SyntaxError, get()._parse_specline, 'stdlib_template media/type')
 
 def test_parse_specline_raises_SyntaxError_if_media_type_is_malformed():
-    assert_raises(SyntaxError, get()._parse_specline, 'media-type via stdlib_template')
+    raises(SyntaxError, get()._parse_specline, 'media-type via stdlib_template')
 
 def test_parse_specline_cant_mistake_malformed_media_type_for_renderer():
-    assert_raises(SyntaxError, get()._parse_specline, 'media-type')
+    raises(SyntaxError, get()._parse_specline, 'media-type')
 
 def test_parse_specline_cant_mistake_malformed_renderer_for_media_type():
-    assert_raises(SyntaxError, get()._parse_specline, 'stdlib_template')
+    raises(SyntaxError, get()._parse_specline, 'stdlib_template')
 
 def test_parse_specline_enforces_order():
-    assert_raises(SyntaxError, get()._parse_specline, 'stdlib_template via media/type')
+    raises(SyntaxError, get()._parse_specline, 'stdlib_template via media/type')
 
 def test_parse_specline_obeys_default_by_media_type():
     resource = get()
     resource.website.default_renderers_by_media_type['media/type'] = 'glubber'
-    err = assert_raises(ValueError, resource._parse_specline, 'media/type')
+    err = raises(ValueError, resource._parse_specline, 'media/type').value
     msg = err.args[0]
     assert msg.startswith("Unknown renderer for media/type: glubber."), msg
 
 def test_parse_specline_obeys_default_by_media_type_default():
     resource = get()
     resource.website.default_renderers_by_media_type.default_factory = lambda: 'glubber'
-    err = assert_raises(ValueError, resource._parse_specline, 'media/type')
+    err = raises(ValueError, resource._parse_specline, 'media/type').value
     msg = err.args[0]
     assert msg.startswith("Unknown renderer for media/type: glubber.")
 
 def test_get_renderer_factory_can_raise_syntax_error():
     resource = get()
     resource.website.default_renderers_by_media_type['media/type'] = 'glubber'
-    err = assert_raises( SyntaxError
+    err = raises( SyntaxError
                        , resource._get_renderer_factory
                        , 'media/type'
                        , 'oo*gle'
-                        )
+                        ).value
     msg = err.args[0]
     assert msg.startswith("Malformed renderer oo*gle. It must match")
 
@@ -180,14 +182,14 @@ def test_get_response_raises_406_if_need_be():
     mk(('index.spt', NEGOTIATED_RESOURCE))
     request = StubRequest.from_fs('index.spt')
     request.headers['Accept'] = 'cheese/head'
-    actual = assert_raises(Response, get_response, request, Response()).code
+    actual = raises(Response, get_response, request, Response()).value.code
     assert actual == 406
 
 def test_get_response_406_gives_list_of_acceptable_types():
     mk(('index.spt', NEGOTIATED_RESOURCE))
     request = StubRequest.from_fs('index.spt')
     request.headers['Accept'] = 'cheese/head'
-    actual = assert_raises(Response, get_response, request, Response()).body
+    actual = raises(Response, get_response, request, Response()).value.body
     expected = "The following media types are available: text/plain, text/html."
     assert actual == expected
 

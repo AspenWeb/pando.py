@@ -3,11 +3,13 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from pytest import raises
+
 from aspen import Response
 from aspen.http.request import Request
 from aspen.http.mapping import Mapping
 from aspen.http.request import Line, Method, URI, Version, Path, Querystring
-from aspen.testing import assert_raises, teardown_function
+from aspen.testing import teardown_function
 
 
 # Line
@@ -30,7 +32,7 @@ def test_line_has_version():
     assert line.version == u"HTTP/0.9"
 
 def test_line_chokes_on_non_ASCII_in_uri():
-    assert_raises(UnicodeDecodeError, Line, "GET", chr(128), "HTTP/1.1")
+    raises(UnicodeDecodeError, Line, "GET", chr(128), "HTTP/1.1")
 
 
 # Method
@@ -62,7 +64,7 @@ def test_method_raw_is_bytestring():
 
 def test_method_cant_have_more_attributes():
     method = Method("GET")
-    assert_raises(AttributeError, setattr, method, "foo", "bar")
+    raises(AttributeError, setattr, method, "foo", "bar")
 
 def test_method_can_be_OPTIONS(): assert Method("OPTIONS") == u"OPTIONS"
 def test_method_can_be_GET():     assert Method("GET")     == u"GET"
@@ -79,16 +81,16 @@ def test_method_can_be_big():
 
 def test_method_we_cap_it_at_64_bytes_just_cause____I_mean___come_on___right():
     big = b"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz--!"
-    assert assert_raises(Response, Method, big).code == 501
+    assert raises(Response, Method, big).value.code == 501
 
 def test_method_cant_be_non_ASCII():
-    assert assert_raises(Response, Method, b"\x80").code == 501
+    assert raises(Response, Method, b"\x80").value.code == 501
 
 def test_method_can_be_valid_perl():
     assert Method("!#$%&'*+-.^_`|~") == u"!#$%&'*+-.^_`|~"
 
 def the501(i):
-    assert assert_raises(Response, Method, chr(i)).code == 501
+    assert raises(Response, Method, chr(i)).value.code == 501
 
 # 0-31
 def test_method_no_chr_0(): the501(0)
@@ -127,7 +129,7 @@ def test_method_no_chr_29(): the501(29)
 def test_method_no_chr_30(): the501(30)
 def test_method_no_chr_31(): the501(31)
 def test_method_no_chr_32(): the501(32) # space
-def test_method_no_chr_33(): assert_raises(AssertionError, the501, 33) # !
+def test_method_no_chr_33(): assert Method(chr(33)) == '!'
 
 # SEPARATORS
 def test_method_no_chr_40(): the501(40) # (
@@ -259,7 +261,7 @@ def test_uri_ASCII_worketh():
     assert uri == unichr(127), uri
 
 def test_uri_non_ASCII_worketh_not():
-    assert_raises(UnicodeDecodeError, URI, chr(128))
+    raises(UnicodeDecodeError, URI, chr(128))
 
 def test_uri_encoded_username_is_unencoded_properly():
     uri = URI(b"http://%e2%98%84:secret@www.example.com/foo.html")
@@ -274,7 +276,7 @@ def test_uri_international_domain_name_comes_out_properly():
     assert uri.host == u'www.\u658b.tk', uri.host
 
 def test_uri_bad_international_domain_name_raises_UnicodeError():
-    assert_raises(UnicodeError, URI, "http://www.xn--ced.tk/foo.html")
+    raises(UnicodeError, URI, "http://www.xn--ced.tk/foo.html")
 
 def test_uri_raw_is_available_on_something():
     uri = URI("http://www.xn--cev.tk/")
@@ -301,19 +303,19 @@ def test_version_can_be_HTTP_1_1():
     assert actual == expected
 
 def test_version_cant_be_HTTP_1_2():
-    assert assert_raises(Response, Version, b"HTTP/1.2").code == 505
+    assert raises(Response, Version, b"HTTP/1.2").value.code == 505
 
 def test_version_cant_be_junk():
-    assert assert_raises(Response, Version, b"http flah flah").code == 400
+    assert raises(Response, Version, b"http flah flah").value.code == 400
 
 def test_version_cant_even_be_lowercase():
-    assert assert_raises(Response, Version, b"http/1.1").code == 400
+    assert raises(Response, Version, b"http/1.1").value.code == 400
 
 def test_version_cant_even_be_lowercase():
-    assert assert_raises(Response, Version, b"http/1.1").code == 400
+    assert raises(Response, Version, b"http/1.1").value.code == 400
 
 def test_version_with_garbage_is_safe():
-    r = assert_raises(Response, Version, b"HTTP\xef/1.1")
+    r = raises(Response, Version, b"HTTP\xef/1.1").value
     assert r.code == 400, r.code
     assert r.body == "Bad HTTP version: HTTP\\xef/1.1.", r.body
 
@@ -445,7 +447,7 @@ def test_querystring_comes_out_UTF_8():
     assert querystring['baz'] == u"\u2604", querystring['baz']
 
 def test_querystring_chokes_on_bad_unicode():
-    assert_raises(UnicodeDecodeError, Querystring, b"baz=%e2%98")
+    raises(UnicodeDecodeError, Querystring, b"baz=%e2%98")
 
 def test_querystring_unquotes_plus():
     querystring = Querystring("baz=+%2B")

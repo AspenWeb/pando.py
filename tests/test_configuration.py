@@ -6,10 +6,12 @@ from __future__ import unicode_literals
 import os
 import socket
 
+from pytest import raises
+
 import aspen
 from aspen.configuration import Configurable, ConfigurationError, parse
 from aspen.configuration.options import OptionParser, DEFAULT
-from aspen.testing import assert_raises, StubRequest, fix
+from aspen.testing import StubRequest, fix
 from aspen.testing.fsfix import teardown_function, FSFIX, mk
 #from aspen.testing import handle
 from aspen.website import Website
@@ -79,7 +81,7 @@ def test_configuration_scripts_arent_confused_by_io_errors():
     CONFIG = "open('this file should not exist')\n"
     mk(('configure-aspen.py', CONFIG))
     c = Configurable()
-    actual = assert_raises(IOError, c.configure, ['-p', FSFIX])
+    actual = raises(IOError, c.configure, ['-p', FSFIX]).value
     assert actual.strerror == 'No such file or directory'
 
 def test_www_root_defaults_to_cwd():
@@ -95,7 +97,7 @@ def test_ConfigurationError_raised_if_no_cwd():
     os.chdir(FSFIX)
     os.rmdir(FSFIX)
     c = Configurable()
-    assert_raises(ConfigurationError, c.configure, [])
+    raises(ConfigurationError, c.configure, [])
 
 def test_ConfigurationError_NOT_raised_if_no_cwd_but_do_have__www_root():
     mk()
@@ -163,7 +165,7 @@ def test_parse_charset_good():
     assert actual == 'UTF-8'
 
 def test_parse_charset_bad():
-    assert_raises(ValueError, parse.charset, u'')
+    raises(ValueError, parse.charset, u'')
 
 
 def test_parse_yes_no_yes_is_True():
@@ -185,10 +187,10 @@ def test_parse_yes_no_1_is_False():
     assert not parse.yes_no(u'0')
 
 def test_parse_yes_no_int_is_AttributeError():
-    assert_raises(TypeError, parse.yes_no, 1)
+    raises(TypeError, parse.yes_no, 1)
 
 def test_parse_yes_no_other_is_ValueError():
-    assert_raises(ValueError, parse.yes_no, u'cheese')
+    raises(ValueError, parse.yes_no, u'cheese')
 
 
 def test_parse_list_handles_one():
@@ -221,7 +223,7 @@ def test_parse_renderer_good():
     assert actual == u'stdlib_percent'
 
 def test_parse_renderer_bad():
-    assert_raises(ValueError, parse.renderer, u'floober')
+    raises(ValueError, parse.renderer, u'floober')
 
 
 def test_parse_network_engine_good():
@@ -229,7 +231,7 @@ def test_parse_network_engine_good():
     assert actual == 'cheroot'
 
 def test_parse_network_engine_bad():
-    assert_raises(ValueError, parse.network_engine, u'floober')
+    raises(ValueError, parse.network_engine, u'floober')
 
 
 def test_parse_network_address_unix_socket():
@@ -240,7 +242,7 @@ def test_parse_network_address_unix_socket_fails_on_windows():
     oldval = aspen.WINDOWS
     try:
         aspen.WINDOWS = True
-        assert_raises(ValueError, parse.network_address, u"/foo/bar")
+        raises(ValueError, parse.network_address, u"/foo/bar")
     finally:
         aspen.WINDOWS = oldval
 
@@ -253,23 +255,23 @@ def test_parse_network_address_sees_one_colon_as_ipv4():
     assert actual == ((u"192.168.1.1", 8080), socket.AF_INET)
 
 def test_parse_network_address_need_colon_for_ipv4():
-    assert_raises(ValueError, parse.network_address, u"192.168.1.1 8080")
+    raises(ValueError, parse.network_address, u"192.168.1.1 8080")
 
 def test_parse_network_address_defaults_to_inaddr_any():
     actual = parse.network_address(u':8080')
     assert actual == ((u'0.0.0.0', 8080), socket.AF_INET)
 
 def test_parse_network_address_with_bad_address():
-    assert_raises(ValueError, parse.network_address, u'0 0 0 0:8080')
+    raises(ValueError, parse.network_address, u'0 0 0 0:8080')
 
 def test_parse_network_address_with_bad_port():
-    assert_raises(ValueError, parse.network_address, u':80 0')
+    raises(ValueError, parse.network_address, u':80 0')
 
 def test_parse_network_address_with_port_too_low():
-    actual = assert_raises(ValueError, parse.network_address, u':-1').args[0]
+    actual = raises(ValueError, parse.network_address, u':-1').value.args[0]
     assert actual == "invalid port (out of range)"
 
 def test_parse_network_address_with_port_too_high():
-    actual = assert_raises(ValueError, parse.network_address, u':65536').args[0]
+    actual = raises(ValueError, parse.network_address, u':65536').value.args[0]
     assert actual == "invalid port (out of range)"
 

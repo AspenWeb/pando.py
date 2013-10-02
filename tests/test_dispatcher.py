@@ -5,21 +5,23 @@ from __future__ import unicode_literals
 
 import os
 
+from pytest import raises
+
 from aspen import dispatcher, Response
 from aspen.http.request import Request
-from aspen.testing import assert_raises, handle, NoException, StubRequest
+from aspen.testing import handle, NoException, StubRequest
 from aspen.testing import teardown_function, fix, mk
 
 # Helpers
 # =======
 
 def assert_raises_404(func, *args):
-    response = assert_raises(Response, func, *args)
+    response = raises(Response, func, *args).value
     assert response.code == 404
     return response
 
 def assert_raises_302(func, *args):
-    response = assert_raises(Response, func, *args)
+    response = raises(Response, func, *args).value
     assert response.code == 302
     return response
 
@@ -221,7 +223,7 @@ def test_virtual_path_typecasts_to_int():
 
 def test_virtual_path_raises_on_bad_typecast():
     mk(('%year.int/foo.html', "Greetings, program!"))
-    assert_raises(Response, check, '/I am not a year./foo.html')
+    raises(Response, check, '/I am not a year./foo.html')
 
 def test_virtual_path_raises_404_on_bad_typecast():
     mk(('%year.int/foo.html', "Greetings, program!"))
@@ -229,7 +231,7 @@ def test_virtual_path_raises_404_on_bad_typecast():
 
 def test_virtual_path_raises_on_direct_access():
     mk()
-    assert_raises(Response, check, '/%name/foo.html')
+    raises(Response, check, '/%name/foo.html')
 
 def test_virtual_path_raises_404_on_direct_access():
     mk()
@@ -337,21 +339,21 @@ def test_dispatcher_passes_through_virtual_dir_with_trailing_slash():
 
 def test_dispatcher_redirects_dir_without_trailing_slash():
     mk('foo')
-    response = assert_raises(Response, check, '/foo')
+    response = raises(Response, check, '/foo').value
     expected = (302, '/foo/')
     actual = (response.code, response.headers['Location'])
     assert actual == expected
 
 def test_dispatcher_redirects_virtual_dir_without_trailing_slash():
     mk('%foo')
-    response = assert_raises(Response, check, '/foo')
+    response = raises(Response, check, '/foo').value
     expected = (302, '/foo/')
     actual = (response.code, response.headers['Location'])
     assert actual == expected
 
 def test_trailing_on_virtual_paths_missing():
     mk('%foo/%bar/%baz')
-    response = assert_raises(Response, check, '/foo/bar/baz')
+    response = raises(Response, check, '/foo/bar/baz').value
     expected = '/foo/bar/baz/'
     actual = response.headers['Location']
     assert actual == expected
@@ -467,7 +469,7 @@ def test_virtual_path_docs_6():
 
 def test_intercept_socket_protects_direct_access():
     request = Request(uri="/foo.sock")
-    assert_raises(Response, dispatcher.dispatch, request)
+    raises(Response, dispatcher.dispatch, request)
 
 def test_intercept_socket_intercepts_handshake():
     request = Request(uri="/foo.sock/1")
@@ -547,7 +549,7 @@ def test_aspen_favicon_doesnt_get_clobbered_by_virtual_path():
 def test_robots_txt_also_shouldnt_be_redirected():
     mk('%value.spt')
     request = StubRequest.from_fs('/robots.txt')
-    err = assert_raises(Response, dispatcher.dispatch, request)
+    err = raises(Response, dispatcher.dispatch, request).value
     actual = err.code
     assert actual == 404
 
