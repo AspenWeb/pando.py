@@ -9,7 +9,7 @@ def test_buffer_is_instantiable():
     mk(('echo.sock.spt', 'socket.send(socket.recv())'))
     expected = Buffer
     actual = Buffer(make_socket(), 'foo').__class__
-    assert actual is expected, actual
+    assert actual is expected
 
 def test_can_put_onto_buffer():
     mk(('echo.sock.spt', 'socket.send(socket.recv())'))
@@ -17,7 +17,7 @@ def test_can_put_onto_buffer():
     expected = [FFFD+'4'+FFFD+'1:::']
     buffer.put(Message.from_bytes('1:::'))
     actual = list(buffer.flush())
-    assert actual == expected, actual
+    assert actual == expected
 
 def test_buffer_flush_performance():
 
@@ -29,7 +29,7 @@ def test_buffer_flush_performance():
     out = list(buffer.flush())
     nbuffer = len(buffer)
     nout = len(out)
-    assert nbuffer + nout == N, (nbuffer, nout)
+    assert nbuffer + nout == N
     assert nout > 500
 
 

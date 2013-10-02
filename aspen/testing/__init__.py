@@ -4,7 +4,6 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import os
-import sys
 
 import aspen.logging
 if aspen.logging.LOGGING_THRESHOLD == -1:
@@ -17,7 +16,7 @@ from aspen.utils import typecheck
 from aspen.testing.fsfix import fix, FSFIX, mk, teardown, teardown_function
 
 
-__all__ = ['assert_raises', 'fix', 'teardown', 'handle', 'teardown_function']
+__all__ = ['fix', 'teardown', 'handle', 'teardown_function']
 
 
 class Stub:
@@ -108,23 +107,5 @@ def check(content, filename="index.html.spt", body=True, configure_aspen_py="",
         return response.body
     else:
         return response
-
-def assert_raises(Exc, call, *arg, **kw):
-    """Given an Exception, a callable, and its params, return an exception.
-
-    If the callable does not raise an exception then AssertionError will be
-    raised with a message indicating as much. Likewise if the callable raises a
-    different exception than what was expected.
-
-    """
-    exc = None
-    try:
-        call(*arg, **kw)
-    except:
-        exc = sys.exc_info()[1]
-        pass
-    assert exc is not None, "no exception; expected %s" % Exc
-    assert isinstance(exc, Exc), "raised %s, not %s" % (repr(exc), repr(Exc))
-    return exc
 
 NoException = True
