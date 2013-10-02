@@ -1,6 +1,15 @@
 Aspen-python Changelog
 ======================
 
+0.26.1 - Released Wed Oct 2 2013 by @pjz
+----------------------------------------
+
+* fixed a bug in unicode handling that broke cookies
+
+* Allow rendered json simplates to specify per-file content-types (Thanks @ArmstrongJ!) 
+
+* Fix #232 - doc server doesn't start - by updating doc/README with current instructions
+
 0.26 - Released Fri Sep 27 by @pjz
 ----------------------------------
 
