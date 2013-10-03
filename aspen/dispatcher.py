@@ -11,7 +11,7 @@ import os
 from aspen import Response
 from aspen.utils import typecheck
 from .backcompat import namedtuple
-from aspen.http.request import UnicodeWithParams
+from aspen.http.request import PathPart
 
 def debug_noop(*args, **kwargs):
     pass
@@ -34,7 +34,7 @@ def splitext(name):
 def _typecast(key, value):
     """Given two unicodes, return a unicode, and an int or unicode.
     """
-    typecheck(key, (unicode, UnicodeWithParams), value, (unicode, UnicodeWithParams))
+    typecheck(key, (unicode, PathPart), value, (unicode, PathPart))
     debug(lambda: "typecasting " + key + ", " + value)
     if key.endswith('.int'):    # you can typecast to int
         key = key[:-4]
