@@ -8,7 +8,7 @@ we use to model each:
             - method            Method      ASCII
             - uri               URI
                 - path          Path
-                  - parts       list of UnicodeWithParams
+                  - parts       list of PathPart
                 - querystring   Querystring
             - version           Version     ASCII
         - headers               Headers     str
@@ -164,13 +164,13 @@ class UnicodeWithRaw(unicode):
         obj.raw = raw
         return obj
 
-class UnicodeWithParams(unicode):
+class PathPart(unicode):
     """A string with a mapping for extra data about it."""
 
     __slots__ = ['params']
 
     def __new__(cls, value, params):
-        obj = super(UnicodeWithParams, cls).__new__(cls, value)
+        obj = super(PathPart, cls).__new__(cls, value)
         obj.params = params
         return obj
 
@@ -500,7 +500,7 @@ def extract_rfc2396_params(path):
             else:
                 k, v = p, b''
             params.add(decode(k), decode(v))
-        segments_with_params.append(UnicodeWithParams(segment, params))
+        segments_with_params.append(PathPart(segment, params))
     return segments_with_params
 
 
