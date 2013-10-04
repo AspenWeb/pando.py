@@ -5,7 +5,7 @@ doc_next = []
 {% block doc %}
 
 <p>Aspen has special support for using <a href="/simplates/">simplates</a> to
-serve JSON resources. Files with an extension of <code>.json</code> will be
+serve JSON resources. Files with an extension of <code>.json.spt</code> will be
 specially processed as a JSON simplate. While normal simplates can have up to
 three pages, a JSON simplate only has one or two pages (you&rsquo;ll get a
 <code>LoadError</code> if there is more than one page separator in a JSON
@@ -51,7 +51,7 @@ output if it contains anything else.</p>
 
 <h4>Example</h4>
 
-<p>Make a <code>greetings.json</code> file with this content:</p>
+<p>Make a <code>greetings.json.spt</code> file with this content:</p>
 
 <pre>import random
 \[---]
