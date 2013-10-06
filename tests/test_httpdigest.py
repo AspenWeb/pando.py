@@ -1,7 +1,12 @@
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
 
+from pytest import raises
 
 from aspen.http.response import Response
-from aspen.testing import assert_raises, StubRequest
+from aspen.testing import StubRequest
 from aspen.auth.httpdigest import inbound_responder, digest
 
 import base64
@@ -54,7 +59,7 @@ def test_good_works():
     request = StubRequest()
     # once to get a WWW-Authenticate header
     hook = inbound_responder(_auth_func("username", "password"), realm="testrealm@host.com")
-    response = assert_raises(Response, hook, request)
+    response = raises(Response, hook, request).value
     # do something with the header
     auth_headers = _auth_headers(response)
     request.headers['Authorization'] = _digest_auth_for(auth_headers, "username", "password")
@@ -73,24 +78,24 @@ def test_good_works():
 
 def test_no_auth():
     auth = lambda u, p: u == "username" and p == "password"
-    response = assert_raises(Response, _request_with, auth, None)
+    response = raises(Response, _request_with, auth, None).value
     assert response.code == 401, response
 
 def test_bad_fails():
     request = StubRequest()
     # once to get a WWW-Authenticate header
     hook = inbound_responder(_auth_func("username", "password"), realm="testrealm@host.com")
-    response = assert_raises(Response, hook, request)
+    response = raises(Response, hook, request).value
     # do something with the header
     auth_headers = _auth_headers(response)
     request.headers['Authorization'] = _digest_auth_for(auth_headers, "username", "badpassword")
-    response = assert_raises(Response, hook, request)
+    response = raises(Response, hook, request).value
     assert response.code == 401, response
     assert not request.auth.authorized()
 
 def test_wrong_auth():
     auth = lambda u, p: u == "username" and p == "password"
-    response = assert_raises(Response, _request_with, auth, "Wacky xxx")
+    response = raises(Response, _request_with, auth, "Wacky xxx").value
     assert response.code == 400, response
 
 

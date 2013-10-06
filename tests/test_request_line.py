@@ -1,7 +1,15 @@
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
+from pytest import raises
+
 from aspen import Response
+from aspen.http.request import Request
 from aspen.http.mapping import Mapping
 from aspen.http.request import Line, Method, URI, Version, Path, Querystring
-from aspen.testing import assert_raises, attach_teardown
+from aspen.testing import teardown_function
 
 
 # Line
@@ -9,22 +17,22 @@ from aspen.testing import assert_raises, attach_teardown
 
 def test_line_works():
     line = Line("GET", "/", "HTTP/0.9")
-    assert line == u"GET / HTTP/0.9", line
+    assert line == u"GET / HTTP/0.9"
 
 def test_line_has_method():
     line = Line("GET", "/", "HTTP/0.9")
-    assert line.method == u"GET", line.method
+    assert line.method == u"GET"
 
 def test_line_has_uri():
     line = Line("GET", "/", "HTTP/0.9")
-    assert line.uri == u"/", line.uri
+    assert line.uri == u"/"
 
 def test_line_has_version():
     line = Line("GET", "/", "HTTP/0.9")
-    assert line.version == u"HTTP/0.9", line.version
+    assert line.version == u"HTTP/0.9"
 
 def test_line_chokes_on_non_ASCII_in_uri():
-    assert_raises(UnicodeDecodeError, Line, "GET", chr(128), "HTTP/1.1")
+    raises(UnicodeDecodeError, Line, "GET", chr(128), "HTTP/1.1")
 
 
 # Method
@@ -32,31 +40,31 @@ def test_line_chokes_on_non_ASCII_in_uri():
 
 def test_method_works():
     method = Method("GET")
-    assert method == u"GET", method
+    assert method == u"GET"
 
 def test_method_is_unicode_subclass():
     method = Method("GET")
-    assert issubclass(method.__class__, unicode), method.__class__
+    assert issubclass(method.__class__, unicode)
 
 def test_method_is_unicode_instance():
     method = Method("GET")
-    assert isinstance(method, unicode), method
+    assert isinstance(method, unicode)
 
 def test_method_is_basestring_instance():
     method = Method("GET")
-    assert isinstance(method, basestring), method
+    assert isinstance(method, basestring)
 
 def test_method_raw_works():
     method = Method("GET")
-    assert method.raw == "GET", method.raw
+    assert method.raw == "GET"
 
 def test_method_raw_is_bytestring():
-    method = Method("GET")
-    assert isinstance(method.raw, str), method.raw
+    method = Method(b"GET")
+    assert isinstance(method.raw, str)
 
 def test_method_cant_have_more_attributes():
     method = Method("GET")
-    assert_raises(AttributeError, setattr, method, "foo", "bar")
+    raises(AttributeError, setattr, method, "foo", "bar")
 
 def test_method_can_be_OPTIONS(): assert Method("OPTIONS") == u"OPTIONS"
 def test_method_can_be_GET():     assert Method("GET")     == u"GET"
@@ -72,17 +80,17 @@ def test_method_can_be_big():
     assert Method(big) == big
 
 def test_method_we_cap_it_at_64_bytes_just_cause____I_mean___come_on___right():
-    big = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz--!"
-    assert assert_raises(Response, Method, big).code == 501
+    big = b"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz--!"
+    assert raises(Response, Method, big).value.code == 501
 
 def test_method_cant_be_non_ASCII():
-    assert assert_raises(Response, Method, "\x80").code == 501
+    assert raises(Response, Method, b"\x80").value.code == 501
 
 def test_method_can_be_valid_perl():
     assert Method("!#$%&'*+-.^_`|~") == u"!#$%&'*+-.^_`|~"
 
 def the501(i):
-    assert assert_raises(Response, Method, chr(i)).code == 501
+    assert raises(Response, Method, chr(i)).value.code == 501
 
 # 0-31
 def test_method_no_chr_0(): the501(0)
@@ -121,7 +129,7 @@ def test_method_no_chr_29(): the501(29)
 def test_method_no_chr_30(): the501(30)
 def test_method_no_chr_31(): the501(31)
 def test_method_no_chr_32(): the501(32) # space
-def test_method_no_chr_33(): assert_raises(AssertionError, the501, 33) # !
+def test_method_no_chr_33(): assert Method(chr(33)) == '!'
 
 # SEPARATORS
 def test_method_no_chr_40(): the501(40) # (
@@ -152,10 +160,10 @@ def test_uri_works_at_all():
     uri = URI("/")
     expected = u"/"
     actual = uri
-    assert actual == expected, actual
+    assert actual == expected
 
 def test_a_nice_unicode_uri():
-    uri = URI("http://%E2%98%84:bar@localhost:5370/+%E2%98%84.html?%E2%98%84=%E2%98%84+bar")
+    uri = URI(b"http://%E2%98%84:bar@localhost:5370/+%E2%98%84.html?%E2%98%84=%E2%98%84+bar")
     assert uri == "http://%E2%98%84:bar@localhost:5370/+%E2%98%84.html?%E2%98%84=%E2%98%84+bar", uri
 
 
@@ -253,14 +261,14 @@ def test_uri_ASCII_worketh():
     assert uri == unichr(127), uri
 
 def test_uri_non_ASCII_worketh_not():
-    assert_raises(UnicodeDecodeError, URI, chr(128))
+    raises(UnicodeDecodeError, URI, chr(128))
 
 def test_uri_encoded_username_is_unencoded_properly():
-    uri = URI("http://%e2%98%84:secret@www.example.com/foo.html")
+    uri = URI(b"http://%e2%98%84:secret@www.example.com/foo.html")
     assert uri.username == u'\u2604', uri.username
 
 def test_uri_encoded_password_is_unencoded_properly():
-    uri = URI("http://foobar:%e2%98%84@www.example.com/foo.html")
+    uri = URI(b"http://foobar:%e2%98%84@www.example.com/foo.html")
     assert uri.password == u'\u2604', uri.password
 
 def test_uri_international_domain_name_comes_out_properly():
@@ -268,7 +276,7 @@ def test_uri_international_domain_name_comes_out_properly():
     assert uri.host == u'www.\u658b.tk', uri.host
 
 def test_uri_bad_international_domain_name_raises_UnicodeError():
-    assert_raises(UnicodeError, URI, "http://www.xn--ced.tk/foo.html")
+    raises(UnicodeError, URI, "http://www.xn--ced.tk/foo.html")
 
 def test_uri_raw_is_available_on_something():
     uri = URI("http://www.xn--cev.tk/")
@@ -282,32 +290,32 @@ def test_uri_raw_is_available_on_something():
 def test_version_can_be_HTTP_0_9():
     actual = Version("HTTP/0.9")
     expected = u"HTTP/0.9"
-    assert actual == expected, actual
+    assert actual == expected
 
 def test_version_can_be_HTTP_1_0():
     actual = Version("HTTP/1.0")
     expected = u"HTTP/1.0"
-    assert actual == expected, actual
+    assert actual == expected
 
 def test_version_can_be_HTTP_1_1():
     actual = Version("HTTP/1.1")
     expected = u"HTTP/1.1"
-    assert actual == expected, actual
+    assert actual == expected
 
 def test_version_cant_be_HTTP_1_2():
-    assert assert_raises(Response, Version, "HTTP/1.2").code == 505
+    assert raises(Response, Version, b"HTTP/1.2").value.code == 505
 
 def test_version_cant_be_junk():
-    assert assert_raises(Response, Version, "http flah flah").code == 400
+    assert raises(Response, Version, b"http flah flah").value.code == 400
 
 def test_version_cant_even_be_lowercase():
-    assert assert_raises(Response, Version, "http/1.1").code == 400
+    assert raises(Response, Version, b"http/1.1").value.code == 400
 
 def test_version_cant_even_be_lowercase():
-    assert assert_raises(Response, Version, "http/1.1").code == 400
+    assert raises(Response, Version, b"http/1.1").value.code == 400
 
 def test_version_with_garbage_is_safe():
-    r = assert_raises(Response, Version, "HTTP\xef/1.1")
+    r = raises(Response, Version, b"HTTP\xef/1.1").value
     assert r.code == 400, r.code
     assert r.body == "Bad HTTP version: HTTP\\xef/1.1.", r.body
 
@@ -315,25 +323,25 @@ def test_version_major_is_int():
     version = Version("HTTP/1.0")
     expected = 1
     actual = version.major
-    assert actual == expected, actual
+    assert actual == expected
 
 def test_version_major_is_int():
     version = Version("HTTP/0.9")
     expected = 9
     actual = version.minor
-    assert actual == expected, actual
+    assert actual == expected
 
 def test_version_info_is_tuple():
     version = Version("HTTP/0.9")
     expected = (0, 9)
     actual = version.info
-    assert actual == expected, actual
+    assert actual == expected
 
 def test_version_raw_is_bytestring():
-    version = Version("HTTP/0.9")
+    version = Version(b"HTTP/0.9")
     expected = str
     actual = version.raw.__class__
-    assert actual is expected, actual
+    assert actual is expected
 
 
 # Path
@@ -348,7 +356,7 @@ def test_path_has_raw_set():
     assert path.raw == "/bar.html", path.raw
 
 def test_path_raw_is_str():
-    path = Path("/bar.html")
+    path = Path(b"/bar.html")
     assert isinstance(path.raw, str)
 
 def test_path_has_decoded_set():
@@ -360,51 +368,90 @@ def test_path_decoded_is_unicode():
     assert isinstance(path.decoded, unicode)
 
 def test_path_unquotes_and_decodes_UTF_8():
-    path = Path("/%e2%98%84.html")
+    path = Path(b"/%e2%98%84.html")
     assert path.decoded == u"/\u2604.html", path.decoded
 
 def test_path_doesnt_unquote_plus():
     path = Path("/+%2B.html")
     assert path.decoded == u"/++.html", path.decoded
 
+def test_path_has_parts():
+    path = Path("/foo/bar.html")
+    assert path.parts == ['foo', 'bar.html']
+
+
+# Path params
+# ===========
+
+def _extract_params(uri):
+#    return dispatcher.extract_rfc2396_params(path.lstrip('/').split('/'))
+    params = [ segment.params for segment in uri.path.parts ]
+    segments = [ unicode(segment) for segment in uri.path.parts ]
+    return ( segments, params )
+
+def test_extract_path_params_with_none():
+    request = Request(uri="/foo/bar")
+    actual = _extract_params(request.line.uri)
+    expected = (['foo', 'bar'], [{}, {}])
+    assert actual == expected
+
+def test_extract_path_params_simple():
+    request = Request(uri="/foo;a=1;b=2;c/bar;a=2;b=1")
+    actual = _extract_params(request.line.uri)
+    expected = (['foo', 'bar'], [{'a':['1'], 'b':['2'], 'c':['']}, {'a':['2'], 'b':['1']}])
+    assert actual == expected
+
+def test_extract_path_params_complex():
+    request = Request(uri="/foo;a=1;b=2,3;c;a=2;b=4/bar;a=2,ab;b=1")
+    actual = _extract_params(request.line.uri)
+    expected = (['foo', 'bar'], [{'a':['1','2'], 'b':['2,3', '4'], 'c':['']}, {'a':[ '2,ab' ], 'b':['1']}])
+    assert actual == expected
+
+def test_path_params_api():
+    request = Request(uri="/foo;a=1;b=2;b=3;c/bar;a=2,ab;b=1")
+    parts, params = (['foo', 'bar'], [{'a':['1'], 'b':['2', '3'], 'c':['']}, {'a':[ '2,ab' ], 'b':['1']}])
+    assert request.line.uri.path.parts == parts, request.line.uri.path.parts
+    assert request.line.uri.path.parts[0].params == params[0]
+    assert request.line.uri.path.parts[1].params == params[1]
+
 
 # Querystring
 # ===========
 
 def test_querystring_starts_full():
-    querystring = Querystring("baz=buz")
+    querystring = Querystring(b"baz=buz")
     assert querystring == {'baz': [u'buz']}, querystring
 
 def test_querystring_has_raw_set():
-    querystring = Querystring("baz=buz")
+    querystring = Querystring(b"baz=buz")
     assert querystring.raw == "baz=buz", querystring.raw
 
 def test_querystring_raw_is_str():
-    querystring = Querystring("baz=buz")
+    querystring = Querystring(b"baz=buz")
     assert isinstance(querystring.raw, str)
 
 def test_querystring_has_decoded_set():
-    querystring = Querystring("baz=buz")
+    querystring = Querystring(b"baz=buz")
     assert querystring.decoded == u"baz=buz", querystring.decoded
 
 def test_querystring_decoded_is_unicode():
-    querystring = Querystring("baz=buz")
+    querystring = Querystring(b"baz=buz")
     assert isinstance(querystring.decoded, unicode)
 
 def test_querystring_unquotes_and_decodes_UTF_8():
-    querystring = Querystring("baz=%e2%98%84")
+    querystring = Querystring(b"baz=%e2%98%84")
     assert querystring.decoded == u"baz=\u2604", querystring.decoded
 
 def test_querystring_comes_out_UTF_8():
-    querystring = Querystring("baz=%e2%98%84")
+    querystring = Querystring(b"baz=%e2%98%84")
     assert querystring['baz'] == u"\u2604", querystring['baz']
 
 def test_querystring_chokes_on_bad_unicode():
-    assert_raises(UnicodeDecodeError, Querystring, "baz=%e2%98")
+    raises(UnicodeDecodeError, Querystring, b"baz=%e2%98")
 
 def test_querystring_unquotes_plus():
     querystring = Querystring("baz=+%2B")
     assert querystring.decoded == u"baz= +", querystring.decoded
     assert querystring['baz'] == " +"
 
-attach_teardown(globals())
+

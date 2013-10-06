@@ -1,17 +1,18 @@
 from collections import deque
 
+from pytest import raises
+
 from aspen.sockets.buffer import ThreadedBuffer
 from aspen.sockets.channel import Channel
 from aspen.sockets.message import Message
 from aspen.testing.sockets import make_socket
-from aspen.testing import assert_raises
-from aspen.testing.fsfix import mk, attach_teardown
+from aspen.testing.fsfix import mk, teardown_function
 
 
 def test_channel_is_instantiable():
     expected = Channel
     actual = Channel('/foo.sock', ThreadedBuffer).__class__
-    assert actual is expected, actual
+    assert actual is expected
 
 def test_channel_can_have_sockets_added_to_it():
     mk(('echo.sock.spt', 'channel.send(channel.recv())'))
@@ -21,14 +22,14 @@ def test_channel_can_have_sockets_added_to_it():
 
     expected = [socket]
     actual = list(channel)
-    assert actual == expected, actual
+    assert actual == expected
 
 def test_channel_raises_AssertionError_on_double_add():
     mk(('echo.sock.spt', ''))
     socket = make_socket()
     channel = Channel('foo', ThreadedBuffer)
     channel.add(socket)
-    assert_raises(AssertionError, channel.add, socket)
+    raises(AssertionError, channel.add, socket)
 
 def test_channel_passes_send_on_to_one_socket():
     mk(('echo.sock.spt', ''))
@@ -39,7 +40,7 @@ def test_channel_passes_send_on_to_one_socket():
 
     expected = deque([Message.from_bytes('3::/echo.sock:foo')])
     actual = socket.outgoing.queue
-    assert actual == expected, actual
+    assert actual == expected
 
 def test_channel_passes_send_on_to_four_sockets():
     mk(('echo.sock.spt', 'channel.send(channel.recv())'))
@@ -50,6 +51,6 @@ def test_channel_passes_send_on_to_four_sockets():
     for socket in sockets:
         expected = deque([Message.from_bytes('3::/echo.sock:foo')])
         actual = socket.outgoing.queue
-        assert actual == expected, actual
+        assert actual == expected
 
-attach_teardown(globals())
+

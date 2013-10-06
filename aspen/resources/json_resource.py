@@ -1,3 +1,8 @@
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
 from aspen import json
 from aspen.resources.dynamic_resource import DynamicResource
 
@@ -27,4 +32,6 @@ class JSONResource(DynamicResource):
         """
         if not isinstance(response.body, basestring):
             response.body = json.dumps(response.body)
-        response.headers['Content-Type'] = self.website.media_type_json
+            
+        if 'Content-Type' not in response.headers:
+            response.headers['Content-Type'] = self.website.media_type_json

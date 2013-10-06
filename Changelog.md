@@ -1,6 +1,48 @@
 Aspen-python Changelog
 ======================
 
+0.26.1 - Released Wed Oct 2 2013 by @pjz
+----------------------------------------
+
+* fixed a bug in unicode handling that broke cookies
+
+* Allow rendered json simplates to specify per-file content-types (Thanks @ArmstrongJ!) 
+
+* Fix #232 - doc server doesn't start - by updating doc/README with current instructions
+
+0.26 - Released Fri Sep 27 by @pjz
+----------------------------------
+
+* Fixed #226 - converted from nosetests to py.test - this got us much
+  nicer assert handling for debugging.
+
+* Fixed #225 - added 'from future' imports to the whole thing to 1) prep
+  for py3k and 2) help fix unicode handling (Thanks @nejstastnejsistene !)
+
+* Fixed #42 - added support for rfc2396 key/value pairs in URLs (tl;dr is
+  that /foo;a=b;a=c;d=e/ will go to /foo/ with an easy way to get the values
+  of a (==['b','c']) and d (==['e'])
+
+* Added some CRLF-injection protection (Thanks Berkay Aydin!)
+
+* Added module entrypoint to allow 'python -m aspen.server' (Thanks @jaraco !)
+
+* Fixed #165 - make it explicit which variables are available to templates
+  By default all variables are available.  If you want to limit that, put
+  the list of variable names in `__all__`
+
+
+0.25.3 - Released 2013-08-09 by @whit537
+----------------------------------------
+
+* Fixed #212 - don't wrongly swallow IOError in configure-aspen.py
+
+* Fixed #210 - better error message for negotiated simplate with not enough 
+  pages
+
+* Fixed #209 - tracebacks for raise Response are scary
+
+
 0.25.2 - Released 2013-07-22 by @whit537
 ----------------------------------------
 

@@ -1,3 +1,9 @@
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
+
 import os
 import re
 import sys
@@ -60,9 +66,8 @@ class Response(Exception):
         """
         if not isinstance(code, int):
             raise TypeError("'code' must be an integer")
-        elif not isinstance(body, str) and not hasattr(body, '__iter__'):
-            raise TypeError("'body' must be a bytestring or iterable of "
-                            "bytestrings")
+        elif not isinstance(body, basestring) and not hasattr(body, '__iter__'):
+            raise TypeError("'body' must be a string or iterable of strings")
         elif headers is not None and not isinstance(headers, (dict, list)):
             raise TypeError("'headers' must be a dictionary or a list of " +
                             "2-tuples")
@@ -72,14 +77,14 @@ class Response(Exception):
         Exception.__init__(self)
         self.code = code
         self.body = body
-        self.headers = Headers('')
+        self.headers = Headers(b'')
         self.charset = charset
         if headers:
             if isinstance(headers, dict):
                 headers = headers.items()
             for k, v in headers:
                 self.headers[k] = v
-        self.headers.cookie.load(self.headers.get('Cookie', ''))
+        self.headers.cookie.load(self.headers.get('Cookie', b''))
 
     def __call__(self, environ, start_response):
         wsgi_status = str(self)
@@ -102,8 +107,9 @@ class Response(Exception):
 
         start_response(wsgi_status, wsgi_headers)
         body = self.body
-        if isinstance(body, str):
+        if isinstance(body, basestring):
             body = [body]
+        body = (x.encode('ascii') if isinstance(x, unicode) else x for x in body)
         return CloseWrapper(self.request, body)
 
     def __repr__(self):

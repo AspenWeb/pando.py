@@ -1,3 +1,8 @@
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
 import re
 import sys
 from StringIO import StringIO
@@ -35,17 +40,17 @@ def capture(*a, **kw):
 
 def test_log_logs_something():
     actual = capture("oh heck", level=4)
-    assert actual == ["oh heck"], actual
+    assert actual == ["oh heck"]
 
 def test_log_logs_several_somethings():
     actual = capture("oh\nheck", u"what?", {}, [], None, level=4)
-    assert actual == ["oh", "heck", "what?", "{}", "[]", "None"], actual
+    assert actual == ["oh", "heck", "what?", "{}", "[]", "None"]
 
 def test_log_dammit_works():
     actual = capture("yes\nrly", {}, [], None, threshold=1, func=log_dammit)
-    assert actual == ["yes", "rly", "{}", "[]", "None"], actual
+    assert actual == ["yes", "rly", "{}", "[]", "None"]
 
 def test_logging_unicode_works():
-    actual = capture(u"oh \u2614 heck", level=4)
-    assert actual == ["oh \xe2\x98\x94 heck"], actual
+    actual = capture("oh \u2614 heck", level=4)
+    assert actual == ["oh \u2614 heck"]
 

@@ -1,4 +1,0 @@
-#!/bin/sh
-watch --color --interval 0.5 \
-    '../env/bin/nosetests --stop --with-snot '$@' 4>&1 | tail -n $(($LINES-2))'
-

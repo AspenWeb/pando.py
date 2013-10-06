@@ -1,9 +1,13 @@
-from __future__ import with_statement # for Python 2.5
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
 import time
 
 from aspen.sockets import FFFD
 from aspen.sockets.socket import Socket
-from aspen.testing.fsfix import mk, attach_teardown
+from aspen.testing.fsfix import mk, teardown_function
 from aspen.testing.sockets import make_socket, SocketInThread
 
 
@@ -12,7 +16,7 @@ def test_socket_is_instantiable():
 
     expected = Socket
     actual = make_socket().__class__
-    assert actual is expected, actual
+    assert actual is expected
 
 def test_two_sockets_are_instantiable():
     mk(('echo.sock.spt', ''))
@@ -22,7 +26,7 @@ def test_two_sockets_are_instantiable():
 
     expected = (Socket, Socket)
     actual = (socket1.__class__, socket2.__class__)
-    assert actual == expected, actual
+    assert actual == expected
 
 def test_socket_can_shake_hands():
     mk(('echo.sock.spt', ''))
@@ -30,7 +34,7 @@ def test_socket_can_shake_hands():
     response = socket.shake_hands()
     expected = '15:10:xhr-polling'
     actual = response.body.split(':', 1)[1]
-    assert actual == expected, actual
+    assert actual == expected
 
 def test_socket_can_barely_function():
     mk(('echo.sock.spt', 'socket.send("Greetings, program!")'))
@@ -38,23 +42,23 @@ def test_socket_can_barely_function():
     socket = make_socket()
     socket.tick()
 
-    expected = FFFD+'33'+FFFD+'3::/echo.sock:Greetings, program!'
+    expected = FFFD+b'33'+FFFD+b'3::/echo.sock:Greetings, program!'
     actual = socket._recv()
     if actual is not None:
         actual = actual.next()
-    assert actual == expected, actual
+    assert actual == expected
 
 def test_socket_can_echo():
     mk(('echo.sock.spt', 'socket.send(socket.recv())'))
 
     with SocketInThread() as socket:
-        socket._send('3::/echo.sock:Greetings, program!')
+        socket._send(b'3::/echo.sock:Greetings, program!')
         time.sleep(0.05) # give the resource time to tick
 
-        expected = FFFD+'33'+FFFD+'3::/echo.sock:Greetings, program!'
+        expected = FFFD+b'33'+FFFD+b'3::/echo.sock:Greetings, program!'
         actual = socket._recv()
         if actual is not None:
             actual = actual.next()
-        assert actual == expected, actual
+        assert actual == expected
 
-attach_teardown(globals())
+

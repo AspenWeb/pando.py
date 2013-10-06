@@ -1,3 +1,8 @@
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
 def _main(argv):
 
     # Do imports.
@@ -143,3 +148,6 @@ def main(argv=None):
                 time.sleep(1)
         except KeyboardInterrupt:
             raise SystemExit
+
+if __name__ == '__main__':
+    main()

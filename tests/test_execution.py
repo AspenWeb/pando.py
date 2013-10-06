@@ -1,5 +1,10 @@
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
 from aspen import execution
-from aspen.testing.fsfix import attach_teardown
+from aspen.testing.fsfix import teardown_function
 
 class Foo:
     pass
@@ -17,4 +22,4 @@ def test_startup_basically_works():
     assert actual == expected, repr(actual) + " instead of " + repr(expected)
 
 
-attach_teardown(globals())
+

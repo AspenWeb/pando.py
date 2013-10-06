@@ -1,5 +1,12 @@
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
+
 from aspen.backcompat import CookieError, SimpleCookie
 
+from aspen.exceptions import CRLFInjection
 from aspen.http.mapping import CaseInsensitiveMapping
 from aspen.utils import typecheck
 
@@ -15,7 +22,7 @@ class BaseHeaders(CaseInsensitiveMapping):
         if isinstance(d, str):
             def genheaders():
                 for line in d.splitlines():
-                    k, v = line.split(':', 1)
+                    k, v = line.split(b':', 1)
                     yield k.strip(), v.strip()
         else:
             genheaders = d.iteritems
@@ -27,9 +34,20 @@ class BaseHeaders(CaseInsensitiveMapping):
 
         self.cookie = SimpleCookie()
         try:
-            self.cookie.load(self.get('Cookie', ''))
+            self.cookie.load(self.get('Cookie', b''))
         except CookieError:
             pass # XXX really?
+
+
+    def __setitem__(self, name, value):
+        """Extend to protect against CRLF injection:
+
+        http://www.acunetix.com/websitesecurity/crlf-injection/
+
+        """
+        if '\n' in value:
+            raise CRLFInjection
+        super(BaseHeaders, self).__setitem__(name, value)
 
 
     def raw(self):

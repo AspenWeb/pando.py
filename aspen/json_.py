@@ -1,3 +1,8 @@
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
 import datetime
 
 
@@ -88,6 +93,11 @@ def dump(*a, **kw):
     lazy_check()
     if 'cls' not in kw:
         kw['cls'] = FriendlyEncoder
+    # Beautify json by default.
+    if 'sort_keys' not in kw:
+        kw['sort_keys'] = True
+    if 'indent' not in kw:
+        kw['indent'] = 4
     return _json.dump(*a, **kw)
 
 def loads(*a, **kw):
@@ -98,5 +108,10 @@ def dumps(*a, **kw):
     lazy_check()
     if 'cls' not in kw:
         kw['cls'] = FriendlyEncoder
+    # Beautify json by default.
+    if 'sort_keys' not in kw:
+        kw['sort_keys'] = True
+    if 'indent' not in kw:
+        kw['indent'] = 4
     return _json.dumps(*a, **kw)
 

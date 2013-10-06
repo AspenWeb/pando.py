@@ -1,3 +1,8 @@
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
 import os
 import sys
 import shutil
@@ -5,15 +10,9 @@ import tempfile
 import traceback
 from os.path import dirname, isdir, join, realpath
 from aspen import resources, sockets
-try:
-    from nose.tools import with_setup
-except ImportError:
-    with_setup = None
-    nose_tb = traceback.format_exc()
-
 
 CWD = os.getcwd()
-FSFIX = os.path.realpath(os.path.join(tempfile.gettempdir(), 'fsfix'))
+FSFIX = os.path.realpath(os.path.join(tempfile.gettempdir(), b'fsfix'))
 
 
 def convert_path(path):
@@ -51,14 +50,14 @@ def mk(*treedef):
                 os.makedirs(parent)
             file(path, 'w').write(contents)
 
-def fix(path=''):
+def fix(path=b''):
     """Given a relative path, return an absolute path under FSFIX.
 
     The incoming path is in UNIX form (/foo/bar.html). The outgoing path is in
     native form, with symlinks removed.
 
     """
-    path = os.sep.join([FSFIX] + path.split('/'))
+    path = os.sep.join([FSFIX] + path.split(b'/'))
     return realpath(path)
 
 def rm():
@@ -66,6 +65,9 @@ def rm():
     """
     if isdir(FSFIX):
         shutil.rmtree(FSFIX)
+
+def teardown_function(function):
+    teardown()
 
 def teardown():
     """Standard teardown function.
@@ -94,27 +96,6 @@ def teardown():
     aspen.execution.clear_changes()
 
 teardown() # start clean
-
-def attach_teardown(context):
-    """Given a namespace dictionary, attach the teardown function.
-
-    This function is designed for nose and will raise NotImplementedError at
-    runtime with an additional ImportError traceback if nose is not available.
-    To use it put this line at the end of your test modules:
-
-        attach_teardown(globals())
-
-    """
-    if with_setup is None:
-        raise NotImplementedError("This function is designed for nose, which "
-                                  "couldn't be imported:" + os.sep + nose_tb)
-    for name, func in context.items():
-        if name.startswith('test_'):
-            func = with_setup(teardown=teardown)(func) # non-destructive
-
-def torndown(func):
-    func.teardown = teardown
-    return func
 
 def path(*parts):
     """Given relative path parts, convert to absolute path on the filesystem.

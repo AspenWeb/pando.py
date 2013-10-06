@@ -8,6 +8,11 @@ For thoughts on a more sophisticated approach, see:
     http://sync.in/aspen-reloading
 
 """
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
 import os
 import sys
 
@@ -38,7 +43,9 @@ except ImportError:
     max_cloexec_files = 0
 else:
     try:
-        max_cloexec_files = os.sysconf('SC_OPEN_MAX')
+        # The __future__ import upgrades everything to unicode,
+        # but os.sysconf requires a str argument.
+        max_cloexec_files = os.sysconf(str('SC_OPEN_MAX'))
     except AttributeError:
         max_cloexec_files = 1024
 

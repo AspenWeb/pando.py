@@ -1,3 +1,8 @@
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
 from aspen import json, Response
 
 
@@ -24,9 +29,9 @@ class Message(object):
 
     @classmethod
     def from_bytes(cls, bytes):
-        parts = bytes.split(':', 3)
+        parts = bytes.split(b':', 3)
         if len(parts) == 3:
-            parts.append('') # data part is optional
+            parts.append(b'') # data part is optional
         if len(parts) != 4: # "::".split(":", 3) == ['', '', '']
             raise SyntaxError("This message has too few colons: %s." % bytes)
         return cls(*parts)
@@ -58,7 +63,7 @@ class Message(object):
     def _set_type(self, type_):
         try:
             type_ = int(type_)
-            assert type_ in range(9)
+            assert type_ in list(range(9))
         except (ValueError, AssertionError), exc:
             raise ValueError("The message type is not in 0..8: %s." % type_)
         self.__type = type_

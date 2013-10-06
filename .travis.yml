@@ -5,7 +5,7 @@ python:
 install:
   - python setup.py -q install
   - pip install --use-mirrors simplejson coverage
-script: nosetests --with-coverage tests
+script: python build.py analyse
 notifications:
   email: false
   irc: 

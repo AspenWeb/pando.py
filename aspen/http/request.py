@@ -8,6 +8,7 @@ we use to model each:
             - method            Method      ASCII
             - uri               URI
                 - path          Path
+                  - parts       list of UnicodeWithParams
                 - querystring   Querystring
             - version           Version     ASCII
         - headers               Headers     str
@@ -25,6 +26,12 @@ XXX TODO
     clean up body
 
 """
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
+
 import cgi
 import mimetypes
 import re
@@ -77,7 +84,7 @@ def make_franken_uri(path, qs):
             # Some servers (gevent) clobber %2F inside of paths, such
             # that we see /foo%2Fbar/ as /foo/bar/. The %2F is lost to us.
             parts = [urllib.quote(x) for x in quoted_slash_re.split(path)]
-            path = "%2F".join(parts)
+            path = b"%2F".join(parts)
 
     if qs:
         try:
@@ -87,7 +94,7 @@ def make_franken_uri(path, qs):
             # perform the percent-encoding that we would expect MSIE to have
             # done for us.
             qs = urllib.quote_plus(qs)
-        qs = '?' + qs
+        qs = b'?' + qs
 
     return path + qs
 
@@ -112,17 +119,17 @@ def make_franken_headers(environ):
             k = k.replace('_', '-')
             headers.append(': '.join([k, v]))
 
-    return '\r\n'.join(headers)  # *sigh*
+    return str('\r\n'.join(headers))  # *sigh*
 
 
 def kick_against_goad(environ):
     """Kick against the goad. Try to squeeze blood from a stone. Do our best.
     """
     method = environ['REQUEST_METHOD']
-    uri = make_franken_uri( environ.get('PATH_INFO', '')
-                          , environ.get('QUERY_STRING', '')
-                           )
-    server = environ.get('SERVER_SOFTWARE', '')
+    uri = make_franken_uri( environ.get('PATH_INFO', b'')
+                          , environ.get('QUERY_STRING', b'')
+                          )
+    server = environ.get('SERVER_SOFTWARE', b'')
     version = environ['SERVER_PROTOCOL']
     headers = make_franken_headers(environ)
     body = environ['wsgi.input']
@@ -157,6 +164,15 @@ class UnicodeWithRaw(unicode):
         obj.raw = raw
         return obj
 
+class UnicodeWithParams(unicode):
+    """A string with a mapping for extra data about it."""
+
+    __slots__ = ['params']
+
+    def __new__(cls, value, params):
+        obj = super(UnicodeWithParams, cls).__new__(cls, value)
+        obj.params = params
+        return obj
 
 ###########
 # Request #
@@ -176,8 +192,8 @@ class Request(str):
     #   http://docs.python.org/reference/datamodel.html#__slots__
 
 
-    def __new__(cls, method='GET', uri='/', server_software='',
-                version='HTTP/1.1', headers='', body=None):
+    def __new__(cls, method=b'GET', uri=b'/', server_software=b'',
+                version=b'HTTP/1.1', headers=b'', body=None):
         """Takes five bytestrings and an iterable of bytestrings.
         """
         obj = str.__new__(cls, '') # start with an empty string, see below for
@@ -186,7 +202,7 @@ class Request(str):
         try:
             obj.line = Line(method, uri, version)
             if not headers:
-                headers = 'Host: localhost'
+                headers = b'Host: localhost'
             obj.headers = Headers(headers)
             if body is None:
                 body = StringIO('')
@@ -196,7 +212,6 @@ class Request(str):
                             )
             obj.context = Context(obj)
         except UnicodeError:
-
             # Figure out where the error occurred.
             # ====================================
             # This gives us *something* to go on when we have a Request we
@@ -459,6 +474,35 @@ class URI(unicode):
         obj.raw = raw
         return obj
 
+def extract_rfc2396_params(path):
+    """RFC2396 section 3.3 says that path components of a URI can have
+    'a sequence of parameters, indicated by the semicolon ";" character.'
+    and that ' Within a path segment, the characters "/", ";", "=", and 
+    "?" are reserved.'  This way you can do 
+    /frisbee;color=red;size=small/logo;sponsor=w3c;color=black/image.jpg
+    and each path segment gets its own params.
+
+    * path should be raw so we don't split or operate on a decoded character
+    * output is decoded
+    """
+    pathsegs = path.lstrip(b'/').split(b'/')
+    def decode(input): 
+        return urllib.unquote(input).decode('UTF-8')
+    
+    segments_with_params = []
+    for component in pathsegs:
+        parts = component.split(b';')
+        params = Mapping()
+        segment = decode(parts[0])
+        for p in parts[1:]:
+            if '=' in p:
+                k, v = p.split(b'=', 1)
+            else:
+                k, v = p, b''
+            params.add(decode(k), decode(v))
+        segments_with_params.append(UnicodeWithParams(segment, params))
+    return segments_with_params
+
 
 # Request -> Line -> URI -> Path
 
@@ -470,8 +514,9 @@ class Path(Mapping):
     """
 
     def __init__(self, raw):
-        self.decoded = urllib.unquote(raw).decode('UTF-8')
         self.raw = raw
+        self.decoded = urllib.unquote(raw).decode('UTF-8')
+        self.parts = extract_rfc2396_params(raw) 
 
 
 # Request -> Line -> URI -> Querystring

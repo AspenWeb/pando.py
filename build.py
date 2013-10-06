@@ -11,7 +11,7 @@ from fabricate import main, run, shell, autoclean
 
 ASPEN_DEPS = [ 'Cheroot-4.0.0beta.tar.gz', 'mimeparse-0.1.3.tar.gz', 'first-2.0.0.tar.gz' ]
 
-TEST_DEPS = [ 'coverage-3.5.3.tar.gz', 'nose-1.1.2.tar.gz', 'nosexcover-1.0.7.tar.gz', 'snot-0.6.tar.gz' ]
+TEST_DEPS = [ 'coverage-3.5.3.tar.gz', 'pytest-2.3.5.tar.gz', 'pytest-cov-1.6.tar.gz', 'py-1.4.15.tar.gz' ]
 
 def _virt(cmd, envdir='env'):
     return os.path.join(envdir, 'bin', cmd)
@@ -81,7 +81,7 @@ def clean_smoke():
 def test():
     aspen()
     dev()
-    shell(_virt('nosetests'), '-s', 'tests/', ignore_status=True, silent=False)
+    shell(_virt('py.test'), 'tests/', ignore_status=True, silent=False)
 
 def pylint():
     _env()
@@ -92,15 +92,18 @@ def analyse():
     pylint()
     dev()
     aspen()
-    run(_virt('nosetests'),
-            '--with-xcoverage',
-            '--with-xunit', 'tests',
-            '--cover-package', 'aspen', ignore_status=True)
+    run(_virt('py.test'),
+            '--junitxml=testresults.xml',
+            '--cov-report', 'term',
+            '--cov-report', 'xml',
+            '--cov', 'aspen',
+            'tests/',
+            ignore_status=False)
     print('done!')
 
 def clean_test():
     clean_env()
-    shell('rm', '-f', '.coverage', 'coverage.xml', 'nosetests.xml', 'pylint.out')
+    shell('rm', '-f', '.coverage', 'coverage.xml', 'testresults.xml', 'pylint.out')
 
 # Build
 # =====
@@ -138,14 +141,16 @@ def jython_test():
     for dep in ASPEN_DEPS + TEST_DEPS:
         run(_virt('pip', 'jenv'), 'install', os.path.join('vendor', dep))
     run(_virt('jython', 'jenv'), 'setup.py', 'develop')
-    run(_virt('jython', 'jenv'), _virt('nosetests', 'jenv'), '--with-xunit', 'tests',
-        '--xunit-file=jython-nosetests.xml',
-	'--cover-package', 'aspen',
-	ignore_status=True)
+    run(_virt('jython', 'jenv'), _virt('py.test', 'jenv'), 
+            '--junitxml=jython-testresults.xml', 'tests',
+            '--cov-report', 'term',
+            '--cov-report', 'xml',
+            '--cov', 'aspen',
+            ignore_status=True)
 
 def clean_jtest():
     shell('find', '.', '-name', '*.class', '-delete')
-    shell('rm', '-rf', 'jython-nosetests.xml')
+    shell('rm', '-rf', 'jython-testresults.xml')
 
 def show_targets():
     print("""Valid targets:
