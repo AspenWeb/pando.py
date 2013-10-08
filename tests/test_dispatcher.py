@@ -364,6 +364,12 @@ def test_trailing_on_virtual_paths():
     actual = check('/foo/bar/baz/').fs
     assert actual == expected
 
+def test_dont_confuse_files_for_dirs():
+    mk( ('foo.html', 'Greetings, Program!') )
+    response = raises(Response, check, '/foo.html/bar').value
+    assert response.code == 404
+
+
 
 # path part params
 # ================
