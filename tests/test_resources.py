@@ -8,7 +8,7 @@ from pytest import raises
 
 from aspen import Response
 from aspen.testing import check, handle
-from aspen.testing.fsfix import teardown_function, mk
+from aspen.testing.fsfix import teardown_function
 from aspen.resources.pagination import split
 
 
@@ -54,7 +54,7 @@ def test_resource_dunder_all_limits_vars():
     # in production, KeyError is turned into a 500 by an outer wrapper
     assert type(actual) == KeyError
 
-def test_path_part_params_are_available():
+def test_path_part_params_are_available(mk):
     mk(('/foo/index.html.spt', """
 if 'b' in path.parts[0].params:
     a = path.parts[0].params['a']

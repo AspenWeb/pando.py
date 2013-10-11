@@ -5,7 +5,7 @@ from __future__ import unicode_literals
 
 from aspen import sockets
 from aspen.http.request import Request
-from aspen.testing import mk, teardown_function
+from aspen.testing import teardown_function
 from aspen.testing.sockets import make_request
 
 
@@ -16,7 +16,7 @@ def test_sockets_get_nonsock_returns_None():
     actual = sockets.get(request)
     assert actual is expected
 
-def test_sockets_get_adds_channel():
+def test_sockets_get_adds_channel(mk):
     mk(('echo.sock.spt', '[---]\n'))
     request = make_request()
     request.socket = '1/'
@@ -30,7 +30,7 @@ def test_sockets_get_adds_channel():
     finally:
         sockets.__channels__['/echo.sock'].disconnect_all()
 
-def test_channel_survives_transportation():
+def test_channel_survives_transportation(mk):
     mk(('echo.sock.spt', '[---]\n'))
     request = make_request()
     request.socket = '1/'
