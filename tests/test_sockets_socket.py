@@ -7,7 +7,6 @@ import time
 
 from aspen.sockets import FFFD
 from aspen.sockets.socket import Socket
-from aspen.testing.fsfix import teardown_function
 from aspen.testing.sockets import make_socket, SocketInThread
 
 

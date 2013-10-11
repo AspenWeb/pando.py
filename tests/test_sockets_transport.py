@@ -14,7 +14,6 @@ from aspen.sockets import FFFD
 from aspen.sockets.transport import XHRPollingTransport
 from aspen.sockets.message import Message
 from aspen.testing.sockets import make_socket, make_request
-from aspen.testing.fsfix import teardown_function
 
 
 @pytest.yield_fixture

@@ -4,7 +4,6 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from aspen.hooks import Hooks
-from aspen.testing import teardown_function
 
 
 def test_hooks_is_barely_instantiable():
