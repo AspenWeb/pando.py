@@ -10,7 +10,7 @@ from pytest import raises
 from aspen import dispatcher, Response
 from aspen.http.request import Request
 from aspen.testing import handle, NoException, StubRequest
-from aspen.testing import teardown_function, fix
+from aspen.testing import fix
 
 # Helpers
 # =======

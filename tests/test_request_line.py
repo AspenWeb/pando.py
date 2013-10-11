@@ -9,7 +9,6 @@ from aspen import Response
 from aspen.http.request import Request
 from aspen.http.mapping import Mapping
 from aspen.http.request import Line, Method, URI, Version, Path, Querystring
-from aspen.testing import teardown_function
 
 
 # Line

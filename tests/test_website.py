@@ -7,7 +7,7 @@ import os
 import StringIO
 
 from aspen.testing import handle, StubRequest
-from aspen.testing.fsfix import teardown_function, FSFIX
+from aspen.testing.fsfix import FSFIX
 from aspen.website import Website
 
 

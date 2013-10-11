@@ -6,7 +6,6 @@ from __future__ import unicode_literals
 from pytest import raises
 
 import aspen.utils # this happens to install the 'repr' error strategy
-from aspen.testing import teardown_function
 from aspen.utils import ascii_dammit, unicode_dammit, to_age, utcnow
 from datetime import datetime
 

@@ -2,7 +2,6 @@ from aspen.sockets import FFFD
 from aspen.sockets.buffer import ThreadedBuffer as Buffer
 from aspen.sockets.message import Message
 from aspen.testing.sockets import make_socket
-from aspen.testing.fsfix import teardown_function
 
 
 def test_buffer_is_instantiable(mk):
