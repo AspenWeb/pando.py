@@ -6,7 +6,6 @@ from __future__ import unicode_literals
 from pytest import raises
 
 from aspen import Response
-from aspen.testing.fsfix import teardown_function
 from aspen.exceptions import CRLFInjection
 
 

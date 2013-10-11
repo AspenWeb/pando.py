@@ -9,7 +9,6 @@ from pytest import raises
 
 from aspen import json
 from aspen.testing import check
-from aspen.testing.fsfix import teardown_function
 
 
 def test_json_basically_works():

@@ -9,7 +9,6 @@ from aspen import Response
 from aspen.http.request import kick_against_goad, Request
 from aspen.http.baseheaders import BaseHeaders
 from aspen.testing import StubRequest
-from aspen.testing.fsfix import teardown_function
 
 
 def test_request_line_raw_works():

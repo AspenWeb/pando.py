@@ -12,7 +12,7 @@ import aspen
 from aspen.configuration import Configurable, ConfigurationError, parse
 from aspen.configuration.options import OptionParser, DEFAULT
 from aspen.testing import StubRequest, fix
-from aspen.testing.fsfix import teardown_function, FSFIX
+from aspen.testing.fsfix import FSFIX
 #from aspen.testing import handle
 from aspen.website import Website
 
