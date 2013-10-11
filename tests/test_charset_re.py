@@ -48,4 +48,3 @@ def test_charset_re_windows1252():
 
 def test_charset_re_matches_valid_perl():
     assert m(":_()+.-")
-

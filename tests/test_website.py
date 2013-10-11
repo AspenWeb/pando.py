@@ -7,7 +7,7 @@ import os
 import StringIO
 
 from aspen.testing import handle, StubRequest
-from aspen.testing.fsfix import teardown_function, FSFIX, mk
+from aspen.testing.fsfix import teardown_function, FSFIX
 from aspen.website import Website
 
 
@@ -20,7 +20,7 @@ def test_basic():
     actual = website.www_root
     assert actual == expected
 
-def test_normal_response_is_returned():
+def test_normal_response_is_returned(mk):
     mk(('index.html', "Greetings, program!"))
     expected = '\r\n'.join("""\
 HTTP/1.1
@@ -31,13 +31,13 @@ Greetings, program!
     actual = handle()._to_http('1.1')
     assert actual == expected
 
-def test_fatal_error_response_is_returned():
+def test_fatal_error_response_is_returned(mk):
     mk(('index.html.spt', "raise heck\n[---]\n"))
     expected = 500
     actual = handle().code
     assert actual == expected
 
-def test_redirect_has_only_location():
+def test_redirect_has_only_location(mk):
     mk(('index.html.spt', "from aspen import Response\n[---]\nrequest.redirect('http://elsewhere', code=304)\n[---]\n"))
     actual = handle()
     assert actual.code == 304
@@ -45,30 +45,30 @@ def test_redirect_has_only_location():
     assert len(headers) == 1
     assert headers.get('Location') is not None
 
-def test_nice_error_response_is_returned():
+def test_nice_error_response_is_returned(mk):
     mk(('index.html.spt', "from aspen import Response\n[---]\nraise Response(500)\n[---]\n"))
     expected = 500
     actual = handle().code
     assert actual == expected
 
-def test_nice_error_response_is_returned_for_404():
+def test_nice_error_response_is_returned_for_404(mk):
     mk(('index.html.spt', "from aspen import Response\n[---]\nraise Response(404)\n[---]\n"))
     expected = 404
     actual = handle().code
     assert actual == expected
 
-def test_autoindex_response_is_404_by_default():
+def test_autoindex_response_is_404_by_default(mk):
     mk(('README', "Greetings, program!"))
     expected = 404
     actual = handle().code
     assert actual == expected
 
-def test_autoindex_response_is_returned():
+def test_autoindex_response_is_returned(mk):
     mk(('README', "Greetings, program!"))
     body = handle('/', '--list_directories=TrUe').body
     assert 'README' in body
 
-def test_resources_can_import_from_dot_aspen():
+def test_resources_can_import_from_dot_aspen(mk):
     mk( '.aspen'
       , ('.aspen/foo.py', 'bar = "baz"')
       , ('index.html.spt', "from foo import bar\n[---]\nGreetings, %(bar)s!")
@@ -79,7 +79,7 @@ def test_resources_can_import_from_dot_aspen():
     assert actual == expected
 
 
-def test_double_failure_still_sets_response_dot_request():
+def test_double_failure_still_sets_response_dot_request(mk):
     mk( '.aspen'
       , ('.aspen/foo.py', """
 def bar(response):
@@ -103,7 +103,7 @@ def bar(response):
     assert actual == expected
 
 
-def test_website_doesnt_clobber_outbound():
+def test_website_doesnt_clobber_outbound(mk):
     mk( ( '.aspen/configure-aspen.py'
         , 'import random\nwebsite.hooks.outbound.append(random.choice)'
          )

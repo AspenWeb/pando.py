@@ -12,7 +12,7 @@ import aspen
 from aspen.configuration import Configurable, ConfigurationError, parse
 from aspen.configuration.options import OptionParser, DEFAULT
 from aspen.testing import StubRequest, fix
-from aspen.testing.fsfix import teardown_function, FSFIX, mk
+from aspen.testing.fsfix import teardown_function, FSFIX
 #from aspen.testing import handle
 from aspen.website import Website
 
@@ -77,14 +77,14 @@ def test_configuration_scripts_really_doesnt_do_anything_special():
     expected = 'Cheese is lovely.'
     assert actual == expected
 
-def test_configuration_scripts_arent_confused_by_io_errors():
+def test_configuration_scripts_arent_confused_by_io_errors(mk):
     CONFIG = "open('this file should not exist')\n"
     mk(('configure-aspen.py', CONFIG))
     c = Configurable()
     actual = raises(IOError, c.configure, ['-p', FSFIX]).value
     assert actual.strerror == 'No such file or directory'
 
-def test_www_root_defaults_to_cwd():
+def test_www_root_defaults_to_cwd(mk):
     mk()
     c = Configurable()
     c.configure([])
@@ -92,14 +92,14 @@ def test_www_root_defaults_to_cwd():
     actual = c.www_root
     assert actual == expected
 
-def test_ConfigurationError_raised_if_no_cwd():
+def test_ConfigurationError_raised_if_no_cwd(mk):
     mk()
     os.chdir(FSFIX)
     os.rmdir(FSFIX)
     c = Configurable()
     raises(ConfigurationError, c.configure, [])
 
-def test_ConfigurationError_NOT_raised_if_no_cwd_but_do_have__www_root():
+def test_ConfigurationError_NOT_raised_if_no_cwd_but_do_have__www_root(mk):
     mk()
     foo = os.getcwd()
     os.chdir(FSFIX)
@@ -110,7 +110,7 @@ def test_ConfigurationError_NOT_raised_if_no_cwd_but_do_have__www_root():
     actual = c.www_root
     assert actual == expected
 
-def test_configurable_sees_root_option():
+def test_configurable_sees_root_option(mk):
     mk()
     c = Configurable()
     c.configure(['--www_root', FSFIX])
@@ -130,7 +130,7 @@ def test_configuration_scripts_works_at_all():
     actual = opts.configuration_scripts
     assert actual == expected
 
-def test_configuration_script_can_set_renderer_default():
+def test_configuration_script_can_set_renderer_default(mk):
     CONFIG = """
 website.renderer_default="stdlib_format"
     """
