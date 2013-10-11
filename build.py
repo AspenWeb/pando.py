@@ -11,7 +11,7 @@ from fabricate import main, run, shell, autoclean
 
 ASPEN_DEPS = [ 'Cheroot-4.0.0beta.tar.gz', 'mimeparse-0.1.3.tar.gz', 'first-2.0.0.tar.gz' ]
 
-TEST_DEPS = [ 'coverage-3.5.3.tar.gz', 'pytest-2.3.5.tar.gz', 'pytest-cov-1.6.tar.gz', 'py-1.4.15.tar.gz' ]
+TEST_DEPS = [ 'coverage-3.5.3.tar.gz', 'pytest-2.4.2.tar.gz', 'pytest-cov-1.6.tar.gz', 'py-1.4.17.tar.gz' ]
 
 def _virt(cmd, envdir='env'):
     return os.path.join(envdir, 'bin', cmd)
@@ -141,7 +141,7 @@ def jython_test():
     for dep in ASPEN_DEPS + TEST_DEPS:
         run(_virt('pip', 'jenv'), 'install', os.path.join('vendor', dep))
     run(_virt('jython', 'jenv'), 'setup.py', 'develop')
-    run(_virt('jython', 'jenv'), _virt('py.test', 'jenv'), 
+    run(_virt('jython', 'jenv'), _virt('py.test', 'jenv'),
             '--junitxml=jython-testresults.xml', 'tests',
             '--cov-report', 'term',
             '--cov-report', 'xml',
