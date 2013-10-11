@@ -7,33 +7,37 @@ import time
 from collections import deque
 from cStringIO import StringIO
 
+import pytest
 from aspen import Response
 from aspen.http.request import Request
 from aspen.sockets import FFFD
 from aspen.sockets.transport import XHRPollingTransport
 from aspen.sockets.message import Message
 from aspen.testing.sockets import make_socket, make_request
-from aspen.testing.fsfix import teardown_function, mk
+from aspen.testing.fsfix import teardown_function
 
 
-def make_transport(content='', state=0):
-    mk(('echo.sock.spt', content))
-    socket = make_socket()
-    transport = XHRPollingTransport(socket)
-    transport.timeout = 0.05 # for testing, could screw up the test
-    if state == 1:
-        transport.respond(Request(uri='/echo.sock'))
-    return transport
+@pytest.yield_fixture
+def make_transport(mk):
+    def make_transport(content='', state=0):
+        mk(('echo.sock.spt', content))
+        socket = make_socket()
+        transport = XHRPollingTransport(socket)
+        transport.timeout = 0.05 # for testing, could screw up the test
+        if state == 1:
+            transport.respond(Request(uri='/echo.sock'))
+        return transport
+    yield make_transport
 
 
-def test_transport_instantiable():
+def test_transport_instantiable(make_transport):
     transport = make_transport()
 
     expected = XHRPollingTransport
     actual = transport.__class__
     assert actual is expected
 
-def test_transport_can_minimally_respond():
+def test_transport_can_minimally_respond(make_transport):
     transport = make_transport()
     request = Request()
 
@@ -41,7 +45,7 @@ def test_transport_can_minimally_respond():
     actual = transport.respond(request).__class__
     assert actual is expected
 
-def test_transport_starts_in_state_0():
+def test_transport_starts_in_state_0(make_transport):
     transport = make_transport()
     request = Request()
 
@@ -49,7 +53,7 @@ def test_transport_starts_in_state_0():
     actual = transport.state
     assert actual == expected
 
-def test_transport_goes_to_state_1_after_first_request():
+def test_transport_goes_to_state_1_after_first_request(make_transport):
     transport = make_transport()
     request = Request()
     transport.respond(request)
@@ -58,7 +62,7 @@ def test_transport_goes_to_state_1_after_first_request():
     actual = transport.state
     assert actual == expected
 
-def test_transport_stays_in_state_1_after_second_request():
+def test_transport_stays_in_state_1_after_second_request(make_transport):
     transport = make_transport()
     request = make_request()
     transport.respond(request)
@@ -68,7 +72,7 @@ def test_transport_stays_in_state_1_after_second_request():
     actual = transport.state
     assert actual == expected
 
-def test_transport_POST_gives_data_to_socket():
+def test_transport_POST_gives_data_to_socket(make_transport):
     transport = make_transport(state=1)
 
     request = Request( 'POST'
@@ -81,7 +85,7 @@ def test_transport_POST_gives_data_to_socket():
     actual = transport.socket.incoming.queue
     assert actual == expected
 
-def test_transport_GET_gets_data_from_socket():
+def test_transport_GET_gets_data_from_socket(make_transport):
     transport = make_transport(state=1)
     message = Message.from_bytes(b"3:::Greetings, program!")
     transport.socket.outgoing.put(message)
@@ -93,7 +97,7 @@ def test_transport_GET_gets_data_from_socket():
     actual = response.body.next()
     assert actual == expected
 
-def test_transport_GET_blocks_for_empty_socket():
+def test_transport_GET_blocks_for_empty_socket(make_transport):
     transport = make_transport(state=1)
 
     request = make_request()
@@ -105,7 +109,7 @@ def test_transport_GET_blocks_for_empty_socket():
     actual = round(end - start, 4)
     assert actual > expected
 
-def test_transport_handles_roundtrip():
+def test_transport_handles_roundtrip(make_transport):
     transport = make_transport(state=1, content="socket.send(socket.recv())")
 
     request = Request('POST', '/echo.sock', body=StringIO(b"3::/echo.sock:ping"))
@@ -118,6 +122,3 @@ def test_transport_handles_roundtrip():
     expected = FFFD+b"18"+FFFD+b"3::/echo.sock:ping"
     actual = response.body.next()
     assert actual == expected
-
-
-

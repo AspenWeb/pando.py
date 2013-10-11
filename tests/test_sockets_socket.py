@@ -7,18 +7,18 @@ import time
 
 from aspen.sockets import FFFD
 from aspen.sockets.socket import Socket
-from aspen.testing.fsfix import mk, teardown_function
+from aspen.testing.fsfix import teardown_function
 from aspen.testing.sockets import make_socket, SocketInThread
 
 
-def test_socket_is_instantiable():
+def test_socket_is_instantiable(mk):
     mk(('echo.sock.spt', ''))
 
     expected = Socket
     actual = make_socket().__class__
     assert actual is expected
 
-def test_two_sockets_are_instantiable():
+def test_two_sockets_are_instantiable(mk):
     mk(('echo.sock.spt', ''))
 
     socket1 = make_socket()
@@ -28,7 +28,7 @@ def test_two_sockets_are_instantiable():
     actual = (socket1.__class__, socket2.__class__)
     assert actual == expected
 
-def test_socket_can_shake_hands():
+def test_socket_can_shake_hands(mk):
     mk(('echo.sock.spt', ''))
     socket = make_socket()
     response = socket.shake_hands()
@@ -36,7 +36,7 @@ def test_socket_can_shake_hands():
     actual = response.body.split(':', 1)[1]
     assert actual == expected
 
-def test_socket_can_barely_function():
+def test_socket_can_barely_function(mk):
     mk(('echo.sock.spt', 'socket.send("Greetings, program!")'))
 
     socket = make_socket()
@@ -48,7 +48,7 @@ def test_socket_can_barely_function():
         actual = actual.next()
     assert actual == expected
 
-def test_socket_can_echo():
+def test_socket_can_echo(mk):
     mk(('echo.sock.spt', 'socket.send(socket.recv())'))
 
     with SocketInThread() as socket:
@@ -60,5 +60,3 @@ def test_socket_can_echo():
         if actual is not None:
             actual = actual.next()
         assert actual == expected
-
-
