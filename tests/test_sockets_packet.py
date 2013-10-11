@@ -8,7 +8,6 @@ from pytest import raises
 from aspen.sockets import FFFD
 from aspen.sockets.packet import Packet
 from aspen.sockets.message import Message
-from aspen.testing import teardown_function
 
 
 def test_packet_Packetable_with_unframed_bytes():

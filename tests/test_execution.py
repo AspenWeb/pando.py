@@ -4,7 +4,6 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from aspen import execution
-from aspen.testing.fsfix import teardown_function
 
 class Foo:
     pass

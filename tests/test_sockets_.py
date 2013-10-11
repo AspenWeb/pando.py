@@ -5,7 +5,6 @@ from __future__ import unicode_literals
 
 from aspen import sockets
 from aspen.http.request import Request
-from aspen.testing import teardown_function
 from aspen.testing.sockets import make_request
 
 

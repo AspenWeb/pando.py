@@ -8,7 +8,7 @@ from pytest import raises
 from aspen import resources, Response
 from aspen.resources.pagination import Page
 from aspen.resources.negotiated_resource import NegotiatedResource
-from aspen.testing import teardown_function, handle, StubRequest
+from aspen.testing import handle, StubRequest
 from aspen.website import Website
 from aspen.renderers.stdlib_template import Factory as TemplateFactory
 from aspen.renderers.stdlib_percent import Factory as PercentFactory
