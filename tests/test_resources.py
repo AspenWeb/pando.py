@@ -8,7 +8,6 @@ from pytest import raises
 
 from aspen import Response
 from aspen.testing import check, handle
-from aspen.testing.fsfix import teardown_function
 from aspen.resources.pagination import split
 
 

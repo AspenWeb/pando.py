@@ -6,7 +6,6 @@ from __future__ import unicode_literals
 from pytest import raises
 
 from aspen import Response
-from aspen.testing import teardown_function
 
 from aspen.http.mapping import Mapping, CaseInsensitiveMapping
 

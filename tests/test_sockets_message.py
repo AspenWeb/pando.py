@@ -6,7 +6,6 @@ from __future__ import unicode_literals
 from pytest import raises
 
 from aspen.sockets.message import Message
-from aspen.testing import teardown_function
 
 
 def test_message_can_be_instantiated_from_bytes():
