@@ -2,16 +2,16 @@ from aspen.sockets import FFFD
 from aspen.sockets.buffer import ThreadedBuffer as Buffer
 from aspen.sockets.message import Message
 from aspen.testing.sockets import make_socket
-from aspen.testing.fsfix import mk, teardown_function
+from aspen.testing.fsfix import teardown_function
 
 
-def test_buffer_is_instantiable():
+def test_buffer_is_instantiable(mk):
     mk(('echo.sock.spt', 'socket.send(socket.recv())'))
     expected = Buffer
     actual = Buffer(make_socket(), 'foo').__class__
     assert actual is expected
 
-def test_can_put_onto_buffer():
+def test_can_put_onto_buffer(mk):
     mk(('echo.sock.spt', 'socket.send(socket.recv())'))
     buffer = Buffer(make_socket(), 'foo')
     expected = [FFFD+'4'+FFFD+'1:::']
