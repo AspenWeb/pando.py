@@ -151,13 +151,20 @@ def test_get_response_doesnt_reset_content_type_when_not_negotiating(mk):
     actual = get_response(request, response).headers['Content-Type']
     assert actual == "never/mind"
 
-
 def test_get_response_negotiates(mk):
     mk(('index.spt', NEGOTIATED_RESOURCE))
     request = StubRequest.from_fs('index.spt')
     request.headers['Accept'] = 'text/html'
     actual = get_response(request, Response()).body
     assert actual == "<h1>Greetings, program!</h1>\n"
+
+def test_handles_busted_accept(mk):
+    mk(('index.spt', NEGOTIATED_RESOURCE))
+    request = StubRequest.from_fs('index.spt')
+    # Set an invalid Accept header so it will return default (text/plain)
+    request.headers['Accept'] = 'text/html;'
+    actual = get_response(request, Response()).body
+    assert actual == "Greetings, program!\n"
 
 def test_get_response_sets_content_type_when_it_negotiates(mk):
     mk(('index.spt', NEGOTIATED_RESOURCE))

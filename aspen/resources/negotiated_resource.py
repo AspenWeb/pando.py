@@ -25,13 +25,12 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import re
+import sys
 
-from aspen import Response
+from aspen import Response, log
 import mimeparse
 from aspen.resources.dynamic_resource import DynamicResource
-from aspen.utils import typecheck
 from aspen.resources.pagination import parse_specline
-
 
 renderer_re = re.compile(r'[a-z0-9.-_]+$')
 media_type_re = re.compile(r'[A-Za-z0-9.+*-]+/[A-Za-z0-9.+*-]+$')
@@ -74,26 +73,26 @@ class NegotiatedResource(DynamicResource):
         # find an Accept header
         accept = request.headers.get('X-Aspen-Accept', None)
         if accept is not None:      # indirect negotiation
-            failure = 404
+            failure = Response(404)
         else:                       # direct negotiation
             accept = request.headers.get('Accept', None)
-            failure = 406
+            msg = "The following media types are available: %s."
+            msg %= ', '.join(self.available_types)
+            failure = Response(406, msg.encode('US-ASCII'))
 
         # negotiate or punt
+        render, media_type = self.pages[2]  # default to first content page
         if accept is not None:
-            #print "Calling best_match(" + repr(self.available_types) + "," + repr(accept) + ")"
-            media_type = mimeparse.best_match(self.available_types, accept)
-            if media_type == '':    # breakdown in negotiations
-                if failure == 404:
-                    failure = Response(404)
-                elif failure == 406:
-                    msg = "The following media types are available: %s."
-                    msg %= ', '.join(self.available_types)
-                    failure = Response(406, msg.encode('US-ASCII'))
-                raise failure
-            render = self.renderers[media_type] # KeyError is a bug
-        else:  # punt
-            render, media_type = self.pages[2]  # default to first content page
+            try:
+                media_type = mimeparse.best_match(self.available_types, accept)
+            except:
+                # exception means don't override the defaults
+                log("Problem with mimeparse.best_match(%r, %r): %r " % (self.available_types, accept, sys.exc_info()))
+            else:
+                if media_type == '':    # breakdown in negotiations
+                    raise failure
+                del failure
+                render = self.renderers[media_type] # KeyError is a bug
 
         response = context['response']
         response.body = render(context)
