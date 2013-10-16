@@ -1,25 +1,39 @@
-def infer_defaults(function):
-    """Given a function, return a dict of defaults for kwargs.
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
+
+def parse_signature(function):
+    """Given a function, return a tuple of required args and dict of optional args.
     """
+    varnames = function.func_code.co_varnames
+
+    nrequired = len(varnames)
+    optional = {}
     values = function.func_defaults
-    if values is None:
-        return {}
-    keys = function.func_code.co_varnames[-len(values):]
-    return dict(zip(keys, values))
+    if values is not None:
+        nrequired = -len(values)
+        keys = varnames[nrequired:]
+        optional = dict(zip(keys, values))
+
+    required = varnames[:nrequired]
+
+    return required, optional
 
 
 def inject_dependencies(function, available):
     """Given a function and a dict of available deps, return a kwargs dict.
     """
     out = {}
-    defaults = infer_defaults(function)
+    required, optional = parse_signature(function)
     missing = object()
     for name in function.func_code.co_varnames:
         value = missing
         if name in available:
             value = available[name]
-        elif name in defaults:
-            value = defaults[name]
+        elif name in optional:
+            value = optional[name]
         if value is not missing:
             out[name] = value
     return out

@@ -1,23 +1,31 @@
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
 from aspen import flow
 
 
-# infer_defaults
-# ==============
+# parse_signature
+# ===============
 
-def test_infer_defaults_infers_defaults():
+def test_parse_signature_infers_defaults():
     def func(foo='bar'): pass
-    d = flow.infer_defaults(func)
-    assert d == {'foo': 'bar'}
+    required, optional = flow.parse_signature(func)
+    assert required == tuple()
+    assert optional == {'foo': 'bar'}
 
-def test_infer_defaults_returns_empty_dict_for_no_defaults():
+def test_parse_signature_returns_empty_dict_for_no_defaults():
     def func(foo, bar, baz): pass
-    d = flow.infer_defaults(func)
-    assert d == {}
+    required, optional = flow.parse_signature(func)
+    assert required == ('foo', 'bar', 'baz')
+    assert optional == {}
 
-def test_infer_defaults_works_with_mixed_arg_kwarg():
+def test_parse_signature_works_with_mixed_arg_kwarg():
     def func(foo, bar, baz='buz'): pass
-    d = flow.infer_defaults(func)
-    assert d == {'baz': 'buz'}
+    required, optional = flow.parse_signature(func)
+    assert required == ('foo', 'bar')
+    assert optional == {'baz': 'buz'}
 
 
 # inject_dependencies
