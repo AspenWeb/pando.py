@@ -10,8 +10,8 @@ def parse_signature(function):
     varnames = function.func_code.co_varnames
 
     nrequired = len(varnames)
-    optional = {}
     values = function.func_defaults
+    optional = {}
     if values is not None:
         nrequired = -len(values)
         keys = varnames[nrequired:]
