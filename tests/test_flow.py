@@ -29,7 +29,7 @@ def test_parse_signature_works_with_mixed_arg_kwarg():
 
 
 # resolve_dependencies
-# ===================
+# ====================
 
 def test_resolve_dependencies_resolves_dependencies():
     def func(foo): pass
