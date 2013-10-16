@@ -22,7 +22,7 @@ def parse_signature(function):
     return required, optional
 
 
-def inject_dependencies(function, available):
+def resolve_dependencies(function, available):
     """Given a function and a dict of available deps, return a kwargs dict.
     """
     out = {}
