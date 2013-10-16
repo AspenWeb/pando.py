@@ -9,7 +9,7 @@ def infer_defaults(function):
 
 
 def inject_dependencies(function, available):
-    """Given a function and a state dict, return a kwargs dict.
+    """Given a function and a dict of available deps, return a kwargs dict.
     """
     out = {}
     defaults = infer_defaults(function)
