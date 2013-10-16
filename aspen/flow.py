@@ -4,6 +4,9 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 
+from collections import namedtuple
+
+
 def parse_signature(function):
     """Given a function, return a tuple of required args and dict of optional args.
     """
@@ -19,21 +22,35 @@ def parse_signature(function):
 
     required = varnames[:nrequired]
 
-    return required, optional
+    return varnames, required, optional
 
 
 def resolve_dependencies(function, available):
-    """Given a function and a dict of available deps, return a kwargs dict.
+    """Given a function and a dict of available deps, return a deps object.
+
+    The deps object has these attributes:
+
+        a - a tuple of argument values
+        kw - a dictionary of keyword arguments
+        names - a tuple of the names of all arguments (in order)
+        required - a tuple of names of required arguments (in order)
+        optional - a dictionary of names of optional arguments with their
+                     default values
+
     """
-    out = {}
-    required, optional = parse_signature(function)
+    deps = namedtuple('deps', 'a kw names required optional')
+    deps.a = tuple()
+    deps.kw = {}
+    deps.names, deps.required, deps.optional = parse_signature(function)
+
     missing = object()
-    for name in function.func_code.co_varnames:
-        value = missing
+    for name in deps.names:
+        value = missing  # don't use .get to avoid bugs around None
         if name in available:
             value = available[name]
-        elif name in optional:
-            value = optional[name]
+        elif name in deps.optional:
+            value = deps.optional[name]
         if value is not missing:
-            out[name] = value
-    return out
+            deps.a += (value,)
+            deps.kw[name] = value
+    return deps

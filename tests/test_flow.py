@@ -11,19 +11,22 @@ from aspen import flow
 
 def test_parse_signature_infers_defaults():
     def func(foo='bar'): pass
-    required, optional = flow.parse_signature(func)
+    names, required, optional = flow.parse_signature(func)
+    assert names == ('foo',)
     assert required == tuple()
     assert optional == {'foo': 'bar'}
 
 def test_parse_signature_returns_empty_dict_for_no_defaults():
     def func(foo, bar, baz): pass
-    required, optional = flow.parse_signature(func)
+    names, required, optional = flow.parse_signature(func)
+    assert names == ('foo', 'bar', 'baz')
     assert required == ('foo', 'bar', 'baz')
     assert optional == {}
 
 def test_parse_signature_works_with_mixed_arg_kwarg():
     def func(foo, bar, baz='buz'): pass
-    required, optional = flow.parse_signature(func)
+    names, required, optional = flow.parse_signature(func)
+    assert names == ('foo', 'bar', 'baz')
     assert required == ('foo', 'bar')
     assert optional == {'baz': 'buz'}
 
@@ -33,30 +36,39 @@ def test_parse_signature_works_with_mixed_arg_kwarg():
 
 def test_resolve_dependencies_resolves_dependencies():
     def func(foo): pass
-    kw = flow.resolve_dependencies(func, {'foo': 1})
-    assert kw == {'foo': 1}
+    deps = flow.resolve_dependencies(func, {'foo': 1})
+    assert deps.names == ('foo',)
+    assert deps.required == ('foo',)
+    assert deps.optional == {}
+    assert deps.a == (1,)
+    assert deps.kw == {'foo': 1}
 
 def test_resolve_dependencies_resolves_two_dependencies():
     def func(foo, bar): pass
-    kw = flow.resolve_dependencies(func, {'foo': 1, 'bar': True})
-    assert kw == {'foo': 1, 'bar': True}
+    deps = flow.resolve_dependencies(func, {'foo': 1, 'bar': True})
+    assert deps.a == (1, True)
+    assert deps.kw == {'foo': 1, 'bar': True}
 
 def test_resolve_dependencies_resolves_kwarg():
     def func(foo, bar=False): pass
-    kw = flow.resolve_dependencies(func, {'foo': 1, 'bar': True})
-    assert kw == {'foo': 1, 'bar': True}
+    deps = flow.resolve_dependencies(func, {'foo': 1, 'bar': True})
+    assert deps.a == (1, True)
+    assert deps.kw == {'foo': 1, 'bar': True}
 
 def test_resolve_dependencies_honors_kwarg_default():
     def func(foo, bar=False): pass
-    kw = flow.resolve_dependencies(func, {'foo': 1})
-    assert kw == {'foo': 1, 'bar': False}
+    deps = flow.resolve_dependencies(func, {'foo': 1})
+    assert deps.a == (1, False)
+    assert deps.kw == {'foo': 1, 'bar': False}
 
 def test_resolve_dependencies_honors_kwarg_default_of_None():
     def func(foo, bar=None): pass
-    kw = flow.resolve_dependencies(func, {'foo': 1})
-    assert kw == {'foo': 1, 'bar': None}
+    deps = flow.resolve_dependencies(func, {'foo': 1})
+    assert deps.a == (1, None)
+    assert deps.kw == {'foo': 1, 'bar': None}
 
 def test_resolve_dependencies_doesnt_get_hung_up_on_None_though():
     def func(foo, bar=None): pass
-    kw = flow.resolve_dependencies(func, {'foo': 1, 'bar': True})
-    assert kw == {'foo': 1, 'bar': True}
+    deps = flow.resolve_dependencies(func, {'foo': 1, 'bar': True})
+    assert deps.a == (1, True)
+    assert deps.kw == {'foo': 1, 'bar': True}
