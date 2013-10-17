@@ -117,9 +117,9 @@ def dispatch_abstract(listnodes, is_leaf, traverse, find_index, noext_matched,
 
         if is_leaf(curnode):
             # trying to treat a leaf node as a dir
-            errmsg = "Node " + repr(curnode) + " is a leaf node and has no children" 
+            errmsg = "Node " + repr(curnode) + " is a leaf node and has no children"
             return DispatchResult(DispatchStatus.missing, None, None, errmsg)
-                    
+
         subnodes = listnodes(curnode)
         subnodes.sort()
         node_noext, node_ext = splitext(node)

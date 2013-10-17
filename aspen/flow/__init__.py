@@ -3,9 +3,11 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-
 from collections import namedtuple
 
+
+# Dependency Injection Helpers
+# ============================
 
 def parse_signature(function):
     """Given a function, return a tuple of required args and dict of optional args.

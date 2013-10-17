@@ -6,8 +6,6 @@ from __future__ import unicode_literals
 from Cookie import SimpleCookie
 from StringIO import StringIO
 
-from aspen.http.request import Request
-from aspen.testing import StubWSGIRequest
 
 BOUNDARY = 'BoUnDaRyStRiNg'
 MULTIPART_CONTENT = 'multipart/form-data; boundary=%s' % BOUNDARY
@@ -39,16 +37,16 @@ def encode_multipart(boundary, data):
     return '\r\n'.join(lines)
 
 
-class TestClient(object):
+class Client(object):
     """
-    The Aspen test client.
+    The Aspen testing client.
 
     Used in tests to emulate ``GET`` and ``POST`` requests by sending them
-    into a ``Website`` instance's ``handle_safely`` method.
+    into a ``Website`` instance's ``respond`` method.
 
     Aspen does not define any User data structures or modules. If you want to
     do anything with users/sessions etc in your tests it is expected that you
-    will subclass this TestClient and add a ``add_cookie_info`` method.
+    will subclass this class and add a ``add_cookie_info`` method.
 
     For example, in gittip a suitable subclass might be::
 
@@ -80,41 +78,19 @@ class TestClient(object):
             first_data = json.loads(response.body)
             assert_equal(first_data['amount'], "1.00")
     """
+
     def __init__(self, website):
+        self.website = website
         self.cookies = SimpleCookie()
-        self.test_website = website
 
-    def get_request(self, path, method="GET", body=None,
-                    **extra):
-        env = StubWSGIRequest(path)
-        env['REQUEST_METHOD'] = method
-        env['wsgi.input'] = StringIO(body)
-        env['HTTP_COOKIE'] = self.cookies.output(header='', sep='; ')
-        env.update(extra)
-        return Request.from_wsgi(env)
 
-    def perform_request(self, request, cookie_info):
-        request.website = self.test_website
-        self.add_cookie_info(request, **(cookie_info or {}))
-        response = self.test_website.handle_safely(request)
-        if response.headers.cookie:
-            self.cookies.update(response.headers.cookie)
-        return response
+    # HTTP Methods
+    # ============
 
-    def add_cookie_info(self, request, **cookie_info):
-        """Place holder function that can be replaced in a subclass.
+    def get(self, path, cookie_info=None, **extra):
+        environ = self._build_wsgi_environ(path, "GET", **extra)
+        return self._perform_request(environ, cookie_info)
 
-        For example in gittip.com, it might be of interest to load session
-        information into the cookie like this::
-
-            if cookie_info:
-                user = cookie_info.get('user')
-                if user is not None:
-                    user = User.from_id(user)
-                    # Note that Cookie needs a bytestring.
-                    request.headers.cookie['session'] = user.session_token
-        """
-        pass
 
     def post(self, path, data, content_type=MULTIPART_CONTENT,
              cookie_info=None, **extra):
@@ -138,11 +114,53 @@ class TestClient(object):
         if content_type is MULTIPART_CONTENT:
             post_data = encode_multipart(BOUNDARY, data)
 
-        request = self.get_request(path, "POST", post_data,
-                                   CONTENT_TYPE=str(content_type),
-                                   **extra)
-        return self.perform_request(request, cookie_info)
+        environ = self._build_wsgi_environ( path
+                                         , "POST"
+                                         , post_data
+                                         , CONTENT_TYPE=str(content_type)
+                                         , **extra
+                                          )
+        return self._perform_request(environ, cookie_info)
 
-    def get(self, path, cookie_info=None, **extra):
-        request = self.get_request(path, "GET")
-        return self.perform_request(request, cookie_info)
+
+    # Hook
+    # ====
+
+    def add_cookie_info(self, request, **cookie_info):
+        """Place holder function that can be replaced in a subclass.
+
+        For example in gittip.com, it might be of interest to load session
+        information into the cookie like this::
+
+            if cookie_info:
+                user = cookie_info.get('user')
+                if user is not None:
+                    user = User.from_id(user)
+                    # Note that Cookie needs a bytestring.
+                    request.headers.cookie['session'] = user.session_token
+        """
+        pass
+
+
+    # Helpers
+    # =======
+
+    def _build_wsgi_environ(self, path, method="GET", body=None, **extra):
+        environ = {}
+        environ['PATH_INFO'] = path
+        environ['REMOTE_ADDR'] = b'0.0.0.0'
+        environ['REQUEST_METHOD'] = b'GET'
+        environ['SERVER_PROTOCOL'] = b'HTTP/1.1'
+        environ['HTTP_HOST'] = b'localhost'
+        environ['REQUEST_METHOD'] = method
+        environ['wsgi.input'] = StringIO(body)
+        environ['HTTP_COOKIE'] = self.cookies.output(header='', sep='; ')
+        environ.update(extra)
+
+
+    def _perform_request(self, environ, cookie_info):
+        self.add_cookie_info(environ, **(cookie_info or {}))
+        response = self.website.respond(environ)
+        if response.headers.cookie:
+            self.cookies.update(response.headers.cookie)
+        return response
