@@ -12,7 +12,8 @@ from collections import namedtuple
 def parse_signature(function):
     """Given a function, return a tuple of required args and dict of optional args.
     """
-    varnames = function.func_code.co_varnames
+    code = function.func_code
+    varnames = code.co_varnames[:code.co_argcount]
 
     nrequired = len(varnames)
     values = function.func_defaults
@@ -47,7 +48,7 @@ def resolve_dependencies(function, available):
 
     missing = object()
     for name in deps.names:
-        value = missing  # don't use .get to avoid bugs around None
+        value = missing  # don't use .get, to avoid bugs around None
         if name in available:
             value = available[name]
         elif name in deps.optional:

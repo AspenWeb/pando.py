@@ -30,6 +30,15 @@ def test_parse_signature_works_with_mixed_arg_kwarg():
     assert required == ('foo', 'bar')
     assert optional == {'baz': 'buz'}
 
+def test_parse_signature_doesnt_conflate_objects_defined_inside():
+    def func(foo, bar, baz=2):
+        blah = foo * 42
+        return blah
+    names, required, optional = flow.parse_signature(func)
+    assert names == ('foo', 'bar', 'baz')
+    assert required == ('foo', 'bar')
+    assert optional == {'baz': 2}
+
 
 # resolve_dependencies
 # ====================
