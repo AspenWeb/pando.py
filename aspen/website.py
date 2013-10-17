@@ -6,15 +6,13 @@ from __future__ import unicode_literals
 import datetime
 import os
 import sys
-import traceback
-from os.path import join, isfile
-from first import first
 
 import aspen
-from aspen import dispatcher, resources, sockets
+from aspen import resources, flow
+from aspen.configuration import Configurable
+from aspen.flow import request as request_flow
 from aspen.http.request import Request
 from aspen.http.response import Response
-from aspen.configuration import Configurable
 from aspen.utils import to_rfc822, utc
 
 # 2006-11-17 was the first release of aspen - v0.3
@@ -26,7 +24,7 @@ class Website(Configurable):
 
     This object holds configuration information, and also knows how to start
     and stop a server, *and* how to handle HTTP requests (per WSGI). It is
-    available to user-developers inside of their resources and hooks.
+    available to user-developers inside of their simplates and hooks.
 
     """
 
@@ -35,25 +33,75 @@ class Website(Configurable):
         """
         self.configure(argv)
 
-    def __call__(self, environ, start_response):
-        return self.wsgi_app(environ, start_response)
 
-    def wsgi_app(self, environ, start_response):
+    def wsgi(self, environ, start_response):
         """WSGI interface.
 
         Wrap this method instead of the website object itself
         when to use WSGI middleware::
 
             website = Website()
-            website.wsgi_app = WSGIMiddleware(website.wsgi_app)
+            website.wsgi = WSGIMiddleware(website.wsgi)
 
         """
-        request = Request.from_wsgi(environ) # too big to fail :-/
-        request.website = self
-        response = self.handle_safely(request)
-        response.request = request # Stick this on here at the last minute
-                                   # in order to support close hooks.
-        return response(environ, start_response)
+        wsgi = self.respond(environ)
+        return wsgi(environ, start_response)
+
+    __call__ = wsgi  # backcompat for network engines
+
+
+    def respond(self, environ):
+        """Given a WSGI environ, return an Aspen Response object.
+        """
+
+        state = {}
+        state['website'] = self
+        state['environ'] = environ
+        state['request'] = None
+        state['resource'] = None
+        state['socket'] = None
+        state['response'] = None
+        state['error'] = None
+        state['state'] = state
+
+        functions = [ request_flow.parse_environ_into_request
+                    , request_flow.tack_website_onto_request
+                    , request_flow.dispatch_request_to_filesystem
+                    , request_flow.get_a_socket_if_there_is_one
+                    , request_flow.get_a_resource_if_there_is_one
+                    , request_flow.respond_to_request_via_resource_or_socket
+
+                    , request_flow.convert_non_response_error_to_response_error
+                    , request_flow.log_tracebacks_for_500s
+                    , request_flow.process_error_using_simplate
+                    , request_flow.process_error_very_simply
+
+                    , request_flow.log_access
+                     ]
+
+        print()
+        for function in functions:
+            function_name = function.func_name
+            try:
+                deps = flow.resolve_dependencies(function, state)
+                if 'error' in deps.required and state['error'] is None:
+                    pass    # Hook needs an error but we don't have it.
+                    print("{:>48}  \x1b[33;1mskipped\x1b[0m".format(function_name))
+                elif 'error' not in deps.names and state['error'] is not None:
+                    pass    # Hook doesn't want an error but we have it.
+                    print("{:>48}  \x1b[33;1mskipped\x1b[0m".format(function_name))
+                else:
+                    new_state = function(**deps.kw)
+                    print("{:>48}  \x1b[32;1mdone\x1b[0m".format(function_name))
+                    if new_state is not None:
+                        state.update(new_state)
+            except:
+                print("{:>48}  \x1b[31;1mfailed\x1b[0m".format(function_name))
+                state['error'] = sys.exc_info()[1]
+
+        if state['error'] is not None:
+            raise
+        return state['response']
 
 
     # Interface for Server
@@ -70,214 +118,24 @@ class Website(Configurable):
         self.network_engine.stop()
 
 
-    # Request Handling
-    # ================
-
-    def handle_safely(self, request):
-        """Given an Aspen request, return an Aspen response.
-        """
-        try:
-            request = self.do_inbound(request)
-            response = self.handle(request)
-        except:
-            response = self.handle_error(request)
-
-        response = self.do_outbound(response)
-        return response
-
-
-    def handle(self, request):
-        """Given an Aspen request, return an Aspen response.
-
-        By default we use Resource subclasses to generate responses from
-        simplates on the filesystem. See aspen/resources/__init__.py.
-
-        You can monkey-patch this method to implement single-page web apps or
-        other things in configure-aspen.py:
-
-            from aspen import Response
-
-            def greetings_program(website, request):
-                return Response(200, "Greetings, program!")
-
-            website.handle = greetings_program
-
-        Unusual but allowed.
-
-        """
-        # Look for a Socket.IO socket (http://socket.io/).
-        if isinstance(request.socket, Response):    # handshake
-            response = request.socket
-            request.socket = None
-        elif request.socket is None:                # non-socket
-            request.resource = resources.get(request)
-            response = request.resource.respond(request)
-        else:                                       # socket
-            response = request.socket.respond(request)
-        response.request = request
-        return response
-
-
-    # Inbound
-    # =======
-
-    def do_inbound(self, request):
-        request = self.hooks.run('inbound_early', request)
-        request = self.hooks.run('inbound_core', request)
-        request = self.hooks.run('inbound_late', request)
-        return request
-
-    def reset_inbound_core(self):
-        self.hooks.inbound_core = [ self.set_fs_etc
-                                  , self.set_socket
-                                   ]
-
-    def set_fs_etc(self, request):
-        dispatcher.dispatch(request)  # mutates request
-
-    def set_socket(self, request):
-        request.socket = sockets.get(request)
-
-
-    # Error
-    # =====
-
-    def handle_error(self, request):
-        """Given a request, return a response.
-        """
-        try:                        # nice error messages
-            tb_1 = traceback.format_exc()
-            request = self.hooks.run('error_early', request)
-            response = self.handle_error_nicely(tb_1, request)
-        except Response, response:  # error simplate raised Response
-            pass
-        except:                     # last chance for tracebacks in the browser
-            response = self.handle_error_at_all(tb_1)
-
-        response.request = request
-        response = self.hooks.run('error_late', response)
-        return response
-
-
-    def handle_error_nicely(self, tb_1, request):
-
-        response = sys.exc_info()[1]
-
-        if not isinstance(response, Response):
-
-            # We have a true Exception; convert it to a Response object.
-
-            response = Response(500, tb_1)
-            response.request = request
-
-        if 500 <= response.code < 600:
-            # Log tracebacks for Reponse(5xx).
-            aspen.log_dammit(tb_1)
-
-            # TODO Switch to the logging module and use something like this:
-            # log_level = [DEBUG,INFO,WARNING,ERROR][(response.code/100)-2]
-            # logging.log(log_level, tb_1)
-
-        if 200 <= response.code < 300 or response.code == 304:
-
-            # The app raised a Response(2xx) or Response(304).
-            # Act as if nothing happened. This is unusual but allowed.
-
-            pass
-
-        else:
-
-            # Delegate to any error simplate.
-            # ===============================
-
-            rc = str(response.code)
-            possibles = [ rc + ".html", rc + ".html.spt", "error.html", "error.html.spt" ]
-            fs = first( self.ours_or_theirs(errpage) for errpage in possibles )
-
-            if fs is not None:
-                request.fs = fs
-                request.original_resource = request.resource
-                request.resource = resources.get(request)
-                response = request.resource.respond(request, response)
-
-        return response
-
-
-    def handle_error_at_all(self, tb_1):
-        tb_2 = traceback.format_exc().strip()
-        tbs = '\n\n'.join([tb_2, "... while handling ...", tb_1])
-        aspen.log_dammit(tbs)
-        if self.show_tracebacks:
-            response = Response(500, tbs)
-        else:
-            response = Response(500)
-        return response
-
-
-    # Outbound
-    # ========
-
-    def do_outbound(self, response):
-        response = self.hooks.run('outbound', response)
-        return response
-
-    def reset_outbound(self):
-        self.hooks.outbound = [self.log_access]
-
-    def log_access(self, response):
-        """Log access. With our own format (not Apache's).
-        """
-
-        if self.logging_threshold > 0: # short-circuit
-            return
-
-
-        # What was the URL path translated to?
-        # ====================================
-
-        fs = getattr(response.request, 'fs', '')
-        if fs.startswith(self.www_root):
-            fs = fs[len(self.www_root):]
-            if fs:
-                fs = '.'+fs
-        else:
-            fs = '...' + fs[-21:]
-        msg = "%-24s %s" % (response.request.line.uri.path.raw, fs)
-
-
-        # Where was response raised from?
-        # ===============================
-
-        filename, linenum = response.whence_raised()
-        if filename is not None:
-            response = "%s (%s:%d)" % (response, filename, linenum)
-        else:
-            response = str(response)
-
-        # Log it.
-        # =======
-
-        aspen.log("%-36s %s" % (response, msg))
-
-
     # File Resolution
     # ===============
 
     def find_ours(self, filename):
         """Given a filename, return a filepath.
         """
-        return join(os.path.dirname(__file__), 'www', filename)
+        return os.path.join(os.path.dirname(__file__), 'www', filename)
 
     def ours_or_theirs(self, filename):
         """Given a filename, return a filepath or None.
         """
         if self.project_root is not None:
-            theirs = join(self.project_root, filename)
-            if isfile(theirs):
+            theirs = os.path.join(self.project_root, filename)
+            if os.path.isfile(theirs):
                 return theirs
 
         ours = self.find_ours(filename)
-        if isfile(ours):
+        if os.path.isfile(ours):
             return ours
 
         return None

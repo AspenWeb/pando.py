@@ -19,25 +19,6 @@ from aspen.testing.fsfix import fix, FSFIX, mk, teardown, teardown_function
 __all__ = ['fix', 'teardown', 'handle', 'teardown_function']
 
 
-class Stub:
-    pass
-
-class StubBody:
-    def read(self):
-        return b''
-    def __iter__(self):
-        yield b''
-
-def StubWSGIRequest(path=b'/'):
-    environ = {}
-    environ['PATH_INFO'] = path
-    environ['REMOTE_ADDR'] = b'0.0.0.0'
-    environ['REQUEST_METHOD'] = b'GET'
-    environ['SERVER_PROTOCOL'] = b'HTTP/1.1'
-    environ['HTTP_HOST'] = b'localhost'
-    environ['wsgi.input'] = StubBody()
-    return environ
-
 class StubRequest:
 
     def __call__(cls, uripath=b'/'):
