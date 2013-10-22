@@ -86,10 +86,9 @@ class Flow(object):
     # ================================
 
     def _load_module_from_dotted_name(self, dotted_name):
-        class Node(object): pass
-        module = Node()
-        capture = module.__dict__
-        exec 'import {}'.format(dotted_name) in capture
+        class Module(object): pass
+        module = Module()  # let's us use getattr to traverse down
+        exec 'import {}'.format(dotted_name) in module.__dict__
         for name in dotted_name.split('.'):
             module = getattr(module, name)
         return module
