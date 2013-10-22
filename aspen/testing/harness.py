@@ -3,6 +3,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from collections import namedtuple
 from Cookie import SimpleCookie
 from StringIO import StringIO
 
@@ -81,8 +82,9 @@ class Harness(object):
 
     def __init__(self, website, www, project):
         self.website = website
-        self.www = www
-        self.project = project
+        self.fs = namedtuple('fs', 'www project')
+        self.fs.www = www
+        self.fs.project = project
         self.cookies = SimpleCookie()
 
 
