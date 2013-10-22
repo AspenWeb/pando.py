@@ -50,7 +50,7 @@ class Website(Configurable):
     __call__ = wsgi  # backcompat for network engines
 
 
-    def respond(self, environ):
+    def respond(self, environ, _run_through=None):
         """Given a WSGI environ, return an Aspen Response object.
         """
 
@@ -64,9 +64,12 @@ class Website(Configurable):
         state['error'] = None
         state['state'] = state
 
-        state = self.flow.run(state)
+        state = self.flow.run(state, through=_run_through)
 
-        return state['response']
+        if _run_through is None:
+            return state['response']
+        else:
+            return state
 
 
     # Interface for Server

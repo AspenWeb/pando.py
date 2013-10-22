@@ -12,7 +12,7 @@ from collections import namedtuple
 
 class FunctionNotFound(Exception):
     def __str__(self):
-        return "The function {} isn't in this list.".format(*self.args)
+        return "The function '{}' isn't in this flow.".format(*self.args)
 
 
 class Flow(object):
@@ -52,6 +52,9 @@ class Flow(object):
     def run(self, state, through=None):
         """
         """
+        if through is not None:
+            if through not in self.get_names():
+                raise FunctionNotFound(through)
         print()
         for function in self.functions:
             function_name = function.func_name

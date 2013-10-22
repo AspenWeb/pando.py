@@ -8,5 +8,6 @@ from aspen.testing.pytest_fixtures import fs, harness, sys_path, module_scrubber
 def mk():
     yield fsfix.mk
 
+
 def pytest_runtest_teardown():
     teardown()
