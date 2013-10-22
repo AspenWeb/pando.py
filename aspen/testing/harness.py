@@ -91,13 +91,13 @@ class Harness(object):
     # HTTP Methods
     # ============
 
-    def get(self, path, cookie_info=None, **extra):
+    def get(self, path, cookie_info=None, run_through=None, **extra):
         environ = self._build_wsgi_environ(path, "GET", **extra)
-        return self._perform_request(environ, cookie_info)
+        return self._perform_request(environ, cookie_info, run_through)
 
 
-    def post(self, path, data, content_type=MULTIPART_CONTENT,
-             cookie_info=None, **extra):
+    def post(self, path, data, content_type=MULTIPART_CONTENT, cookie_info=None, run_through=None,
+            **extra):
         """Perform a dummy POST request against the test website.
 
         :param path:
@@ -124,7 +124,7 @@ class Harness(object):
                                          , CONTENT_TYPE=str(content_type)
                                          , **extra
                                           )
-        return self._perform_request(environ, cookie_info)
+        return self._perform_request(environ, cookie_info, run_through)
 
 
     # Hook
@@ -163,9 +163,14 @@ class Harness(object):
         return environ
 
 
-    def _perform_request(self, environ, cookie_info):
+    def _perform_request(self, environ, cookie_info, run_through):
         self.add_cookie_info(environ, **(cookie_info or {}))
-        response = self.website.respond(environ)
-        if response.headers.cookie:
-            self.cookies.update(response.headers.cookie)
-        return response
+        out = self.website.respond(environ, _run_through=run_through)
+        if run_through is None:
+            response = out
+        else:
+            response = out['response']
+        if response is not None:
+            if response.headers.cookie:
+                self.cookies.update(response.headers.cookie)
+        return out
