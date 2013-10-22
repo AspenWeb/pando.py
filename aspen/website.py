@@ -5,10 +5,9 @@ from __future__ import unicode_literals
 
 import datetime
 import os
-import sys
 
 import aspen
-from aspen import resources, flow
+from aspen import resources
 from aspen.configuration import Configurable
 from aspen.flow import Flow
 from aspen.http.request import Request
@@ -32,7 +31,7 @@ class Website(Configurable):
         """Takes an argv list, without the initial executable name.
         """
         self.configure(argv)
-        self.flow = Flow('aspen.flow.request')
+        self.flow = Flow('aspen.flows.request')
 
 
     def wsgi(self, environ, start_response):
@@ -65,7 +64,7 @@ class Website(Configurable):
         state['error'] = None
         state['state'] = state
 
-        self.flow.run(state)
+        state = self.flow.run(state)
 
         return state['response']
 

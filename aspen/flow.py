@@ -1,3 +1,5 @@
+"""Implement a linear control flow model.
+"""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -84,10 +86,12 @@ class Flow(object):
     # ================================
 
     def _load_module_from_dotted_name(self, dotted_name):
-        from_clause, import_clause = dotted_name.rsplit('.', 1)
-        capture = {}
-        exec 'from {} import {}'.format(from_clause, import_clause) in capture
-        module = capture[import_clause]
+        class Node(object): pass
+        module = Node()
+        capture = module.__dict__
+        exec 'import {}'.format(dotted_name) in capture
+        for name in dotted_name.split('.'):
+            module = getattr(module, name)
         return module
 
 
