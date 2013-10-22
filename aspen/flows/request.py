@@ -9,7 +9,7 @@ import aspen
 from aspen import dispatcher, resources, sockets
 from aspen.http.request import Request
 from aspen.http.response import Response
-from first import first
+from first import first as _first
 
 
 def parse_environ_into_request(environ):
@@ -34,12 +34,14 @@ def get_a_socket_if_there_is_one(request):
         return {'socket': response_or_socket}
 
 
-def get_a_resource_if_there_is_one(request, socket):
-    if socket is None:
+def get_a_resource_if_there_is_one(request, socket, response):
+    if socket is None and response is None:
         return {'resource': resources.get(request)}
 
 
-def respond_to_request_via_resource_or_socket(request, resource, socket):
+def respond_to_request_via_resource_or_socket(request, resource, socket, response):
+    if response is not None:
+        return
     if resource is not None:
         assert socket is None
         response = resource.respond(request)
@@ -63,7 +65,7 @@ def log_tracebacks_for_500s(error):
 def process_error_using_simplate(website, request, error):
     rc = str(error.code)
     possibles = [rc + ".html", rc + ".html.spt", "error.html", "error.html.spt"]
-    fs = first(website.ours_or_theirs(errpage) for errpage in possibles)
+    fs = _first(website.ours_or_theirs(errpage) for errpage in possibles)
 
     if fs is not None:
         request.fs = fs

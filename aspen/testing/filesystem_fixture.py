@@ -16,16 +16,10 @@ def _convert_paths(paths):
     return tuple([_convert_path(p) for p in paths])
 
 
-def _get_tempdir():
-    """Return a temporary directory we can use for our fixture.
-    """
-    return os.path.realpath(os.path.join(tempfile.gettempdir()))
-
-
 class FilesystemFixture(object):
 
     def __init__(self, root=None):
-        self.root = root if root is not None else _get_tempdir()
+        self.root = root if root is not None else tempfile.mkdtemp()
 
 
     def mk(self, *treedef):

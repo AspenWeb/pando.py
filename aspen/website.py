@@ -5,12 +5,11 @@ from __future__ import unicode_literals
 
 import datetime
 import os
-import sys
 
 import aspen
-from aspen import resources, flow
+from aspen import resources
 from aspen.configuration import Configurable
-from aspen.flow import request as request_flow
+from aspen.flow import Flow
 from aspen.http.request import Request
 from aspen.http.response import Response
 from aspen.utils import to_rfc822, utc
@@ -32,6 +31,7 @@ class Website(Configurable):
         """Takes an argv list, without the initial executable name.
         """
         self.configure(argv)
+        self.flow = Flow('aspen.flows.request')
 
 
     def wsgi(self, environ, start_response):
@@ -50,7 +50,7 @@ class Website(Configurable):
     __call__ = wsgi  # backcompat for network engines
 
 
-    def respond(self, environ):
+    def respond(self, environ, _run_through=None):
         """Given a WSGI environ, return an Aspen Response object.
         """
 
@@ -64,44 +64,12 @@ class Website(Configurable):
         state['error'] = None
         state['state'] = state
 
-        functions = [ request_flow.parse_environ_into_request
-                    , request_flow.tack_website_onto_request
-                    , request_flow.dispatch_request_to_filesystem
-                    , request_flow.get_a_socket_if_there_is_one
-                    , request_flow.get_a_resource_if_there_is_one
-                    , request_flow.respond_to_request_via_resource_or_socket
+        state = self.flow.run(state, through=_run_through)
 
-                    , request_flow.convert_non_response_error_to_response_error
-                    , request_flow.log_tracebacks_for_500s
-                    , request_flow.process_error_using_simplate
-                    , request_flow.process_error_very_simply
-
-                    , request_flow.log_access
-                     ]
-
-        print()
-        for function in functions:
-            function_name = function.func_name
-            try:
-                deps = flow.resolve_dependencies(function, state)
-                if 'error' in deps.required and state['error'] is None:
-                    pass    # Hook needs an error but we don't have it.
-                    print("{:>48}  \x1b[33;1mskipped\x1b[0m".format(function_name))
-                elif 'error' not in deps.names and state['error'] is not None:
-                    pass    # Hook doesn't want an error but we have it.
-                    print("{:>48}  \x1b[33;1mskipped\x1b[0m".format(function_name))
-                else:
-                    new_state = function(**deps.kw)
-                    print("{:>48}  \x1b[32;1mdone\x1b[0m".format(function_name))
-                    if new_state is not None:
-                        state.update(new_state)
-            except:
-                print("{:>48}  \x1b[31;1mfailed\x1b[0m".format(function_name))
-                state['error'] = sys.exc_info()[1]
-
-        if state['error'] is not None:
-            raise
-        return state['response']
+        if _run_through is None:
+            return state['response']
+        else:
+            return state
 
 
     # Interface for Server

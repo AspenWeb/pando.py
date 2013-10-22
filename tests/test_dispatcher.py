@@ -25,21 +25,14 @@ def assert_raises_302(func, *args):
     assert response.code == 302
     return response
 
-def check(path, *a):
-    """Given a URI path, return a dispatched request object.
-    """
-    request = StubRequest.from_fs(path.encode('ascii'), *a)
-    dispatcher.dispatch(request)
-    return request
-
 
 # Indices
 # =======
 
-def test_index_is_found(mk):
-    mk(('index.html', "Greetings, program!"))
-    expected = fix('index.html')
-    actual = check('/').fs
+def test_index_is_found(harness):
+    harness.fs.www.mk(('index.html', "Greetings, program!"))
+    expected = harness.fs.www.resolve('index.html')
+    actual = harness.get('/', run_through='dispatch_request_to_filesystem')['request'].fs
     assert actual == expected
 
 def test_negotiated_index_is_found(mk):
