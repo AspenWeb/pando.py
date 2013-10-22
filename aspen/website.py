@@ -9,9 +9,10 @@ import sys
 
 import aspen
 from aspen import resources, flow
+from aspen.configuration import Configurable
+from aspen.flow import request as request_flow
 from aspen.http.request import Request
 from aspen.http.response import Response
-from aspen.configuration import Configurable
 from aspen.utils import to_rfc822, utc
 
 # 2006-11-17 was the first release of aspen - v0.3
@@ -46,7 +47,7 @@ class Website(Configurable):
         wsgi = self.respond(environ)
         return wsgi(environ, start_response)
 
-    __call__ = wsgi
+    __call__ = wsgi  # backcompat for network engines
 
 
     def respond(self, environ):
@@ -63,28 +64,43 @@ class Website(Configurable):
         state['error'] = None
         state['state'] = state
 
-        def something_to_get_us_started(state):
-            state['response'] = Response(200, "Greetings, program!")
+        functions = [ request_flow.parse_environ_into_request
+                    , request_flow.tack_website_onto_request
+                    , request_flow.dispatch_request_to_filesystem
+                    , request_flow.get_a_socket_if_there_is_one
+                    , request_flow.get_a_resource_if_there_is_one
+                    , request_flow.respond_to_request_via_resource_or_socket
 
-        functions = [something_to_get_us_started]
+                    , request_flow.convert_non_response_error_to_response_error
+                    , request_flow.log_tracebacks_for_500s
+                    , request_flow.process_error_using_simplate
+                    , request_flow.process_error_very_simply
 
+                    , request_flow.log_access
+                     ]
+
+        print()
         for function in functions:
+            function_name = function.func_name
             try:
                 deps = flow.resolve_dependencies(function, state)
                 if 'error' in deps.required and state['error'] is None:
                     pass    # Hook needs an error but we don't have it.
+                    print("{:>48}  \x1b[33;1mskipped\x1b[0m".format(function_name))
                 elif 'error' not in deps.names and state['error'] is not None:
                     pass    # Hook doesn't want an error but we have it.
+                    print("{:>48}  \x1b[33;1mskipped\x1b[0m".format(function_name))
                 else:
-                    response = function(**deps.kw)
-                    if response is not None:
-                        state['response'] = response
-            except Response as response:
-                state['response'] = response
-                state['error'] = response
+                    new_state = function(**deps.kw)
+                    print("{:>48}  \x1b[32;1mdone\x1b[0m".format(function_name))
+                    if new_state is not None:
+                        state.update(new_state)
             except:
-                state['error'] = sys.exc_info()[0]
+                print("{:>48}  \x1b[31;1mfailed\x1b[0m".format(function_name))
+                state['error'] = sys.exc_info()[1]
 
+        if state['error'] is not None:
+            raise
         return state['response']
 
 

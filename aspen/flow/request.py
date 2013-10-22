@@ -12,11 +12,11 @@ from aspen.http.response import Response
 from first import first
 
 
-def parse_environ_into_request(environ, state):
-    state['request'] = Request.from_wsgi(environ) # too big to fail :-/
+def parse_environ_into_request(environ):
+    return {'request': Request.from_wsgi(environ)}
 
 
-def add_website_to_request(request, website):
+def tack_website_onto_request(request, website):
     request.website = website
 
 
@@ -24,50 +24,43 @@ def dispatch_request_to_filesystem(request):
     dispatcher.dispatch(request)
 
 
-def get_a_socket_if_there_is_one(request, state):
-    state['socket'] = sockets.get(request)
-
-
-def see_if_socket_is_actually_a_response(socket, state):
-    if isinstance(socket, Response):
+def get_a_socket_if_there_is_one(request):
+    response_or_socket = sockets.get(request)
+    if isinstance(response_or_socket, Response):
         # This is a handshake request.
-        state['response'] = socket
-        state['socket'] = None
+        return {'response': response_or_socket}
+    else:
+        # This is a socket ... request?
+        return {'socket': response_or_socket}
 
 
-def maybe_get_a_resource(request, socket, state):
+def get_a_resource_if_there_is_one(request, socket):
     if socket is None:
-        state['resource'] = resources.get(request)
+        return {'resource': resources.get(request)}
 
 
-def respond_to_the_request(request, resource, socket):
+def respond_to_request_via_resource_or_socket(request, resource, socket):
     if resource is not None:
         assert socket is None
         response = resource.respond(request)
     else:
         assert socket is not None
         response = socket.respond(request)
-    return response
+    return {'response': response}
 
 
-def convert_non_response_error_to_response(error, request, state):
+def convert_non_response_error_to_response_error(error, request):
     if not isinstance(error, Response):
         response = Response(500, traceback.format_exc())
-        response.request = request
-    state['error'] = response
-    state['response'] = response
+        return {'error': response}
 
 
-def log_tracebacks_for_500_error_responses(error):
+def log_tracebacks_for_500s(error):
     if error.code >= 500:
-        aspen.log_dammit(traceback.format_exc())
-
-        # TODO Switch to the logging module and use something like this:
-        # log_level = [DEBUG,INFO,WARNING,ERROR][(response.code/100)-2]
-        # logging.log(log_level, tb_1)
+        aspen.log_dammit(error.tb)
 
 
-def process_error_using_simplate(error, request, state, website):
+def process_error_using_simplate(website, request, error):
     rc = str(error.code)
     possibles = [rc + ".html", rc + ".html.spt", "error.html", "error.html.spt"]
     fs = first(website.ours_or_theirs(errpage) for errpage in possibles)
@@ -78,18 +71,17 @@ def process_error_using_simplate(error, request, state, website):
         request.resource = resources.get(request)
         response = request.resource.respond(request, error)
 
-    return response
+    return {'response': response, 'error': None}
 
 
 def process_error_very_simply(website, error):
-    tb_2 = traceback.format_exc().strip()
-    tbs = '\n\n'.join([tb_2, "... while handling ...", tb_1])
+    tb = traceback.format_exc().strip()
+    tbs = '\n\n'.join([tb, "... while handling ...", error.tb])
     aspen.log_dammit(tbs)
+    response = Response(500)
     if website.show_tracebacks:
-        response = Response(500, tbs)
-    else:
-        response = Response(500)
-    return response
+        response.body = tbs
+    return {'response': response, 'error': None}
 
 
 def log_access(website, response, request):

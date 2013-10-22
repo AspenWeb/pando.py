@@ -37,9 +37,9 @@ def encode_multipart(boundary, data):
     return '\r\n'.join(lines)
 
 
-class Client(object):
+class Harness(object):
     """
-    The Aspen testing client.
+    The Aspen testing harness.
 
     Used in tests to emulate ``GET`` and ``POST`` requests by sending them
     into a ``Website`` instance's ``respond`` method.
@@ -79,8 +79,10 @@ class Client(object):
             assert_equal(first_data['amount'], "1.00")
     """
 
-    def __init__(self, website):
+    def __init__(self, website, www, project):
         self.website = website
+        self.www = www
+        self.project = project
         self.cookies = SimpleCookie()
 
 
@@ -156,6 +158,7 @@ class Client(object):
         environ['wsgi.input'] = StringIO(body)
         environ['HTTP_COOKIE'] = self.cookies.output(header='', sep='; ')
         environ.update(extra)
+        return environ
 
 
     def _perform_request(self, environ, cookie_info):
