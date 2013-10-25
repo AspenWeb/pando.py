@@ -88,10 +88,6 @@ def teardown():
     sockets.__sockets__ = {}
     sockets.__channels__ = {}
     sys.path_importer_cache = {} # see test_weird.py
-    if 'fsfix' in sys.path[0]:
-        sys.path = sys.path[1:]
-    if 'foo' in sys.modules:
-        del sys.modules['foo']
     import aspen.execution
     aspen.execution.clear_changes()
 
