@@ -5,6 +5,7 @@ from __future__ import unicode_literals
 
 import os
 
+import pytest
 from pytest import raises
 
 from aspen import dispatcher, Response
@@ -26,37 +27,41 @@ def assert_raises_302(func, *args):
     return response
 
 
+@pytest.yield_fixture
+def check_(harness):
+    def _(url_path, fs_path, www, project=()):
+        harness.fs.www.mk(*www)
+        harness.fs.project.mk(*project)
+        expected = harness.fs.www.resolve(fs_path)
+        actual = harness.get(url_path, run_through='dispatch_request_to_filesystem')['request'].fs
+        return actual, expected
+    yield _
+
+
 # Indices
 # =======
 
-def test_index_is_found(harness):
-    harness.fs.www.mk(('index.html', "Greetings, program!"))
-    expected = harness.fs.www.resolve('index.html')
-    actual = harness.get('/', run_through='dispatch_request_to_filesystem')['request'].fs
+def test_index_is_found(check_):
+    actual, expected = check_('/', 'index.html', ('index.html', "Greetings, program!"))
     assert actual == expected
 
 def test_negotiated_index_is_found(mk):
-    mk(( 'index'
-       , """
+    actual, expected = check_('/', 'index', ('index',
+"""
 [----------] text/html
 <h1>Greetings, program!</h1>
 [----------] text/plain
 Greetings, program!
 """))
-    expected = fix('index')
-    actual = check('/').fs
     assert actual == expected
 
-def test_alternate_index_is_not_found(mk):
-    mk(('default.html', "Greetings, program!"))
-    assert_raises_404(check, '/')
+def test_alternate_index_is_not_found(check_):
+    assert_raises_404(check_, '/', '', ('default.html', "Greetings, program!"))
 
-def test_alternate_index_is_found(mk):
-    mk( ('.aspen/configure-aspen.py', 'website.indices += ["default.html"]')
-      , ('default.html', "Greetings, program!")
-       )
-    expected = fix('default.html')
-    actual = check('/').fs
+def test_alternate_index_is_found(check_):
+    www = (('default.html', "Greetings, program!"),)
+    project = (('configure-aspen.py', 'website.indices += ["default.html"]'),)
+    actual, expected = check_('/', 'default.html', www, project)
     assert actual == expected
 
 def test_configure_aspen_py_setting_override_works_too(mk):
