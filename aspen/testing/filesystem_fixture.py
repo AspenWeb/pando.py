@@ -19,7 +19,7 @@ def _convert_paths(paths):
 class FilesystemFixture(object):
 
     def __init__(self, root=None):
-        self.root = root if root is not None else tempfile.mkdtemp()
+        self.root = root if root is not None else tempfile.mkdtemp(prefix='fsfix-')
 
 
     def mk(self, *treedef):
