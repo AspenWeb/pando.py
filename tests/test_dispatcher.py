@@ -44,21 +44,21 @@ def check_(harness):
 # =======
 
 def test_index_is_found(check_):
-    actual, expected = check_('/', 'index.html', ('index.html', "Greetings, program!"))
+    actual, expected = check_('/', 'index.html', (('index.html', "Greetings, program!"),))
     assert actual == expected
 
 def test_negotiated_index_is_found(check_):
-    actual, expected = check_('/', 'index', ('index',
+    actual, expected = check_('/', 'index', (('index',
 """
 [----------] text/html
 <h1>Greetings, program!</h1>
 [----------] text/plain
 Greetings, program!
-"""))
+"""),))
     assert actual == expected
 
 def test_alternate_index_is_not_found(check_):
-    assert_raises_404(check_, '/', '', ('default.html', "Greetings, program!"))
+    assert_raises_404(check_, '/', '', (('default.html', "Greetings, program!"),))
 
 def test_alternate_index_is_found(check_):
     www = (('default.html', "Greetings, program!"),)
