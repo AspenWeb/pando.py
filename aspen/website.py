@@ -34,6 +34,11 @@ class Website(Configurable):
         self.flow = Flow('aspen.flows.request')
 
 
+    def __call__(self, environ, start_response):
+        # back-compatibility for network engines
+        return self.wsgi_app(environ, start_response)
+
+
     def wsgi_app(self, environ, start_response):
         """WSGI interface.
 
@@ -46,8 +51,6 @@ class Website(Configurable):
         """
         wsgi = self.respond(environ)
         return wsgi(environ, start_response)
-
-    __call__ = wsgi_app  # backcompat for network engines
 
 
     def respond(self, environ, _run_through=None):
