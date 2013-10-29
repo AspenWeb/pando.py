@@ -7,7 +7,6 @@ import os
 import StringIO
 
 from aspen.testing import handle, StubRequest
-from aspen.testing.fsfix import FSFIX
 from aspen.website import Website
 
 
@@ -63,18 +62,18 @@ def test_autoindex_response_is_404_by_default(mk):
     actual = handle().code
     assert actual == expected
 
-def test_autoindex_response_is_returned(mk):
+def test_autoindex_response_is_returned(handle):
     mk(('README', "Greetings, program!"))
     body = handle('/', '--list_directories=TrUe').body
     assert 'README' in body
 
-def test_resources_can_import_from_dot_aspen(mk):
-    mk( '.aspen'
-      , ('.aspen/foo.py', 'bar = "baz"')
-      , ('index.html.spt', "from foo import bar\n[---]\nGreetings, %(bar)s!")
-       )
+def test_resources_can_import_from_dot_aspen(fs):
+    fs.mk( '.aspen'
+         , ('.aspen/foo.py', 'bar = "baz"')
+         , ('index.html.spt', "from foo import bar\n[---]\nGreetings, %(bar)s!")
+          )
     expected = "Greetings, baz!"
-    project_root = os.path.join(FSFIX, '.aspen')
+    project_root = os.path.join(fs.root, '.aspen')
     actual = handle('/', '--project_root='+project_root).body
     assert actual == expected
 
@@ -103,14 +102,14 @@ def bar(response):
     assert actual == expected
 
 
-def test_website_doesnt_clobber_outbound(mk):
-    mk( ( '.aspen/configure-aspen.py'
-        , 'import random\nwebsite.hooks.outbound.append(random.choice)'
-         )
-       )
+def test_website_doesnt_clobber_outbound(fs):
+    fs.mk( ( '.aspen/configure-aspen.py'
+           , 'import random\nwebsite.hooks.outbound.append(random.choice)'
+            )
+          )
 
-    project_root = os.path.join(FSFIX, '.aspen')
-    website = Website(['--www_root='+FSFIX, '--project_root='+project_root])
+    project_root = os.path.join(fs.root, '.aspen')
+    website = Website(['--www_root='+fs.root, '--project_root='+project_root])
 
     expected = 2
     actual = len(website.hooks.outbound)
@@ -142,7 +141,7 @@ def build_environ(path):
     }
 
 
-def test_call_wraps_wsgi_middleware():
+def test_call_wraps_wsgi_middleware(fs):
     website = Website([])
     website.wsgi_app = TestMiddleware(website.wsgi_app)
     respond = [False, False]
