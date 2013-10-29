@@ -72,30 +72,6 @@ def test_resources_can_import_from_project_root(harness):
     assert harness.get('/').body == "Greetings, baz!"
 
 
-def test_double_failure_still_sets_response_dot_request(mk):
-    mk( '.aspen'
-      , ('.aspen/foo.py', """
-def bar(response):
-    response.request
-""")
-      , ( '.aspen/configure-aspen.py'
-        , 'import foo\nwebsite.hooks.outbound.append(foo.bar)'
-         )
-      , ('index.html.spt', "raise heck\n[---]\n")
-       )
-
-    # Intentionally break the website object so as to trigger a double failure.
-    project_root = os.path.join(FSFIX, '.aspen')
-    website = Website(['--www_root='+FSFIX, '--project_root='+project_root])
-    del website.renderer_factories
-
-    response = website.handle_safely(StubRequest())
-
-    expected = 500
-    actual = response.code
-    assert actual == expected
-
-
 class TestMiddleware(object):
     """Simple WSGI middleware for testing."""
 
