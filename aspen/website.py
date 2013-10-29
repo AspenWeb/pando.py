@@ -64,7 +64,7 @@ class Website(Configurable):
         state['resource'] = None
         state['socket'] = None
         state['response'] = None
-        state['error'] = None
+        state['exc_info'] = None
         state['state'] = state
 
         state = self.flow.run(state, through=_run_through)

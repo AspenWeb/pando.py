@@ -7,6 +7,7 @@ from __future__ import unicode_literals
 
 import sys
 import types
+import traceback
 from collections import namedtuple
 
 
@@ -16,6 +17,8 @@ class FunctionNotFound(Exception):
 
 
 class Flow(object):
+
+    want_short_circuit = False
 
     def __init__(self, dotted_name):
         self.module = self._load_module_from_dotted_name(dotted_name)
@@ -31,22 +34,32 @@ class Flow(object):
 
 
     def insert_after(self, newfunc, name):
-        self.insert(newfunc, name, relative_position=1)
+        self.insert_relative_to(newfunc, name, relative_position=1)
 
 
     def insert_before(self, newfunc, name):
-        self.insert(newfunc, name, relative_position=-1)
+        self.insert_relative_to(newfunc, name, relative_position=-1)
 
 
     def insert_relative_to(self, newfunc, name, relative_position):
+        func = self.resolve_name_to_function(name)
+        index = self.functions.index(func) + relative_position
+        self.functions.insert(index, newfunc)
+
+
+    def remove(self, name):
+        func = self.resolve_name_to_function(name)
+        self.functions.remove(func)
+
+
+    def resolve_name_to_function(self, name):
         func = None
         for func in self.functions:
             if func.func_name == name:
                 break
         if func is None:
             raise FunctionNotFound(name)
-        index = self.functions.indexOf(func) + relative_position
-        self.functions.insert(index, newfunc)
+        return func
 
 
     def run(self, state, through=None):
@@ -59,14 +72,14 @@ class Flow(object):
         for function in self.functions:
             function_name = function.func_name
             try:
-                if 'error' not in state:
-                    state['error'] = None
+                if 'exc_info' not in state:
+                    state['exc_info'] = None
                 deps = self._resolve_dependencies(function, state)
-                if 'error' in deps.required and state['error'] is None:
-                    pass    # Hook needs an error but we don't have it.
+                if 'exc_info' in deps.required and state['exc_info'] is None:
+                    pass    # Hook needs an exc_info but we don't have it.
                     print("{:>48}  \x1b[33;1mskipped\x1b[0m".format(function_name))
-                elif 'error' not in deps.names and state['error'] is not None:
-                    pass    # Hook doesn't want an error but we have it.
+                elif 'exc_info' not in deps.names and state['exc_info'] is not None:
+                    pass    # Hook doesn't want an exc_info but we have it.
                     print("{:>48}  \x1b[33;1mskipped\x1b[0m".format(function_name))
                 else:
                     new_state = function(**deps.kw)
@@ -75,11 +88,14 @@ class Flow(object):
                         state.update(new_state)
             except:
                 print("{:>48}  \x1b[31;1mfailed\x1b[0m".format(function_name))
-                state['error'] = sys.exc_info()[1]
+                state['exc_info'] = sys.exc_info()[:2] + (traceback.format_exc().strip(),)
+                if self.want_short_circuit:
+                    raise
+
             if through is not None and function_name == through:
                 break
 
-        if state['error'] is not None:
+        if state['exc_info'] is not None:
             raise
 
         return state

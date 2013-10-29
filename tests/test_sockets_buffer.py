@@ -1,18 +1,17 @@
 from aspen.sockets import FFFD
 from aspen.sockets.buffer import ThreadedBuffer as Buffer
 from aspen.sockets.message import Message
-from aspen.testing.sockets import make_socket
 
 
-def test_buffer_is_instantiable(mk):
-    mk(('echo.sock.spt', 'socket.send(socket.recv())'))
+def test_buffer_is_instantiable(harness):
+    harness.fs.www.mk(('echo.sock.spt', 'socket.send(socket.recv())'))
     expected = Buffer
-    actual = Buffer(make_socket(), 'foo').__class__
+    actual = Buffer(harness.make_socket(), 'foo').__class__
     assert actual is expected
 
-def test_can_put_onto_buffer(mk):
-    mk(('echo.sock.spt', 'socket.send(socket.recv())'))
-    buffer = Buffer(make_socket(), 'foo')
+def test_can_put_onto_buffer(harness):
+    harness.fs.www.mk(('echo.sock.spt', 'socket.send(socket.recv())'))
+    buffer = Buffer(harness.make_socket(), 'foo')
     expected = [FFFD+'4'+FFFD+'1:::']
     buffer.put(Message.from_bytes('1:::'))
     actual = list(buffer.flush())
