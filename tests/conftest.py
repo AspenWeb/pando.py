@@ -1,4 +1,4 @@
-from aspen.testing.fsfix import teardown
+from aspen.testing import teardown
 from aspen.testing.pytest_fixtures import fs, harness, sys_path, module_scrubber
 
 

@@ -6,7 +6,6 @@ from __future__ import unicode_literals
 import os
 import StringIO
 
-from aspen.testing import handle, StubRequest
 from aspen.website import Website
 
 
