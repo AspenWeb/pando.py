@@ -8,7 +8,9 @@ from aspen.website import Website
 
 @pytest.yield_fixture
 def fs():
-    yield FilesystemFixture()
+    fs = FilesystemFixture()
+    yield fs
+    fs.remove()
 
 
 @pytest.yield_fixture
