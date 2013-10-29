@@ -18,15 +18,15 @@ def test_basic():
     actual = website.www_root
     assert actual == expected
 
-def test_normal_response_is_returned(mk):
-    mk(('index.html', "Greetings, program!"))
+def test_normal_response_is_returned(harness):
+    harness.fs.www.mk(('index.html', "Greetings, program!"))
     expected = '\r\n'.join("""\
 HTTP/1.1
 Content-Type: text/html
 
 Greetings, program!
 """.splitlines())
-    actual = handle()._to_http('1.1')
+    actual = harness.get('/')._to_http('1.1')
     assert actual == expected
 
 def test_fatal_error_response_is_returned(mk):
