@@ -101,20 +101,6 @@ def bar(response):
     assert actual == expected
 
 
-def test_website_doesnt_clobber_outbound(fs):
-    fs.mk( ( '.aspen/configure-aspen.py'
-           , 'import random\nwebsite.hooks.outbound.append(random.choice)'
-            )
-          )
-
-    project_root = os.path.join(fs.root, '.aspen')
-    website = Website(['--www_root='+fs.root, '--project_root='+project_root])
-
-    expected = 2
-    actual = len(website.hooks.outbound)
-    assert actual == expected
-
-
 class TestMiddleware(object):
     """Simple WSGI middleware for testing."""
 
