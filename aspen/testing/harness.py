@@ -8,6 +8,9 @@ from Cookie import SimpleCookie
 from StringIO import StringIO
 
 
+from aspen.website import Website
+
+
 BOUNDARY = 'BoUnDaRyStRiNg'
 MULTIPART_CONTENT = 'multipart/form-data; boundary=%s' % BOUNDARY
 
@@ -80,8 +83,8 @@ class Harness(object):
             assert_equal(first_data['amount'], "1.00")
     """
 
-    def __init__(self, website, www, project):
-        self.website = website
+    def __init__(self, www, project):
+        self.website = None
         self.fs = namedtuple('fs', 'www project')
         self.fs.www = www
         self.fs.project = project
@@ -91,12 +94,24 @@ class Harness(object):
     # HTTP Methods
     # ============
 
-    def get(self, path, cookie_info=None, run_through=None, **extra):
+    def __getattr__(self, name):
+        things = { 'get': self._get
+                 , 'post': self._post
+                 , 'website': self.website
+                  }
+        if name in things:
+            self.website = Website([ '--www_root', self.fs.www.root
+                                   , '--project_root', self.fs.project.root
+                                    ])
+            return things[name]
+
+
+    def _get(self, path, cookie_info=None, run_through=None, **extra):
         environ = self._build_wsgi_environ(path, "GET", **extra)
         return self._perform_request(environ, cookie_info, run_through)
 
 
-    def post(self, path, data, content_type=MULTIPART_CONTENT, cookie_info=None, run_through=None,
+    def _post(self, path, data, content_type=MULTIPART_CONTENT, cookie_info=None, run_through=None,
             **extra):
         """Perform a dummy POST request against the test website.
 

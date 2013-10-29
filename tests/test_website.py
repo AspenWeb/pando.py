@@ -66,15 +66,10 @@ def test_autoindex_response_is_returned(handle):
     body = handle('/', '--list_directories=TrUe').body
     assert 'README' in body
 
-def test_resources_can_import_from_dot_aspen(fs):
-    fs.mk( '.aspen'
-         , ('.aspen/foo.py', 'bar = "baz"')
-         , ('index.html.spt', "from foo import bar\n[---]\nGreetings, %(bar)s!")
-          )
-    expected = "Greetings, baz!"
-    project_root = os.path.join(fs.root, '.aspen')
-    actual = handle('/', '--project_root='+project_root).body
-    assert actual == expected
+def test_resources_can_import_from_project_root(harness):
+    harness.fs.project.mk(('foo.py', 'bar = "baz"'))
+    harness.fs.www.mk(('index.html.spt', "from foo import bar\n[---]\nGreetings, %(bar)s!"))
+    assert harness.get('/').body == "Greetings, baz!"
 
 
 def test_double_failure_still_sets_response_dot_request(mk):

@@ -33,5 +33,13 @@ def sys_path(fs, module_scrubber):
 def harness():
     www = FilesystemFixture()
     project = FilesystemFixture()
-    website = Website(['--www_root', www.root, '--project_root', project.root])
-    yield Harness(website, www, project)
+    yield Harness(www, project)
+    www.remove()
+    project.remove()
+
+
+@pytest.yield_fixture
+def handle(harness):
+    def handle(url_path):
+        return harness.get(url_path)
+    yield handle
