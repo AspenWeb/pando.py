@@ -3,12 +3,13 @@
 This is a mutilated hacked up version of the old website.py.
 
 """
-import traceback
+import sys
 
 import aspen
 from aspen import dispatcher, resources, sockets
 from aspen.http.request import Request
 from aspen.http.response import Response
+from aspen.sockets.socket import Socket
 from first import first as _first
 
 
@@ -17,6 +18,7 @@ def parse_environ_into_request(environ):
 
 
 def tack_website_onto_request(request, website):
+    # XXX Why?
     request.website = website
 
 
@@ -24,66 +26,69 @@ def dispatch_request_to_filesystem(request):
     dispatcher.dispatch(request)
 
 
-def get_a_socket_if_there_is_one(request):
-    response_or_socket = sockets.get(request)
-    if isinstance(response_or_socket, Response):
-        # This is a handshake request.
-        return {'response': response_or_socket}
-    else:
-        # This is a socket ... request?
-        return {'socket': response_or_socket}
-
-
-def get_a_resource_if_there_is_one(request, socket, response):
-    if socket is None and response is None:
-        return {'resource': resources.get(request)}
-
-
-def respond_to_request_via_resource_or_socket(request, resource, socket, response):
-    if response is not None:
+def get_response_via_socket(request):
+    socket = sockets.get(request)
+    if socket is None:
+        # This is not a socket request.
         return
-    if resource is not None:
-        assert socket is None
-        response = resource.respond(request)
+
+    if isinstance(socket, Response):
+        # Actually, this is a handshake request.
+        response = socket
     else:
-        assert socket is not None
+        assert isinstance(socket, Socket)  # sanity check
+        # This is a socket ... request?
         response = socket.respond(request)
     return {'response': response}
 
 
-def convert_non_response_error_to_response_error(error, request):
-    if not isinstance(error, Response):
-        response = Response(500, traceback.format_exc())
-        return {'error': response}
+def get_response_via_resource(request, response):
+    if response is not None:
+        return
+
+    resource = resources.get(request)
+    response = resource.respond(request)
+    return {'response': response}
 
 
-def log_tracebacks_for_500s(error):
-    if error.code >= 500:
-        aspen.log_dammit(error.tb)
+def handle_exception(exc_info):
+    sys.exc_clear()
+    if exc_info[0] is Response:
+        response = exc_info[1]
+    else:
+        response = Response(500, exc_info[2])
+    return {'response': response, 'exc_info': None}
 
 
-def process_error_using_simplate(website, request, error):
-    rc = str(error.code)
-    possibles = [rc + ".html", rc + ".html.spt", "error.html", "error.html.spt"]
+def log_tracebacks_for_500s(response):
+    if response.code >= 500:
+        aspen.log_dammit(response.body)
+
+
+def run_error_response_through_simplate(website, request, response):
+    if response.code < 400:
+        return
+
+    code = str(response.code)
+    possibles = [code + ".html", code + ".html.spt", "exc_info.html", "exc_info.html.spt"]
     fs = _first(website.ours_or_theirs(errpage) for errpage in possibles)
 
     if fs is not None:
         request.fs = fs
         request.original_resource = request.resource
         request.resource = resources.get(request)
-        response = request.resource.respond(request, error)
+        response = request.resource.respond(request)
 
-    return {'response': response, 'error': None}
+    return {'response': response, 'exc_info': None}
 
 
-def process_error_very_simply(website, error):
-    tb = traceback.format_exc().strip()
-    tbs = '\n\n'.join([tb, "... while handling ...", error.tb])
-    aspen.log_dammit(tbs)
+def handle_exception_2(website, exc_info):
+    sys.exc_clear()
+    aspen.log_dammit(exc_info[2])
     response = Response(500)
     if website.show_tracebacks:
-        response.body = tbs
-    return {'response': response, 'error': None}
+        response.body = exc_info[2]
+    return {'response': response, 'exc_info': None}
 
 
 def log_access(website, response, request):

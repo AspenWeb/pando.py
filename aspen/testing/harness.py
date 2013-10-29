@@ -3,9 +3,17 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import os
 from collections import namedtuple
 from Cookie import SimpleCookie
 from StringIO import StringIO
+
+from aspen.network_engines import ThreadedBuffer
+from aspen.http.request import Request
+from aspen.sockets.channel import Channel
+from aspen.sockets.socket import Socket
+from aspen.sockets.transport import XHRPollingTransport
+from aspen.website import Website
 
 
 BOUNDARY = 'BoUnDaRyStRiNg'
@@ -80,24 +88,38 @@ class Harness(object):
             assert_equal(first_data['amount'], "1.00")
     """
 
-    def __init__(self, website, www, project):
-        self.website = website
+    def __init__(self, www, project):
         self.fs = namedtuple('fs', 'www project')
         self.fs.www = www
         self.fs.project = project
+        self.argv = []
         self.cookies = SimpleCookie()
+        self.want_short_circuit = True
+        self._website = None
 
 
     # HTTP Methods
     # ============
 
-    def get(self, path, cookie_info=None, run_through=None, **extra):
+    @property
+    def website(self):
+        if self._website is None:
+            argv = [ '--www_root', self.fs.www.root
+                   , '--project_root', self.fs.project.root
+                   , '--show_tracebacks', '1'
+                    ] + self.argv
+            self._website = Website(argv)
+            self.website.flow.want_short_circuit = self.want_short_circuit
+        return self._website
+
+
+    def GET(self, path='/', cookie_info=None, run_through=None, **extra):
         environ = self._build_wsgi_environ(path, "GET", **extra)
         return self._perform_request(environ, cookie_info, run_through)
 
 
-    def post(self, path, data, content_type=MULTIPART_CONTENT, cookie_info=None, run_through=None,
-            **extra):
+    def POST(self, path='/', data=None, content_type=MULTIPART_CONTENT, cookie_info=None,
+            run_through=None, **extra):
         """Perform a dummy POST request against the test website.
 
         :param path:
@@ -113,18 +135,82 @@ class Harness(object):
         ``'CONTENT_TYPE'``, ``'CONTENT_LENGTH'`` which are explicitly checked
         for.
         """
-        post_data = data
+        post_data = data if data is not None else {}
 
         if content_type is MULTIPART_CONTENT:
             post_data = encode_multipart(BOUNDARY, data)
 
         environ = self._build_wsgi_environ( path
-                                         , "POST"
-                                         , post_data
-                                         , CONTENT_TYPE=str(content_type)
-                                         , **extra
-                                          )
+                                          , "POST"
+                                          , post_data
+                                          , CONTENT_TYPE=str(content_type)
+                                          , **extra
+                                           )
         return self._perform_request(environ, cookie_info, run_through)
+
+
+    def simple(self, contents, filepath='index.html.spt', urlpath='/', run_through=None,
+            want='response', argv=None):
+        """A helper to create a file and hit it through our machinery.
+        """
+        self.fs.www.mk((filepath, contents))
+        self.argv = argv if argv is not None else []
+
+        thing = self.GET(urlpath, run_through=run_through)
+
+        attr_path = want.split('.')
+        base = attr_path[0]
+        attr_path = attr_path[1:]
+
+        if run_through is None:
+            out = thing
+        else:
+            out = thing[base]
+
+        for name in attr_path:
+            out = getattr(out, name)
+
+        return out
+
+
+    # Sockets
+    # =======
+
+    def make_transport(self, content='', state=0):
+        self.fs.www.mk(('echo.sock.spt', content))
+        socket = self.make_socket()
+        transport = XHRPollingTransport(socket)
+        transport.timeout = 0.05 # for testing, could screw up the test
+        if state == 1:
+            transport.respond(Request(uri='/echo.sock'))
+        return transport
+
+    def make_request(self, filename='echo.sock.spt'):
+        request = Request(uri='/echo.sock')
+        request.website = self.website
+        request.fs = self.fs.www.resolve(filename)
+        return request
+
+    def make_socket(self, filename='echo.sock.spt', channel=None):
+        request = self.make_request(filename='echo.sock.spt')
+        if channel is None:
+            channel = Channel(request.line.uri.path.raw, ThreadedBuffer)
+        socket = Socket(request, channel)
+        return socket
+
+    def SocketInThread(harness):
+
+        class _SocketInThread(object):
+
+            def __enter__(self, filename='echo.sock.spt'):
+                self.socket = harness.make_socket(filename)
+                self.socket.loop.start()
+                return self.socket
+
+            def __exit__(self, *a):
+                self.socket.loop.stop()
+
+        return _SocketInThread()
 
 
     # Hook
