@@ -7,7 +7,6 @@ import os
 import sys
 import shutil
 import tempfile
-import traceback
 from os.path import dirname, isdir, join, realpath
 from aspen import resources, sockets
 
