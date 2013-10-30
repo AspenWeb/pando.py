@@ -151,7 +151,6 @@ def test_website_is_in_context(harness):
 def test_unknown_mimetype_yields_default_mimetype(harness):
     response = harness.simple( 'Greetings, program!'
                              , filepath='foo.flugbaggity'
-                             , urlpath='/foo.flugbaggity'
                               )
     assert response.headers['Content-Type'] == 'text/plain'
 
