@@ -30,14 +30,14 @@ Greetings, program!
     assert actual == expected
 
 def test_fatal_error_response_is_returned(harness):
-    harness.want_short_circuit = False
+    harness.short_circuit = False
     harness.fs.www.mk(('index.html.spt', "raise heck\n[---]\n"))
     expected = 500
     actual = harness.GET().code
     assert actual == expected
 
 def test_redirect_has_only_location(harness):
-    harness.want_short_circuit = False
+    harness.short_circuit = False
     harness.fs.www.mk(('index.html.spt', """
 from aspen import Response
 [---]
@@ -49,7 +49,7 @@ request.redirect('http://elsewhere', code=304)
     assert headers.keys() == ['Location']
 
 def test_nice_error_response_is_returned(harness):
-    harness.want_short_circuit = False
+    harness.short_circuit = False
     harness.fs.www.mk(('index.html.spt', """
 from aspen import Response
 [---]
@@ -58,7 +58,7 @@ raise Response(500)
     assert harness.GET().code == 500
 
 def test_nice_error_response_is_returned_for_404(harness):
-    harness.want_short_circuit = False
+    harness.short_circuit = False
     harness.fs.www.mk(('index.html.spt', """
 from aspen import Response
 [---]
@@ -67,12 +67,12 @@ raise Response(404)
     assert harness.GET().code == 404
 
 def test_autoindex_response_is_404_by_default(harness):
-    harness.want_short_circuit = False
+    harness.short_circuit = False
     harness.fs.www.mk(('README', "Greetings, program!"))
     assert harness.GET().code == 404
 
 def test_autoindex_response_is_returned(harness):
-    harness.want_short_circuit = False
+    harness.short_circuit = False
     harness.fs.www.mk(('README', "Greetings, program!"))
     harness.argv = ['--list_directories', 'TrUe']
     body = harness.GET().body
@@ -85,7 +85,7 @@ def test_resources_can_import_from_project_root(harness):
 
 
 def test_non_500_response_exceptions_dont_get_folded_to_500(harness):
-    harness.want_short_circuit = False
+    harness.short_circuit = False
     harness.fs.www.mk(('index.html.spt', '''
 from aspen import Response
 raise Response(400)
@@ -120,7 +120,7 @@ def build_environ(path):
     }
 
 def test_call_wraps_wsgi_middleware(harness):
-    harness.want_short_circuit = False
+    harness.short_circuit = False
     harness.website.wsgi_app = TestMiddleware(harness.website.wsgi_app)
     respond = [False, False]
     def start_response_should_404(status, headers):

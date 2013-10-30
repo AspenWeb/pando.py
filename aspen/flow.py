@@ -18,7 +18,7 @@ class FunctionNotFound(Exception):
 
 class Flow(object):
 
-    want_short_circuit = False
+    short_circuit = False
 
     def __init__(self, dotted_name):
         self.module = self._load_module_from_dotted_name(dotted_name)
@@ -89,7 +89,7 @@ class Flow(object):
             except:
                 print("{:>48}  \x1b[31;1mfailed\x1b[0m".format(function_name))
                 state['exc_info'] = sys.exc_info()[:2] + (traceback.format_exc().strip(),)
-                if self.want_short_circuit:
+                if self.short_circuit:
                     raise
 
             if through is not None and function_name == through:
