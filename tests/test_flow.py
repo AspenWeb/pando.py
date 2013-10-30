@@ -125,7 +125,7 @@ def buz(): return {'val': 3}
 '''))
     bar_flow = Flow('foo')
     state = bar_flow.run({'val': None})
-    assert state == {'val': 3, 'error': None}
+    assert state == {'val': 3, 'exc_info': None}
 
 def test_can_run_through_flow_to_a_certain_point(sys_path):
     sys_path.mk(('foo.py', '''
@@ -135,7 +135,7 @@ def buz(): return {'val': 3}
 '''))
     bar_flow = Flow('foo')
     state = bar_flow.run({'val': None}, through='baz')
-    assert state == {'val': 2, 'error': None}
+    assert state == {'val': 2, 'exc_info': None}
 
 def test_error_raised_if_we_try_to_run_through_an_unknown_function(sys_path):
     sys_path.mk(('foo.py', '''
