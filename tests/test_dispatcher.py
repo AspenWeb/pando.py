@@ -7,7 +7,6 @@ from pytest import raises
 
 from aspen import dispatcher, Response
 from aspen.http.request import Request
-from aspen.testing import NoException
 from aspen.testing.filesystem_fixture import FilesystemFixture
 from aspen.testing.harness import Harness
 from aspen.website import Website
@@ -539,14 +538,14 @@ def test_file_matches_other_extension():
 
 def test_virtual_file_with_no_extension_works():
     check('/baz.txt', '', (('%value.spt', '{"Greetings,": "program!"}'),))
-    assert NoException
+    assert 1  # no exception
 
 def test_normal_file_with_no_extension_works():
     www = ( ('%value.spt', '{"Greetings,": "program!"}')
           , ('value', '{"Greetings,": "program!"}')
            )
     check('/baz.txt', '', www)
-    assert NoException
+    assert 1  # no exception
 
 def test_file_with_no_extension_matches():
     www = ( ('%value.spt', '{"Greetings,": "program!"}')

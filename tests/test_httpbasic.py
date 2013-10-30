@@ -6,7 +6,6 @@ from __future__ import unicode_literals
 from pytest import raises
 
 from aspen.http.response import Response
-from aspen.testing import StubRequest
 from aspen.auth.httpbasic import inbound_responder
 
 import base64
