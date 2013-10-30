@@ -7,7 +7,11 @@ from collections import namedtuple
 from Cookie import SimpleCookie
 from StringIO import StringIO
 
-
+from aspen.network_engines import ThreadedBuffer
+from aspen.http.request import Request
+from aspen.sockets.channel import Channel
+from aspen.sockets.socket import Socket
+from aspen.sockets.transport import XHRPollingTransport
 from aspen.website import Website
 
 
@@ -144,6 +148,42 @@ class Harness(object):
                                           , **extra
                                            )
         return self._perform_request(environ, cookie_info, run_through)
+
+
+    # Sockets
+    # =======
+
+    def make_transport(self, content='', state=0):
+        self.fs.www.mk(('echo.sock.spt', content))
+        socket = self.make_socket()
+        transport = XHRPollingTransport(socket)
+        transport.timeout = 0.05 # for testing, could screw up the test
+        if state == 1:
+            transport.respond(Request(uri='/echo.sock'))
+        return transport
+
+    def make_request(self, filename='echo.sock.spt'):
+        request = Request(uri='/echo.sock')
+        request.website = self.website
+        request.fs = self.fs.www.resolve(filename)
+        return request
+
+    def make_socket(self, filename='echo.sock.spt', channel=None):
+        request = self.make_request(filename='echo.sock.spt')
+        if channel is None:
+            channel = Channel(request.line.uri.path.raw, ThreadedBuffer)
+        socket = Socket(request, channel)
+        return socket
+
+    class SocketInThread(object):
+
+        def __enter__(self, filename='echo.sock.spt'):
+            self.socket = self.make_socket(filename)
+            self.socket.loop.start()
+            return self.socket
+
+        def __exit__(self, *a):
+            self.socket.loop.stop()
 
 
     # Hook
