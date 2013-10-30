@@ -10,8 +10,8 @@ from aspen.http.request import kick_against_goad, Request
 from aspen.http.baseheaders import BaseHeaders
 
 
-def test_request_line_raw_works():
-    request = StubRequest()
+def test_request_line_raw_works(harness):
+    request = harness.make_request()
     actual = request.line.raw
     expected = u"GET / HTTP/1.1"
     assert actual == expected
@@ -25,50 +25,50 @@ def test_raw_is_raw():
 def test_blank_by_default():
     raises(AttributeError, lambda: Request().version)
 
-def test_request_line_version_defaults_to_HTTP_1_1():
-    request = StubRequest()
+def test_request_line_version_defaults_to_HTTP_1_1(harness):
+    request = harness.make_request()
     actual = request.line.version.info
     expected = (1, 1)
     assert actual == expected
 
-def test_request_line_version_raw_works():
-    request = StubRequest()
+def test_request_line_version_raw_works(harness):
+    request = harness.make_request()
     actual = request.line.version.raw
     expected = u"HTTP/1.1"
     assert actual == expected
 
-def test_allow_default_method_is_GET():
-    request = StubRequest()
+def test_allow_default_method_is_GET(harness):
+    request = harness.make_request()
     expected = u'GET'
     actual = request.line.method
     assert actual == expected
 
-def test_allow_allows_allowed():
-    request = StubRequest()
+def test_allow_allows_allowed(harness):
+    request = harness.make_request()
     expected = None
     actual = request.allow('GET')
     assert actual is expected
 
-def test_allow_disallows_disallowed():
-    request = StubRequest()
+def test_allow_disallows_disallowed(harness):
+    request = harness.make_request()
     expected = 405
     actual = raises(Response, request.allow, 'POST').value.code
     assert actual == expected
 
-def test_allow_can_handle_lowercase():
-    request = StubRequest()
+def test_allow_can_handle_lowercase(harness):
+    request = harness.make_request()
     expected = 405
     actual = raises(Response, request.allow, 'post').value.code
     assert actual == expected
 
-def test_methods_start_with_GET():
-    request = StubRequest()
+def test_methods_start_with_GET(harness):
+    request = harness.make_request()
     expected = "GET"
     actual = request.line.method
     assert actual == expected
 
-def test_methods_changing_changes():
-    request = StubRequest()
+def test_methods_changing_changes(harness):
+    request = harness.make_request()
     request.line.method = 'POST'
     expected = "POST"
     actual = request.line.method
