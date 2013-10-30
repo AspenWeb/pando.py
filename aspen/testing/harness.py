@@ -153,14 +153,19 @@ class Harness(object):
         return self._perform_request(environ, cookie_info, run_through)
 
 
-    def simple(self, contents='Greetings, program!', filepath='index.html.spt', urlpath='/',
+    def simple(self, contents='Greetings, program!', filepath='index.html.spt', uripath=None,
             run_through=None, want='response', argv=None):
         """A helper to create a file and hit it through our machinery.
         """
         self.fs.www.mk((filepath, contents))
         self.argv = argv if argv is not None else []
 
-        thing = self.GET(urlpath, run_through=run_through)
+        if uripath is None:
+            uripath = '/' + filepath
+            if uripath.endswith('.spt'):
+                uripath = uripath[:-3]
+
+        thing = self.GET(uripath, run_through=run_through)
 
         attr_path = want.split('.')
         base = attr_path[0]
