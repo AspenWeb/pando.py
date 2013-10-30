@@ -7,9 +7,6 @@ from pytest import raises
 
 from aspen import dispatcher, Response
 from aspen.http.request import Request
-from aspen.testing.filesystem_fixture import FilesystemFixture
-from aspen.testing.harness import Harness
-from aspen.website import Website
 
 
 # Helpers
@@ -24,41 +21,6 @@ def assert_raises_302(*args):
     response = raises(Response, check, *args).value
     assert response.code == 302
     return response
-
-
-def _handle(url_path, expected, www, project=(), run_through=None, want='response'):
-    www = FilesystemFixture(www)
-    project = FilesystemFixture(project)
-    website = Website(['--www_root', www.root, '--project_root', project.root])
-    harness = Harness(website, www, project)
-
-    if want == 'request.fs':
-        expected = harness.fs.www.resolve(expected)
-    else:
-        expected = expected
-
-    thing = harness.get(url_path, run_through=run_through)
-
-    attr_path = want.split('.')
-    base = attr_path[0]
-    attr_path = attr_path[1:]
-
-    if run_through is None:
-        actual = thing
-    else:
-        actual = thing[base]
-
-    for name in attr_path:
-        actual = getattr(actual, name)
-
-    return actual, expected
-
-
-def _check(*a, **kw):
-    kw['run_through'] = 'dispatch_request_to_filesystem'
-    if 'want' not in kw:
-        kw['want'] = 'request.fs'
-    return handle(*a, **kw)
 
 
 # Indices
