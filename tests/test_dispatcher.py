@@ -26,7 +26,7 @@ def assert_raises_302(*args):
     return response
 
 
-def handle(url_path, expected, www, project=(), run_through=None, want='response'):
+def _handle(url_path, expected, www, project=(), run_through=None, want='response'):
     www = FilesystemFixture(www)
     project = FilesystemFixture(project)
     website = Website(['--www_root', www.root, '--project_root', project.root])
@@ -54,7 +54,7 @@ def handle(url_path, expected, www, project=(), run_through=None, want='response
     return actual, expected
 
 
-def check(*a, **kw):
+def _check(*a, **kw):
     kw['run_through'] = 'dispatch_request_to_filesystem'
     if 'want' not in kw:
         kw['want'] = 'request.fs'
@@ -64,18 +64,19 @@ def check(*a, **kw):
 # Indices
 # =======
 
-def test_index_is_found():
-    actual, expected = check('/', 'index.html', (('index.html', "Greetings, program!"),))
+def test_index_is_found(harness):
+    expected = harness.fs.www.resolve('index.html')
+    actual = harness.make_request('Greetings, program!', 'index.html').fs
     assert actual == expected
 
-def test_negotiated_index_is_found():
-    actual, expected = check('/', 'index', (('index',
-"""
-[----------] text/html
-<h1>Greetings, program!</h1>
-[----------] text/plain
-Greetings, program!
-"""),))
+def test_negotiated_index_is_found(harness):
+    expected = harness.fs.www.resolve('index')
+    actual = harness.make_request('''
+        [----------] text/html
+        <h1>Greetings, program!</h1>
+        [----------] text/plain
+        Greetings, program!
+    ''', 'index').fs
     assert actual == expected
 
 def test_alternate_index_is_not_found():
