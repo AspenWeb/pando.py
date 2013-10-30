@@ -8,7 +8,6 @@ import StringIO
 from pytest import raises
 
 from aspen import json
-from aspen.testing import check
 
 
 def test_json_basically_works():
