@@ -6,4 +6,4 @@ from __future__ import unicode_literals
 
 def test_website_can_respond(harness):
     harness.fs.www.mk(('index.html.spt', 'Greetings, program!'))
-    assert harness.get('/').body == 'Greetings, program!'
+    assert harness.GET().body == 'Greetings, program!'
