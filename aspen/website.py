@@ -49,12 +49,12 @@ class Website(Configurable):
             website.wsgi = WSGIMiddleware(website.wsgi)
 
         """
-        wsgi = self.respond(environ)
+        wsgi = self.respond(environ)['response']
         return wsgi(environ, start_response)
 
 
     def respond(self, environ, _run_through=None):
-        """Given a WSGI environ, return an Aspen Response object.
+        """Given a WSGI environ, return a state dict.
         """
 
         state = {}
@@ -69,10 +69,7 @@ class Website(Configurable):
 
         state = self.flow.run(state, through=_run_through)
 
-        if _run_through is None:
-            return state['response']
-        else:
-            return state
+        return state
 
 
     # Interface for Server
