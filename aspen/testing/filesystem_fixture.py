@@ -21,9 +21,9 @@ class FilesystemFixture(object):
 
     def __init__(self, contents=None, root=None, should_dedent=True):
         self.root = root if root is not None else tempfile.mkdtemp(prefix='fsfix-')
+        self.should_dedent = should_dedent
         if contents is not None:
             self.mk(*contents)
-        self.should_dedent = should_dedent
 
 
     def mk(self, *treedef):
