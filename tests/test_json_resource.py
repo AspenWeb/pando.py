@@ -121,7 +121,7 @@ def test_json_handles_datetime(harness):
         import datetime
         [---------------]
         response.body = {'timestamp': datetime.datetime(2011, 5, 9, 0, 0)}
-    """, filepath="foo.json.spt")
+    """, filepath="foo.json.spt").body
     assert actual == expected
 
 def test_json_handles_complex(harness):
