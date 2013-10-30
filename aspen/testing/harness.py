@@ -94,7 +94,7 @@ class Harness(object):
         self.fs.project = project
         self.argv = []
         self.cookies = SimpleCookie()
-        self.want_short_circuit = True
+        self.short_circuit = True
         self._website = None
 
 
@@ -109,7 +109,7 @@ class Harness(object):
                    , '--show_tracebacks', '1'
                     ] + self.argv
             self._website = Website(argv)
-            self.website.flow.want_short_circuit = self.want_short_circuit
+            self.website.flow.short_circuit = self.short_circuit
         return self._website
 
 

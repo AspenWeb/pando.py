@@ -258,6 +258,7 @@ def test_indirect_negotiation_sets_media_type_to_secondary(harness):
     assert actual == expected
 
 def test_indirect_negotiation_with_unsupported_media_type_is_404(harness):
+    harness.short_circuit = False
     harness.fs.www.mk(('/foo.spt', INDIRECTLY_NEGOTIATED_RESOURCE))
     response = harness.GET('/foo.jpg')
     actual = response.code
