@@ -160,7 +160,8 @@ class Harness(object):
             run_through=None, want='response', argv=None):
         """A helper to create a file and hit it through our machinery.
         """
-        self.fs.www.mk((filepath, contents))
+        if filepath is not None:
+            self.fs.www.mk((filepath, contents))
         self.argv = argv if argv is not None else []
 
         if uripath is None:
