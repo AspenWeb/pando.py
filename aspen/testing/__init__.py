@@ -7,13 +7,9 @@ import os
 import sys
 from aspen import resources, sockets
 
-import aspen.logging
-if aspen.logging.LOGGING_THRESHOLD == -1:
-    # Suppress aspen's logging during tests.
-    aspen.logging.LOGGING_THRESHOLD = 3
-
 
 CWD = os.getcwd()
+
 
 def teardown():
     """Standard teardown function.

@@ -84,35 +84,38 @@ class Harness(object):
     """
 
     def __init__(self, www, project):
-        self.website = None
         self.fs = namedtuple('fs', 'www project')
         self.fs.www = www
         self.fs.project = project
+        self.argv = []
         self.cookies = SimpleCookie()
+        self.want_short_circuit = True
+        self._website = None
 
 
     # HTTP Methods
     # ============
 
-    def __getattr__(self, name):
-        things = { 'get': self._get
-                 , 'post': self._post
-                 , 'website': self.website
-                  }
-        if name in things:
-            self.website = Website([ '--www_root', self.fs.www.root
-                                   , '--project_root', self.fs.project.root
-                                    ])
-            return things[name]
+    def _prime_website(self):
+        if self._website is None:
+            argv = [ '--www_root', self.fs.www.root
+                   , '--project_root', self.fs.project.root
+                   , '--show_tracebacks', '1'
+                    ] + self.argv
+            self._website = Website(argv)
+            self.website.flow.want_short_circuit = self.want_short_circuit
+        return self._website
+    website = property(_prime_website)
 
 
-    def _get(self, path, cookie_info=None, run_through=None, **extra):
+    def GET(self, path='/', cookie_info=None, run_through=None, **extra):
+        self._prime_website()
         environ = self._build_wsgi_environ(path, "GET", **extra)
         return self._perform_request(environ, cookie_info, run_through)
 
 
-    def _post(self, path, data, content_type=MULTIPART_CONTENT, cookie_info=None, run_through=None,
-            **extra):
+    def POST(self, path='/', data=None, content_type=MULTIPART_CONTENT, cookie_info=None,
+            run_through=None, **extra):
         """Perform a dummy POST request against the test website.
 
         :param path:
@@ -128,17 +131,18 @@ class Harness(object):
         ``'CONTENT_TYPE'``, ``'CONTENT_LENGTH'`` which are explicitly checked
         for.
         """
-        post_data = data
+        self._prime_website()
+        post_data = data if data is not None else {}
 
         if content_type is MULTIPART_CONTENT:
             post_data = encode_multipart(BOUNDARY, data)
 
         environ = self._build_wsgi_environ( path
-                                         , "POST"
-                                         , post_data
-                                         , CONTENT_TYPE=str(content_type)
-                                         , **extra
-                                          )
+                                          , "POST"
+                                          , post_data
+                                          , CONTENT_TYPE=str(content_type)
+                                          , **extra
+                                           )
         return self._perform_request(environ, cookie_info, run_through)
 
 
