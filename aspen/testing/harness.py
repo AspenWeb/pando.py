@@ -185,14 +185,14 @@ class Harness(object):
             transport.respond(Request(uri='/echo.sock'))
         return transport
 
-    def make_request(self, filename='echo.sock.spt'):
+    def make_socket_request(self, filename='echo.sock.spt'):
         request = Request(uri='/echo.sock')
         request.website = self.website
         request.fs = self.fs.www.resolve(filename)
         return request
 
     def make_socket(self, filename='echo.sock.spt', channel=None):
-        request = self.make_request(filename='echo.sock.spt')
+        request = self.make_socket_request(filename='echo.sock.spt')
         if channel is None:
             channel = Channel(request.line.uri.path.raw, ThreadedBuffer)
         socket = Socket(request, channel)

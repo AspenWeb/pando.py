@@ -47,7 +47,7 @@ def test_transport_goes_to_state_1_after_first_request(harness):
 
 def test_transport_stays_in_state_1_after_second_request(harness):
     transport = harness.make_transport()
-    request = harness.make_request()
+    request = harness.make_socket_request()
     transport.respond(request)
     transport.respond(request)
 
@@ -83,7 +83,7 @@ def test_transport_GET_gets_data_from_socket(harness):
 def test_transport_GET_blocks_for_empty_socket(harness):
     transport = harness.make_transport(state=1)
 
-    request = harness.make_request()
+    request = harness.make_socket_request()
     start = time.time()
     transport.respond(request)
     end = time.time()
