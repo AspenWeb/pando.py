@@ -14,7 +14,7 @@ from aspen.http.request import Request
 
 def check(harness, ask_uri, expect_fs):
     result = harness.simple(uripath=ask_uri, filepath=None, want='request.fs')
-    assert result == expect_fs
+    assert result == harness.fs.www.resolve(expect_fs)
 
 def assert_raises_404(*args):
     response = raises(Response, check, *args).value
@@ -51,8 +51,7 @@ def test_alternate_index_is_not_found(harness):
 def test_alternate_index_is_found(harness):
     harness.fs.www.mk(('default.html', "Greetings, program!"),)
     harness.fs.project.mk(('configure-aspen.py', 'website.indices += ["default.html"]'),)
-    actual, expected = check(harness, '/', 'default.html')
-    assert actual == expected
+    check(harness, '/', 'default.html')
 
 def test_configure_aspen_py_setting_override_works_too(harness):
     harness.fs.www.mk(('index.html', "Greetings, program!"),)
