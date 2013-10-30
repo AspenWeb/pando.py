@@ -38,8 +38,6 @@ def sys_path(fs, module_scrubber):
 
 @pytest.yield_fixture
 def harness(module_scrubber, sys_path_scrubber):
-    www = FilesystemFixture()
-    project = FilesystemFixture()
-    yield Harness(www, project)
-    project.remove()
-    www.remove()
+    harness = Harness()
+    yield harness
+    harness.teardown()

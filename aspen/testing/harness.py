@@ -12,6 +12,7 @@ from aspen.http.request import Request
 from aspen.sockets.channel import Channel
 from aspen.sockets.socket import Socket
 from aspen.sockets.transport import XHRPollingTransport
+from aspen.testing.filesystem_fixture import FilesystemFixture
 from aspen.website import Website
 
 
@@ -87,14 +88,18 @@ class Harness(object):
             assert_equal(first_data['amount'], "1.00")
     """
 
-    def __init__(self, www, project):
+    def __init__(self):
         self.fs = namedtuple('fs', 'www project')
-        self.fs.www = www
-        self.fs.project = project
+        self.fs.www = FilesystemFixture()
+        self.fs.project = FilesystemFixture()
         self.argv = []
         self.cookies = SimpleCookie()
         self.short_circuit = True
         self._website = None
+
+    def teardown(self):
+        self.fs.www.remove()
+        self.fs.project.remove()
 
 
     # HTTP Methods
