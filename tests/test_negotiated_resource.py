@@ -225,9 +225,8 @@ def test_can_override_default_renderers_by_mimetype(harness):
     assert actual == "glubber"
 
 def test_can_override_default_renderer_entirely(harness):
-    harness.fs.www.mk(('.aspen/configure-aspen.py', OVERRIDE_SIMPLATE),
-       ('index.spt', NEGOTIATED_RESOURCE))
-    request = StubRequest.from_fs('index.spt')
+    harness.fs.project.mk(('configure-aspen.py', OVERRIDE_SIMPLATE))
+    request = harness.make_request(filepath='index.spt', contents=NEGOTIATED_RESOURCE)
     request.headers['Accept'] = 'text/plain'
     actual = get_response(request, Response()).body
     assert actual == "glubber"
