@@ -117,13 +117,13 @@ class Harness(object):
         return self._website
 
 
-    def GET(self, path='/', cookie_info=None, run_through=None, **extra):
+    def GET(self, path='/', cookie_info=None, run_through=None, want='response', **extra):
         environ = self._build_wsgi_environ(path, "GET", **extra)
-        return self._perform_request(environ, cookie_info, run_through)
+        return self._perform_request(environ, cookie_info, run_through, want)
 
 
     def POST(self, path='/', data=None, content_type=MULTIPART_CONTENT, cookie_info=None,
-            run_through=None, **extra):
+            run_through=None, want='response', **extra):
         """Perform a dummy POST request against the test website.
 
         :param path:
@@ -173,21 +173,7 @@ class Harness(object):
                     uripath = uripath[:-len(indexname)]
                     break
 
-        thing = self.GET(uripath, run_through=run_through)
-
-        attr_path = want.split('.')
-        base = attr_path[0]
-        attr_path = attr_path[1:]
-
-        if run_through is None:
-            out = thing
-        else:
-            out = thing[base]
-
-        for name in attr_path:
-            out = getattr(out, name)
-
-        return out
+        return self.GET(uripath, run_through=run_through, want=want)
 
     def make_request(self, *a, **kw):
         kw['run_through'] = 'dispatch_request_to_filesystem'
@@ -271,14 +257,20 @@ class Harness(object):
         return environ
 
 
-    def _perform_request(self, environ, cookie_info, run_through):
+    def _perform_request(self, environ, cookie_info, run_through, want):
         self.add_cookie_info(environ, **(cookie_info or {}))
-        out = self.website.respond(environ, _run_through=run_through)
-        if run_through is None:
-            response = out
-        else:
-            response = out['response']
+        state = self.website.respond(environ, _run_through=run_through)
+        response = state['response']
         if response is not None:
             if response.headers.cookie:
                 self.cookies.update(response.headers.cookie)
+
+        attr_path = want.split('.')
+        base = attr_path[0]
+        attr_path = attr_path[1:]
+
+        out = state[base]
+        for name in attr_path:
+            out = getattr(out, name)
+
         return out

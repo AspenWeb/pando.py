@@ -74,43 +74,38 @@ def test_configuration_scripts_really_doesnt_do_anything_special():
     expected = 'Cheese is lovely.'
     assert actual == expected
 
-def test_configuration_scripts_arent_confused_by_io_errors(mk):
+def test_configuration_scripts_arent_confused_by_io_errors(harness):
     CONFIG = "open('this file should not exist')\n"
-    mk(('configure-aspen.py', CONFIG))
+    harness.fs.project.mk(('configure-aspen.py', CONFIG),)
     c = Configurable()
-    actual = raises(IOError, c.configure, ['-p', FSFIX]).value
+    actual = raises(IOError, c.configure, ['-p', harness.fs.project.resolve('.')]).value
     assert actual.strerror == 'No such file or directory'
 
-def test_www_root_defaults_to_cwd(mk):
-    mk()
+def test_www_root_defaults_to_cwd():
     c = Configurable()
     c.configure([])
     expected = os.path.realpath(os.getcwd())
     actual = c.www_root
     assert actual == expected
 
-def test_ConfigurationError_raised_if_no_cwd(mk):
-    mk()
+def test_ConfigurationError_raised_if_no_cwd(harness):
+    FSFIX = harness.fs.project.resolve('')
     os.chdir(FSFIX)
     os.rmdir(FSFIX)
     c = Configurable()
     raises(ConfigurationError, c.configure, [])
 
-def test_ConfigurationError_NOT_raised_if_no_cwd_but_do_have__www_root(mk):
-    mk()
+def test_ConfigurationError_NOT_raised_if_no_cwd_but_do_have__www_root(harness):
     foo = os.getcwd()
-    os.chdir(FSFIX)
+    os.chdir(harness.fs.project.resolve(''))
     os.rmdir(os.getcwd())
     c = Configurable()
     c.configure(['--www_root', foo])
-    expected = foo
-    actual = c.www_root
-    assert actual == expected
+    assert c.www_root == foo
 
-def test_configurable_sees_root_option(mk):
-    mk()
+def test_configurable_sees_root_option(harness):
     c = Configurable()
-    c.configure(['--www_root', FSFIX])
+    c.configure(['--www_root', harness.fs.project.resolve('')])
     expected = os.getcwd()
     actual = c.www_root
     assert actual == expected
@@ -127,7 +122,11 @@ def test_configuration_scripts_works_at_all():
     actual = opts.configuration_scripts
     assert actual == expected
 
-def test_configuration_script_can_set_renderer_default(mk):
+def assert_body(harness, uripath, expected_body):
+    actual = harness.simple(filepath=None, uripath=uripath, want='response.body')
+    assert actual == expected_body
+
+def test_configuration_script_can_set_renderer_default(harness):
     CONFIG = """
 website.renderer_default="stdlib_format"
     """
@@ -136,17 +135,9 @@ name="program"
 [----]
 Greetings, {name}!
     """
-    mk(
-       ('.aspen/configure-aspen.py', CONFIG),
-       ('index.html.spt', SIMPLATE)
-      )
-    w = Website(['--www_root', FSFIX, '-p', fix('.aspen'), '--show_tracebacks=yes'])
-    request = StubRequest(b'/')
-    request.website = w
-    response = w.handle_safely(request)
-    actual = response.body.strip()
-    expected = 'Greetings, program!'
-    assert actual == expected
+    harness.fs.project.mk(('configure-aspen.py', CONFIG),)
+    harness.fs.www.mk(('index.html.spt', SIMPLATE),)
+    assert_body(harness, '/', 'Greetings, program!\n')
 
 def test_configuration_script_ignores_blank_indexfilenames():
     w = Website(['--indices', 'index.html,, ,default.html'])
