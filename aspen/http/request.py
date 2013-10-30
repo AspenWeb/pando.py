@@ -477,8 +477,8 @@ class URI(unicode):
 def extract_rfc2396_params(path):
     """RFC2396 section 3.3 says that path components of a URI can have
     'a sequence of parameters, indicated by the semicolon ";" character.'
-    and that ' Within a path segment, the characters "/", ";", "=", and 
-    "?" are reserved.'  This way you can do 
+    and that ' Within a path segment, the characters "/", ";", "=", and
+    "?" are reserved.'  This way you can do
     /frisbee;color=red;size=small/logo;sponsor=w3c;color=black/image.jpg
     and each path segment gets its own params.
 
@@ -486,9 +486,9 @@ def extract_rfc2396_params(path):
     * output is decoded
     """
     pathsegs = path.lstrip(b'/').split(b'/')
-    def decode(input): 
+    def decode(input):
         return urllib.unquote(input).decode('UTF-8')
-    
+
     segments_with_params = []
     for component in pathsegs:
         parts = component.split(b';')
@@ -516,7 +516,7 @@ class Path(Mapping):
     def __init__(self, raw):
         self.raw = raw
         self.decoded = urllib.unquote(raw).decode('UTF-8')
-        self.parts = extract_rfc2396_params(raw) 
+        self.parts = extract_rfc2396_params(raw)
 
 
 # Request -> Line -> URI -> Querystring
