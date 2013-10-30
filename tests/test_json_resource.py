@@ -14,26 +14,26 @@ def test_json_basically_works():
     expected = '''{
     "Greetings": "program!"
 }'''
-    actual = check( "[---]\nresponse.body = {'Greetings': 'program!'}"
-                  , filename="foo.json.spt"
+    actual = harness.simple( "[---]\nresponse.body = {'Greetings': 'program!'}"
+                  , filepath="foo.json.spt"
                    )
     assert actual == expected
 
 def test_json_cant_have_more_than_one_page_break():
-    raises(SyntaxError, check, "[---]\n[---]\n", filename="foo.json.spt")
+    raises(SyntaxError, harness.simple, "[---]\n[---]\n", filepath="foo.json.spt")
 
 def test_json_defaults_to_application_json_for_static_json():
     expected = 'application/json'
-    actual = check( '{"Greetings": "program!"}'
-                  , filename="foo.json"
+    actual = harness.simple( '{"Greetings": "program!"}'
+                  , filepath="foo.json"
                   , body=False
                    ).headers['Content-Type']
     assert actual == expected
 
 def test_json_defaults_to_application_json_for_dynamic_json():
     expected = 'application/json'
-    actual = check( "[---]\nresponse.body = {'Greetings': 'program!'}"
-                  , filename="foo.json.spt"
+    actual = harness.simple( "[---]\nresponse.body = {'Greetings': 'program!'}"
+                  , filepath="foo.json.spt"
                   , body=False
                    ).headers['Content-Type']
     assert actual == expected
@@ -41,8 +41,8 @@ def test_json_defaults_to_application_json_for_dynamic_json():
 def test_json_content_type_is_configurable_for_static_json():
     configure_aspen_py = 'website.media_type_json = "floober/blah"'
     expected = 'floober/blah'
-    actual = check( '{"Greetings": "program!"}'
-                  , filename="foo.json"
+    actual = harness.simple( '{"Greetings": "program!"}'
+                  , filepath="foo.json"
                   , body=False
                   , configure_aspen_py=configure_aspen_py
                    ).headers['Content-Type']
@@ -50,8 +50,8 @@ def test_json_content_type_is_configurable_for_static_json():
 
 def test_json_content_type_is_configurable_from_the_command_line():
     expected = 'floober/blah'
-    actual = check( '{"Greetings": "program!"}'
-                  , filename="foo.json"
+    actual = harness.simple( '{"Greetings": "program!"}'
+                  , filepath="foo.json"
                   , body=False
                   , argv=['--media_type_json=floober/blah']
                    ).headers['Content-Type']
@@ -60,8 +60,8 @@ def test_json_content_type_is_configurable_from_the_command_line():
 def test_json_content_type_is_configurable_for_dynamic_json():
     configure_aspen_py = 'website.media_type_json = "floober/blah"'
     expected = 'floober/blah'
-    actual = check( "[---]\nresponse.body = {'Greetings': 'program!'}"
-                  , filename="foo.json.spt"
+    actual = harness.simple( "[---]\nresponse.body = {'Greetings': 'program!'}"
+                  , filepath="foo.json.spt"
                   , body=False
                   , configure_aspen_py=configure_aspen_py
                    ).headers['Content-Type']
@@ -69,8 +69,8 @@ def test_json_content_type_is_configurable_for_dynamic_json():
 
 def test_json_content_type_is_per_file_configurable():
     expected = 'floober/blah'
-    actual = check( "[---]\nresponse.body = {'Greetings': 'program!'}\nresponse.headers['Content-Type'] = 'floober/blah'\n"
-                  , filename="foo.json.spt"
+    actual = harness.simple( "[---]\nresponse.body = {'Greetings': 'program!'}\nresponse.headers['Content-Type'] = 'floober/blah'\n"
+                  , filepath="foo.json.spt"
                   , body=False
                    ).headers['Content-Type']
     assert actual == expected
@@ -79,26 +79,26 @@ def test_json_handles_unicode():
     expected = b'''{
     "Greetings": "\u00b5"
 }'''
-    actual = check( "[---]\nresponse.body = {'Greetings': unichr(181)}"
-                  , filename="foo.json.spt"
+    actual = harness.simple( "[---]\nresponse.body = {'Greetings': unichr(181)}"
+                  , filepath="foo.json.spt"
                    )
     assert actual == expected
 
 def test_json_doesnt_handle_non_ascii_bytestrings():
     raises( UnicodeDecodeError
-                 , check
+                 , harness.simple
                  , "[---]\nresponse.body = {'Greetings': chr(181)}"
-                 , filename="foo.json.spt"
+                 , filepath="foo.json.spt"
                   )
 
 def test_json_handles_time():
     expected = '''{
     "seen": "19:30:00"
 }'''
-    actual = check( "import datetime\n"
+    actual = harness.simple( "import datetime\n"
                   + "[---------------]\n"
                   + "response.body = {'seen': datetime.time(19, 30)}"
-                  , filename="foo.json.spt"
+                  , filepath="foo.json.spt"
                    )
     assert actual == expected
 
@@ -106,46 +106,45 @@ def test_json_handles_date():
     expected = '''{
     "created": "2011-05-09"
 }'''
-    actual = check( "import datetime\n"
+    actual = harness.simple( "import datetime\n"
                   + "[---------------]\n"
                   + "response.body = {'created': datetime.date(2011, 5, 9)}"
-                  , filename="foo.json.spt"
+                  , filepath="foo.json.spt"
                    )
     assert actual == expected
 
-def test_json_handles_datetime():
+def test_json_handles_datetime(harness):
     expected = '''{
     "timestamp": "2011-05-09T00:00:00"
 }'''
-    actual = check( "import datetime\n"
-                  + "[---------------]\n"
-                  + "response.body = { 'timestamp'"
-                  + "                : datetime.datetime(2011, 5, 9, 0, 0)}"
-                  , filename="foo.json.spt"
-                   )
+    actual = harness.simple("""
+        import datetime
+        [---------------]
+        response.body = {'timestamp': datetime.datetime(2011, 5, 9, 0, 0)}
+    """, filepath="foo.json.spt")
     assert actual == expected
 
-def test_json_handles_complex():
+def test_json_handles_complex(harness):
     expected = '''{
     "complex": [
         1.0,
         2.0
     ]
 }'''
-    actual = check( "[---]\nresponse.body = {'complex': complex(1,2)}"
-                  , filename="foo.json.spt"
-                   )
+    actual = harness.simple( "[---]\nresponse.body = {'complex': complex(1,2)}"
+                           , filepath="foo.json.spt"
+                            ).body
     # The json module puts trailing spaces after commas, but simplejson
     # does not. Normalize the actual input to work around that.
     actual = '\n'.join([line.rstrip() for line in actual.split('\n')])
     assert actual == expected
 
-def test_json_raises_TypeError_on_unknown_types():
+def test_json_raises_TypeError_on_unknown_types(harness):
     raises( TypeError
-                 , check
-                 , "class Foo: pass\n[---]\nresponse.body = Foo()"
-                 , filename="foo.json.spt"
-                  )
+          , harness.simple
+          , contents='class Foo: pass\n[---]\nresponse.body = Foo()'
+          , filepath='foo.json.spt'
+           )
 
 def test_aspen_json_load_loads():
     fp = StringIO.StringIO()
@@ -172,9 +171,3 @@ def test_aspen_json_dumps_dumps():
     assert actual == '''{
     "cheese": "puffs"
 }'''
-
-
-# Teardown
-# ========
-
-
