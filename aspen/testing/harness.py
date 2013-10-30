@@ -153,6 +153,9 @@ class Harness(object):
         return self._perform_request(environ, cookie_info, run_through)
 
 
+    # Simple API
+    # ==========
+
     def simple(self, contents='Greetings, program!', filepath='index.html.spt', uripath=None,
             run_through=None, want='response', argv=None):
         """A helper to create a file and hit it through our machinery.
@@ -163,7 +166,11 @@ class Harness(object):
         if uripath is None:
             uripath = '/' + filepath
             if uripath.endswith('.spt'):
-                uripath = uripath[:-3]
+                uripath = uripath[:-len('.spt')]
+            for indexname in self.website.indices:
+                if uripath.endswith(indexname):
+                    uripath = uripath[:-len(indexname)]
+                    break
 
         thing = self.GET(uripath, run_through=run_through)
 
@@ -181,14 +188,14 @@ class Harness(object):
 
         return out
 
-
-    # Sockets
-    # =======
-
     def make_request(self, *a, **kw):
         kw['run_through'] = 'dispatch_request_to_filesystem'
         kw['want'] = 'request'
         return self.simple(*a, **kw)
+
+
+    # Sockets
+    # =======
 
     def make_transport(self, content='', state=0):
         self.fs.www.mk(('echo.sock.spt', content))
