@@ -30,8 +30,8 @@ class Website(Configurable):
     def __init__(self, argv=None):
         """Takes an argv list, without the initial executable name.
         """
-        self.configure(argv)
         self.flow = Flow('aspen.flows.request')
+        self.configure(argv)
 
 
     def __call__(self, environ, start_response):
