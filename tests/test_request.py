@@ -8,7 +8,6 @@ from pytest import raises
 from aspen import Response
 from aspen.http.request import kick_against_goad, Request
 from aspen.http.baseheaders import BaseHeaders
-from aspen.testing import StubRequest
 
 
 def test_request_line_raw_works():
@@ -75,17 +74,17 @@ def test_methods_changing_changes():
     actual = request.line.method
     assert actual == expected
 
-def test_is_xhr_false():
-    request = StubRequest()
+def test_is_xhr_false(harness):
+    request = harness.make_request()
     assert not request.is_xhr()
 
-def test_is_xhr_true():
-    request = StubRequest()
+def test_is_xhr_true(harness):
+    request = harness.make_request()
     request.headers['X-Requested-With'] = 'XmlHttpRequest'
     assert request.is_xhr()
 
-def test_is_xhr_is_case_insensitive():
-    request = StubRequest()
+def test_is_xhr_is_case_insensitive(harness):
+    request = harness.make_request()
     request.headers['X-Requested-With'] = 'xMLhTTPrEQUEST'
     assert request.is_xhr()
 

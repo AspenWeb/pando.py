@@ -149,8 +149,8 @@ class Harness(object):
         return self._perform_request(environ, cookie_info, run_through)
 
 
-    def simple(self, contents, filepath='index.html.spt', urlpath='/', run_through=None,
-            want='response', argv=None):
+    def simple(self, contents='Greetings, program!', filepath='index.html.spt', urlpath='/',
+            run_through=None, want='response', argv=None):
         """A helper to create a file and hit it through our machinery.
         """
         self.fs.www.mk((filepath, contents))
@@ -175,6 +175,11 @@ class Harness(object):
 
     # Sockets
     # =======
+
+    def make_request(self, *a, **kw):
+        kw['run_through'] = 'dispatch_request_to_filesystem'
+        kw['want'] = 'request'
+        return self.simple(*a, **kw)
 
     def make_transport(self, content='', state=0):
         self.fs.www.mk(('echo.sock.spt', content))
