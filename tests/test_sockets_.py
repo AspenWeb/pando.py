@@ -16,7 +16,7 @@ def test_sockets_get_nonsock_returns_None():
 
 def test_sockets_get_adds_channel(harness):
     harness.fs.www.mk(('echo.sock.spt', '[---]\n'))
-    request = harness.make_request()
+    request = harness.make_socket_request()
     request.socket = '1/'
 
     try:
@@ -30,7 +30,7 @@ def test_sockets_get_adds_channel(harness):
 
 def test_channel_survives_transportation(harness):
     harness.fs.www.mk(('echo.sock.spt', '[---]\n'))
-    request = harness.make_request()
+    request = harness.make_socket_request()
     request.socket = '1/'
     response = sockets.get(request) # handshake
     sid = response.body.split(':')[0]
