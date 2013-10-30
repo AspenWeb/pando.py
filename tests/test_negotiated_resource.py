@@ -217,8 +217,8 @@ website.default_renderers_by_media_type['text/plain'] = 'glubber'
 
 
 def test_can_override_default_renderers_by_mimetype(harness):
-    harness.fs.www.mk(('.aspen/configure-aspen.py', OVERRIDE_SIMPLATE),
-       ('index.spt', NEGOTIATED_RESOURCE))
+    harness.fs.project.mk(('configure-aspen.py', OVERRIDE_SIMPLATE),)
+    harness.fs.www.mk(('index.spt', NEGOTIATED_RESOURCE),)
     request = harness.make_request(filepath='index.spt', contents=NEGOTIATED_RESOURCE)
     request.headers['Accept'] = 'text/plain'
     actual = get_response(request, Response()).body

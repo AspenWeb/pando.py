@@ -67,50 +67,51 @@ def test_json_content_type_is_configurable_for_dynamic_json():
                    ).headers['Content-Type']
     assert actual == expected
 
-def test_json_content_type_is_per_file_configurable():
+def test_json_content_type_is_per_file_configurable(harness):
     expected = 'floober/blah'
-    actual = harness.simple( "[---]\nresponse.body = {'Greetings': 'program!'}\nresponse.headers['Content-Type'] = 'floober/blah'\n"
-                  , filepath="foo.json.spt"
-                  , body=False
-                   ).headers['Content-Type']
+    actual = harness.simple('''
+        [---]
+        response.body = {'Greetings': 'program!'}
+        response.headers['Content-Type'] = 'floober/blah'
+    ''', filepath="foo.json.spt").headers['Content-Type']
     assert actual == expected
 
-def test_json_handles_unicode():
+def test_json_handles_unicode(harness):
     expected = b'''{
     "Greetings": "\u00b5"
 }'''
     actual = harness.simple( "[---]\nresponse.body = {'Greetings': unichr(181)}"
-                  , filepath="foo.json.spt"
-                   )
+                           , filepath="foo.json.spt"
+                            )
     assert actual == expected
 
-def test_json_doesnt_handle_non_ascii_bytestrings():
+def test_json_doesnt_handle_non_ascii_bytestrings(harness):
     raises( UnicodeDecodeError
-                 , harness.simple
-                 , "[---]\nresponse.body = {'Greetings': chr(181)}"
-                 , filepath="foo.json.spt"
-                  )
+          , harness.simple
+          , "[---]\nresponse.body = {'Greetings': chr(181)}"
+          , filepath="foo.json.spt"
+           )
 
-def test_json_handles_time():
+def test_json_handles_time(harness):
     expected = '''{
     "seen": "19:30:00"
 }'''
-    actual = harness.simple( "import datetime\n"
-                  + "[---------------]\n"
-                  + "response.body = {'seen': datetime.time(19, 30)}"
-                  , filepath="foo.json.spt"
-                   )
+    actual = harness.simple('''
+        import datetime
+        [---------------]
+        response.body = {'seen': datetime.time(19, 30)}
+    ''', filepath="foo.json.spt").body
     assert actual == expected
 
-def test_json_handles_date():
+def test_json_handles_date(harness):
     expected = '''{
     "created": "2011-05-09"
 }'''
-    actual = harness.simple( "import datetime\n"
-                  + "[---------------]\n"
-                  + "response.body = {'created': datetime.date(2011, 5, 9)}"
-                  , filepath="foo.json.spt"
-                   )
+    actual = harness.simple('''
+        import datetime
+        [---------------]
+        response.body = {'created': datetime.date(2011, 5, 9)}
+    ''', filepath='foo.json.spt').body
     assert actual == expected
 
 def test_json_handles_datetime(harness):
