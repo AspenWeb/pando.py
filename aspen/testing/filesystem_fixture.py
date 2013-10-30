@@ -2,6 +2,7 @@ import os
 import shutil
 import tempfile
 from os.path import dirname, isdir, realpath
+from textwrap import dedent
 
 
 def _convert_path(path):
@@ -18,10 +19,11 @@ def _convert_paths(paths):
 
 class FilesystemFixture(object):
 
-    def __init__(self, contents=None, root=None):
+    def __init__(self, contents=None, root=None, should_dedent=True):
         self.root = root if root is not None else tempfile.mkdtemp(prefix='fsfix-')
         if contents is not None:
             self.mk(*contents)
+        self.should_dedent = should_dedent
 
 
     def mk(self, *treedef):
@@ -45,6 +47,8 @@ class FilesystemFixture(object):
                 parent = dirname(path)
                 if not isdir(parent):
                     os.makedirs(parent)
+                if self.should_dedent:
+                    contents = dedent(contents)
                 file(path, 'w').write(contents)
 
 

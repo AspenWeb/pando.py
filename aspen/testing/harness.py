@@ -3,6 +3,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import os
 from collections import namedtuple
 from Cookie import SimpleCookie
 from StringIO import StringIO
@@ -100,7 +101,8 @@ class Harness(object):
     # HTTP Methods
     # ============
 
-    def _prime_website(self):
+    @property
+    def website(self):
         if self._website is None:
             argv = [ '--www_root', self.fs.www.root
                    , '--project_root', self.fs.project.root
@@ -109,11 +111,9 @@ class Harness(object):
             self._website = Website(argv)
             self.website.flow.want_short_circuit = self.want_short_circuit
         return self._website
-    website = property(_prime_website)
 
 
     def GET(self, path='/', cookie_info=None, run_through=None, **extra):
-        self._prime_website()
         environ = self._build_wsgi_environ(path, "GET", **extra)
         return self._perform_request(environ, cookie_info, run_through)
 
@@ -135,7 +135,6 @@ class Harness(object):
         ``'CONTENT_TYPE'``, ``'CONTENT_LENGTH'`` which are explicitly checked
         for.
         """
-        self._prime_website()
         post_data = data if data is not None else {}
 
         if content_type is MULTIPART_CONTENT:
@@ -148,6 +147,30 @@ class Harness(object):
                                           , **extra
                                            )
         return self._perform_request(environ, cookie_info, run_through)
+
+
+    def simple(self, contents, filepath='index.html.spt', urlpath='/', run_through=None,
+            want='response', argv=None):
+        """A helper to create a file and hit it through our machinery.
+        """
+        self.fs.www.mk((filepath, contents))
+        self.argv = argv if argv is not None else []
+
+        thing = self.GET(urlpath, run_through=run_through)
+
+        attr_path = want.split('.')
+        base = attr_path[0]
+        attr_path = attr_path[1:]
+
+        if run_through is None:
+            out = thing
+        else:
+            out = thing[base]
+
+        for name in attr_path:
+            out = getattr(out, name)
+
+        return out
 
 
     # Sockets
