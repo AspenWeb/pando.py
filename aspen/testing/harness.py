@@ -175,15 +175,19 @@ class Harness(object):
         socket = Socket(request, channel)
         return socket
 
-    class SocketInThread(object):
+    def SocketInThread(harness):
 
-        def __enter__(self, filename='echo.sock.spt'):
-            self.socket = self.make_socket(filename)
-            self.socket.loop.start()
-            return self.socket
+        class _SocketInThread(object):
 
-        def __exit__(self, *a):
-            self.socket.loop.stop()
+            def __enter__(self, filename='echo.sock.spt'):
+                self.socket = harness.make_socket(filename)
+                self.socket.loop.start()
+                return self.socket
+
+            def __exit__(self, *a):
+                self.socket.loop.stop()
+
+        return _SocketInThread()
 
 
     # Hook
