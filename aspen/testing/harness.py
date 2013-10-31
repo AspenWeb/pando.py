@@ -117,13 +117,13 @@ class Harness(object):
         return self._website
 
 
-    def GET(self, path='/', cookie_info=None, run_through=None, want='response', **extra):
-        environ = self._build_wsgi_environ(path, "GET", **extra)
+    def GET(self, path='/', cookie_info=None, run_through=None, want='response', **kw):
+        environ = self._build_wsgi_environ(path, "GET", **kw)
         return self._perform_request(environ, cookie_info, run_through, want)
 
 
     def POST(self, path='/', data=None, content_type=MULTIPART_CONTENT, cookie_info=None,
-            run_through=None, want='response', **extra):
+            run_through=None, want='response', **kw):
         """Perform a dummy POST request against the test website.
 
         :param path:
@@ -148,7 +148,7 @@ class Harness(object):
                                           , "POST"
                                           , post_data
                                           , CONTENT_TYPE=str(content_type)
-                                          , **extra
+                                          , **kw
                                            )
         return self._perform_request(environ, cookie_info, run_through)
 
@@ -243,7 +243,7 @@ class Harness(object):
     # Helpers
     # =======
 
-    def _build_wsgi_environ(self, path, method="GET", body=None, **extra):
+    def _build_wsgi_environ(self, path, method="GET", body=None, **kw):
         environ = {}
         environ['PATH_INFO'] = path
         environ['REMOTE_ADDR'] = b'0.0.0.0'
@@ -253,7 +253,7 @@ class Harness(object):
         environ['REQUEST_METHOD'] = method
         environ['wsgi.input'] = StringIO(body)
         environ['HTTP_COOKIE'] = self.cookies.output(header='', sep='; ')
-        environ.update(extra)
+        environ.update(kw)
         return environ
 
 
