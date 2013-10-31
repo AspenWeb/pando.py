@@ -26,14 +26,14 @@ from aspen import Response
 def inbound_responder(*args, **kwargs):
     """ see BasicAuth object for args; they're passed through """
     auth = BasicAuth(*args, **kwargs)
-    def _(request):
+    def httpbasic_inbound_responder(request):
         """generated request-handling method"""
         request.auth = BAWrapper(auth, request)
         authed, response = auth.authorized(request)
         if not authed:
             raise response
         return request
-    return _
+    return httpbasic_inbound_responder
 
 
 class BAWrapper(object):

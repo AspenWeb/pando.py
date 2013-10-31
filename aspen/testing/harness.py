@@ -157,7 +157,7 @@ class Harness(object):
     # ==========
 
     def simple(self, contents='Greetings, program!', filepath='index.html.spt', uripath=None,
-            run_through=None, want='response', argv=None):
+            run_through=None, want='response', argv=None, **kw):
         """A helper to create a file and hit it through our machinery.
         """
         if filepath is not None:
@@ -176,7 +176,7 @@ class Harness(object):
                         uripath = uripath[:-len(indexname)]
                         break
 
-        return self.GET(uripath, run_through=run_through, want=want)
+        return self.GET(uripath, run_through=run_through, want=want, **kw)
 
     def make_request(self, *a, **kw):
         kw['run_through'] = 'dispatch_request_to_filesystem'
