@@ -51,7 +51,7 @@ def dispatch_request_to_filesystem(request):
     dispatcher.dispatch(request)
 
 
-def get_response_via_socket(request):
+def get_response_for_socket(request):
     socket = sockets.get(request)
     if socket is None:
         # This is not a socket request.
@@ -67,7 +67,7 @@ def get_response_via_socket(request):
     return {'response': response}
 
 
-def get_response_via_resource(request, response):
+def get_response_for_resource(request, response):
     if response is not None:
         return
 
@@ -76,7 +76,7 @@ def get_response_via_resource(request, response):
     return {'response': response}
 
 
-def convert_exception_to_response(exc_info):
+def get_response_for_exception(exc_info):
     sys.exc_clear()
     if exc_info[0] is Response:
         response = exc_info[1]
