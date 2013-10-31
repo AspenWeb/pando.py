@@ -1,6 +1,26 @@
 """These functions comprise the request processing functionality of Aspen.
 
-This is a mutilated hacked up version of the old website.py.
+Per the flow.py module, the functions defined in this present module are
+executed in the order they're defined here, with dependencies injected as
+specified in each function definition. Each function should return None, or a
+dictionary that will be used to update the flow state in the calling routine.
+
+The naming convention we've adopted for the functions in this file is:
+
+    verb_object_preposition_object-of-preposition
+
+For example:
+
+    parse_environ_into_request
+
+All four parts are a single word each (there are exactly three underscores in
+each function name). This convention is intended to make function names easy to
+understand and remember.
+
+It's important that function names remain relatively stable over time, as
+downstream applications are expected to insert their own functions into this
+flow based on the names of our functions here. A change in function names or
+ordering here would constitute a backwards-incompatible change.
 
 """
 from __future__ import absolute_import
@@ -56,7 +76,7 @@ def get_response_via_resource(request, response):
     return {'response': response}
 
 
-def handle_exception(exc_info):
+def convert_exception_to_response(exc_info):
     sys.exc_clear()
     if exc_info[0] is Response:
         response = exc_info[1]
@@ -65,12 +85,12 @@ def handle_exception(exc_info):
     return {'response': response, 'exc_info': None}
 
 
-def log_tracebacks_for_500s(response):
+def log_traceback_for_5xx(response):
     if response.code >= 500:
         aspen.log_dammit(response.body)
 
 
-def run_error_response_through_simplate(website, request, response):
+def delegate_error_to_simplate(website, request, response):
     if response.code < 400:
         return
 
@@ -87,7 +107,7 @@ def run_error_response_through_simplate(website, request, response):
     return {'response': response, 'exc_info': None}
 
 
-def handle_exception_2(website, exc_info):
+def log_traceback_for_exception(website, exc_info):
     sys.exc_clear()
     aspen.log_dammit(exc_info[2])
     response = Response(500)
@@ -96,7 +116,7 @@ def handle_exception_2(website, exc_info):
     return {'response': response, 'exc_info': None}
 
 
-def log_access(website, response, request):
+def log_result_of_request(website, response, request):
     """Log access. With our own format (not Apache's).
     """
 
