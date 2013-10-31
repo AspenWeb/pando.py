@@ -3,7 +3,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from pytest import raises
+from pytest import raises, yield_fixture
 
 from aspen.http.response import Response
 from aspen.auth.httpdigest import inbound_responder, digest
@@ -45,28 +45,33 @@ def _digest_auth_for(headers, username, password):
     fields['response'] = digest( ':'.join([ HA1, fields['nonce'], fields['nc'], fields['cnonce'], fields['qop'], HA2 ]))
     return "Digest " + ','.join([ '%s="%s"' % (k, v) for k, v in fields.items() ])
 
+@yield_fixture
+def request_with(harness):
+    def request_with(auth_header, inbound_auther):
+        harness.website.flow.insert_after( inbound_auther
+                                         , 'parse_environ_into_request'
+                                          )
+        return harness.simple( filepath=None
+                             , run_through='httpdigest_inbound_responder'
+                             , want='request'
+                             , HTTP_AUTHORIZATION=auth_header
+                              )
+    yield request_with
+
+
 # tests
 
-def _request_with(authfunc, auth_header):
-    request = StubRequest()
-    if auth_header is not None:
-        request.headers['Authorization'] = auth_header
-    hook = inbound_responder(authfunc)
-    return hook(request)
-
-def test_good_works():
-    request = StubRequest()
+def test_good_works(request_with):
     # once to get a WWW-Authenticate header
-    hook = inbound_responder(_auth_func("username", "password"), realm="testrealm@host.com")
-    response = raises(Response, hook, request).value
+    auth_func = _auth_func("username", "password")
+    auther = inbound_responder(auth_func, realm="testrealm@host.com") 
+    response = raises(Response, request_with, '', auther).value
     # do something with the header
     auth_headers = _auth_headers(response)
-    request.headers['Authorization'] = _digest_auth_for(auth_headers, "username", "password")
-    #print repr(request.headers['Authorization'])
-    response = hook(request)
-    success = request.auth.authorized()
-    assert success
-    assert request.auth.username() == "username", request.auth.username()
+    http_authorization = _digest_auth_for(auth_headers, "username", "password")
+    request = request_with(http_authorization, auther)
+    assert request.auth.authorized()
+    assert request.auth.username() == "username"
 
 #def test_hard_passwords():
 #    for password in [ 'pass', 'username', ':password', ':password:','::::::' ]:
@@ -75,26 +80,27 @@ def test_good_works():
 #        assert success
 #        assert request.auth.username() == "username", request.auth.username()
 
-def test_no_auth():
-    auth = lambda u, p: u == "username" and p == "password"
-    response = raises(Response, _request_with, auth, None).value
-    assert response.code == 401, response
-
-def test_bad_fails():
-    request = StubRequest()
+def test_bad_fails(request_with):
     # once to get a WWW-Authenticate header
-    hook = inbound_responder(_auth_func("username", "password"), realm="testrealm@host.com")
-    response = raises(Response, hook, request).value
+    auther = inbound_responder(_auth_func("username", "password"), realm="testrealm@host.com")
+    response = raises(Response, request_with, '', auther).value
     # do something with the header
     auth_headers = _auth_headers(response)
-    request.headers['Authorization'] = _digest_auth_for(auth_headers, "username", "badpassword")
-    response = raises(Response, hook, request).value
-    assert response.code == 401, response
-    assert not request.auth.authorized()
+    http_authorization = _digest_auth_for(auth_headers, "username", "badpassword")
+    response = raises(Response, request_with, http_authorization, auther).value
+    assert response.code == 401
+    assert not response.request.auth.authorized()
 
-def test_wrong_auth():
+def test_no_auth(request_with):
     auth = lambda u, p: u == "username" and p == "password"
-    response = raises(Response, _request_with, auth, "Wacky xxx").value
+    auther = inbound_responder(auth, realm="testrealm@host.com") 
+    response = raises(Response, request_with, None, auther).value
+    assert response.code == 401, response
+
+def test_wrong_auth(request_with):
+    auth = lambda u, p: u == "username" and p == "password"
+    auther = inbound_responder(auth, realm="testrealm@host.com") 
+    response = raises(Response, request_with, "Wacky xxx", auther).value
     assert response.code == 400, response
 
 
