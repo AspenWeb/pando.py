@@ -65,7 +65,7 @@ def inbound_responder(*args, **kw):
     kwargs = kw.copy()
     kwargs['http_provider'] = AspenHTTPProvider
     auth = Auth(*args, **kwargs)
-    def _(request):
+    def httpdigest_inbound_responder(request):
         """generated hook function"""
         request.auth = AspenAuthWrapper(auth, request)
         authed, response = auth.authorized(request)
@@ -73,7 +73,7 @@ def inbound_responder(*args, **kw):
             #print "Response: %s" % repr(response.headers)
             raise response
         return request
-    return _
+    return httpdigest_inbound_responder
 
 
 class AspenAuthWrapper(object):
