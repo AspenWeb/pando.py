@@ -165,13 +165,16 @@ class Harness(object):
         self.argv = argv if argv is not None else []
 
         if uripath is None:
-            uripath = '/' + filepath
-            if uripath.endswith('.spt'):
-                uripath = uripath[:-len('.spt')]
-            for indexname in self.website.indices:
-                if uripath.endswith(indexname):
-                    uripath = uripath[:-len(indexname)]
-                    break
+            if filepath is None:
+                uripath = '/'
+            else:
+                uripath = '/' + filepath
+                if uripath.endswith('.spt'):
+                    uripath = uripath[:-len('.spt')]
+                for indexname in self.website.indices:
+                    if uripath.endswith(indexname):
+                        uripath = uripath[:-len(indexname)]
+                        break
 
         return self.GET(uripath, run_through=run_through, want=want)
 
