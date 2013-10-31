@@ -63,20 +63,17 @@ def test_configure_aspen_py_setting_takes_first(harness):
     harness.fs.www.mk( ('index.html', "Greetings, program!")
           , ('default.html', "Greetings, program!")
            )
-    actual, expected = check(harness, '/', 'index.html')
-    assert actual == expected
+    check(harness, '/', 'index.html')
 
 def test_configure_aspen_py_setting_takes_second_if_first_is_missing(harness):
     harness.fs.project.mk(('configure-aspen.py', 'website.indices = ["index.html", "default.html"]'),)
     harness.fs.www.mk(('default.html', "Greetings, program!"),)
-    actual, expected = check(harness, '/', 'default.html')
-    assert actual == expected
+    check(harness, '/', 'default.html')
 
 def test_configure_aspen_py_setting_strips_commas(harness):
     harness.fs.project.mk(('configure-aspen.py', 'website.indices = ["index.html", "default.html"]'),)
     harness.fs.www.mk(('default.html', "Greetings, program!"),)
-    actual, expected = check(harness, '/', 'default.html')
-    assert actual == expected
+    check(harness, '/', 'default.html')
 
 def test_redirect_indices_to_slash(harness):
     harness.fs.project.mk(('configure-aspen.py', 'website.indices = ["index.html", "default.html"]'),)
@@ -94,8 +91,7 @@ def test_dont_redirect_second_index_if_first(harness):
     # first index redirects
     assert_raises_302(harness, '/index.html', '')
     # second shouldn't
-    actual, expected = check(harness, '/default.html', 'default.html')
-    assert actual == expected
+    check(harness, '/default.html', 'default.html')
 
 
 # Negotiated Fall-through
@@ -103,72 +99,63 @@ def test_dont_redirect_second_index_if_first(harness):
 
 def test_indirect_negotiation_can_passthrough_static(harness):
     harness.fs.www.mk(('foo.html', "Greetings, program!"),)
-    actual, expected = check(harness, 'foo.html', 'foo.html')
-    assert actual == expected
+    check(harness, 'foo.html', 'foo.html')
 
 def test_indirect_negotiation_can_passthrough_renderered(harness):
     harness.fs.www.mk(('foo.html.spt', "Greetings, program!"),)
-    actual, expected = check(harness, 'foo.html', 'foo.html.spt')
-    assert actual == expected
+    check(harness, 'foo.html', 'foo.html.spt')
 
 def test_indirect_negotiation_can_passthrough_negotiated(harness):
     harness.fs.www.mk(('foo', "Greetings, program!"),)
-    actual, expected = check(harness, 'foo', 'foo')
-    assert actual == expected
+    check(harness, 'foo', 'foo')
 
-def test_indirect_negotiation_modifies_one_dot():
+def test_indirect_negotiation_modifies_one_dot(harness):
     harness.fs.www.mk(('foo', "Greetings, program!"),)
-    actual, expected = check(harness, 'foo.html', 'foo')
-    assert actual == expected
+    check(harness, 'foo.html', 'foo')
 
-def test_indirect_negotiation_skips_two_dots():
-    actual, expected = check(harness, 'foo.bar.html', 'foo.bar', (('foo.bar', "Greetings, program!"),))
-    assert actual == expected
+def test_indirect_negotiation_skips_two_dots(harness):
+    harness.fs.www.mk(('foo.bar', "Greetings, program!"),)
+    check(harness, 'foo.bar.html', 'foo.bar')
 
-def test_indirect_negotiation_prefers_rendered():
+def test_indirect_negotiation_prefers_rendered(harness):
     harness.fs.www.mk( ('foo.html', "Greetings, program!")
           , ('foo', "blah blah blah")
            )
-    actual, expected = check(harness, 'foo.html', 'foo.html', www)
-    assert actual == expected
+    check(harness, 'foo.html', 'foo.html')
 
-def test_indirect_negotiation_really_prefers_rendered():
+def test_indirect_negotiation_really_prefers_rendered(harness):
     harness.fs.www.mk( ('foo.html', "Greetings, program!")
           , ('foo.', "blah blah blah")
            )
-    actual, expected = check(harness, 'foo.html', 'foo.html', www)
-    assert actual == expected
+    check(harness, 'foo.html', 'foo.html')
 
-def test_indirect_negotiation_really_prefers_rendered_2():
+def test_indirect_negotiation_really_prefers_rendered_2(harness):
     harness.fs.www.mk( ('foo.html', "Greetings, program!")
           , ('foo', "blah blah blah")
            )
-    actual, expected = check(harness, 'foo.html', 'foo.html', www)
-    assert actual == expected
+    check(harness, 'foo.html', 'foo.html')
 
-def test_indirect_negotation_doesnt_do_dirs():
-    assert_raises_404(harness, 'foo.html', '', (('foo/bar.html', "Greetings, program!"),))
+def test_indirect_negotation_doesnt_do_dirs(harness):
+    assert_raises_404(harness, 'foo.html', '')
 
 
 # Virtual Paths
 # =============
 
-def test_virtual_path_can_passthrough():
-    actual, expected = check(harness, 'foo.html', 'foo.html', (('foo.html', "Greetings, program!"),))
-    assert actual == expected
+def test_virtual_path_can_passthrough(harness):
+    harness.fs.www.mk(('foo.html', "Greetings, program!"),)
+    check(harness, 'foo.html', 'foo.html')
 
-def test_unfound_virtual_path_passes_through():
-    assert_raises_404(harness, '/blah/flah.html', '', (('%bar/foo.html', "Greetings, program!"),))
+def test_unfound_virtual_path_passes_through(harness):
+    harness.fs.www.mk(('%bar/foo.html', "Greetings, program!"),)
+    assert_raises_404(harness, '/blah/flah.html', '')
 
-def test_virtual_path_is_virtual():
-    actual, expected = check( '/blah/foo.html'
-                            , '%bar/foo.html'
-                            , (('%bar/foo.html', "Greetings, program!"),)
-                             )
-    assert actual == expected
+def test_virtual_path_is_virtual(harness):
+    harness.fs.www.mk(('%bar/foo.html', "Greetings, program!"),)
+    check(harness, '/blah/foo.html', '%bar/foo.html')
 
 def test_virtual_path_sets_request_path():
-    actual, expected = check( '/blah/foo.html'
+    actual, expected = oldcodehelper( '/blah/foo.html'
                             , {'bar': [u'blah']}
                             , (('%bar/foo.html', "Greetings, program!"),)
                             , want='request.line.uri.path'
@@ -176,7 +163,7 @@ def test_virtual_path_sets_request_path():
     assert actual == expected
 
 def test_virtual_path_sets_unicode_request_path():
-    actual, expected = check( b'/%E2%98%83/foo.html'
+    actual, expected = oldcodehelper( b'/%E2%98%83/foo.html'
                             , {'bar': [u'\u2603']}
                             , (('%bar/foo.html', "Greetings, program!"),)
                             , want='request.line.uri.path'
@@ -184,60 +171,51 @@ def test_virtual_path_sets_unicode_request_path():
     assert actual == expected
 
 def test_virtual_path_typecasts_to_int():
-    actual, expected = check( '/1999/foo.html'
+    actual, expected = oldcodehelper( '/1999/foo.html'
                             , {'year': [1999]}
                             , (('%year.int/foo.html', "Greetings, program!"),)
                             , want='request.line.uri.path'
                              )
     assert actual == expected
 
-def test_virtual_path_raises_on_bad_typecast():
+def test_virtual_path_raises_on_bad_typecast(harness):
     harness.fs.www.mk(('%year.int/foo.html', "Greetings, program!"),)
-    raises(Response, check, '/I am not a year./foo.html', '', www)
+    raises(Response, check, harness, '/I am not a year./foo.html', '')
 
-def test_virtual_path_raises_404_on_bad_typecast():
+def test_virtual_path_raises_404_on_bad_typecast(harness):
     harness.fs.www.mk(('%year.int/foo.html', "Greetings, program!"),)
-    assert_raises_404(harness, '/I am not a year./foo.html', '', www)
+    assert_raises_404(harness, '/I am not a year./foo.html', '')
 
-def test_virtual_path_raises_on_direct_access():
-    raises(Response, check, '/%name/foo.html', '', ())
+def test_virtual_path_raises_on_direct_access(harness):
+    raises(Response, check, harness, '/%name/foo.html', '')
 
-def test_virtual_path_raises_404_on_direct_access():
-    assert_raises_404(harness, '/%name/foo.html', '', ())
+def test_virtual_path_raises_404_on_direct_access(harness):
+    assert_raises_404(harness, '/%name/foo.html', '')
 
-def test_virtual_path_matches_the_first():
+def test_virtual_path_matches_the_first(harness):
     harness.fs.www.mk( ('%first/foo.html', "Greetings, program!")
           , ('%second/foo.html', "WWAAAAAAAAAAAA!!!!!!!!")
            )
-    actual, expected = check(harness, '/1999/foo.html', '%first/foo.html', www)
-    assert actual == expected
+    check(harness, '/1999/foo.html', '%first/foo.html')
 
-def test_virtual_path_directory():
-    actual, expected = check( '/foo/'
-                            , '%first/index.html'
-                            , (('%first/index.html', "Greetings, program!"),)
-                             )
-    assert actual == expected
+def test_virtual_path_directory(harness):
+    harness.fs.www.mk(('%first/index.html', "Greetings, program!"),)
+    check(harness, '/foo/', '%first/index.html')
 
-def test_virtual_path_file():
-    actual, expected = check( '/foo/blah.html'
-                            , 'foo/%bar.html.spt'
-                            , (('foo/%bar.html.spt', "Greetings, program!"),)
-                             )
-    assert actual == expected
+def test_virtual_path_file(harness):
+    harness.fs.www.mk(('foo/%bar.html.spt', "Greetings, program!"),)
+    check(harness, '/foo/blah.html', 'foo/%bar.html.spt')
 
-def test_virtual_path_file_only_last_part():
-    actual, expected = check( '/foo/blah/baz.html'
-                            , 'foo/%bar.html.spt'
-                            , (('foo/%bar.html.spt', "Greetings, program!"),)
-                             )
-    assert actual == expected
+def test_virtual_path_file_only_last_part(harness):
+    harness.fs.www.mk(('foo/%bar.html.spt', "Greetings, program!"),)
+    check(harness, '/foo/blah/baz.html', 'foo/%bar.html.spt')
 
-def test_virtual_path_file_only_last_part____no_really():
-    assert_raises_404(harness, '/foo/blah.html/', '', (('foo/%bar.html', "Greetings, program!"),))
+def test_virtual_path_file_only_last_part____no_really(harness):
+    harness.fs.www.mk(('foo/%bar.html', "Greetings, program!"),)
+    assert_raises_404(harness, '/foo/blah.html/', '')
 
 def test_virtual_path_file_key_val_set():
-    actual, expected = check( '/foo/blah.html'
+    actual, expected = oldcodehelper( '/foo/blah.html'
                             , {'bar': [u'blah']}
                             , (('foo/%bar.html.spt', "Greetings, program!"),)
                             , want='request.line.uri.path'
@@ -245,7 +223,7 @@ def test_virtual_path_file_key_val_set():
     assert actual == expected
 
 def test_virtual_path_file_key_val_not_cast():
-    actual, expected = check( '/foo/537.html'
+    actual, expected = oldcodehelper( '/foo/537.html'
                             , {'bar': [u'537']}
                             , (('foo/%bar.html.spt', "Greetings, program!"),)
                             , want='request.line.uri.path'
@@ -253,136 +231,109 @@ def test_virtual_path_file_key_val_not_cast():
     assert actual == expected
 
 def test_virtual_path_file_key_val_cast():
-    actual, expected = check( '/foo/537.html'
+    actual, expected = oldcodehelper( '/foo/537.html'
                             , {'bar': [537]}
                             , (('foo/%bar.int.html.spt', "Greetings, program!"),)
                             , want='request.line.uri.path'
                              )
     assert actual == expected
 
-def test_virtual_path_file_not_dir():
+def test_virtual_path_file_not_dir(harness):
     harness.fs.www.mk( ('%foo/bar.html', "Greetings from bar!")
           , ('%baz.html.spt', "Greetings from baz!")
            )
-    actual, expected = check(harness, '/bal.html', '%baz.html.spt', www)
-    assert actual == expected
+    check(harness, '/bal.html', '%baz.html.spt')
 
 
 # negotiated *and* virtual paths
 # ==============================
 
-def test_virtual_path__and_indirect_neg_file_not_dir():
+def test_virtual_path__and_indirect_neg_file_not_dir(harness):
     harness.fs.www.mk( ('%foo/bar.html', "Greetings from bar!")
           , ('%baz.spt', "Greetings from baz!")
            )
-    actual, expected = check(harness, '/bal.html', '%baz.spt', www)
-    assert actual == expected
+    check(harness, '/bal.html', '%baz.spt')
 
-def test_virtual_path_and_indirect_neg_noext():
+def test_virtual_path_and_indirect_neg_noext(harness):
     harness.fs.www.mk(('%foo/bar', "Greetings program!"),)
-    actual, expected = check(harness, '/greet/bar', '%foo/bar', www)
-    assert actual == expected
+    check(harness, '/greet/bar', '%foo/bar')
 
-def test_virtual_path_and_indirect_neg_ext():
+def test_virtual_path_and_indirect_neg_ext(harness):
     harness.fs.www.mk(('%foo/bar', "Greetings program!"),)
-    actual, expected = check(harness, '/greet/bar.html', '%foo/bar', www)
-    assert actual == expected
+    check(harness, '/greet/bar.html', '%foo/bar')
 
 
 # trailing slash
 # ==============
 
-def test_dispatcher_passes_through_files():
-    assert_raises_404(harness, '/foo/537.html', '', (('foo/index.html', "Greetings, program!"),))
+def test_dispatcher_passes_through_files(harness):
+    harness.fs.www.mk(('foo/index.html', "Greetings, program!"),)
+    assert_raises_404(harness, '/foo/537.html', '', )
 
-def test_trailing_slash_passes_dirs_with_slash_through():
-    actual, expected = check( '/foo/'
-                            , '/foo/index.html'
-                            , (('foo/index.html', "Greetings, program!"),)
-                             )
+def test_trailing_slash_passes_dirs_with_slash_through(harness):
+    harness.fs.www.mk(('foo/index.html', "Greetings, program!"),)
+    check(harness, '/foo/', '/foo/index.html')
+
+def test_dispatcher_passes_through_virtual_dir_with_trailing_slash(harness):
+    harness.fs.www.mk(('%foo/index.html', "Greetings, program!"),)
+    check(harness, '/foo/', '/%foo/index.html')
+
+def test_dispatcher_redirects_dir_without_trailing_slash(harness):
+    harness.fs.www.mk('foo',)
+    response = assert_raises_302(harness, '/foo', '')
+    expected = '/foo/'
+    actual = response.headers['Location']
     assert actual == expected
 
-def test_dispatcher_passes_through_virtual_dir_with_trailing_slash():
-    actual, expected = check( '/foo/'
-                            , '/%foo/index.html'
-                            , (('%foo/index.html', "Greetings, program!"),)
-                             )
+def test_dispatcher_redirects_virtual_dir_without_trailing_slash(harness):
+    harness.fs.www.mk('%foo',)
+    response = assert_raises_302(harness, '/foo', '')
+    expected = '/foo/'
+    actual =  response.headers['Location']
     assert actual == expected
 
-def test_dispatcher_redirects_dir_without_trailing_slash():
-    response = raises(Response, check, '/foo', '', ('foo',)).value
-    expected = (302, '/foo/')
-    actual = (response.code, response.headers['Location'])
-    assert actual == expected
-
-def test_dispatcher_redirects_virtual_dir_without_trailing_slash():
-    response = raises(Response, check, '/foo', '', ('%foo',)).value
-    expected = (302, '/foo/')
-    actual = (response.code, response.headers['Location'])
-    assert actual == expected
-
-def test_trailing_on_virtual_paths_missing():
-    response = raises(Response, check, '/foo/bar/baz', '', ('%foo/%bar/%baz',)).value
+def test_trailing_on_virtual_paths_missing(harness):
+    harness.fs.www.mk('%foo/%bar/%baz',)
+    response = assert_raises_302(harness, '/foo/bar/baz', '')
     expected = '/foo/bar/baz/'
     actual = response.headers['Location']
     assert actual == expected
 
-def test_trailing_on_virtual_paths():
-    actual, expected = check( '/foo/bar/baz/'
-                            , '/%foo/%bar/%baz/index.html'
-                            , (('%foo/%bar/%baz/index.html', "Greetings program!"),)
-                             )
-    assert actual == expected
+def test_trailing_on_virtual_paths(harness):
+    harness.fs.www.mk(('%foo/%bar/%baz/index.html', "Greetings program!"),)
+    check( '/foo/bar/baz/', '/%foo/%bar/%baz/index.html')
 
-def test_dont_confuse_files_for_dirs():
+def test_dont_confuse_files_for_dirs(harness):
     harness.fs.www.mk(('foo.html', 'Greetings, Program!'),)
-    assert_raises_404(harness, '/foo.html/bar', '', www)
+    assert_raises_404(harness, '/foo.html/bar', '')
 
 
 # path part params
 # ================
 
-def test_path_part_with_params_works():
-    actual, expected = check( '/foo;a=1/'
-                            , '/foo/index.html'
-                            , (('foo/index.html', "Greetings program!"),)
-                             )
-    assert actual == expected
+def test_path_part_with_params_works(harness):
+    harness.fs.www.mk(('foo/index.html', "Greetings program!"),)
+    check('/foo;a=1/', '/foo/index.html')
 
-def test_path_part_params_vpath():
-    actual, expected = check( '/foo;a=1;b=;a=2;b=3/'
-                            , '/%bar/index.html'
-                            , (('%bar/index.html', "Greetings program!"),)
-                             )
-    assert actual == expected
+def test_path_part_params_vpath(harness):
+    harness.fs.www.mk(('%bar/index.html', "Greetings program!"),)
+    check('/foo;a=1;b=;a=2;b=3/', '/%bar/index.html')
 
-def test_path_part_params_static_file():
-    actual, expected = check( '/foo/bar.html;a=1;b=;a=2;b=3'
-                            , '/foo/bar.html'
-                            , (('/foo/bar.html', "Greetings program!"),)
-                             )
-    assert actual == expected
+def test_path_part_params_static_file(harness):
+    harness.fs.www.mk(('/foo/bar.html', "Greetings program!"),)
+    check('/foo/bar.html;a=1;b=;a=2;b=3', '/foo/bar.html')
 
-def test_path_part_params_simplate():
-    actual, expected = check( '/foo/bar.html;a=1;b=;a=2;b=3'
-                            , '/foo/bar.html.spt'
-                            , (('/foo/bar.html.spt', "Greetings program!"),)
-                             )
-    assert actual == expected
+def test_path_part_params_simplate(harness):
+    check('/foo/bar.html;a=1;b=;a=2;b=3', '/foo/bar.html.spt')
+    harness.fs.www.mk(('/foo/bar.html.spt', "Greetings program!"),)
 
-def test_path_part_params_negotiated_simplate():
-    actual, expected = check( '/foo/bar.html;a=1;b=;a=2;b=3'
-                            , '/foo/bar.spt'
-                            , (('/foo/bar.spt', "Greetings program!"),)
-                             )
-    assert actual == expected
+def test_path_part_params_negotiated_simplate(harness):
+    check( '/foo/bar.html;a=1;b=;a=2;b=3', '/foo/bar.spt')
+    harness.fs.www.mk(('/foo/bar.spt', "Greetings program!"),)
 
-def test_path_part_params_greedy_simplate():
-    actual, expected = check( '/foo/baz/buz;a=1;b=;a=2;b=3/blam.html'
-                            , '/foo/%bar.spt'
-                            , (('/foo/%bar.spt', "Greetings program!"),)
-                             )
-    assert actual == expected
+def test_path_part_params_greedy_simplate(harness):
+    check( '/foo/baz/buz;a=1;b=;a=2;b=3/blam.html', '/foo/%bar.spt')
+    harness.fs.www.mk(('/foo/%bar.spt', "Greetings program!"),)
 
 
 # Docs
@@ -473,7 +424,7 @@ def test_intercept_socket_intercepts_transported():
 # These surfaced when porting mongs from Aspen 0.8.
 
 def test_virtual_path_parts_can_be_empty():
-    actual, expected = check( '/foo//'
+    actual, expected = oldcodehelper( '/foo//'
                             , {u'bar': [u'']}
                             , (('foo/%bar/index.html.spt', "Greetings, program!"),)
                             , want='request.line.uri.path'
@@ -484,53 +435,50 @@ def test_file_matches_in_face_of_dir():
     harness.fs.www.mk( ('%page/index.html.spt', 'Nothing to see here.')
           , ('%value.txt.spt', "Greetings, program!")
            )
-    actual, expected = check( '/baz.txt'
+    actual, expected = oldcodehelper( '/baz.txt'
                             , {'value': [u'baz']}
                             , www
                             , want='request.line.uri.path'
                              )
     assert actual == expected
 
-def test_file_matches_extension():
+def test_file_matches_extension(harness):
     harness.fs.www.mk( ('%value.json.spt', '{"Greetings,": "program!"}')
           , ('%value.txt.spt', "Greetings, program!")
            )
-    actual, expected = check(harness, '/baz.json', "%value.json.spt", www, want='request.fs')
-    assert actual == expected
+    check(harness, '/baz.json', "%value.json.spt")
 
-def test_file_matches_other_extension():
+def test_file_matches_other_extension(harness):
     harness.fs.www.mk( ('%value.json.spt', '{"Greetings,": "program!"}')
           , ('%value.txt.spt', "Greetings, program!")
            )
-    actual, expected = check(harness, '/baz.txt', "%value.txt.spt", www, want='request.fs')
-    assert actual == expected
+    check(harness, '/baz.txt', "%value.txt.spt")
 
-def test_virtual_file_with_no_extension_works():
-    check(harness, '/baz.txt', '', (('%value.spt', '{"Greetings,": "program!"}'),))
-    assert 1  # no exception
+NEGOTIATED_SIMPLATE="""[-----]\n[-----] text/plain\nGreetings, program!"""
 
-def test_normal_file_with_no_extension_works():
-    harness.fs.www.mk( ('%value.spt', '{"Greetings,": "program!"}')
+def test_virtual_file_with_no_extension_works(harness):
+    harness.fs.www.mk(('%value.spt', NEGOTIATED_SIMPLATE),)
+    check(harness, '/baz.txt', '%value.spt')
+
+def test_normal_file_with_no_extension_works(harness):
+    harness.fs.www.mk( ('%value.spt', NEGOTIATED_SIMPLATE)
           , ('value', '{"Greetings,": "program!"}')
            )
-    check(harness, '/baz.txt', '', www)
-    assert 1  # no exception
+    check(harness, '/baz.txt', '%value.spt')
 
 def test_file_with_no_extension_matches():
     harness.fs.www.mk( ('%value.spt', '{"Greetings,": "program!"}')
           , ('value', '{"Greetings,": "program!"}')
            )
-    actual = check(harness, '/baz', '', www, want='request.line.uri.path')[0]
+    actual = oldcodehelper(harness, '/baz', '', www, want='request.line.uri.path')[0]
     expected = {'value': [u'baz']}
     assert actual == expected
 
-def test_aspen_favicon_doesnt_get_clobbered_by_virtual_path():
-    actual, expected = check( '/favicon.ico'
-                            , 'favicon.ico'
-                            , (('%value.spt', ''),)
-                            , want='request.fs'
-                             )
-    assert actual == expected
+def test_aspen_favicon_doesnt_get_clobbered_by_virtual_path(harness):
+    harness.fs.www.mk(('%value.spt', ''),)
+    check(harness, '/favicon.ico' , 'favicon.ico')
 
-def test_robots_txt_also_shouldnt_be_redirected():
-    assert_raises_404(harness, '/robots.txt', '', (('%value.spt', ''),))
+def test_robots_txt_also_shouldnt_be_redirected(harness):
+    harness.fs.www.mk(('%value.spt', ''),)
+    assert_raises_404(harness, '/robots.txt', '')
+
