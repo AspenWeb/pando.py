@@ -13,7 +13,7 @@ from collections import namedtuple
 
 class FunctionNotFound(Exception):
     def __str__(self):
-        return "The function '{}' isn't in this flow.".format(*self.args)
+        return "The function '{0}' isn't in this flow.".format(*self.args)
 
 
 class Flow(object):
@@ -77,17 +77,17 @@ class Flow(object):
                 deps = self._resolve_dependencies(function, state)
                 if 'exc_info' in deps.required and state['exc_info'] is None:
                     pass    # Hook needs an exc_info but we don't have it.
-                    print("{:>48}  \x1b[33;1mskipped\x1b[0m".format(function_name))
+                    print("{0:>48}  \x1b[33;1mskipped\x1b[0m".format(function_name))
                 elif 'exc_info' not in deps.names and state['exc_info'] is not None:
                     pass    # Hook doesn't want an exc_info but we have it.
-                    print("{:>48}  \x1b[33;1mskipped\x1b[0m".format(function_name))
+                    print("{0:>48}  \x1b[33;1mskipped\x1b[0m".format(function_name))
                 else:
                     new_state = function(**deps.kw)
-                    print("{:>48}  \x1b[32;1mdone\x1b[0m".format(function_name))
+                    print("{0:>48}  \x1b[32;1mdone\x1b[0m".format(function_name))
                     if new_state is not None:
                         state.update(new_state)
             except:
-                print("{:>48}  \x1b[31;1mfailed\x1b[0m".format(function_name))
+                print("{0:>48}  \x1b[31;1mfailed\x1b[0m".format(function_name))
                 state['exc_info'] = sys.exc_info()[:2] + (traceback.format_exc().strip(),)
                 if self.short_circuit:
                     raise
@@ -107,7 +107,7 @@ class Flow(object):
     def _load_module_from_dotted_name(self, dotted_name):
         class Module(object): pass
         module = Module()  # let's us use getattr to traverse down
-        exec 'import {}'.format(dotted_name) in module.__dict__
+        exec 'import {0}'.format(dotted_name) in module.__dict__
         for name in dotted_name.split('.'):
             module = getattr(module, name)
         return module
