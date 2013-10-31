@@ -7,7 +7,7 @@ import StringIO
 
 from pytest import raises
 
-from aspen import json
+from aspen import json, resources
 
 
 def test_json_basically_works(harness):
@@ -20,7 +20,8 @@ def test_json_basically_works(harness):
     assert actual == expected
 
 def test_json_cant_have_more_than_one_page_break(harness):
-    raises(SyntaxError, harness.simple, "[---]\n[---]\n", filepath="foo.json.spt")
+    request = harness.make_request("[---]\n[---]\n", filepath="foo.json.spt")
+    raises(SyntaxError, resources.load, request, None)
 
 def test_json_defaults_to_application_json_for_static_json(harness):
     actual = harness.simple( '{"Greetings": "program!"}'
