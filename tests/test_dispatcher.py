@@ -3,8 +3,10 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import os
 from pytest import raises
 
+import aspen
 from aspen import dispatcher, Response
 from aspen.http.request import Request
 
@@ -316,7 +318,7 @@ def test_path_part_params_simplate(harness):
 
 def test_path_part_params_negotiated_simplate(harness):
     harness.fs.www.mk(('/foo/bar.spt', NEGOTIATED_SIMPLATE),)
-    assert_fs(harness, '/foo/bar.html;a=1;b=;a=2;b=3', '/foo/bar.spt')
+    assert_fs(harness, '/foo/bar.txt;a=1;b=;a=2;b=3', '/foo/bar.spt')
 
 def test_path_part_params_greedy_simplate(harness):
     harness.fs.www.mk(('/foo/%bar.spt', NEGOTIATED_SIMPLATE),)
@@ -437,10 +439,11 @@ def test_file_with_no_extension_matches(harness):
     assert_virtvals(harness, '/baz', {'value': [u'baz']})
 
 def test_aspen_favicon_doesnt_get_clobbered_by_virtual_path(harness):
-    harness.fs.www.mk(('%value.spt', ''),)
-    assert_fs(harness, '/favicon.ico' , 'favicon.ico')
+    harness.fs.www.mk(('%value.html.spt', NEGOTIATED_SIMPLATE),)
+    actual = harness.simple(uripath='/favicon.ico', filepath=None, want='request.fs')
+    assert actual == os.path.join(os.path.dirname(aspen.__file__), 'www', 'favicon.ico')
 
 def test_robots_txt_also_shouldnt_be_redirected(harness):
-    harness.fs.www.mk(('%value.spt', ''),)
+    harness.fs.www.mk(('%value.html.spt', ''),)
     assert_raises_404(harness, '/robots.txt')
 
