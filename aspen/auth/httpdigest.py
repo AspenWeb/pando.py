@@ -19,6 +19,12 @@ class AspenHTTPProvider:
     def __init__(self, request):
         self.request = request
 
+    def _response(self, *args):
+        from aspen import Response
+        r = Response(*args)
+        r.request = self.request
+        return r
+
     def set_request(self, request):
         self.request = request
 
@@ -35,16 +41,13 @@ class AspenHTTPProvider:
         return self.request.line.uri.raw
 
     def send_400(self, html, extraheaders):
-        from aspen import Response
-        return Response(400, html, extraheaders)
+        return self._response(400, html, extraheaders)
 
     def send_401(self, html, extraheaders):
-        from aspen import Response
-        return Response(401, html, extraheaders)
+        return self._response(401, html, extraheaders)
 
     def send_403(self, html, extraheaders):
-        from aspen import Response
-        return Response(403, html, extraheaders)
+        return self._response(403, html, extraheaders)
 
 
 ## make a generator of containers that aspen will like
