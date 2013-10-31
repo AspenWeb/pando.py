@@ -13,7 +13,7 @@ from collections import namedtuple
 
 class FunctionNotFound(Exception):
     def __str__(self):
-        return "The function '{}' isn't in this flow.".format(*self.args)
+        return "The function '{0}' isn't in this flow.".format(*self.args)
 
 
 class Flow(object):
@@ -107,7 +107,7 @@ class Flow(object):
     def _load_module_from_dotted_name(self, dotted_name):
         class Module(object): pass
         module = Module()  # let's us use getattr to traverse down
-        exec 'import {}'.format(dotted_name) in module.__dict__
+        exec 'import {0}'.format(dotted_name) in module.__dict__
         for name in dotted_name.split('.'):
             module = getattr(module, name)
         return module
