@@ -32,12 +32,20 @@ def log_result_of_request(website, response, request):
 
 <p>Each function returns <code>None</code> or a dictionary that will be used to
 update the control flow state for dependency injection. So if a function
-returns <code>{"foo": bar}</code>, then downstream functions that ask for
-<code>foo</code> will get <code>bar</code>.</p>
+returns <code>{"foo": bar}</code>, then downstream functions will be able to
+ask for <code>foo</code> and get <code>bar</code>. The flow state starts with a
+<a href="/api/website/"><code>website</code></a> object and a WSGI
+<code>environ</code> dictionary.</p>
 
 <p>You can add your own functions to the request flow by modifying the list at
 <code>website.flow.functions</code> in <a
-href="/configure-aspen.py/"><code>configure-aspen.py</code></a>.</p>
+href="/configure-aspen.py/"><code>configure-aspen.py</code></a>. The
+<code>flow</code> object has two convenience methods for adding functions at
+certain points relative to other functions:</p>
+
+<pre>def insert_after('name_of_other_function', your_func):
+def insert_before('name_of_other_function', your_func):
+</pre>
 
 
 <h3>Exception Handling</h3>
