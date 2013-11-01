@@ -33,15 +33,15 @@ class Flow(object):
         return [f.func_name for f in self]
 
 
-    def insert_after(self, newfunc, name):
-        self.insert_relative_to(newfunc, name, relative_position=1)
+    def insert_after(self, name, newfunc):
+        self.insert_relative_to(name, newfunc, relative_position=1)
 
 
-    def insert_before(self, newfunc, name):
-        self.insert_relative_to(newfunc, name, relative_position=-1)
+    def insert_before(self, name, newfunc):
+        self.insert_relative_to(name, newfunc, relative_position=-1)
 
 
-    def insert_relative_to(self, newfunc, name, relative_position):
+    def insert_relative_to(self, name, newfunc, relative_position):
         func = self.resolve_name_to_function(name)
         index = self.functions.index(func) + relative_position
         self.functions.insert(index, newfunc)

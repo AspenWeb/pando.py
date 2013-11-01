@@ -48,9 +48,7 @@ def _digest_auth_for(headers, username, password):
 @yield_fixture
 def request_with(harness):
     def request_with(auth_header, inbound_auther):
-        harness.website.flow.insert_after( inbound_auther
-                                         , 'parse_environ_into_request'
-                                          )
+        harness.website.flow.insert_after('parse_environ_into_request', inbound_auther)
         return harness.simple( filepath=None
                              , run_through='httpdigest_inbound_responder'
                              , want='request'
@@ -64,7 +62,7 @@ def request_with(harness):
 def test_good_works(request_with):
     # once to get a WWW-Authenticate header
     auth_func = _auth_func("username", "password")
-    auther = inbound_responder(auth_func, realm="testrealm@host.com") 
+    auther = inbound_responder(auth_func, realm="testrealm@host.com")
     response = raises(Response, request_with, '', auther).value
     # do something with the header
     auth_headers = _auth_headers(response)
@@ -93,13 +91,13 @@ def test_bad_fails(request_with):
 
 def test_no_auth(request_with):
     auth = lambda u, p: u == "username" and p == "password"
-    auther = inbound_responder(auth, realm="testrealm@host.com") 
+    auther = inbound_responder(auth, realm="testrealm@host.com")
     response = raises(Response, request_with, None, auther).value
     assert response.code == 401, response
 
 def test_wrong_auth(request_with):
     auth = lambda u, p: u == "username" and p == "password"
-    auther = inbound_responder(auth, realm="testrealm@host.com") 
+    auther = inbound_responder(auth, realm="testrealm@host.com")
     response = raises(Response, request_with, "Wacky xxx", auther).value
     assert response.code == 400, response
 
