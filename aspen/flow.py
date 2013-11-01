@@ -69,11 +69,15 @@ class Flow(object):
             if through not in self.get_names():
                 raise FunctionNotFound(through)
         print()
+
+        if 'exc_info' not in state:
+            state['exc_info'] = None
+        if 'state' not in state:
+            state['state'] = state
+
         for function in self.functions:
             function_name = function.func_name
             try:
-                if 'exc_info' not in state:
-                    state['exc_info'] = None
                 deps = self._resolve_dependencies(function, state)
                 if 'exc_info' in deps.required and state['exc_info'] is None:
                     pass    # Hook needs an exc_info but we don't have it.
