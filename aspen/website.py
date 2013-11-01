@@ -7,11 +7,8 @@ import datetime
 import os
 
 import aspen
-from aspen import resources
 from aspen.configuration import Configurable
 from aspen.flow import Flow
-from aspen.http.request import Request
-from aspen.http.response import Response
 from aspen.utils import to_rfc822, utc
 
 # 2006-11-17 was the first release of aspen - v0.3
@@ -101,43 +98,3 @@ class Website(Configurable):
             return ours
 
         return None
-
-
-    # Conveniences for testing
-    # ========================
-    # XXX Sure seems like this class should be refactored so we use the same
-    # code for both testing and production here.
-
-    def serve_request(self, path):
-        """Given an URL path, return response.
-        """
-        request = Request(uri=path)
-        request.website = self
-        response = self.handle_safely(request)
-        return response
-
-
-    def load_simplate(self, path, request=None, return_request_too=False):
-        """Given an URL path, return a simplate (Resource) object.
-        """
-        if request is None:
-            request = Request(uri=path)
-        if not hasattr(request, 'website'):
-            request.website = self
-        self.do_inbound(request)
-        resource = resources.get(request)
-        if return_request_too:
-            return resource, request
-        else:
-            return resource
-
-
-    def exec_simplate(self, path="/", request=None, response=None):
-        """Given the URL path of a simplate, exec page two and return response.
-        """
-        resource, request = self.load_simplate(path, request, True)
-        if response is None:
-            response = Response(charset=self.charset_dynamic)
-        context = resource.populate_context(request, response)
-        exec resource.pages[1] in context  # let's let exceptions raise
-        return response, context
