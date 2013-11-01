@@ -4,56 +4,56 @@ doc_next = ("Unicode", "/unicode/")
 {% extends doc.html %}
 {% block doc %}
 
-<p>Aspen has hooks that allow you to influence program execution. Hooks are
-functions or methods that you write, and there are eight kinds of them:</p>
+<p>Aspen's request handling control flow is modeled as a list of functions that
+have their dependencies injected based on the name of the arguments in the
+function definition. Here are the signatures of the functions in the stock
+request flow:</p>
 
-<pre>def startup(website):
-    return website
+<pre>def parse_environ_into_request(environ):
 
-def inbound_early(request):
-    return request
+def tack_website_onto_request(request, website):
 
-def inbound_core(request):
-    return request
+def dispatch_request_to_filesystem(request):
 
-def inbound_late(request):
-    return request
+def get_response_for_socket(request):
 
-def error_early(request):
-    return request
+def get_response_for_resource(request, response):
 
-def error_late(response):
-    return response
+def get_response_for_exception(exc_info):
 
-def outbound(response):
-    return response
+def log_traceback_for_5xx(response):
 
-def shutdown(website):
-    return website</pre>
+def delegate_error_to_simplate(website, request, response):
 
-<p>Your functions don&rsquo;t need to be named startup, inbound_early, etc.
-Each can return the object it was given, or a new request/response/website
-object. You can also return None if you want to stick with the same object.
-Furthermore, inbound hooks are encouraged to raise <a
-    href="/response/">Response objects</a>.</p>
+def log_traceback_for_exception(website, exc_info):
 
-<p>In between the inbound_early and inbound_late hooks, the inbound_core hook
-is run, which primarily translates the request to the filesystem, storing the
-result at <code>request.fs</code>.</p>
+def log_result_of_request(website, response, request):
+</pre>
 
-<p>In between the error_early and error_late hooks, <a
-    href="/nice-errors/">nice error messages</a> happen. This is more
-complicated, so you don't have access to the core error processing via a
-hook.</p>
+<p>Each function returns <code>None</code> or a dictionary that will be used to
+update the control flow state for dependency injection. So if a function
+returns <code>{"foo": bar}</code>, then downstream functions that ask for
+<code>foo</code> will get <code>bar</code>.</p>
 
-<p>The outbound hook is called for all responses, include errors. By default it
-includes one method, log_access.</p>
+<p>You can add your own functions to the request flow by modifying the list at
+<code>website.flow.functions</code> in <a
+href="/configure-aspen.py/"><code>configure-aspen.py</code></a>.</p>
 
-<p>Hooks are global, meaning every hook touches every request/response.</p>
 
-<p>Hooks are registered using API on <a href="/api/website/">the website
-    object</a> that is placed in the namespace of your configuration files and
-simplates.</p>
+<h3>Exception Handling</h3>
 
+<p>Each function is run in a <code>try</code>/<code>except</code> block, and if
+the function raises an exception then <code>sys.exc_info()</code> is captured
+(the <code>traceback</code> object is converted to a string traceback to avoid
+leaking memory) and made available to downstream functions as
+<code>exc_info</code> .</p>
+
+<p>If a function asks for <code>exc_info</code> and there is no exception being
+handled (<code>exc_info</code> is <code>None</code>), that function will be
+skipped.</p>
+
+<p>If a function <i>doesn't</i> ask for <code>exc_info</code> and there
+<i>is</i> an exception being handled (<code>exc_info</code> is not
+<code>None</code>), <i>that</i> function will be skipped.</p>
 
 {% end %}
