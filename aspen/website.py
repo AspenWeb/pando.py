@@ -60,12 +60,6 @@ class Website(Configurable):
         state = {}
         state['website'] = self
         state['environ'] = environ
-        state['request'] = None
-        state['resource'] = None
-        state['socket'] = None
-        state['response'] = None
-        state['exc_info'] = None
-        state['state'] = state
 
         state = self.flow.run(state, through=_run_through)
 

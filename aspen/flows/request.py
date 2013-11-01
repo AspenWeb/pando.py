@@ -55,9 +55,8 @@ def get_response_for_socket(request):
     socket = sockets.get(request)
     if socket is None:
         # This is not a socket request.
-        return
-
-    if isinstance(socket, Response):
+        response = None
+    elif isinstance(socket, Response):
         # Actually, this is a handshake request.
         response = socket
     else:

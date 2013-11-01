@@ -263,7 +263,8 @@ class Harness(object):
     def _perform_request(self, environ, cookie_info, run_through, want):
         self.add_cookie_info(environ, **(cookie_info or {}))
         state = self.website.respond(environ, _run_through=run_through)
-        response = state['response']
+
+        response = state.get('response')
         if response is not None:
             if response.headers.cookie:
                 self.cookies.update(response.headers.cookie)
