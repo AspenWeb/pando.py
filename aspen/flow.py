@@ -34,10 +34,14 @@ class Flow(object):
 
 
     def insert_after(self, name, newfunc):
+        """Insert newfunc in the list right after the function named name.
+        """
         self.insert_relative_to(name, newfunc, relative_position=1)
 
 
     def insert_before(self, name, newfunc):
+        """Insert newfunc in the list right before the function named name.
+        """
         self.insert_relative_to(name, newfunc, relative_position=-1)
 
 
@@ -48,11 +52,15 @@ class Flow(object):
 
 
     def remove(self, name):
+        """Remove the function named name from the list.
+        """
         func = self.resolve_name_to_function(name)
         self.functions.remove(func)
 
 
     def resolve_name_to_function(self, name):
+        """Given the name of a function in the list, return the function itself.
+        """
         func = None
         for func in self.functions:
             if func.func_name == name:
@@ -63,7 +71,7 @@ class Flow(object):
 
 
     def run(self, state, through=None):
-        """
+        """Given a state dictionary, run through the functions in the list.
         """
         if through is not None:
             if through not in self.get_names():
