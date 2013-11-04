@@ -76,7 +76,8 @@ class Flow(object):
         if through is not None:
             if through not in self.get_names():
                 raise FunctionNotFound(through)
-        print()
+        # XXX bring these back when we've sorted out logging
+        #print()
 
         if 'exc_info' not in state:
             state['exc_info'] = None
@@ -89,17 +90,17 @@ class Flow(object):
                 deps = self._resolve_dependencies(function, state)
                 if 'exc_info' in deps.required and state['exc_info'] is None:
                     pass    # Hook needs an exc_info but we don't have it.
-                    print("{0:>48}  \x1b[33;1mskipped\x1b[0m".format(function_name))
+                    #print("{0:>48}  \x1b[33;1mskipped\x1b[0m".format(function_name))
                 elif 'exc_info' not in deps.names and state['exc_info'] is not None:
                     pass    # Hook doesn't want an exc_info but we have it.
-                    print("{0:>48}  \x1b[33;1mskipped\x1b[0m".format(function_name))
+                    #print("{0:>48}  \x1b[33;1mskipped\x1b[0m".format(function_name))
                 else:
                     new_state = function(**deps.kw)
-                    print("{0:>48}  \x1b[32;1mdone\x1b[0m".format(function_name))
+                    #print("{0:>48}  \x1b[32;1mdone\x1b[0m".format(function_name))
                     if new_state is not None:
                         state.update(new_state)
             except:
-                print("{0:>48}  \x1b[31;1mfailed\x1b[0m".format(function_name))
+                #print("{0:>48}  \x1b[31;1mfailed\x1b[0m".format(function_name))
                 state['exc_info'] = sys.exc_info()[:2] + (traceback.format_exc().strip(),)
                 if self.short_circuit:
                     raise
