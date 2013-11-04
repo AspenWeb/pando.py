@@ -14,4 +14,4 @@ opts['version'] = open('../version.txt').read()[:-len('-dev')]
 website.renderer_default = 'tornado'
 open('/tmp/debugout','a').write('doccnf:' + website.renderer_default + '\n')
 
-website.flow.insert_after(add_stuff_to_request_context, 'parse_environ_into_request')
+website.flow.insert_after('parse_environ_into_request', add_stuff_to_request_context)
