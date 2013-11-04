@@ -39,8 +39,8 @@ class Website(Configurable):
     def wsgi_app(self, environ, start_response):
         """WSGI interface.
 
-        Wrap this method instead of the website object itself
-        when to use WSGI middleware::
+        Wrap this method (instead of the website object itself) when you want
+        to use WSGI middleware::
 
             website = Website()
             website.wsgi = WSGIMiddleware(website.wsgi)
