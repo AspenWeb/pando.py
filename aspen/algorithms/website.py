@@ -36,6 +36,7 @@ from aspen import dispatcher, resources, sockets
 from aspen.http.request import Request
 from aspen.http.response import Response
 from aspen.sockets.socket import Socket
+from aspen.algorithms import typecast
 from first import first as _first
 
 
@@ -56,6 +57,10 @@ def raise_200_for_OPTIONS(request):
 
 def dispatch_request_to_filesystem(request):
     dispatcher.dispatch(request)
+
+
+def typecast_virtualrequestpath_in_place(request):
+    typecast.do_typecast(request)
 
 
 def get_response_for_socket(request):
