@@ -125,7 +125,7 @@ def handle_conflicts_over_port(exc_info, website):
     raise
 
 
-def log_tracebacks_for_exceptions(exc_info):
+def log_traceback_for_exception(exc_info):
     """
     """
     if exc_info[0] not in (KeyboardInterrupt, SystemExit):
