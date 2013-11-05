@@ -4,8 +4,8 @@ Aspen's Auth modules.
 Currently:
 
     * cookie - Cookie Auth
-	* httpbasic - HTTP BASIC Auth
-	* httpdigest - HTTP DIGEST Auth
+    * httpbasic - HTTP BASIC Auth
+    * httpdigest - HTTP DIGEST Auth
 
 """
 from aspen import Response
