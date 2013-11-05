@@ -43,7 +43,7 @@ def install_handler_for_SIGQUIT():
         signal.signal(signal.SIGQUIT, SIGQUIT)
 
 
-def get_website_from_argv(argv):
+def get_website_from_argv(argv, flow):
     """
 
     User-developers get this website object inside of their resources and
@@ -54,7 +54,7 @@ def get_website_from_argv(argv):
     """
     if argv is None:
         argv = sys.argv[1:]
-    website = Website(argv)
+    website = Website(argv, server_flow=flow)
     return {'website': website}
 
 
@@ -89,6 +89,14 @@ def start(website):
     """
     aspen.log_dammit("Starting up Aspen website.")
     website.network_engine.start()
+
+
+def stub_website_for_exception(exc_info, state):
+    """
+    """
+    # Without this, the call to stop fails if we had an exception during configuration.
+    if 'website' not in state:
+        return {'website': None}
 
 
 def handle_conflict_over_port(exc_info, website):
@@ -137,6 +145,9 @@ def log_traceback_for_exception(exc_info):
 def stop(website):
     """Stop the server.
     """
+    if website is None:
+        return
+
     aspen.log_dammit("Shutting down Aspen website.")
     website.network_engine.stop()
     if hasattr(socket, 'AF_UNIX'):

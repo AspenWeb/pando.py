@@ -79,10 +79,9 @@ class Flow(object):
         # XXX bring these back when we've sorted out logging
         #print()
 
-        if 'exc_info' not in state:
-            state['exc_info'] = None
-        if 'state' not in state:
-            state['state'] = state
+        if 'flow' not in state:     state['flow'] = self
+        if 'state' not in state:    state['state'] = state
+        if 'exc_info' not in state: state['exc_info'] = None
 
         for function in self.functions:
             function_name = function.func_name
