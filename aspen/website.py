@@ -6,7 +6,6 @@ from __future__ import unicode_literals
 import datetime
 import os
 
-import aspen
 from aspen.configuration import Configurable
 from aspen.flow import Flow
 from aspen.utils import to_rfc822, utc
@@ -61,20 +60,6 @@ class Website(Configurable):
         state = self.flow.run(state, through=_run_through)
 
         return state
-
-
-    # Interface for Server
-    # ====================
-
-    def start(self):
-        aspen.log_dammit("Starting up Aspen website.")
-        self.hooks.run('startup', self)
-        self.network_engine.start()
-
-    def stop(self):
-        aspen.log_dammit("Shutting down Aspen website.")
-        self.hooks.run('shutdown', self)
-        self.network_engine.stop()
 
 
     # File Resolution
