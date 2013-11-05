@@ -270,9 +270,9 @@ class Configurable(object):
         for entrypoint in pkg_resources.iter_entry_points(group='aspen.renderers'):
             render_module = entrypoint.load()
             self.renderer_factories[entrypoint.name] = render_module.Factory(self)
-            aspen.log_dammit("Found plugin for renderer '%s'" % entrypoint.name) 
+            aspen.log_dammit("Found plugin for renderer '%s'" % entrypoint.name)
 
-        self.default_renderers_by_media_type = defaultdict(lambda: self.renderer_default) 
+        self.default_renderers_by_media_type = defaultdict(lambda: self.renderer_default)
 
         # mime.types
         # ==========
@@ -290,7 +290,7 @@ class Configurable(object):
         ENGINES = {}
         for entrypoint in pkg_resources.iter_entry_points(group='aspen.network_engines'):
             ENGINES[entrypoint.name] = entrypoint.load()
-        
+
         if self.network_engine in ENGINES:
             # found in a module
             Engine = ENGINES[self.network_engine].Engine
@@ -376,7 +376,7 @@ class Configurable(object):
         # ========================================
         # The user gets self as 'website' inside their configuration scripts.
         default_cfg_filename = None
-	if self.project_root is not None:
+        if self.project_root is not None:
             default_cfg_filename = os.path.join(self.project_root, DEFAULT_CONFIG_FILE)
 
         for filepath in self.configuration_scripts:
@@ -398,11 +398,11 @@ class Configurable(object):
                 # race condition that smells to me like a potential security
                 # vulnerability.
 
-		## determine if it's a default configscript or a specified one
+                ## determine if it's a default configscript or a specified one
                 cfgtype = "configuration"
-		if filepath == default_cfg_filename:
-		    cfgtype = "default " + cfgtype
-		## pick the right error mesage
+                if filepath == default_cfg_filename:
+                    cfgtype = "default " + cfgtype
+                ## pick the right error mesage
                 if err.errno == errno.ENOENT:
                     msg = ("The %s script %s doesn't seem to exist.")
                 elif err.errno == errno.EACCES:
@@ -412,14 +412,14 @@ class Configurable(object):
                     msg = ("There was a problem reading the %s script %s:")
                     msg += os.sep + traceback.format_exc()
                 ## do message-string substitutions
-		msg = msg % (cfgtype, filepath)
-		## output the message
-		if not "default" in cfgtype:
+                msg = msg % (cfgtype, filepath)
+                ## output the message
+                if not "default" in cfgtype:
                    # if you specify a config file, it's an error if there's a problem
                    raise ConfigurationError(msg)
-	        else:
+                else:
                    # problems with default config files are okay, but get logged
-		   aspen.log(msg)
+                   aspen.log(msg)
             else:
                 aspen.log_dammit("Loading configuration file '%s' (possibly changing settings)" % filepath)
                 execution.if_changes(filepath)
