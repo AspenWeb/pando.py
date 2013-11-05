@@ -44,6 +44,7 @@ href="/configure-aspen.py/"><code>configure-aspen.py</code></a>. The
 certain points relative to other functions:</p>
 
 <pre>def insert_after('name_of_other_function', your_func):
+
 def insert_before('name_of_other_function', your_func):
 </pre>
 
