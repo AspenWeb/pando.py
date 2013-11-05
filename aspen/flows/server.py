@@ -91,7 +91,7 @@ def start(website):
     website.network_engine.start()
 
 
-def handle_conflicts_over_port(exc_info, website):
+def handle_conflict_over_port(exc_info, website):
     """Be friendly about port conflicts.
 
     The traceback one gets from a port conflict or permission error is not that
