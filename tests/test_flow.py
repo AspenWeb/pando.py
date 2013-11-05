@@ -145,3 +145,48 @@ def buz(): return {'val': 3}
 '''))
     bar_flow = Flow('foo')
     pytest.raises(FunctionNotFound, bar_flow.run, {'val': None}, through='blaaaaaah')
+
+
+def test_inserted_flow_steps_run(sys_path):
+    sys_path.mk(('foo.py', '''
+def bar(): return {'val': 1}
+def baz(): return {'val': 2}
+def buz(): return {'val': 3}
+'''))
+    bar_flow = Flow('foo')
+
+    def biz(): return {'val': 4}
+
+    bar_flow.insert_after('buz', biz)
+    state = bar_flow.run({'val': None})
+
+    assert state == {'val': 4, 'exc_info': None, 'state': state}
+
+
+
+# Flow decorators
+# ===============
+
+from aspen.flows.filters import by_lambda
+
+FOO_PY = '''
+def bar(): return {'val': 1}
+def baz(): return {'val': 2}
+def buz(): return {'val': 3}
+'''
+
+def test_filter_a_flow(sys_path):
+    sys_path.mk(('foo.py', FOO_PY))
+    bar_flow = Flow('foo')
+
+    @by_lambda(lambda: True)
+    def biz(): 
+        print("in biz")
+        return {'val': 4}
+
+    bar_flow.insert_after('buz', biz)
+
+    state = bar_flow.run({'val': None})
+    assert state == {'val': 4, 'exc_info': None, 'state': state}
+    
+
