@@ -63,7 +63,8 @@ def inbound_responder(*args, **kw):
         password = users[username]
         return digestauth.digest(':'.join([username, realm, password]))
 
-    website.hooks.inbound_early.register(digestauth.inbound_responder(get_digest))
+    auth = digestauth.inbound_responder(get_digest)
+    website.flow.insert_after('parse_environ_into_request', auth)
     """
     kwargs = kw.copy()
     kwargs['http_provider'] = AspenHTTPProvider

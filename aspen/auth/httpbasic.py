@@ -10,7 +10,8 @@ To use:
     auth = httpbasic.inbound_responder(my_password_verifier)
 
     # install it
-    website.hooks.inbound_early.register(auth)
+    website.flow.insert_after('parse_environ_into_request', auth)
+
 """
 from __future__ import absolute_import
 from __future__ import division
