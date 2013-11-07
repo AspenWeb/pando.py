@@ -160,7 +160,7 @@ def buz(): return {'val': 3}
     bar_flow.insert_after('buz', biz)
     state = bar_flow.run({'val': None})
 
-    assert state == {'val': 4, 'exc_info': None, 'state': state}
+    assert state == {'val': 4, 'exc_info': None, 'state': state, 'flow':bar_flow}
 
 
 
@@ -187,6 +187,6 @@ def test_filter_a_flow(sys_path):
     bar_flow.insert_after('buz', biz)
 
     state = bar_flow.run({'val': None})
-    assert state == {'val': 4, 'exc_info': None, 'state': state}
+    assert state == {'val': 4, 'exc_info': None, 'state': state, 'flow': bar_flow}
     
 
