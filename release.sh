@@ -25,6 +25,9 @@ if [ -z "$1" ]; then
     exit 1
 elif [ "`git tag | grep $1`" ]; then
     echo "Version $1 is already git tagged."
+elif [ "wheel version | cut -f 1 -d' '" != "wheel" ]; then
+    echo "You need to 'pip install wheel'"
+    exit 1
 else
     confirm "Did you add to the Changelog?"
     if [ $? -ne 0 ]; then
@@ -41,6 +44,7 @@ else
         git push --tags
 
         python2.7 setup.py sdist --formats=zip,gztar,bztar upload
+        python2.7 setup.py bdist_wheel upload
 
         printf "\055dev" >> version.txt
         git commit version.txt -m"Bump version to $1-dev"
