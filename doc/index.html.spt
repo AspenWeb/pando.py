@@ -425,7 +425,7 @@ homepage = True
                 <li><a href="/api/website/">Website</a></li>
             </ul>
 
-            <li><a href="/algorithms/">Algorithms</a></li>
+            <li><a href="/algorithms/">Core Algorithms</a></li>
             <li><a href="/unicode/">Unicode</a></li>
             <li><a href="/virtual-paths/">Virtual Paths</a></li>
         </ul>

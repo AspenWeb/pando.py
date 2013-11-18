@@ -9,8 +9,7 @@ starts up. It holds all of the global configuration for your application. It is
 placed in the namespace of your <a
     href="/configure-aspen.py/">configuration scripts</a> and <a
     href="/simplates/">simplates</a>, where it is available from the first page
-onwards. It is also the object passed to your &ldquo;startup&rdquo; and
-&ldquo;shutdown&rdquo; <a href="/hooks/">hooks</a>.</p>
+onwards.</p>
 
 <p>The following attributes are defined when aspen starts up based on
 configuration in the environment (<code>ASPEN_NAME</code>) and on the command
@@ -22,7 +21,7 @@ line (<code>--name</code>):</p>
     <tr><td>charset_dynamic</td><td>UTF-8</td> </tr>
     <tr><td>charset_static</td><td>None</td> </tr>
     <tr><td>configuration_scripts&nbsp;</td><td>[]</td> </tr>
-    <tr><td>indices</td><td>['index', 'index.html', 'index.json', 
+    <tr><td>indices</td><td>['index', 'index.html', 'index.json',
         'index.html.spt', 'index.json.spt']</td> </tr>
     <tr><td>list_directories</td><td>False</td> </tr>
     <tr><td>logging_threshold</td><td>0 (most verbose)</td> </tr>
@@ -83,35 +82,5 @@ returns <a
 interpreted as the number of minutes of downtime you expect, and the
 Retry-After header is set accordingly. You can access the header as a
 datetime.datetime object at website.retry_after.</p>
-
-<h3>Hooks</h3>
-
-<p>The website object has a <a href="/hooks/">hooks</a> attribute with eight
-sub-attributes:</p>
-
-<ul>
-    <li>website.hooks.startup</li>
-    <li>website.hooks.inbound_early</li>
-    <li>website.hooks.inbound_core</li>
-    <li>website.hooks.inbound_late</li>
-    <li>website.hooks.error_early</li>
-    <li>website.hooks.error_late</li>
-    <li>website.hooks.outbound</li>
-    <li>website.hooks.shutdown</li>
-</ul>
-
-<p>These are all lists that you can modify as needed in configure-aspen.py.</p>
-
-
-<h4>Example</h4>
-
-<p>Here&rsquo;s an example of registering an inbound_early callback in
-${website.project_root}/configure-aspen.py.</p>
-
-<pre>def glurpy_callback(request):
-    print "Greetings, program!"
-
-website.hooks.inbound_early.append(glurpy_callback)
-</pre>
 
 {% end %}
