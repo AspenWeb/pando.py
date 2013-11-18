@@ -32,10 +32,10 @@ flat.</p>
 
 <h4>Python modules</h4>
 
-<p>The <code>project_root</code> directory is placed on <code>sys.path</code> during
-startup, so you can place Python modules directly inside of this directory and
-they will be available to your <a href="/hooks/">hooks</a> and <a
-    href="/simplates/">simplates</a>.</p>
+<p>The <code>project_root</code> directory is placed on <code>sys.path</code>
+during startup, so you can place Python modules directly inside of this
+directory and they will be available to your <a
+href="/simplates/">simplates</a>.</p>
 
 <p>This means that the <code>project_root</code> directory is a lightweight sandbox.
 It is sufficient as such if Aspen itself is globally installed, and your site
