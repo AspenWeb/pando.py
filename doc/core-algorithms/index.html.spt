@@ -1,4 +1,4 @@
-doc_title = "Algorithms"
+doc_title = "Core Algorithms"
 doc_next = ("Unicode", "/unicode/")
 
 from aspen.algorithms import server, website
