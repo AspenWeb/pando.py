@@ -15,8 +15,7 @@ shortcuts available, however.</p>
 
 <p>An instance of the <code>aspen.http.request.Request</code> class is made
 available to you in your <a href="/simplates/">simplates</a> from the second
-page on. It is also passed to your functions registered with the inbound_early
-and inbound_late <a href="/hooks/">hooks</a>.</p>
+page on.</p>
 
 
 <h3>Shortcuts</h3>

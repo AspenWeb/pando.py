@@ -24,9 +24,7 @@ doc_next = ('Virtual Paths', '/virtual-paths/')
 
 <p>A <code>Response</code> object is automatically instantiated for all
 requests.  This object is automatically available in the second page of your <a
-    href="/simplates/">simplates</a>, where it is named <code>response</code>.
-Likewise, it is passed as the only argument to your outbound <a
-    href="/hooks/">hooks</a>.</p>
+href="/simplates/">simplates</a>, where it is named <code>response</code>.</p>
 
 <p>One common thing to do with the <code>response</code> object is to set a
 header. The <code>response.headers</code> attribute is the same as on <a
@@ -42,8 +40,7 @@ Check your headers.</pre>
 
 <p>You can also raise <code>Response</code> instances, because
 <code>Response</code> is a subclass of Python's built-in <code>Exception</code>
-class. This works in <a href="/hooks/">hooks</a>, and in <a
-    href="/simplates/">simplates</a>, page two.</p>
+class.</p>
 
 <p>Make a simplate named <code>fishing.html.spt</code> with this content:</p>
 

@@ -5,7 +5,6 @@ from __future__ import unicode_literals
 
 from aspen import sockets
 from aspen.http.request import Request
-from aspen.testing.sockets import make_request
 
 
 def test_sockets_get_nonsock_returns_None():
@@ -15,9 +14,9 @@ def test_sockets_get_nonsock_returns_None():
     actual = sockets.get(request)
     assert actual is expected
 
-def test_sockets_get_adds_channel(mk):
-    mk(('echo.sock.spt', '[---]\n'))
-    request = make_request()
+def test_sockets_get_adds_channel(harness):
+    harness.fs.www.mk(('echo.sock.spt', '[---]\n'))
+    request = harness.make_socket_request()
     request.socket = '1/'
 
     try:
@@ -29,9 +28,9 @@ def test_sockets_get_adds_channel(mk):
     finally:
         sockets.__channels__['/echo.sock'].disconnect_all()
 
-def test_channel_survives_transportation(mk):
-    mk(('echo.sock.spt', '[---]\n'))
-    request = make_request()
+def test_channel_survives_transportation(harness):
+    harness.fs.www.mk(('echo.sock.spt', '[---]\n'))
+    request = harness.make_socket_request()
     request.socket = '1/'
     response = sockets.get(request) # handshake
     sid = response.body.split(':')[0]

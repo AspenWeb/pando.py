@@ -12,8 +12,8 @@ scripts can be specified as a comma-separated list, set in the environment as
 <code>ASPEN_CONFIGURATION_SCRIPTS</code> or on the command line as
 <code>--configuration_scripts</code>. There is a <a
     href="/api/website/">website</a> object in each script&rsquo;s namespace
-that can be used to configure aspen, including <a href="/hooks/">registering
-    hook callbacks</a>.</p>
+that can be used to configure aspen, including <a href="/control-flow/">
+    control flow</a>.</p>
 
 
 {% end %}

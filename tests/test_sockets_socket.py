@@ -7,38 +7,37 @@ import time
 
 from aspen.sockets import FFFD
 from aspen.sockets.socket import Socket
-from aspen.testing.sockets import make_socket, SocketInThread
 
 
-def test_socket_is_instantiable(mk):
-    mk(('echo.sock.spt', ''))
+def test_socket_is_instantiable(harness):
+    harness.fs.www.mk(('echo.sock.spt', ''))
 
     expected = Socket
-    actual = make_socket().__class__
+    actual = harness.make_socket().__class__
     assert actual is expected
 
-def test_two_sockets_are_instantiable(mk):
-    mk(('echo.sock.spt', ''))
+def test_two_sockets_are_instantiable(harness):
+    harness.fs.www.mk(('echo.sock.spt', ''))
 
-    socket1 = make_socket()
-    socket2 = make_socket()
+    socket1 = harness.make_socket()
+    socket2 = harness.make_socket()
 
     expected = (Socket, Socket)
     actual = (socket1.__class__, socket2.__class__)
     assert actual == expected
 
-def test_socket_can_shake_hands(mk):
-    mk(('echo.sock.spt', ''))
-    socket = make_socket()
+def test_socket_can_shake_hands(harness):
+    harness.fs.www.mk(('echo.sock.spt', ''))
+    socket = harness.make_socket()
     response = socket.shake_hands()
     expected = '15:10:xhr-polling'
     actual = response.body.split(':', 1)[1]
     assert actual == expected
 
-def test_socket_can_barely_function(mk):
-    mk(('echo.sock.spt', 'socket.send("Greetings, program!")'))
+def test_socket_can_barely_function(harness):
+    harness.fs.www.mk(('echo.sock.spt', 'socket.send("Greetings, program!")'))
 
-    socket = make_socket()
+    socket = harness.make_socket()
     socket.tick()
 
     expected = FFFD+b'33'+FFFD+b'3::/echo.sock:Greetings, program!'
@@ -47,10 +46,10 @@ def test_socket_can_barely_function(mk):
         actual = actual.next()
     assert actual == expected
 
-def test_socket_can_echo(mk):
-    mk(('echo.sock.spt', 'socket.send(socket.recv())'))
+def test_socket_can_echo(harness):
+    harness.fs.www.mk(('echo.sock.spt', 'socket.send(socket.recv())'))
 
-    with SocketInThread() as socket:
+    with harness.SocketInThread() as socket:
         socket._send(b'3::/echo.sock:Greetings, program!')
         time.sleep(0.05) # give the resource time to tick
 

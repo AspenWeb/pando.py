@@ -17,7 +17,6 @@ from collections import defaultdict
 import aspen
 import aspen.logging
 from aspen import execution
-from aspen.hooks import Hooks
 from aspen.configuration import parse
 from aspen.configuration.exceptions import ConfigurationError
 from aspen.configuration.options import OptionParser, DEFAULT
@@ -318,33 +317,6 @@ class Configurable(object):
         else:
             self.network_port = None
 
-        # hooks
-        self.hooks = Hooks()
-        self.hooks.startup = []
-        self.hooks.inbound_early = []
-        self.hooks.inbound_core = []
-        self.hooks.inbound_late = []
-        self.hooks.error_early = []
-        self.hooks.error_late = []
-        self.hooks.outbound = []
-        self.hooks.shutdown = []
-
-
-        # Set up core logic as hooks.
-        # ===========================
-        # This way, apps have fairly complete control over the request handling
-        # cycle. We don't have an error_core because error handling is more
-        # complicated.
-
-        self.reset_startup()
-        self.reset_inbound_early()
-        self.reset_inbound_core()
-        self.reset_inbound_late()
-        self.reset_error_early()
-        self.reset_error_late()
-        self.reset_outbound()
-        self.reset_shutdown()
-
         self.run_config_scripts()
         self.show_renderers()
 
@@ -427,13 +399,3 @@ class Configurable(object):
 
 
 
-    # Override these in subclasses to implement default logic.
-
-    def reset_startup(self): pass
-    def reset_inbound_early(self): pass
-    def reset_inbound_core(self): pass
-    def reset_inbound_late(self): pass
-    def reset_outbound(self): pass
-    def reset_error_early(self): pass
-    def reset_error_late(self): pass
-    def reset_shutdown(self): pass

@@ -10,7 +10,8 @@ To use:
     auth = httpbasic.inbound_responder(my_password_verifier)
 
     # install it
-    website.hooks.inbound_early.register(auth)
+    website.algorithm.insert_after('parse_environ_into_request', auth)
+
 """
 from __future__ import absolute_import
 from __future__ import division
@@ -26,14 +27,14 @@ from aspen import Response
 def inbound_responder(*args, **kwargs):
     """ see BasicAuth object for args; they're passed through """
     auth = BasicAuth(*args, **kwargs)
-    def _(request):
+    def httpbasic_inbound_responder(request):
         """generated request-handling method"""
         request.auth = BAWrapper(auth, request)
         authed, response = auth.authorized(request)
         if not authed:
             raise response
         return request
-    return _
+    return httpbasic_inbound_responder
 
 
 class BAWrapper(object):
