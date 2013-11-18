@@ -1,2 +1,2 @@
-request.redirect('/lifecycles/')
+request.redirect('/core-algorithms/')
 [---]
