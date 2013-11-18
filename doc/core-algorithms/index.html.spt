@@ -20,10 +20,10 @@ for line in open(server.__file__):
 
 <p>Aspen's request-processing and server lifecycle algorithms are implemented
 with a module called <a
-    href="http://algorithm-py.readthedocs.org/"><code>algorithm</code></a>. If
-    you want to modify Aspen's behavior you should read up on the <a
-        href="http://algorithm-py.readthedocs.org/"><code>algorithm</code></a>
-    module.</p>
+href="http://algorithm-py.readthedocs.org/"><code>algorithm</code></a>. If you
+want to modify Aspen's behavior you should read up on the <a
+href="http://algorithm-py.readthedocs.org/"><code>algorithm</code></a> module
+and refer to the algorithm definitions below and in the Aspen source code.</p>
 
 
 <h3>Website Algorithm</h3>
