@@ -43,7 +43,7 @@ def install_handler_for_SIGQUIT():
         signal.signal(signal.SIGQUIT, SIGQUIT)
 
 
-def get_website_from_argv(argv, flow):
+def get_website_from_argv(argv, algorithm):
     """
 
     User-developers get this website object inside of their resources and
@@ -54,7 +54,7 @@ def get_website_from_argv(argv, flow):
     """
     if argv is None:
         argv = sys.argv[1:]
-    website = Website(argv, server_flow=flow)
+    website = Website(argv, server_algorithm=algorithm)
     return {'website': website}
 
 

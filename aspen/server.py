@@ -4,15 +4,15 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 
-from aspen.flow import Flow
+from algorithm import Algorithm
 
 
 def main(argv=None):
     """http://aspen.io/cli/
     """
     try:
-        flow = Flow('aspen.flows.server')
-        flow.run({'argv': argv})
+        algorithm = Algorithm('aspen.algorithms.server')
+        algorithm.run(argv=argv)
     except (SystemExit, KeyboardInterrupt):
 
         # Under some (most?) network engines, a SIGINT will be trapped by the

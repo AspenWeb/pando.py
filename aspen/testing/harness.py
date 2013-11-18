@@ -113,7 +113,7 @@ class Harness(object):
                    , '--show_tracebacks', '1'
                     ] + self.argv
             self._website = Website(argv)
-            self.website.flow.short_circuit = self.short_circuit
+            self.website.algorithm.short_circuit = self.short_circuit
         return self._website
 
 
