@@ -1,9 +1,10 @@
 """These functions comprise the request processing functionality of Aspen.
 
-Per the flow.py module, the functions defined in this present module are
+Per the algorithm.py module, the functions defined in this present module are
 executed in the order they're defined here, with dependencies injected as
 specified in each function definition. Each function should return None, or a
-dictionary that will be used to update the flow state in the calling routine.
+dictionary that will be used to update the algorithm state in the calling
+routine.
 
 The naming convention we've adopted for the functions in this file is:
 
@@ -19,8 +20,8 @@ understand and remember.
 
 It's important that function names remain relatively stable over time, as
 downstream applications are expected to insert their own functions into this
-flow based on the names of our functions here. A change in function names or
-ordering here would constitute a backwards-incompatible change.
+algorithm based on the names of our functions here. A change in function names
+or ordering here would constitute a backwards-incompatible change.
 
 """
 from __future__ import absolute_import

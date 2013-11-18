@@ -21,9 +21,9 @@ def _auth_header(username, password):
 @yield_fixture
 def request_with(harness):
     def request_with(authfunc, auth_header):
-        harness.website.flow.insert_after( 'parse_environ_into_request'
-                                         , inbound_responder(authfunc)
-                                          )
+        harness.website.algorithm.insert_after( 'parse_environ_into_request'
+                                              , inbound_responder(authfunc)
+                                               )
         return harness.simple( filepath=None
                              , run_through='httpbasic_inbound_responder'
                              , want='request'

@@ -6,8 +6,8 @@ from __future__ import unicode_literals
 import datetime
 import os
 
+from algorithm import Algorithm
 from aspen.configuration import Configurable
-from aspen.flow import Flow
 from aspen.utils import to_rfc822, utc
 
 # 2006-11-17 was the first release of aspen - v0.3
@@ -23,11 +23,11 @@ class Website(Configurable):
 
     """
 
-    def __init__(self, argv=None, server_flow=None):
+    def __init__(self, argv=None, server_algorithm=None):
         """Takes an argv list, without the initial executable name.
         """
-        self.server_flow = server_flow
-        self.flow = Flow('aspen.flows.website')
+        self.server_algorithm = server_algorithm
+        self.algorithm = Algorithm('aspen.algorithms.website')
         self.configure(argv)
 
 
@@ -53,14 +53,7 @@ class Website(Configurable):
     def respond(self, environ, _run_through=None):
         """Given a WSGI environ, return a state dict.
         """
-
-        state = {}
-        state['website'] = self
-        state['environ'] = environ
-
-        state = self.flow.run(state, through=_run_through)
-
-        return state
+        return self.algorithm.run(website=self, environ=environ, _through=_run_through)
 
 
     # File Resolution
