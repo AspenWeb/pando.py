@@ -8,7 +8,6 @@ from pytest import raises
 from aspen import resources, Response
 from aspen.resources.pagination import Page
 from aspen.resources.negotiated_resource import NegotiatedResource
-from aspen.testing import handle, StubRequest
 from aspen.website import Website
 from aspen.renderers.stdlib_template import Factory as TemplateFactory
 from aspen.renderers.stdlib_percent import Factory as PercentFactory
@@ -124,58 +123,58 @@ Greetings, program!
 <h1>Greetings, program!</h1>
 """
 
-def test_get_response_gets_response(mk):
-    mk(('index.spt', NEGOTIATED_RESOURCE))
+def test_get_response_gets_response(harness):
+    harness.fs.www.mk(('index.spt', NEGOTIATED_RESOURCE))
     response = Response()
-    request = StubRequest.from_fs('index.spt')
+    request = harness.make_request(filepath='index.spt', contents=NEGOTIATED_RESOURCE)
     actual = get_response(request, response)
     assert actual is response
 
-def test_get_response_is_happy_not_to_negotiate(mk):
-    mk(('index.spt', NEGOTIATED_RESOURCE))
-    request = StubRequest.from_fs('index.spt')
+def test_get_response_is_happy_not_to_negotiate(harness):
+    harness.fs.www.mk(('index.spt', NEGOTIATED_RESOURCE))
+    request = harness.make_request(filepath='index.spt', contents=NEGOTIATED_RESOURCE)
     actual = get_response(request, Response()).body
     assert actual == "Greetings, program!\n"
 
-def test_get_response_sets_content_type_when_it_doesnt_negotiate(mk):
-    mk(('index.spt', NEGOTIATED_RESOURCE))
-    request = StubRequest.from_fs('index.spt')
+def test_get_response_sets_content_type_when_it_doesnt_negotiate(harness):
+    harness.fs.www.mk(('index.spt', NEGOTIATED_RESOURCE))
+    request = harness.make_request(filepath='index.spt', contents=NEGOTIATED_RESOURCE)
     actual = get_response(request, Response()).headers['Content-Type']
     assert actual == "text/plain; charset=UTF-8"
 
-def test_get_response_doesnt_reset_content_type_when_not_negotiating(mk):
-    mk(('index.spt', NEGOTIATED_RESOURCE))
-    request = StubRequest.from_fs('index.spt')
+def test_get_response_doesnt_reset_content_type_when_not_negotiating(harness):
+    harness.fs.www.mk(('index.spt', NEGOTIATED_RESOURCE))
+    request = harness.make_request(filepath='index.spt', contents=NEGOTIATED_RESOURCE)
     response = Response()
     response.headers['Content-Type'] = 'never/mind'
     actual = get_response(request, response).headers['Content-Type']
     assert actual == "never/mind"
 
-def test_get_response_negotiates(mk):
-    mk(('index.spt', NEGOTIATED_RESOURCE))
-    request = StubRequest.from_fs('index.spt')
+def test_get_response_negotiates(harness):
+    harness.fs.www.mk(('index.spt', NEGOTIATED_RESOURCE))
+    request = harness.make_request(filepath='index.spt', contents=NEGOTIATED_RESOURCE)
     request.headers['Accept'] = 'text/html'
     actual = get_response(request, Response()).body
     assert actual == "<h1>Greetings, program!</h1>\n"
 
-def test_handles_busted_accept(mk):
-    mk(('index.spt', NEGOTIATED_RESOURCE))
-    request = StubRequest.from_fs('index.spt')
+def test_handles_busted_accept(harness):
+    harness.fs.www.mk(('index.spt', NEGOTIATED_RESOURCE))
+    request = harness.make_request(filepath='index.spt', contents=NEGOTIATED_RESOURCE)
     # Set an invalid Accept header so it will return default (text/plain)
     request.headers['Accept'] = 'text/html;'
     actual = get_response(request, Response()).body
     assert actual == "Greetings, program!\n"
 
-def test_get_response_sets_content_type_when_it_negotiates(mk):
-    mk(('index.spt', NEGOTIATED_RESOURCE))
-    request = StubRequest.from_fs('index.spt')
+def test_get_response_sets_content_type_when_it_negotiates(harness):
+    harness.fs.www.mk(('index.spt', NEGOTIATED_RESOURCE))
+    request = harness.make_request(filepath='index.spt', contents=NEGOTIATED_RESOURCE)
     request.headers['Accept'] = 'text/html'
     actual = get_response(request, Response()).headers['Content-Type']
     assert actual == "text/html; charset=UTF-8"
 
-def test_get_response_doesnt_reset_content_type_when_negotiating(mk):
-    mk(('index.spt', NEGOTIATED_RESOURCE))
-    request = StubRequest.from_fs('index.spt')
+def test_get_response_doesnt_reset_content_type_when_negotiating(harness):
+    harness.fs.www.mk(('index.spt', NEGOTIATED_RESOURCE))
+    request = harness.make_request(filepath='index.spt', contents=NEGOTIATED_RESOURCE)
     request.headers['Accept'] = 'text/html'
     response = Response()
     response.headers['Content-Type'] = 'never/mind'
@@ -185,16 +184,16 @@ def test_get_response_doesnt_reset_content_type_when_negotiating(mk):
     actual = get_response(request, response).headers['Content-Type']
     assert actual == "never/mind"
 
-def test_get_response_raises_406_if_need_be(mk):
-    mk(('index.spt', NEGOTIATED_RESOURCE))
-    request = StubRequest.from_fs('index.spt')
+def test_get_response_raises_406_if_need_be(harness):
+    harness.fs.www.mk(('index.spt', NEGOTIATED_RESOURCE))
+    request = harness.make_request(filepath='index.spt', contents=NEGOTIATED_RESOURCE)
     request.headers['Accept'] = 'cheese/head'
     actual = raises(Response, get_response, request, Response()).value.code
     assert actual == 406
 
-def test_get_response_406_gives_list_of_acceptable_types(mk):
-    mk(('index.spt', NEGOTIATED_RESOURCE))
-    request = StubRequest.from_fs('index.spt')
+def test_get_response_406_gives_list_of_acceptable_types(harness):
+    harness.fs.www.mk(('index.spt', NEGOTIATED_RESOURCE))
+    request = harness.make_request(filepath='index.spt', contents=NEGOTIATED_RESOURCE)
     request.headers['Accept'] = 'cheese/head'
     actual = raises(Response, get_response, request, Response()).value.body
     expected = "The following media types are available: text/plain, text/html."
@@ -217,18 +216,17 @@ website.default_renderers_by_media_type['text/plain'] = 'glubber'
 """
 
 
-def test_can_override_default_renderers_by_mimetype(mk):
-    mk(('.aspen/configure-aspen.py', OVERRIDE_SIMPLATE),
-       ('index.spt', NEGOTIATED_RESOURCE))
-    request = StubRequest.from_fs('index.spt')
+def test_can_override_default_renderers_by_mimetype(harness):
+    harness.fs.project.mk(('configure-aspen.py', OVERRIDE_SIMPLATE),)
+    harness.fs.www.mk(('index.spt', NEGOTIATED_RESOURCE),)
+    request = harness.make_request(filepath='index.spt', contents=NEGOTIATED_RESOURCE)
     request.headers['Accept'] = 'text/plain'
     actual = get_response(request, Response()).body
     assert actual == "glubber"
 
-def test_can_override_default_renderer_entirely(mk):
-    mk(('.aspen/configure-aspen.py', OVERRIDE_SIMPLATE),
-       ('index.spt', NEGOTIATED_RESOURCE))
-    request = StubRequest.from_fs('index.spt')
+def test_can_override_default_renderer_entirely(harness):
+    harness.fs.project.mk(('configure-aspen.py', OVERRIDE_SIMPLATE))
+    request = harness.make_request(filepath='index.spt', contents=NEGOTIATED_RESOURCE)
     request.headers['Accept'] = 'text/plain'
     actual = get_response(request, Response()).body
     assert actual == "glubber"
@@ -244,23 +242,24 @@ foo = "program"
 [-------] text/plain
 Greetings, %(foo)s!"""
 
-def test_indirect_negotiation_sets_media_type(mk):
-    mk(('/foo.spt', INDIRECTLY_NEGOTIATED_RESOURCE))
-    response = handle('/foo.html')
+def test_indirect_negotiation_sets_media_type(harness):
+    harness.fs.www.mk(('/foo.spt', INDIRECTLY_NEGOTIATED_RESOURCE))
+    response = harness.GET('/foo.html')
     expected = "<h1>Greetings, program!</h1>\n"
     actual = response.body
     assert actual == expected
 
-def test_indirect_negotiation_sets_media_type_to_secondary(mk):
-    mk(('/foo.spt', INDIRECTLY_NEGOTIATED_RESOURCE))
-    response = handle('/foo.txt')
+def test_indirect_negotiation_sets_media_type_to_secondary(harness):
+    harness.fs.www.mk(('/foo.spt', INDIRECTLY_NEGOTIATED_RESOURCE))
+    response = harness.GET('/foo.txt')
     expected = "Greetings, program!"
     actual = response.body
     assert actual == expected
 
-def test_indirect_negotiation_with_unsupported_media_type_is_404(mk):
-    mk(('/foo.spt', INDIRECTLY_NEGOTIATED_RESOURCE))
-    response = handle('/foo.jpg')
+def test_indirect_negotiation_with_unsupported_media_type_is_404(harness):
+    harness.short_circuit = False
+    harness.fs.www.mk(('/foo.spt', INDIRECTLY_NEGOTIATED_RESOURCE))
+    response = harness.GET('/foo.jpg')
     actual = response.code
     assert actual == 404
 
@@ -274,9 +273,9 @@ foo = path['foo']
 Greetings, %(foo)s!"""
 
 
-def test_negotiated_inside_virtual_path(mk):
-    mk(('/%foo/bar.spt', INDIRECTLY_NEGOTIATED_VIRTUAL_RESOURCE ))
-    response = handle('/program/bar.txt')
+def test_negotiated_inside_virtual_path(harness):
+    harness.fs.www.mk(('/%foo/bar.spt', INDIRECTLY_NEGOTIATED_VIRTUAL_RESOURCE ))
+    response = harness.GET('/program/bar.txt')
     expected = "Greetings, program!"
     actual = response.body
     assert actual == expected
@@ -291,22 +290,22 @@ Unknown request type, %(foo)s!
 [-------] text/*
 Greetings, %(foo)s!"""
 
-def test_negotiated_inside_virtual_path_with_startypes_present(mk):
-    mk(('/%foo/bar.spt', INDIRECTLY_NEGOTIATED_VIRTUAL_RESOURCE_STARTYPE ))
-    response = handle('/program/bar.html')
+def test_negotiated_inside_virtual_path_with_startypes_present(harness):
+    harness.fs.www.mk(('/%foo/bar.spt', INDIRECTLY_NEGOTIATED_VIRTUAL_RESOURCE_STARTYPE ))
+    response = harness.GET('/program/bar.html')
     actual = response.body
     assert '<h1>' in actual
 
-def test_negotiated_inside_virtual_path_with_startype_partial_match(mk):
-    mk(('/%foo/bar.spt', INDIRECTLY_NEGOTIATED_VIRTUAL_RESOURCE_STARTYPE ))
-    response = handle('/program/bar.txt')
+def test_negotiated_inside_virtual_path_with_startype_partial_match(harness):
+    harness.fs.www.mk(('/%foo/bar.spt', INDIRECTLY_NEGOTIATED_VIRTUAL_RESOURCE_STARTYPE ))
+    response = harness.GET('/program/bar.txt')
     expected = "Greetings, program!"
     actual = response.body
     assert actual == expected
 
-def test_negotiated_inside_virtual_path_with_startype_fallback(mk):
-    mk(('/%foo/bar.spt', INDIRECTLY_NEGOTIATED_VIRTUAL_RESOURCE_STARTYPE ))
-    response = handle('/program/bar.jpg')
+def test_negotiated_inside_virtual_path_with_startype_fallback(harness):
+    harness.fs.www.mk(('/%foo/bar.spt', INDIRECTLY_NEGOTIATED_VIRTUAL_RESOURCE_STARTYPE ))
+    response = harness.GET('/program/bar.jpg')
     expected = "Unknown request type, program!"
     actual = response.body.strip()
     assert actual == expected

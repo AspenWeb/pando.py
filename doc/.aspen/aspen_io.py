@@ -6,7 +6,7 @@ from os.path import dirname
 opts = {} # populate this in configure-aspen.py
 
 
-def inbound(request):
+def add_stuff_to_request_context(request):
 
     # Define some closures for generating image markup.
     # =================================================
@@ -43,8 +43,3 @@ def inbound(request):
     request.context['version'] = opts['version']
     request.context['homepage'] = False
     request.context['show_ga'] = opts['show_ga']
-
-
-# TODO Redirect direct requests to the CDN.
-# TODO What about css/js files?
-# TODO What about images in css?

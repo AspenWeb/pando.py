@@ -1,0 +1,44 @@
+doc_title = "Core Algorithms"
+doc_next = ("Unicode", "/unicode/")
+
+from aspen.algorithms import server, website
+
+website_funcs = []
+for line in open(website.__file__):
+    if line.startswith('def '):
+        website_funcs.append(line)
+
+server_funcs = []
+for line in open(server.__file__):
+    if line.startswith('def '):
+        server_funcs.append(line)
+
+
+[----------------------------------------]
+{% extends doc.html %}
+{% block doc %}
+
+<p>Aspen's request-processing and server lifecycle algorithms are implemented
+with a module called <a
+href="http://algorithm-py.readthedocs.org/"><code>algorithm</code></a>. If you
+want to modify Aspen's behavior you should read up on the <a
+href="http://algorithm-py.readthedocs.org/"><code>algorithm</code></a> module
+and refer to the algorithm definitions below and in the Aspen source code.</p>
+
+
+<h3>Website Algorithm</h3>
+
+<p>This is available at <code>website.algorithm</code>. Here are the signatures
+of the functions in the stock request-processing algorithm:</p>
+
+<pre>{{ '\n'.join(website_funcs) }}</pre>
+
+
+<h3>Server Algorithm</h3>
+
+<p>This is available at <code>website.server_algorithm</code>. Here are the
+signatures of the functions in the stock server process algorithm:</p>
+
+<pre>{{ '\n'.join(server_funcs) }}</pre>
+
+{% end %}

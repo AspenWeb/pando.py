@@ -1,9 +1,9 @@
 import random
 impressions = ["""
             <li>&ldquo;<a
-                href="https://github.com/gittip/aspen-python/issues/179#issuecomment-17178655">I'm 
-                finding Aspen frustrating to do simple things and easy to do 
-                complex things.</a>&rdquo; &mdash;<a 
+                href="https://github.com/gittip/aspen-python/issues/179#issuecomment-17178655">I'm
+                finding Aspen frustrating to do simple things and easy to do
+                complex things.</a>&rdquo; &mdash;<a
                 href="http://joshuakehn.com/">Joshua Kehn</a></li>
 """, """
             <li>&ldquo;<a
@@ -425,7 +425,7 @@ homepage = True
                 <li><a href="/api/website/">Website</a></li>
             </ul>
 
-            <li><a href="/hooks/">Hooks</a></li>
+            <li><a href="/core-algorithms/">Core Algorithms</a></li>
             <li><a href="/unicode/">Unicode</a></li>
             <li><a href="/virtual-paths/">Virtual Paths</a></li>
         </ul>
