@@ -7,13 +7,13 @@ from collections import namedtuple
 from Cookie import SimpleCookie
 from StringIO import StringIO
 
+from algorithm import Algorithm
 from aspen.network_engines import ThreadedBuffer
 from aspen.http.request import Request
 from aspen.sockets.channel import Channel
 from aspen.sockets.socket import Socket
 from aspen.sockets.transport import XHRPollingTransport
 from aspen.testing.filesystem_fixture import FilesystemFixture
-from aspen.website import Website
 
 
 BOUNDARY = 'BoUnDaRyStRiNg'
@@ -88,34 +88,30 @@ class Harness(object):
             assert_equal(first_data['amount'], "1.00")
     """
 
-    def __init__(self):
+    def __init__(self, www_root=None, project_root=None, argv=None):
         self.fs = namedtuple('fs', 'www project')
-        self.fs.www = FilesystemFixture()
-        self.fs.project = FilesystemFixture()
-        self.argv = []
+        self.fs.www = FilesystemFixture(root=www_root)
+        self.fs.project = FilesystemFixture(root=project_root)
+        self.argv = [] if argv is None else argv
         self.cookies = SimpleCookie()
         self.short_circuit = True
-        self._website = None
+        self.website = self.make_website()
 
-    def teardown(self):
-        self.fs.www.remove()
-        self.fs.project.remove()
+    def make_website(self, argv=None):
+        argv = [ '--www_root', self.fs.www.root
+               , '--project_root', self.fs.project.root
+                ] + self.argv + (argv if argv is not None else [])
+        website = Server(argv).get_website()
+        website.algorithm.short_circuit = self.short_circuit
+        return website
+
+    # XXX def teardown(self):
+    # XXX     self.fs.www.remove()
+    # XXX     self.fs.project.remove()
 
 
     # HTTP Methods
     # ============
-
-    @property
-    def website(self):
-        if self._website is None:
-            argv = [ '--www_root', self.fs.www.root
-                   , '--project_root', self.fs.project.root
-                   , '--show_tracebacks', '1'
-                    ] + self.argv
-            self._website = Website(argv)
-            self.website.algorithm.short_circuit = self.short_circuit
-        return self._website
-
 
     def GET(self, path='/', cookie_info=None, run_through=None, want='response', **kw):
         environ = self._build_wsgi_environ(path, "GET", **kw)
@@ -162,7 +158,8 @@ class Harness(object):
         """
         if filepath is not None:
             self.fs.www.mk((filepath, contents))
-        self.argv = argv if argv is not None else []
+        if argv is not None:
+            self.website = self.make_website(argv)
 
         if uripath is None:
             if filepath is None:
