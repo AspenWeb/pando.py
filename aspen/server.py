@@ -7,6 +7,10 @@ from __future__ import unicode_literals
 from algorithm import Algorithm
 
 
+def main():
+    Server().main()
+
+
 class Server(object):
 
     def __init__(self, argv=None):
@@ -46,4 +50,4 @@ class Server(object):
 
 
 if __name__ == '__main__':
-    Server().main()
+    main()
