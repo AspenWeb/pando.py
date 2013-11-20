@@ -23,8 +23,8 @@ class Server(object):
         """Return a website object. Useful in testing.
         """
         algorithm = self.get_algorithm()
-        algorithm.run(argv=self.argv, _through='get_website_from_argv')
-        return algorithm.state['website']
+        state = algorithm.run(argv=self.argv, _through='get_website_from_argv')
+        return state['website']
 
     def main(self, argv=None):
         """http://aspen.io/cli/
