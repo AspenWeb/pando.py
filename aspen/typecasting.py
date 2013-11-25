@@ -38,9 +38,3 @@ def apply_typecasts(path):
                 except:
                     raise Response(404)
 
-
-def do_typecast(request):
-    """A hook to do typecasting of virtual path segments based on
-       extensions."""
-    apply_typecasts(request.line.uri.path)
-
