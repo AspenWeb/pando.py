@@ -17,7 +17,7 @@ class Server(object):
         self.argv = argv
 
     def get_algorithm(self):
-        return Algorithm('aspen.algorithms.server')
+        return Algorithm.from_dotted_name('aspen.algorithms.server')
 
     def get_website(self):
         """Return a website object. Useful in testing.
