@@ -1,13 +1,13 @@
 import sys
 
 import pytest
-from aspen.testing.filesystem_fixture import FilesystemFixture
 from aspen.testing import _Harness
+from filesystem_tree import FilesystemTree
 
 
 @pytest.yield_fixture
 def fs():
-    fs = FilesystemFixture()
+    fs = FilesystemTree()
     yield fs
     fs.remove()
 

@@ -44,6 +44,7 @@ setup( author = 'Chad Whitacre'
                           , 'mimeparse==0.1.3'
                           , 'first==2.0.0'
                           , 'algorithm>=1.0.0rc1'
+                          , 'filesystem_tree>=1.0.0rc1'
                            ]
      , extras_require = { 'fcgi' : [ 'flup' ]
                         }
