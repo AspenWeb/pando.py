@@ -1,0 +1,23 @@
+doc_title = "Testing"
+doc_next = ''
+
+[---]
+{% extends doc.html %}
+{% block doc %}
+
+<p>Aspen includes an <code><a
+href="https://github.com/gittip/aspen-python/tree/master/aspen/testing/">aspen.testing</a></code>
+module that provides helpers for testing Aspen websites. The main thing you
+want is the <code>aspen.testing.client </p>
+
+<pre>
+</pre>
+
+
+<h2>Example</h2>
+
+<p>Here&rsquo;s an example of a :</p>
+
+<pre>from aspen.testing import *</pre>
+
+{% end %}
