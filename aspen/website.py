@@ -27,7 +27,7 @@ class Website(Configurable):
         """Takes an argv list, without the initial executable name.
         """
         self.server_algorithm = server_algorithm
-        self.algorithm = Algorithm('aspen.algorithms.website')
+        self.algorithm = Algorithm.from_dotted_name('aspen.algorithms.website')
         self.configure(argv)
 
 
