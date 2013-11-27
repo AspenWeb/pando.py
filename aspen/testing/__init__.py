@@ -16,7 +16,7 @@ from aspen.server import Server
 from aspen.sockets.channel import Channel
 from aspen.sockets.socket import Socket
 from aspen.sockets.transport import XHRPollingTransport
-from aspen.testing.filesystem_fixture import FilesystemFixture
+from filesystem_tree import FilesystemTree
 
 
 CWD = os.getcwd()
@@ -118,8 +118,8 @@ class Harness(object):
 
     def __init__(self, www_root=None, project_root=None, argv=None):
         self.fs = namedtuple('fs', 'www project')
-        self.fs.www = FilesystemFixture(root=www_root)
-        self.fs.project = FilesystemFixture(root=project_root)
+        self.fs.www = FilesystemTree(root=www_root)
+        self.fs.project = FilesystemTree(root=project_root)
         self.argv = [] if argv is None else argv
         self.cookies = SimpleCookie()
         self.short_circuit = True
@@ -214,7 +214,7 @@ class Harness(object):
 
 
 class _Harness(Harness):
-    """A subclass of the test client to be used in the Aspen test suite.
+    """A subclass of the test harness to be used in the Aspen test suite.
     """
 
     def teardown(self):
@@ -279,12 +279,12 @@ class _Harness(Harness):
         socket = Socket(request, channel)
         return socket
 
-    def SocketInThread(client):
+    def SocketInThread(harness):
 
         class _SocketInThread(object):
 
             def __enter__(self, filename='echo.sock.spt'):
-                self.socket = client.make_socket(filename)
+                self.socket = harness.make_socket(filename)
                 self.socket.loop.start()
                 return self.socket
 
