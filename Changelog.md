@@ -1,6 +1,19 @@
 Aspen-python Changelog
 ======================
 
+0.27.1 - Released Tue Nov 26 2013 by @pjz
+-----------------------------------------
+
+* Major internal refactoring to use Algorithm and py.test with fixtures
+
+* Much-improved aspen TestClient and use it for aspen's own tests
+
+* Switch hook filters to be algorithm/flow filters
+
+* fixed #250 - 500 if file is treated as a path
+
+* fixed #242 - Rename UnicodeWithParams to PathParts
+
 0.26.1 - Released Wed Oct 2 2013 by @pjz
 ----------------------------------------
 
