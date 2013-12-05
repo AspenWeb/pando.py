@@ -1,7 +1,7 @@
 import sys
 
 import pytest
-from aspen.testing import _Harness
+from aspen.testing import _AspenHarness
 from filesystem_tree import FilesystemTree
 
 
@@ -38,6 +38,6 @@ def sys_path(fs, module_scrubber):
 
 @pytest.yield_fixture
 def harness(module_scrubber, sys_path_scrubber):
-    harness = _Harness()
+    harness = _AspenHarness()
     yield harness
     harness.teardown()

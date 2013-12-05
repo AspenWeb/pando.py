@@ -74,7 +74,7 @@ def encode_multipart(boundary, data):
     return b'\r\n'.join(lines)
 
 
-class Harness(object):
+class AspenHarness(object):
     """
     The Aspen testing harness.
 
@@ -121,21 +121,17 @@ class Harness(object):
         self.fs.www = FilesystemTree(root=www_root)
         self.fs.project = FilesystemTree(root=project_root)
         self.argv = [] if argv is None else argv
-        self.cookies = SimpleCookie()
+        self.cookie = SimpleCookie()
         self.short_circuit = True
-        self._website = None
 
 
-    @property
-    def website(self):
-        if self._website is None:
-            argv = [ '--www_root', self.fs.www.root
-                   , '--project_root', self.fs.project.root
-                    ] + self.argv
-            website = Server(argv).get_website()
-            website.algorithm.short_circuit = self.short_circuit
-            self._website = website
-        return self._website
+    def make_website(self):
+        argv = [ '--www_root', self.fs.www.root
+               , '--project_root', self.fs.project.root
+                ] + self.argv
+        website = Server(argv).get_website()
+        website.algorithm.short_circuit = self.short_circuit
+        return website
 
 
     # HTTP Methods
@@ -182,25 +178,26 @@ class Harness(object):
 
     def build_wsgi_environ(self, path, method="GET", body=None, **kw):
         environ = {}
-        environ['PATH_INFO'] = path
+        environ['PATH_INFO'] = path.decode('UTF-8')
         environ['REMOTE_ADDR'] = b'0.0.0.0'
         environ['REQUEST_METHOD'] = b'GET'
         environ['SERVER_PROTOCOL'] = b'HTTP/1.1'
         environ['HTTP_HOST'] = b'localhost'
-        environ['REQUEST_METHOD'] = method
+        environ['REQUEST_METHOD'] = method.decode('ASCII')
         environ['wsgi.input'] = StringIO(body)
-        environ['HTTP_COOKIE'] = self.cookies.output(header='', sep='; ')
+        environ['HTTP_COOKIE'] = self.cookie.output(header=b'', sep=b'; ')
         environ.update(kw)
         return environ
 
 
     def _perform_request(self, environ, cookie_info, run_through, want):
-        state = self.website.respond(environ, _run_through=run_through)
+        website = self.make_website()
+        state = website.respond(environ, _run_through=run_through)
 
         response = state.get('response')
         if response is not None:
             if response.headers.cookie:
-                self.cookies.update(response.headers.cookie)
+                self.cookie.update(response.headers.cookie)
 
         attr_path = want.split('.')
         base = attr_path[0]
@@ -213,7 +210,7 @@ class Harness(object):
         return out
 
 
-class _Harness(Harness):
+class _AspenHarness(AspenHarness):
     """A subclass of the test harness to be used in the Aspen test suite.
     """
 
