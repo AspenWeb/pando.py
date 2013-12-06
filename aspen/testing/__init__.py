@@ -75,45 +75,11 @@ def encode_multipart(boundary, data):
 
 
 class AspenHarness(object):
-    """
-    The Aspen testing harness.
+    """This is the Aspen testing harness.
 
-    Used in tests to emulate ``GET`` and ``POST`` requests by sending them
-    into a ``Website`` instance's ``respond`` method.
+    Used in tests to emulate ``GET`` and ``POST`` requests by sending them into
+    a ``Website`` instance's ``respond`` method.
 
-    Aspen does not define any User data structures or modules. If you want to
-    do anything with users/sessions etc in your tests it is expected that you
-    will subclass this class and add a ``add_cookie_info`` method.
-
-    For example, in gittip a suitable subclass might be::
-
-        class GittipTestClient(TestClient):
-
-            def add_cookie_info(self, request, cookie_info):
-                if cookie_info:
-                    user = cookie_info.get('user')
-                    if user is not None:
-                        user = User.from_id(user)
-                        # Note that Cookie needs a bytestring.
-                        request.headers.cookie['session'] = user.session_token
-
-    Example usage in a test::
-
-        def test_api_handles_posts():
-            client = TestClient(website)
-
-            # We need to get ourselves a token!
-            response = client.get('/')
-            csrf_token = response.request.context['csrf_token']
-
-            # Then, add a $1.50 and $3.00 tip
-            response = client.post("/test_tippee1/tip.json",
-                                {'amount': "1.00", 'csrf_token': csrf_token},
-                                cookie_info={'user': 'test_tipper'})
-
-            # Confirm we get back the right amounts in the JSON body.
-            first_data = json.loads(response.body)
-            assert_equal(first_data['amount'], "1.00")
     """
 
     def __init__(self, www_root=None, project_root=None, argv=None):
@@ -137,13 +103,11 @@ class AspenHarness(object):
     # HTTP Methods
     # ============
 
-    def GET(self, path='/', cookie_info=None, run_through=None, want='response', **kw):
-        environ = self.build_wsgi_environ(path, "GET", **kw)
-        return self._perform_request(environ, cookie_info, run_through, want)
+    def GET(self, *a, **kw):
+        return self.perform_request('POST', *a, **kw)
 
 
-    def POST(self, path='/', data=None, content_type=MULTIPART_CONTENT, cookie_info=None,
-            run_through=None, want='response', **kw):
+    def POST(self, *a, **kw):
         """Perform a dummy POST request against the test website.
 
         :param path:
@@ -159,40 +123,22 @@ class AspenHarness(object):
         ``'CONTENT_TYPE'``, ``'CONTENT_LENGTH'`` which are explicitly checked
         for.
         """
-        post_data = data if data is not None else {}
+        return self.perform_request('POST', *a, **kw)
 
+
+    def perform_request(self, method, path='/', data=None, content_type=MULTIPART_CONTENT,
+            raise_immediately=True, stop_after=None, want='response', **headers):
+
+        data = {} if data is None else data
         if content_type is MULTIPART_CONTENT:
-            post_data = encode_multipart(BOUNDARY, data)
+            body = encode_multipart(BOUNDARY, data)
+        headers['CONTENT_TYPE'] = str(content_type)
 
-        environ = self.build_wsgi_environ( path
-                                         , "POST"
-                                         , post_data
-                                         , CONTENT_TYPE=str(content_type)
-                                         , **kw
-                                          )
-        return self._perform_request(environ, cookie_info, run_through, want)
-
-
-    # Helpers
-    # =======
-
-    def build_wsgi_environ(self, path, method="GET", body=None, **kw):
-        environ = {}
-        environ['PATH_INFO'] = path.decode('UTF-8')
-        environ['REMOTE_ADDR'] = b'0.0.0.0'
-        environ['REQUEST_METHOD'] = b'GET'
-        environ['SERVER_PROTOCOL'] = b'HTTP/1.1'
-        environ['HTTP_HOST'] = b'localhost'
-        environ['REQUEST_METHOD'] = method.decode('ASCII')
-        environ['wsgi.input'] = StringIO(body)
-        environ['HTTP_COOKIE'] = self.cookie.output(header=b'', sep=b'; ')
-        environ.update(kw)
-        return environ
-
-
-    def _perform_request(self, environ, cookie_info, run_through, want):
-        website = self.make_website()
-        state = website.respond(environ, _run_through=run_through)
+        environ = self.build_wsgi_environ(method, path, body, **headers)
+        state = self.website.respond( environ
+                                    , raise_immediately=raise_immediately
+                                    , stop_after=stop_after
+                                     )
 
         response = state.get('response')
         if response is not None:
@@ -210,6 +156,20 @@ class AspenHarness(object):
         return out
 
 
+    def build_wsgi_environ(self, method, path, body, **kw):
+        environ = {}
+        environ['PATH_INFO'] = path.decode('UTF-8')
+        environ['REMOTE_ADDR'] = b'0.0.0.0'
+        environ['REQUEST_METHOD'] = b'GET'
+        environ['SERVER_PROTOCOL'] = b'HTTP/1.1'
+        environ['HTTP_HOST'] = b'localhost'
+        environ['REQUEST_METHOD'] = method.decode('ASCII')
+        environ['wsgi.input'] = StringIO(body)
+        environ['HTTP_COOKIE'] = self.cookie.output(header=b'', sep=b'; ')
+        environ.update(kw)
+        return environ
+
+
 class _AspenHarness(AspenHarness):
     """A subclass of the test harness to be used in the Aspen test suite.
     """
@@ -223,7 +183,7 @@ class _AspenHarness(AspenHarness):
     # ==========
 
     def simple(self, contents='Greetings, program!', filepath='index.html.spt', uripath=None,
-            run_through=None, want='response', argv=None, **kw):
+            want='response', argv=None, **kw):
         """A helper to create a file and hit it through our machinery.
         """
         if filepath is not None:
@@ -243,10 +203,10 @@ class _AspenHarness(AspenHarness):
                         uripath = uripath[:-len(indexname)]
                         break
 
-        return self.GET(uripath, run_through=run_through, want=want, **kw)
+        return self.GET(uripath, want, **kw)
 
     def make_request(self, *a, **kw):
-        kw['run_through'] = 'dispatch_request_to_filesystem'
+        kw['stop_after'] = 'dispatch_request_to_filesystem'
         kw['want'] = 'request'
         return self.simple(*a, **kw)
 
