@@ -4,6 +4,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 
+import sys
 from algorithm import Algorithm
 
 
@@ -19,12 +20,30 @@ class Server(object):
     def get_algorithm(self):
         return Algorithm.from_dotted_name('aspen.algorithms.server')
 
-    def get_website(self):
+    def get_website(self, silent=True):
         """Return a website object. Useful in testing.
         """
-        algorithm = self.get_algorithm()
-        state = algorithm.run(argv=self.argv, _stop_after='get_website_from_argv')
-        return state['website']
+        def work():
+            algorithm = self.get_algorithm()
+            state = algorithm.run(argv=self.argv, _stop_after='get_website_from_argv')
+            return state['website']
+
+        if not silent:
+            return work()
+        else:
+            class DevNull():
+                def write(self, *a, **kw): pass
+                def flush(self, *a, **kw): pass
+            devnull = DevNull()
+
+            try:
+                sys.stdout = devnull
+                website = work()
+            finally:
+                sys.stdout = sys.__stdout__
+
+            return website
+
 
     def main(self, argv=None):
         """http://aspen.io/cli/
