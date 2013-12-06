@@ -23,7 +23,7 @@ class Server(object):
         """Return a website object. Useful in testing.
         """
         algorithm = self.get_algorithm()
-        state = algorithm.run(argv=self.argv, _through='get_website_from_argv')
+        state = algorithm.run(argv=self.argv, _stop_after='get_website_from_argv')
         return state['website']
 
     def main(self, argv=None):

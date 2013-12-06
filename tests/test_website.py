@@ -30,20 +30,18 @@ Greetings, program!
     assert actual == expected
 
 def test_fatal_error_response_is_returned(harness):
-    harness.short_circuit = False
     harness.fs.www.mk(('index.html.spt', "raise heck\n[---]\n"))
     expected = 500
-    actual = harness.GET().code
+    actual = harness.GET(raise_immediately=False).code
     assert actual == expected
 
 def test_redirect_has_only_location(harness):
-    harness.short_circuit = False
     harness.fs.www.mk(('index.html.spt', """
 from aspen import Response
 [---]
 request.redirect('http://elsewhere', code=304)
 [---]"""))
-    actual = harness.GET()
+    actual = harness.GET(raise_immediately=False)
     assert actual.code == 304
     headers = actual.headers
     assert headers.keys() == ['Location']
@@ -55,43 +53,39 @@ from aspen import Response
 [---]
 raise Response(500)
 [---]"""))
-    assert harness.GET().code == 500
+    assert harness.GET(raise_immediately=False).code == 500
 
 def test_nice_error_response_is_returned_for_404(harness):
-    harness.short_circuit = False
     harness.fs.www.mk(('index.html.spt', """
 from aspen import Response
 [---]
 raise Response(404)
 [---]"""))
-    assert harness.GET().code == 404
+    assert harness.GET(raise_immediately=False).code == 404
 
 def test_autoindex_response_is_404_by_default(harness):
-    harness.short_circuit = False
     harness.fs.www.mk(('README', "Greetings, program!"))
-    assert harness.GET().code == 404
+    assert harness.GET(raise_immediately=False).code == 404
 
 def test_autoindex_response_is_returned(harness):
-    harness.short_circuit = False
     harness.fs.www.mk(('README', "Greetings, program!"))
-    harness.argv = ['--list_directories', 'TrUe']
-    body = harness.GET().body
+    harness.website.list_directories = True
+    body = harness.GET(raise_immediately=False).body
     assert 'README' in body
 
 def test_resources_can_import_from_project_root(harness):
     harness.fs.project.mk(('foo.py', 'bar = "baz"'))
     harness.fs.www.mk(('index.html.spt', "from foo import bar\n[---]\nGreetings, %(bar)s!"))
-    assert harness.GET().body == "Greetings, baz!"
+    assert harness.GET(raise_immediately=False).body == "Greetings, baz!"
 
 
 def test_non_500_response_exceptions_dont_get_folded_to_500(harness):
-    harness.short_circuit = False
     harness.fs.www.mk(('index.html.spt', '''
 from aspen import Response
 raise Response(400)
 [---]
 '''))
-    response = harness.GET()
+    response = harness.GET(raise_immediately=False)
     assert response.code == 400
 
 
@@ -120,7 +114,7 @@ def build_environ(path):
     }
 
 def test_call_wraps_wsgi_middleware(harness):
-    harness.website.algorithm.short_circuit = False
+    harness.website.algorithm.default_short_circuit = False
     harness.website.wsgi_app = TestMiddleware(harness.website.wsgi_app)
     respond = [False, False]
     def start_response_should_404(status, headers):
