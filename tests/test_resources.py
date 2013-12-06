@@ -21,18 +21,18 @@ def test_barely_working(harness):
     assert actual == expected
 
 def test_charset_static_barely_working(harness):
+    harness.website.charset_static = 'OOG'
     response = harness.simple( 'Greetings, program!'
                              , 'index.html'
-                             , argv=['--charset_static=OOG']
                               )
     expected = 'text/html; charset=OOG'
     actual = response.headers['Content-Type']
     assert actual == expected
 
 def test_charset_dynamic_barely_working(harness):
+    harness.website.charset_dynamic = 'CHEESECODE'
     response = harness.simple( '[---]\nGreetings, program!'
                              , 'index.html.spt'
-                             , argv=['--charset_dynamic=CHEESECODE']
                               )
     expected = 'text/html; charset=CHEESECODE'
     actual = response.headers['Content-Type']

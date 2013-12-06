@@ -183,7 +183,7 @@ class _AspenHarness(AspenHarness):
     # ==========
 
     def simple(self, contents='Greetings, program!', filepath='index.html.spt', uripath=None,
-            want='response', argv=None, **kw):
+            argv=None, **kw):
         """A helper to create a file and hit it through our machinery.
         """
         if filepath is not None:
@@ -203,7 +203,7 @@ class _AspenHarness(AspenHarness):
                         uripath = uripath[:-len(indexname)]
                         break
 
-        return self.GET(uripath, want, **kw)
+        return self.GET(uripath, **kw)
 
     def make_request(self, *a, **kw):
         kw['stop_after'] = 'dispatch_request_to_filesystem'
