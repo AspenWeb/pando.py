@@ -104,7 +104,7 @@ class AspenHarness(object):
     # ============
 
     def GET(self, *a, **kw):
-        return self.perform_request('POST', *a, **kw)
+        return self.perform_request('GET', *a, **kw)
 
 
     def POST(self, *a, **kw):
