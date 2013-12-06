@@ -123,7 +123,7 @@ class AspenHarness(object):
         self.argv = [] if argv is None else argv
         self.cookie = SimpleCookie()
         self.short_circuit = True
-
+        self.website = self.make_website()
 
     def make_website(self):
         argv = [ '--www_root', self.fs.www.root

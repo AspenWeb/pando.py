@@ -100,5 +100,3 @@ def test_wrong_auth(request_with):
     auther = inbound_responder(auth, realm="testrealm@host.com")
     response = raises(Response, request_with, "Wacky xxx", auther).value
     assert response.code == 400, response
-
-

@@ -120,7 +120,7 @@ def build_environ(path):
     }
 
 def test_call_wraps_wsgi_middleware(harness):
-    harness.short_circuit = False
+    harness.website.algorithm.short_circuit = False
     harness.website.wsgi_app = TestMiddleware(harness.website.wsgi_app)
     respond = [False, False]
     def start_response_should_404(status, headers):
