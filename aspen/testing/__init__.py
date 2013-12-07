@@ -83,19 +83,21 @@ class AspenHarness(object):
 
     """
 
-    def __init__(self, www_root=None, project_root=None, argv=None):
+    def __init__(self, www_root=None, project_root=None):
         self.fs = namedtuple('fs', 'www project')
         self.fs.www = FilesystemTree(root=www_root)
         self.fs.project = FilesystemTree(root=project_root)
         self.cookie = SimpleCookie()
-        self.remake_website(argv)
+        self._website = None
 
-    def remake_website(self, argv=None):
-        argv = [ '--www_root', self.fs.www.root
-               , '--project_root', self.fs.project.root
-                ] + [] if argv is None else argv
-        self.website = Server(argv).get_website()
-        return self.website
+    def hydrate_website(self, argv=None):
+        if (self._website is None) or (argv is not None):
+            argv = [ '--www_root', self.fs.www.root
+                   , '--project_root', self.fs.project.root
+                    ] + ([] if argv is None else argv)
+            self._website = Server(argv).get_website()
+        return self._website
+    website = property(hydrate_website)
 
 
     # HTTP Methods
@@ -188,7 +190,7 @@ class _AspenHarness(AspenHarness):
         if filepath is not None:
             self.fs.www.mk((filepath, contents))
         if argv is not None:
-            self.remake_website(argv)
+            self.hydrate_website(argv)
 
         if uripath is None:
             if filepath is None:
