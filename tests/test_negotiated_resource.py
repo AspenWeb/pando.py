@@ -219,6 +219,7 @@ website.default_renderers_by_media_type['text/plain'] = 'glubber'
 def test_can_override_default_renderers_by_mimetype(harness):
     harness.fs.project.mk(('configure-aspen.py', OVERRIDE_SIMPLATE),)
     harness.fs.www.mk(('index.spt', NEGOTIATED_RESOURCE),)
+    harness.remake_website()
     request = harness.make_request(filepath='index.spt', contents=NEGOTIATED_RESOURCE)
     request.headers['Accept'] = 'text/plain'
     actual = get_response(request, Response()).body
@@ -226,6 +227,7 @@ def test_can_override_default_renderers_by_mimetype(harness):
 
 def test_can_override_default_renderer_entirely(harness):
     harness.fs.project.mk(('configure-aspen.py', OVERRIDE_SIMPLATE))
+    harness.remake_website()
     request = harness.make_request(filepath='index.spt', contents=NEGOTIATED_RESOURCE)
     request.headers['Accept'] = 'text/plain'
     actual = get_response(request, Response()).body
@@ -257,9 +259,8 @@ def test_indirect_negotiation_sets_media_type_to_secondary(harness):
     assert actual == expected
 
 def test_indirect_negotiation_with_unsupported_media_type_is_404(harness):
-    harness.short_circuit = False
     harness.fs.www.mk(('/foo.spt', INDIRECTLY_NEGOTIATED_RESOURCE))
-    response = harness.GET('/foo.jpg')
+    response = harness.GET('/foo.jpg', raise_immediately=False)
     actual = response.code
     assert actual == 404
 
