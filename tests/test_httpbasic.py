@@ -25,21 +25,26 @@ def request_with(harness):
                                               , inbound_responder(authfunc)
                                                )
         return harness.simple( filepath=None
-                             , run_through='httpbasic_inbound_responder'
+                             , stop_after='httpbasic_inbound_responder'
                              , want='request'
                              , HTTP_AUTHORIZATION=auth_header
                               )
     yield request_with
 
 def test_good_works(request_with):
-    request = request_with(lambda u, p: u == "username" and p == "password", _auth_header("username", "password"))
+    request = request_with( lambda u, p: u == "username" and p == "password"
+                          , _auth_header("username", "password")
+                           )
     success = request.auth.authorized()
     assert success
     assert request.auth.username() == "username", request.auth.username()
 
 def test_hard_passwords(request_with):
     for password in [ 'pass', 'username', ':password', ':password:','::::::' ]:
-        request = request_with(lambda u, p: u == "username" and p == password, _auth_header("username", password))
+        request = request_with( lambda u, p: u == "username" and p == password
+                              , _auth_header("username"
+                              , password)
+                               )
         success = request.auth.authorized()
         assert success
         assert request.auth.username() == "username", request.auth.username()
