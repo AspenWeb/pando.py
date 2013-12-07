@@ -38,7 +38,6 @@ def test_json_defaults_to_application_json_for_dynamic_json(harness):
 
 def test_json_content_type_is_configurable_for_static_json(harness):
     harness.fs.project.mk(('configure-aspen.py', 'website.media_type_json = "floober/blah"'))
-    harness.remake_website()
     expected = 'floober/blah'
     actual = harness.simple( '{"Greetings": "program!"}'
                            , filepath="foo.json"
@@ -54,7 +53,6 @@ def test_json_content_type_is_configurable_from_the_command_line(harness):
 
 def test_json_content_type_is_configurable_for_dynamic_json(harness):
     harness.fs.project.mk(('configure-aspen.py', 'website.media_type_json = "floober/blah"'))
-    harness.remake_website()
     actual = harness.simple( "[---]\nresponse.body = {'Greetings': 'program!'}"
                            , filepath="foo.json.spt"
                             ).headers['Content-Type']
