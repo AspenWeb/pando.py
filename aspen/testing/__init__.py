@@ -16,6 +16,7 @@ from aspen.server import Server
 from aspen.sockets.channel import Channel
 from aspen.sockets.socket import Socket
 from aspen.sockets.transport import XHRPollingTransport
+from aspen.utils import typecheck
 from filesystem_tree import FilesystemTree
 
 
@@ -154,15 +155,16 @@ class AspenHarness(object):
 
 
     def build_wsgi_environ(self, method, path, body, **kw):
+        typecheck(path, (str, unicode), method, unicode)
         environ = {}
-        environ['PATH_INFO'] = path.decode('UTF-8')
-        environ['REMOTE_ADDR'] = b'0.0.0.0'
-        environ['REQUEST_METHOD'] = b'GET'
-        environ['SERVER_PROTOCOL'] = b'HTTP/1.1'
-        environ['HTTP_HOST'] = b'localhost'
-        environ['REQUEST_METHOD'] = method.decode('ASCII')
-        environ['wsgi.input'] = StringIO(body)
-        environ['HTTP_COOKIE'] = self.cookie.output(header=b'', sep=b'; ')
+        environ[b'PATH_INFO'] = path if type(path) is str else path.decode('UTF-8')
+        environ[b'REMOTE_ADDR'] = b'0.0.0.0'
+        environ[b'REQUEST_METHOD'] = b'GET'
+        environ[b'SERVER_PROTOCOL'] = b'HTTP/1.1'
+        environ[b'HTTP_HOST'] = b'localhost'
+        environ[b'REQUEST_METHOD'] = method.decode('ASCII')
+        environ[b'wsgi.input'] = StringIO(body)
+        environ[b'HTTP_COOKIE'] = self.cookie.output(header=b'', sep=b'; ')
         environ.update(kw)
         return environ
 
