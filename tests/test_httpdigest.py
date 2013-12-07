@@ -50,7 +50,7 @@ def request_with(harness):
     def request_with(auth_header, inbound_auther):
         harness.website.algorithm.insert_after('parse_environ_into_request', inbound_auther)
         return harness.simple( filepath=None
-                             , run_through='httpdigest_inbound_responder'
+                             , stop_after='httpdigest_inbound_responder'
                              , want='request'
                              , HTTP_AUTHORIZATION=auth_header
                               )
