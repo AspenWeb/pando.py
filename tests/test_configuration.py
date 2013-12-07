@@ -136,6 +136,7 @@ name="program"
 Greetings, {name}!
     """
     harness.fs.project.mk(('configure-aspen.py', CONFIG),)
+    harness.remake_website()
     harness.fs.www.mk(('index.html.spt', SIMPLATE),)
     assert_body(harness, '/', 'Greetings, program!\n')
 
