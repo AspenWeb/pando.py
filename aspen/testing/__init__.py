@@ -86,18 +86,19 @@ class AspenHarness(object):
         self.fs = namedtuple('fs', 'www project')
         self.fs.www = FilesystemTree(root=www_root)
         self.fs.project = FilesystemTree(root=project_root)
-        self.argv = [] if argv is None else argv
         self.cookie = SimpleCookie()
-        self.short_circuit = True
-        self.website = self.make_website()
+        self.argv = argv
+        self.remake_website()
 
-    def make_website(self):
+    def make_website(self, argv=None):
         argv = [ '--www_root', self.fs.www.root
                , '--project_root', self.fs.project.root
-                ] + self.argv
+                ] + [] if argv is None else argv
         website = Server(argv).get_website()
-        website.algorithm.short_circuit = self.short_circuit
         return website
+
+    def remake_website(self):
+        self.website = self.make_website(self.argv)
 
 
     # HTTP Methods
