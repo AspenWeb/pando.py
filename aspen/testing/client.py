@@ -41,11 +41,7 @@ def encode_multipart(boundary, data):
 
 
 class Client(object):
-    """This is the Aspen test client.
-
-    Used in tests to emulate ``GET`` and ``POST`` requests by sending them into
-    a ``Website`` instance's ``respond`` method.
-
+    """This is the Aspen test client. It is probably useful to you.
     """
 
     def __init__(self, www_root=None, project_root=None):
@@ -54,6 +50,7 @@ class Client(object):
         self.cookie = SimpleCookie()
         self._website = None
 
+
     def hydrate_website(self, argv=None):
         if (self._website is None) or (argv is not None):
             argv = [ '--www_root', self.www_root
@@ -61,44 +58,26 @@ class Client(object):
                     ] + ([] if argv is None else argv)
             self._website = Server(argv).get_website()
         return self._website
+
     website = property(hydrate_website)
 
 
     # HTTP Methods
     # ============
 
-    def GET(self, *a, **kw):
-        return self.perform_request('GET', *a, **kw)
+    def GET(self, *a, **kw):    return self.hit('GET', *a, **kw)
+    def POST(self, *a, **kw):   return self.hit('POST', *a, **kw)
 
-
-    def POST(self, *a, **kw):
-        """Perform a dummy POST request against the test website.
-
-        :param path:
-            The url to perform the virutal-POST to.
-
-        :param data:
-            A dictionary or list of tuples to be encoded before being POSTed.
-
-        Any additional parameters will be sent as headers. NOTE that in Aspen
-        (request.py make_franken_headers) only headers beginning with ``HTTP``
-        are included in the request - and those are changed to no longer
-        include ``HTTP``. There are currently 2 exceptions to this:
-        ``'CONTENT_TYPE'``, ``'CONTENT_LENGTH'`` which are explicitly checked
-        for.
-        """
-        return self.perform_request('POST', *a, **kw)
-
-
-    def perform_request(self, method, path='/', data=None, content_type=MULTIPART_CONTENT,
+    def hit(self, method, path='/', data=None, content_type=MULTIPART_CONTENT,
             raise_immediately=True, stop_after=None, want='response', **headers):
 
         data = {} if data is None else data
         if content_type is MULTIPART_CONTENT:
             body = encode_multipart(BOUNDARY, data)
-        headers['CONTENT_TYPE'] = str(content_type)
+        else:
+            body = b''
 
-        environ = self.build_wsgi_environ(method, path, body, **headers)
+        environ = self.build_wsgi_environ(method, path, body, content_type, **headers)
         state = self.website.respond( environ
                                     , raise_immediately=raise_immediately
                                     , stop_after=stop_after
@@ -120,16 +99,23 @@ class Client(object):
         return out
 
 
-    def build_wsgi_environ(self, method, path, body, **kw):
-        typecheck(path, (str, unicode), method, unicode)
+    def build_wsgi_environ(self, method, path, body, content_type, **kw):
+
+        # NOTE that in Aspen (request.py make_franken_headers) only headers
+        # beginning with ``HTTP`` are included in the request - and those are
+        # changed to no longer include ``HTTP``. There are currently 2
+        # exceptions to this: ``'CONTENT_TYPE'``, ``'CONTENT_LENGTH'`` which
+        # are explicitly checked for.
+
+        typecheck(path, (str, unicode), method, unicode, content_type, str, body, str)
         environ = {}
+        environ[b'CONTENT_TYPE'] = content_type
+        environ[b'HTTP_COOKIE'] = self.cookie.output(header=b'', sep=b'; ')
+        environ[b'HTTP_HOST'] = b'localhost'
         environ[b'PATH_INFO'] = path if type(path) is str else path.decode('UTF-8')
         environ[b'REMOTE_ADDR'] = b'0.0.0.0'
-        environ[b'REQUEST_METHOD'] = b'GET'
-        environ[b'SERVER_PROTOCOL'] = b'HTTP/1.1'
-        environ[b'HTTP_HOST'] = b'localhost'
         environ[b'REQUEST_METHOD'] = method.decode('ASCII')
+        environ[b'SERVER_PROTOCOL'] = b'HTTP/1.1'
         environ[b'wsgi.input'] = StringIO(body)
-        environ[b'HTTP_COOKIE'] = self.cookie.output(header=b'', sep=b'; ')
         environ.update(kw)
         return environ
