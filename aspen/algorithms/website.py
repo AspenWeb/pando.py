@@ -100,7 +100,8 @@ def delegate_error_to_simplate(website, request, response):
     if response.code < 400:
         return
 
-    code = str(response.code)
+    original_code = response.code
+    code = str(original_code)
     possibles = [code + ".html", code + ".html.spt", "exc_info.html", "exc_info.html.spt"]
     fs = _first(website.ours_or_theirs(errpage) for errpage in possibles)
 
@@ -109,6 +110,7 @@ def delegate_error_to_simplate(website, request, response):
         request.original_resource = request.resource
         request.resource = resources.get(request)
         response = request.resource.respond(request)
+        response.code = original_code
 
     return {'response': response, 'exc_info': None}
 
