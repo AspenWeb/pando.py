@@ -52,7 +52,7 @@ def request_with(harness):
                                                      , inbound_auther
                                                       )
         return harness.simple( filepath=None
-                             , stop_after='httpdigest_inbound_responder'
+                             , return_after='httpdigest_inbound_responder'
                              , want='request'
                              , HTTP_AUTHORIZATION=auth_header
                               )

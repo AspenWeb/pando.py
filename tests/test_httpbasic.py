@@ -25,7 +25,7 @@ def request_with(harness):
                                                      , inbound_responder(authfunc)
                                                       )
         return harness.simple( filepath=None
-                             , stop_after='httpbasic_inbound_responder'
+                             , return_after='httpbasic_inbound_responder'
                              , want='request'
                              , HTTP_AUTHORIZATION=auth_header
                               )
