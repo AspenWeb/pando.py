@@ -15,7 +15,7 @@ from aspen.renderers.stdlib_percent import Factory as PercentFactory
 @yield_fixture
 def get(harness):
     def get(**_kw):
-        kw = dict( website = harness.website
+        kw = dict( website = harness.client.website
                  , fs = ''
                  , raw = '[---]\n[---] text/plain via stdlib_template\n'
                  , media_type = ''
@@ -27,7 +27,7 @@ def get(harness):
 
 
 def test_negotiated_resource_is_instantiable(harness):
-    website = harness.website
+    website = harness.client.website
     fs = ''
     raw = '[---]\n[---] text/plain via stdlib_template\n'
     media_type = ''
@@ -246,21 +246,21 @@ Greetings, %(foo)s!"""
 
 def test_indirect_negotiation_sets_media_type(harness):
     harness.fs.www.mk(('/foo.spt', INDIRECTLY_NEGOTIATED_RESOURCE))
-    response = harness.GET('/foo.html')
+    response = harness.client.GET('/foo.html')
     expected = "<h1>Greetings, program!</h1>\n"
     actual = response.body
     assert actual == expected
 
 def test_indirect_negotiation_sets_media_type_to_secondary(harness):
     harness.fs.www.mk(('/foo.spt', INDIRECTLY_NEGOTIATED_RESOURCE))
-    response = harness.GET('/foo.txt')
+    response = harness.client.GET('/foo.txt')
     expected = "Greetings, program!"
     actual = response.body
     assert actual == expected
 
 def test_indirect_negotiation_with_unsupported_media_type_is_404(harness):
     harness.fs.www.mk(('/foo.spt', INDIRECTLY_NEGOTIATED_RESOURCE))
-    response = harness.GET('/foo.jpg', raise_immediately=False)
+    response = harness.client.GET('/foo.jpg', raise_immediately=False)
     actual = response.code
     assert actual == 404
 
@@ -276,7 +276,7 @@ Greetings, %(foo)s!"""
 
 def test_negotiated_inside_virtual_path(harness):
     harness.fs.www.mk(('/%foo/bar.spt', INDIRECTLY_NEGOTIATED_VIRTUAL_RESOURCE ))
-    response = harness.GET('/program/bar.txt')
+    response = harness.client.GET('/program/bar.txt')
     expected = "Greetings, program!"
     actual = response.body
     assert actual == expected
@@ -293,20 +293,20 @@ Greetings, %(foo)s!"""
 
 def test_negotiated_inside_virtual_path_with_startypes_present(harness):
     harness.fs.www.mk(('/%foo/bar.spt', INDIRECTLY_NEGOTIATED_VIRTUAL_RESOURCE_STARTYPE ))
-    response = harness.GET('/program/bar.html')
+    response = harness.client.GET('/program/bar.html')
     actual = response.body
     assert '<h1>' in actual
 
 def test_negotiated_inside_virtual_path_with_startype_partial_match(harness):
     harness.fs.www.mk(('/%foo/bar.spt', INDIRECTLY_NEGOTIATED_VIRTUAL_RESOURCE_STARTYPE ))
-    response = harness.GET('/program/bar.txt')
+    response = harness.client.GET('/program/bar.txt')
     expected = "Greetings, program!"
     actual = response.body
     assert actual == expected
 
 def test_negotiated_inside_virtual_path_with_startype_fallback(harness):
     harness.fs.www.mk(('/%foo/bar.spt', INDIRECTLY_NEGOTIATED_VIRTUAL_RESOURCE_STARTYPE ))
-    response = harness.GET('/program/bar.jpg')
+    response = harness.client.GET('/program/bar.jpg')
     expected = "Unknown request type, program!"
     actual = response.body.strip()
     assert actual == expected
