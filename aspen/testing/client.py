@@ -69,7 +69,7 @@ class Client(object):
     def POST(self, *a, **kw):   return self.hit('POST', *a, **kw)
 
     def hit(self, method, path='/', data=None, content_type=MULTIPART_CONTENT,
-            raise_immediately=True, stop_after=None, want='response', **headers):
+            raise_immediately=True, return_after=None, want='response', **headers):
 
         data = {} if data is None else data
         if content_type is MULTIPART_CONTENT:
@@ -80,7 +80,7 @@ class Client(object):
         environ = self.build_wsgi_environ(method, path, body, content_type, **headers)
         state = self.website.respond( environ
                                     , raise_immediately=raise_immediately
-                                    , stop_after=stop_after
+                                    , return_after=return_after
                                      )
 
         response = state.get('response')

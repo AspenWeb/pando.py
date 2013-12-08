@@ -50,13 +50,13 @@ class Website(Configurable):
         return wsgi(environ, start_response)
 
 
-    def respond(self, environ, raise_immediately=None, stop_after=None):
+    def respond(self, environ, raise_immediately=None, return_after=None):
         """Given a WSGI environ, return a state dict.
         """
         return self.algorithm.run( website=self
                                  , environ=environ
                                  , _raise_immediately=raise_immediately
-                                 , _stop_after=stop_after
+                                 , _return_after=return_after
                                   )
 
 

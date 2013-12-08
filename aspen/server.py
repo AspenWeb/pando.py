@@ -25,7 +25,7 @@ class Server(object):
         """
         def work():
             algorithm = self.get_algorithm()
-            state = algorithm.run(argv=self.argv, _stop_after='get_website_from_argv')
+            state = algorithm.run(argv=self.argv, _return_after='get_website_from_argv')
             return state['website']
 
         if not silent:
