@@ -1,7 +1,7 @@
 Aspen-python Changelog
 ======================
 
-0.27.1 - Released Tue Nov 26 2013 by @pjz
+0.27 - Released Tue Nov 26 2013 by @pjz
 -----------------------------------------
 
 * Major internal refactoring to use Algorithm and py.test with fixtures
