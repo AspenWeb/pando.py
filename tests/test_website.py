@@ -78,8 +78,7 @@ def test_nice_error_response_can_come_from_user_420_html(harness):
     harness.fs.project.mk(('420.html.spt', """
 msg = "Enhance your calm." if response.code == 420 else "Ok."
 [---]
-%(msg)s
-"""))
+%(msg)s"""))
     harness.fs.www.mk(('index.html.spt', """
 from aspen import Response
 [---]
