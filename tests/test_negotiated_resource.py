@@ -260,9 +260,8 @@ def test_indirect_negotiation_sets_media_type_to_secondary(harness):
 
 def test_indirect_negotiation_with_unsupported_media_type_is_404(harness):
     harness.fs.www.mk(('/foo.spt', INDIRECTLY_NEGOTIATED_RESOURCE))
-    response = harness.client.GET('/foo.jpg', raise_immediately=False)
-    actual = response.code
-    assert actual == 404
+    response = harness.client.GxT('/foo.jpg')
+    assert response.code == 404
 
 
 INDIRECTLY_NEGOTIATED_VIRTUAL_RESOURCE = """\

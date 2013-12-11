@@ -6,12 +6,16 @@ from __future__ import unicode_literals
 from Cookie import SimpleCookie
 from StringIO import StringIO
 
+from aspen import Response
 from aspen.server import Server
 from aspen.utils import typecheck
 
 
 BOUNDARY = b'BoUnDaRyStRiNg'
 MULTIPART_CONTENT = b'multipart/form-data; boundary=%s' % BOUNDARY
+
+
+class DidntRaiseResponse(Exception): pass
 
 
 def encode_multipart(boundary, data):
@@ -68,16 +72,25 @@ class Client(object):
     def GET(self, *a, **kw):    return self.hit('GET', *a, **kw)
     def POST(self, *a, **kw):   return self.hit('POST', *a, **kw)
 
-    def hit(self, method, path='/', data=None, content_type=MULTIPART_CONTENT,
+    def GxT(self, *a, **kw):    return self.hxt('GET', *a, **kw)
+    def PxST(self, *a, **kw):   return self.hxt('POST', *a, **kw)
+
+    def hxt(self, *a, **kw):
+        try:
+            self.hit(*a, **kw)
+        except Response as response:
+            return response
+        else:
+            raise DidntRaiseResponse
+
+    def hit(self, method, path='/', data=None, body=b'', content_type=MULTIPART_CONTENT,
             raise_immediately=True, return_after=None, want='response', **headers):
 
         data = {} if data is None else data
         if content_type is MULTIPART_CONTENT:
             body = encode_multipart(BOUNDARY, data)
-        else:
-            body = b''
 
-        environ = self.build_wsgi_environ(method, path, body, content_type, **headers)
+        environ = self.build_wsgi_environ(method, path, body, str(content_type), **headers)
         state = self.website.respond( environ
                                     , raise_immediately=raise_immediately
                                     , return_after=return_after
