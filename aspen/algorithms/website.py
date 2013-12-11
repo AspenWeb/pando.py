@@ -103,7 +103,7 @@ def delegate_error_to_simplate(website, request, response):
 
     original_code = response.code
     code = str(original_code)
-    possibles = [code + ".html", code + ".html.spt", "exc_info.html", "exc_info.html.spt"]
+    possibles = [code + ".html", code + ".html.spt", "error.html", "error.html.spt"]
     fs = _first(website.ours_or_theirs(errpage) for errpage in possibles)
 
     if fs is not None:
