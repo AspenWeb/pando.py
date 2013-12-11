@@ -73,13 +73,14 @@ def get_response_for_socket(request):
     return {'response': response}
 
 
-def get_response_for_resource(request, response):
-    if response is not None:
-        return
+def get_resource_for_request(request, response):
+    if response is None:
+        return {'resource': resources.get(request)}
 
-    resource = resources.get(request)
-    response = resource.respond(request)
-    return {'response': response}
+
+def get_response_for_resource(request, resource=None):
+    if resource is not None:
+        return {'response': resource.respond(request)}
 
 
 def get_response_for_exception(exc_info):

@@ -20,6 +20,11 @@ def test_barely_working(harness):
     actual = response.headers['Content-Type']
     assert actual == expected
 
+def test_load_resource_loads_resource(harness):
+    harness.fs.www.mk(('/index.html.spt', 'bar=0\n[---]\n[---]'))
+    resource = harness.client.load_resource('/')
+    assert resource.pages[0]['bar'] == 0
+
 def test_charset_static_barely_working(harness):
     response = harness.simple( 'Greetings, program!'
                              , 'index.html'
