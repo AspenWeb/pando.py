@@ -35,6 +35,7 @@ def apply_typecasts(path):
                     # path is a Mapping not a dict, so:
                     for v in path.all(part):
                         path.add(var, typecast[ext](v))
+                    path.popall(part)
                 except:
                     raise Response(404)
 
