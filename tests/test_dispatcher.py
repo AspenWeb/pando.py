@@ -177,7 +177,7 @@ def test_virtual_path_sets_unicode_request_path(harness):
 
 def test_virtual_path_typecasts_to_int(harness):
     harness.fs.www.mk(('%year.int/foo.html', "Greetings, program!"),)
-    assert_virtvals(harness, '/1999/foo.html', {'year': [1999], 'year.int': ['1999']})
+    assert_virtvals(harness, '/1999/foo.html', {'year': [1999]})
 
 def test_virtual_path_raises_on_bad_typecast(harness):
     harness.fs.www.mk(('%year.int/foo.html', "Greetings, program!"),)
@@ -225,7 +225,7 @@ def test_virtual_path_file_key_val_not_cast(harness):
 
 def test_virtual_path_file_key_val_cast(harness):
     harness.fs.www.mk(('foo/%bar.int.html.spt', "Greetings, program!"),)
-    assert_virtvals(harness, '/foo/537.html', {'bar': [537], 'bar.int': ['537']})
+    assert_virtvals(harness, '/foo/537.html', {'bar': [537]})
 
 def test_virtual_path_file_not_dir(harness):
     harness.fs.www.mk( ('%foo/bar.html', "Greetings from bar!")
