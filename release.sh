@@ -25,7 +25,7 @@ if [ -z "$1" ]; then
     exit 1
 elif [ "`git tag | grep $1`" ]; then
     echo "Version $1 is already git tagged."
-elif [ "wheel version | cut -f 1 -d' '" != "wheel" ]; then
+elif [ "x`wheel version | cut -f 1 -d' '`" != "xwheel" ]; then
     echo "You need to 'pip install wheel'"
     exit 1
 else
