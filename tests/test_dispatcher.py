@@ -233,6 +233,31 @@ def test_virtual_path_file_not_dir(harness):
            )
     assert_fs(harness, '/bal.html', '%baz.html.spt')
 
+# custom cast
+
+userclassconfigure="""
+
+import aspen.typecasting
+
+class User:
+    
+    def __init__(self, name):
+        self.username = name
+
+    @classmethod
+    def toUser(cls, name):
+        return cls(name)
+
+website.typecast['user'] = User.toUser
+
+"""
+
+def test_virtual_path_file_key_val_cast_custom(harness):
+    harness.fs.project.mk(('configure-aspen.py', userclassconfigure),)
+    harness.fs.www.mk(('user/%user.user.html.spt', "\nusername=path['user']\n[-----]\nGreetings, %(username)s!"),)
+    actual = harness.simple(filepath=None, uripath='/user/chad.html', want='request.line.uri.path', 
+            run_through='typecast_virtualrequestpath_in_place')
+    assert actual['user'].username == 'chad'
 
 # negotiated *and* virtual paths
 # ==============================

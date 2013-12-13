@@ -16,11 +16,11 @@ Pluggable typecasting of virtual path values
    and the typecasted key (the one without the suffix) will not
    be set
 """
-typecast = { 'int': int
+defaults = { 'int': int
            , 'float': float
            }
 
-def apply_typecasts(path):
+def apply_typecasts(typecasts, path):
     """Perform the typecasts (in-place!) on the supplied path Mapping.
        Note that the supplied mapping has keys with the typecast extensions
        still attached (and unicode values).  This routine adds keys 
@@ -30,11 +30,11 @@ def apply_typecasts(path):
         pieces = part.rsplit('.',1)
         if len(pieces) > 1:
             var, ext = pieces
-            if ext in typecast:
+            if ext in typecasts:
                 try:
                     # path is a Mapping not a dict, so:
                     for v in path.all(part):
-                        path.add(var, typecast[ext](v))
+                        path.add(var, typecasts[ext](v))
                     path.popall(part)
                 except:
                     raise Response(404)
