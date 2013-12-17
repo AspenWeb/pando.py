@@ -59,8 +59,8 @@ def dispatch_request_to_filesystem(request):
     dispatcher.dispatch(request)
 
 
-def apply_typecasts_to_path(website, request):
-    typecasting.apply_typecasts(website.typecasters, request.line.uri.path)
+def apply_typecasters_to_path(website, request):
+    typecasting.apply_typecasters(website.typecasters, request.line.uri.path)
 
 
 def get_response_for_socket(request):

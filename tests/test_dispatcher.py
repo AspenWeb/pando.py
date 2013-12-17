@@ -248,7 +248,7 @@ class User:
     def toUser(cls, name):
         return cls(name)
 
-website.typecaster['user'] = User.toUser
+website.typecasters['user'] = User.toUser
 
 """
 
@@ -256,7 +256,7 @@ def test_virtual_path_file_key_val_cast_custom(harness):
     harness.fs.project.mk(('configure-aspen.py', userclassconfigure),)
     harness.fs.www.mk(('user/%user.user.html.spt', "\nusername=path['user']\n[-----]\nGreetings, %(username)s!"),)
     actual = harness.simple(filepath=None, uripath='/user/chad.html', want='request.line.uri.path', 
-            run_through='typecast_virtualrequestpath_in_place')
+            run_through='apply_typecasters_to_path')
     assert actual['user'].username == 'chad'
 
 # negotiated *and* virtual paths
