@@ -12,7 +12,7 @@ Pluggable typecasting of virtual path values
 
 class FailedTypecast(Response):
     def __init__(self, extension):
-        body = "Failure to typecast extension '{}'".format(extension)
+        body = "Failure to typecast extension '{0}'".format(extension)
         Response.__init__(self, code=404, body=body)
 
 """typecast is a map of suffix -> typecasting function.
