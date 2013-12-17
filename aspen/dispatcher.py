@@ -31,21 +31,6 @@ def splitext(name):
     return parts[:2]
 
 
-def _typecast(key, value):
-    """Given two unicodes, return a unicode, and an int or unicode.
-    """
-    typecheck(key, (unicode, PathPart), value, (unicode, PathPart))
-    debug(lambda: "typecasting " + key + ", " + value)
-    if key.endswith('.int'):    # you can typecast to int
-        key = key[:-4]
-        try:
-            value = int(value)
-        except ValueError:
-            raise Response(404)
-    debug(lambda: "typecasted " + key + ", " + repr(value))
-    return key, value
-
-
 def strip_matching_ext(a, b):
     """Given two names, strip a trailing extension iff they both have them.
     """
@@ -166,7 +151,6 @@ def dispatch_abstract(listnodes, is_leaf, traverse, find_index, noext_matched,
             wildwildvals = wildvals.copy()
             remaining = reduce(traverse, nodepath[depth:])
             k, v = strip_matching_ext(n_nospt[1:], remaining)
-            k, v = _typecast(k, v)
             wildwildvals[k] = v
             n_ext = splitext(n_nospt)[1]
             wildleafs[n_ext] = (traverse(curnode, n), wildwildvals)
@@ -200,8 +184,7 @@ def dispatch_abstract(listnodes, is_leaf, traverse, find_index, noext_matched,
 
         if wildsubs:                            # wildcard subnode matches
             n = wildsubs[0]
-            k, v = _typecast(n[1:], node)
-            wildvals[k] = v
+            wildvals[n[1:]] = node 
             curnode = traverse(curnode, n)
             debug(lambda: "Wildcard subnode match " + repr(n))
             continue

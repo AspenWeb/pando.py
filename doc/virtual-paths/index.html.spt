@@ -70,10 +70,15 @@ in it, then that real file will be preferred over the virtual one.
 
 <p>By default, path parts are decoded to Python unicode objects using ASCII,
 and are then unquoted (per <a
-    href="http://docs.python.org/library/urllib.html#urllib.unquote">urllib.unquote</a>).
-You can also typecast path parts to integers. Make a directory called <code
-    style="white-space: nowrap">%year.int</code> (for files, put the cast
-before the file extension, like <code>%month.int.html</code>).</p>
+href="http://docs.python.org/library/urllib.html#urllib.unquote">urllib.unquote</a>).
+You can also typecast path parts to arbitrary objects, by registering
+typecasters in the <code>website.typecasters</code> dictionary in your <a
+href="/configure-aspen.py/"><code>configure-aspen.py</code></a>. Typecasters
+for <code>int</code> and <code>float</code> are included out of the box.</p>
+
+<p>Make a directory called <code style="white-space: nowrap">%year.int</code>
+(for files, put the cast before the file extension, like
+<code>%year.int.html.spt</code>).</p>
 
 <pre>$ mkdir "%year.int"</pre>
 
