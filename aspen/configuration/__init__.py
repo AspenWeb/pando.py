@@ -21,7 +21,7 @@ from aspen.configuration import parse
 from aspen.configuration.exceptions import ConfigurationError
 from aspen.configuration.options import OptionParser, DEFAULT
 from aspen.utils import ascii_dammit
-from aspen.typecasting import defaults as typecast_defaults
+from aspen.typecasting import defaults as default_typecasters
 
 # Defaults
 # ========
@@ -141,7 +141,7 @@ class Configurable(object):
 
         # XXX register codecs here
 
-        self.typecast = typecast_defaults
+        self.typecasters = default_typecasters
 
         # Parse argv.
         # ===========
