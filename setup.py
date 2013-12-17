@@ -39,8 +39,8 @@ setup( author = 'Chad Whitacre'
      , install_requires = [ 'Cheroot==4.0.0beta'
                           , 'mimeparse==0.1.3'
                           , 'first==2.0.0'
-                          , 'algorithm>=1.0.0rc1'
-                          , 'filesystem_tree>=1.0.0rc1'
+                          , 'algorithm>=1.0.0'
+                          , 'filesystem_tree>=1.0.0'
                            ]
      , extras_require = {'fcgi': ['flup']}
       )
