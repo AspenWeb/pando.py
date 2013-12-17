@@ -88,6 +88,17 @@ raise Response(420)
     assert response.code == 420
     assert response.body == 'Enhance your calm.'
 
+def test_default_404_is_text_html(harness):
+    harness.fs.www.mk(('foo.json.spt',"""
+[-----] text/json
+raise Response(404)
+    """))
+    actual = harness.client.GET(raise_immediately=False)
+    assert actual.code == 404
+    headers = actual.headers
+    ctype = headers['Content-type']
+    assert 'text/html' in ctype
+
 def test_autoindex_response_is_404_by_default(harness):
     harness.fs.www.mk(('README', "Greetings, program!"))
     assert harness.client.GET(raise_immediately=False).code == 404
