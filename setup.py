@@ -25,27 +25,22 @@ setup( author = 'Chad Whitacre'
      , classifiers = classifiers
      , description = ('Aspen is a Python web framework. '
                       'Simplates are the main attraction.')
-     , entry_points = { 'console_scripts': [ 'aspen = aspen.server:main'
-                                           , 'thrash = thrash:main'
-                                           , 'fcgi_aspen = fcgi_aspen:main [fcgi]'
-                                            ] }
+     , entry_points = {'console_scripts': [ 'aspen = aspen.server:main'
+                                          , 'thrash = thrash:main'
+                                          , 'fcgi_aspen = fcgi_aspen:main [fcgi]'
+                                           ]}
      , name = 'aspen'
-     , packages = find_packages(exclude=[ 'aspen.tests'
-                                        , 'aspen.tests.*'
-                                         ])
+     , packages = find_packages(exclude=['aspen.tests', 'aspen.tests.*'])
      , py_modules = ['thrash', 'fcgi_aspen']
      , url = 'http://aspen.io/'
      , version = version
      , zip_safe = False
-     , package_data = {'aspen': [ 'www/*'
-                                , 'configuration/mime.types'
-                                 ]}
+     , package_data = {'aspen': ['www/*', 'configuration/mime.types']}
      , install_requires = [ 'Cheroot==4.0.0beta'
                           , 'mimeparse==0.1.3'
                           , 'first==2.0.0'
                           , 'algorithm>=1.0.0rc1'
                           , 'filesystem_tree>=1.0.0rc1'
                            ]
-     , extras_require = { 'fcgi' : [ 'flup' ]
-                        }
+     , extras_require = {'fcgi': ['flup']}
       )
