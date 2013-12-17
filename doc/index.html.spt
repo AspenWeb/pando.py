@@ -428,6 +428,7 @@ homepage = True
             <li><a href="/core-algorithms/">Core Algorithms</a></li>
             <li><a href="/unicode/">Unicode</a></li>
             <li><a href="/virtual-paths/">Virtual Paths</a></li>
+            <li><a href="/testing/">Testing</a></li>
         </ul>
 
     </div></div>
