@@ -30,6 +30,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import sys
+import traceback
 
 import aspen
 from aspen import dispatcher, resources, sockets
@@ -83,13 +84,13 @@ def get_response_for_resource(request, resource=None):
         return {'response': resource.respond(request)}
 
 
-def get_response_for_exception(exc_info):
+def get_response_for_exception(exception):
     sys.exc_clear()
-    if exc_info[0] is Response:
-        response = exc_info[1]
+    if isinstance(exception, Response):
+        response = exception
     else:
-        response = Response(500, exc_info[2])
-    return {'response': response, 'exc_info': None}
+        response = Response(500, traceback.format_exc())
+    return {'response': response, 'exception': None}
 
 
 def log_traceback_for_5xx(response):
@@ -111,16 +112,16 @@ def delegate_error_to_simplate(website, request, response):
         resource = resources.get(request)
         response = resource.respond(request, response)
 
-    return {'response': response, 'exc_info': None}
+    return {'response': response, 'exception': None}
 
 
-def log_traceback_for_exception(website, exc_info):
-    sys.exc_clear()
-    aspen.log_dammit(exc_info[2])
+def log_traceback_for_exception(website, exception):
+    tb = traceback.format_exc()
+    aspen.log_dammit(tb)
     response = Response(500)
     if website.show_tracebacks:
-        response.body = exc_info[2]
-    return {'response': response, 'exc_info': None}
+        response.body = tb
+    return {'response': response, 'exception': None}
 
 
 def log_result_of_request(website, response, request):
