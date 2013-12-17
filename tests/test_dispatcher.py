@@ -248,7 +248,7 @@ class User:
     def toUser(cls, name):
         return cls(name)
 
-website.typecast['user'] = User.toUser
+website.typecaster['user'] = User.toUser
 
 """
 
