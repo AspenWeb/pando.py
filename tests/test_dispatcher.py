@@ -62,20 +62,20 @@ def test_alternate_index_is_not_found(harness):
     assert_raises_404(harness, '/')
 
 def test_alternate_index_is_found(harness):
-    harness.fs.www.mk(('default.html', "Greetings, program!"),)
     harness.fs.project.mk(('configure-aspen.py', 'website.indices += ["default.html"]'),)
+    harness.fs.www.mk(('default.html', "Greetings, program!"),)
     assert_fs(harness, '/', 'default.html')
 
 def test_configure_aspen_py_setting_override_works_too(harness):
-    harness.fs.www.mk(('index.html', "Greetings, program!"),)
     harness.fs.project.mk(('configure-aspen.py', 'website.indices = ["default.html"]'),)
+    harness.fs.www.mk(('index.html', "Greetings, program!"),)
     assert_raises_404(harness, '/')
 
 def test_configure_aspen_py_setting_takes_first(harness):
     harness.fs.project.mk(('configure-aspen.py', 'website.indices = ["index.html", "default.html"]'),)
     harness.fs.www.mk( ('index.html', "Greetings, program!")
-          , ('default.html', "Greetings, program!")
-           )
+                     , ('default.html', "Greetings, program!")
+                      )
     assert_fs(harness, '/', 'index.html')
 
 def test_configure_aspen_py_setting_takes_second_if_first_is_missing(harness):

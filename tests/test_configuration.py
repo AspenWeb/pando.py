@@ -262,4 +262,3 @@ def test_parse_network_address_with_port_too_low():
 def test_parse_network_address_with_port_too_high():
     actual = raises(ValueError, parse.network_address, u':65536').value.args[0]
     assert actual == "invalid port (out of range)"
-

@@ -21,25 +21,30 @@ def _auth_header(username, password):
 @yield_fixture
 def request_with(harness):
     def request_with(authfunc, auth_header):
-        harness.website.algorithm.insert_after( 'parse_environ_into_request'
-                                              , inbound_responder(authfunc)
-                                               )
+        harness.client.website.algorithm.insert_after( 'parse_environ_into_request'
+                                                     , inbound_responder(authfunc)
+                                                      )
         return harness.simple( filepath=None
-                             , run_through='httpbasic_inbound_responder'
+                             , return_after='httpbasic_inbound_responder'
                              , want='request'
                              , HTTP_AUTHORIZATION=auth_header
                               )
     yield request_with
 
 def test_good_works(request_with):
-    request = request_with(lambda u, p: u == "username" and p == "password", _auth_header("username", "password"))
+    request = request_with( lambda u, p: u == "username" and p == "password"
+                          , _auth_header("username", "password")
+                           )
     success = request.auth.authorized()
     assert success
     assert request.auth.username() == "username", request.auth.username()
 
 def test_hard_passwords(request_with):
     for password in [ 'pass', 'username', ':password', ':password:','::::::' ]:
-        request = request_with(lambda u, p: u == "username" and p == password, _auth_header("username", password))
+        request = request_with( lambda u, p: u == "username" and p == password
+                              , _auth_header("username"
+                              , password)
+                               )
         success = request.auth.authorized()
         assert success
         assert request.auth.username() == "username", request.auth.username()

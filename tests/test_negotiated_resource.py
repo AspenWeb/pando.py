@@ -3,29 +3,31 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from pytest import raises
+from pytest import raises, yield_fixture
 
 from aspen import resources, Response
 from aspen.resources.pagination import Page
 from aspen.resources.negotiated_resource import NegotiatedResource
-from aspen.website import Website
 from aspen.renderers.stdlib_template import Factory as TemplateFactory
 from aspen.renderers.stdlib_percent import Factory as PercentFactory
 
 
-def get(**_kw):
-    kw = dict( website = Website([])
-             , fs = ''
-             , raw = '[---]\n[---] text/plain via stdlib_template\n'
-             , media_type = ''
-             , mtime = 0
-              )
-    kw.update(_kw)
-    return NegotiatedResource(**kw)
+@yield_fixture
+def get(harness):
+    def get(**_kw):
+        kw = dict( website = harness.client.website
+                 , fs = ''
+                 , raw = '[---]\n[---] text/plain via stdlib_template\n'
+                 , media_type = ''
+                 , mtime = 0
+                  )
+        kw.update(_kw)
+        return NegotiatedResource(**kw)
+    yield get
 
 
-def test_negotiated_resource_is_instantiable():
-    website = Website([])
+def test_negotiated_resource_is_instantiable(harness):
+    website = harness.client.website
     fs = ''
     raw = '[---]\n[---] text/plain via stdlib_template\n'
     media_type = ''
@@ -36,15 +38,15 @@ def test_negotiated_resource_is_instantiable():
 
 # compile_page
 
-def test_compile_page_chokes_on_truly_empty_page():
+def test_compile_page_chokes_on_truly_empty_page(get):
     raises(SyntaxError, get().compile_page, Page(''))
 
-def test_compile_page_compiles_empty_page():
+def test_compile_page_compiles_empty_page(get):
     page = get().compile_page(Page('', 'text/html'))
     actual = page[0]({}), page[1]
     assert actual == ('', 'text/html')
 
-def test_compile_page_compiles_page():
+def test_compile_page_compiles_page(get):
     page = get().compile_page(Page('foo bar', 'text/html'))
     actual = page[0]({}), page[1]
     assert actual == ('foo bar', 'text/html')
@@ -52,49 +54,49 @@ def test_compile_page_compiles_page():
 
 # _parse_specline
 
-def test_parse_specline_parses_specline():
+def test_parse_specline_parses_specline(get):
     factory, media_type = get()._parse_specline('media/type via stdlib_template')
     actual = (factory.__class__, media_type)
     assert actual == (TemplateFactory, 'media/type')
 
-def test_parse_specline_doesnt_require_renderer():
+def test_parse_specline_doesnt_require_renderer(get):
     factory, media_type = get()._parse_specline('media/type')
     actual = (factory.__class__, media_type)
     assert actual == (PercentFactory, 'media/type')
 
-def test_parse_specline_requires_media_type():
+def test_parse_specline_requires_media_type(get):
     raises(SyntaxError, get()._parse_specline, 'via stdlib_template')
 
-def test_parse_specline_raises_SyntaxError_if_renderer_is_malformed():
+def test_parse_specline_raises_SyntaxError_if_renderer_is_malformed(get):
     raises(SyntaxError, get()._parse_specline, 'stdlib_template media/type')
 
-def test_parse_specline_raises_SyntaxError_if_media_type_is_malformed():
+def test_parse_specline_raises_SyntaxError_if_media_type_is_malformed(get):
     raises(SyntaxError, get()._parse_specline, 'media-type via stdlib_template')
 
-def test_parse_specline_cant_mistake_malformed_media_type_for_renderer():
+def test_parse_specline_cant_mistake_malformed_media_type_for_renderer(get):
     raises(SyntaxError, get()._parse_specline, 'media-type')
 
-def test_parse_specline_cant_mistake_malformed_renderer_for_media_type():
+def test_parse_specline_cant_mistake_malformed_renderer_for_media_type(get):
     raises(SyntaxError, get()._parse_specline, 'stdlib_template')
 
-def test_parse_specline_enforces_order():
+def test_parse_specline_enforces_order(get):
     raises(SyntaxError, get()._parse_specline, 'stdlib_template via media/type')
 
-def test_parse_specline_obeys_default_by_media_type():
+def test_parse_specline_obeys_default_by_media_type(get):
     resource = get()
     resource.website.default_renderers_by_media_type['media/type'] = 'glubber'
     err = raises(ValueError, resource._parse_specline, 'media/type').value
     msg = err.args[0]
     assert msg.startswith("Unknown renderer for media/type: glubber."), msg
 
-def test_parse_specline_obeys_default_by_media_type_default():
+def test_parse_specline_obeys_default_by_media_type_default(get):
     resource = get()
     resource.website.default_renderers_by_media_type.default_factory = lambda: 'glubber'
     err = raises(ValueError, resource._parse_specline, 'media/type').value
     msg = err.args[0]
     assert msg.startswith("Unknown renderer for media/type: glubber.")
 
-def test_get_renderer_factory_can_raise_syntax_error():
+def test_get_renderer_factory_can_raise_syntax_error(get):
     resource = get()
     resource.website.default_renderers_by_media_type['media/type'] = 'glubber'
     err = raises( SyntaxError
@@ -244,24 +246,22 @@ Greetings, %(foo)s!"""
 
 def test_indirect_negotiation_sets_media_type(harness):
     harness.fs.www.mk(('/foo.spt', INDIRECTLY_NEGOTIATED_RESOURCE))
-    response = harness.GET('/foo.html')
+    response = harness.client.GET('/foo.html')
     expected = "<h1>Greetings, program!</h1>\n"
     actual = response.body
     assert actual == expected
 
 def test_indirect_negotiation_sets_media_type_to_secondary(harness):
     harness.fs.www.mk(('/foo.spt', INDIRECTLY_NEGOTIATED_RESOURCE))
-    response = harness.GET('/foo.txt')
+    response = harness.client.GET('/foo.txt')
     expected = "Greetings, program!"
     actual = response.body
     assert actual == expected
 
 def test_indirect_negotiation_with_unsupported_media_type_is_404(harness):
-    harness.short_circuit = False
     harness.fs.www.mk(('/foo.spt', INDIRECTLY_NEGOTIATED_RESOURCE))
-    response = harness.GET('/foo.jpg')
-    actual = response.code
-    assert actual == 404
+    response = harness.client.GxT('/foo.jpg')
+    assert response.code == 404
 
 
 INDIRECTLY_NEGOTIATED_VIRTUAL_RESOURCE = """\
@@ -275,7 +275,7 @@ Greetings, %(foo)s!"""
 
 def test_negotiated_inside_virtual_path(harness):
     harness.fs.www.mk(('/%foo/bar.spt', INDIRECTLY_NEGOTIATED_VIRTUAL_RESOURCE ))
-    response = harness.GET('/program/bar.txt')
+    response = harness.client.GET('/program/bar.txt')
     expected = "Greetings, program!"
     actual = response.body
     assert actual == expected
@@ -292,20 +292,20 @@ Greetings, %(foo)s!"""
 
 def test_negotiated_inside_virtual_path_with_startypes_present(harness):
     harness.fs.www.mk(('/%foo/bar.spt', INDIRECTLY_NEGOTIATED_VIRTUAL_RESOURCE_STARTYPE ))
-    response = harness.GET('/program/bar.html')
+    response = harness.client.GET('/program/bar.html')
     actual = response.body
     assert '<h1>' in actual
 
 def test_negotiated_inside_virtual_path_with_startype_partial_match(harness):
     harness.fs.www.mk(('/%foo/bar.spt', INDIRECTLY_NEGOTIATED_VIRTUAL_RESOURCE_STARTYPE ))
-    response = harness.GET('/program/bar.txt')
+    response = harness.client.GET('/program/bar.txt')
     expected = "Greetings, program!"
     actual = response.body
     assert actual == expected
 
 def test_negotiated_inside_virtual_path_with_startype_fallback(harness):
     harness.fs.www.mk(('/%foo/bar.spt', INDIRECTLY_NEGOTIATED_VIRTUAL_RESOURCE_STARTYPE ))
-    response = harness.GET('/program/bar.jpg')
+    response = harness.client.GET('/program/bar.jpg')
     expected = "Unknown request type, program!"
     actual = response.body.strip()
     assert actual == expected
