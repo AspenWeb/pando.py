@@ -48,9 +48,11 @@ def _digest_auth_for(headers, username, password):
 @yield_fixture
 def request_with(harness):
     def request_with(auth_header, inbound_auther):
-        harness.website.algorithm.insert_after('parse_environ_into_request', inbound_auther)
+        harness.client.website.algorithm.insert_after( 'parse_environ_into_request'
+                                                     , inbound_auther
+                                                      )
         return harness.simple( filepath=None
-                             , run_through='httpdigest_inbound_responder'
+                             , return_after='httpdigest_inbound_responder'
                              , want='request'
                              , HTTP_AUTHORIZATION=auth_header
                               )
@@ -100,5 +102,3 @@ def test_wrong_auth(request_with):
     auther = inbound_responder(auth, realm="testrealm@host.com")
     response = raises(Response, request_with, "Wacky xxx", auther).value
     assert response.code == 400, response
-
-

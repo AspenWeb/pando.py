@@ -27,7 +27,7 @@ class Website(Configurable):
         """Takes an argv list, without the initial executable name.
         """
         self.server_algorithm = server_algorithm
-        self.algorithm = Algorithm('aspen.algorithms.website')
+        self.algorithm = Algorithm.from_dotted_name('aspen.algorithms.website')
         self.configure(argv)
 
 
@@ -50,10 +50,14 @@ class Website(Configurable):
         return wsgi(environ, start_response)
 
 
-    def respond(self, environ, _run_through=None):
+    def respond(self, environ, raise_immediately=None, return_after=None):
         """Given a WSGI environ, return a state dict.
         """
-        return self.algorithm.run(website=self, environ=environ, _through=_run_through)
+        return self.algorithm.run( website=self
+                                 , environ=environ
+                                 , _raise_immediately=raise_immediately
+                                 , _return_after=return_after
+                                  )
 
 
     # File Resolution

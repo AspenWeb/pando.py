@@ -1,13 +1,18 @@
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
 import sys
 
 import pytest
-from aspen.testing.filesystem_fixture import FilesystemFixture
 from aspen.testing.harness import Harness
+from filesystem_tree import FilesystemTree
 
 
 @pytest.yield_fixture
 def fs():
-    fs = FilesystemFixture()
+    fs = FilesystemTree()
     yield fs
     fs.remove()
 
@@ -41,3 +46,8 @@ def harness(module_scrubber, sys_path_scrubber):
     harness = Harness()
     yield harness
     harness.teardown()
+
+
+@pytest.yield_fixture
+def client(harness):
+    yield harness.client
