@@ -6,6 +6,8 @@ Aspen-python Changelog
 
 * Update to a newer version of Algorithm
 
+* Started using standalone filesystem_tree module
+
 * Clean up test harness and test client to be more usable
 
 * Add extensible typecasting for virtual path segments
