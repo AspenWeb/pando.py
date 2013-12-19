@@ -43,8 +43,8 @@ else
         git push
         git push --tags
 
-        ./env/bin/python setup.py sdist --formats=zip,gztar,bztar upload
-        ./env/bin/python setup.py bdist_wheel upload
+        python setup.py sdist --formats=zip,gztar,bztar upload
+        python setup.py bdist_wheel upload
 
         printf "\055dev" >> version.txt
         git commit version.txt -m"Bump version to $1-dev"
