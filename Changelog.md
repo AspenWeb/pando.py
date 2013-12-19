@@ -1,6 +1,15 @@
 Aspen-python Changelog
 ======================
 
+0.28 - Released Thu Dec 19 2013 by @pjz
+-----------------------------------------
+
+* Update to a newer version of Algorithm
+
+* Clean up test harness and test client to be more usable
+
+* Add extensible typecasting for virtual path segments
+
 0.27 - Released Tue Nov 26 2013 by @pjz
 -----------------------------------------
 
