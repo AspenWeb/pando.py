@@ -1,6 +1,11 @@
 Aspen-python Changelog
 ======================
 
+0.28.1 - Released Thu Dec 19 2013 by @whit537
+---------------------------------------------
+
+* Fix regressions in server.py exception handling
+
 0.28 - Released Thu Dec 19 2013 by @pjz
 -----------------------------------------
 
