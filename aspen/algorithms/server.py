@@ -8,6 +8,7 @@ import os
 import signal
 import socket
 import sys
+import traceback
 
 import aspen
 from aspen import execution
@@ -91,7 +92,7 @@ def start(website):
     website.network_engine.start()
 
 
-def stub_website_for_exception(exc_info, state):
+def stub_website_for_exception(exception, state):
     """
     """
     # Without this, the call to stop fails if we had an exception during configuration.
@@ -99,7 +100,7 @@ def stub_website_for_exception(exc_info, state):
         return {'website': None}
 
 
-def handle_conflict_over_port(exc_info, website):
+def handle_conflict_over_port(exception, website):
     """Be friendly about port conflicts.
 
     The traceback one gets from a port conflict or permission error is not that
@@ -113,7 +114,7 @@ def handle_conflict_over_port(exc_info, website):
     the port early.
 
     """
-    if exc_info[0] is not socket.error:
+    if exception.__class__ is not socket.error:
         return
 
     if website.network_port is not None:
@@ -133,13 +134,12 @@ def handle_conflict_over_port(exc_info, website):
     raise
 
 
-def log_traceback_for_exception(exc_info):
+def log_traceback_for_exception(exception):
     """
     """
-    if exc_info[0] not in (KeyboardInterrupt, SystemExit):
-        aspen.log_dammit(exc_info[2])
-    sys.exc_clear()
-    return {'exc_info': None}
+    if exception.__class__ not in (KeyboardInterrupt, SystemExit):
+        aspen.log_dammit(traceback.format_exc())
+    return {'exception': None}
 
 
 def stop(website):
