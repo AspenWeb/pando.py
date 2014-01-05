@@ -1,6 +1,12 @@
 Aspen-python Changelog
 ======================
 
+0.28.1 - Released Sat Jan  4 2014 by @pjz
+-----------------------------------------
+
+* Fix bug in aspen.testing.pytest_fixtures required to be fixed for
+  aspen-python-plugins tests to work
+
 0.28.1 - Released Thu Dec 19 2013 by @whit537
 ---------------------------------------------
 
