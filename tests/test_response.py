@@ -6,7 +6,7 @@ from __future__ import unicode_literals
 from pytest import raises
 
 from aspen import Response
-from aspen.exceptions import CRLFInjection
+from aspen.http.response import CRLFInjection
 
 
 def test_response_is_a_wsgi_callable():

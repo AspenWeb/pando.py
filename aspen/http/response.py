@@ -8,9 +8,66 @@ import os
 import re
 import sys
 
-from aspen.utils import ascii_dammit
+from aspen.backcompat import CookieError, SimpleCookie
+
 from aspen.http import status_strings
-from aspen.http.baseheaders import BaseHeaders as Headers
+from aspen.http.mapping import CaseInsensitiveMapping
+from aspen.utils import typecheck
+from aspen.utils import ascii_dammit
+
+
+class BaseHeaders(CaseInsensitiveMapping):
+    """Represent the headers in an HTTP Request or Response message.
+       http://stackoverflow.com/questions/5423223/how-to-send-non-english-unicode-string-using-http-header
+       has good notes on why we do everything as pure bytes here
+    """
+
+    def __init__(self, d):
+        """Takes headers as a dict or str.
+        """
+        typecheck(d, (dict, str))
+        if isinstance(d, str):
+            def genheaders():
+                for line in d.splitlines():
+                    k, v = line.split(b':', 1)
+                    yield k.strip(), v.strip()
+        else:
+            genheaders = d.iteritems
+        CaseInsensitiveMapping.__init__(self, genheaders)
+
+
+        # Cookie
+        # ======
+
+        self.cookie = SimpleCookie()
+        try:
+            self.cookie.load(self.get('Cookie', b''))
+        except CookieError:
+            pass # XXX really?
+
+
+    def __setitem__(self, name, value):
+        """Extend to protect against CRLF injection:
+
+        http://www.acunetix.com/websitesecurity/crlf-injection/
+
+        """
+        if '\n' in value:
+            raise CRLFInjection()
+        super(BaseHeaders, self).__setitem__(name, value)
+
+
+    def raw(self):
+        """Return the headers as a string, formatted for an HTTP message.
+        """
+        out = []
+        for header, values in self.iteritems():
+            for value in values:
+                out.append('%s: %s' % (header, value))
+        return '\r\n'.join(out)
+    raw = property(raw)
+
+
 
 
 class CloseWrapper(object):
@@ -77,7 +134,7 @@ class Response(Exception):
         Exception.__init__(self)
         self.code = code
         self.body = body
-        self.headers = Headers(b'')
+        self.headers = BaseHeaders(b'')
         self.charset = charset
         if headers:
             if isinstance(headers, dict):
@@ -160,3 +217,11 @@ class Response(Exception):
         finally:
             del tb  # http://docs.python.org/2/library/sys.html#sys.exc_info
         return filepath, linenum
+
+class CRLFInjection(Response):
+    """
+    A 400 Response (per #249) raised if there's a suspected CRLF Injection attack in the headers
+    """
+    def __init__(self):
+        Response.__init__(self, code=400, body="Possible CRLF Injection detected.")
+

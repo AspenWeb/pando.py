@@ -7,7 +7,7 @@ from pytest import raises
 
 from aspen import Response
 from aspen.http.request import kick_against_goad, Request
-from aspen.http.baseheaders import BaseHeaders
+from aspen.http.response import BaseHeaders
 
 
 def test_request_line_raw_works(harness):
