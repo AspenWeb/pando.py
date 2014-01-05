@@ -41,7 +41,7 @@ import urlparse
 from cStringIO import StringIO
 
 from aspen import Response
-from aspen.http.baseheaders import BaseHeaders
+from aspen.http.response import BaseHeaders
 from aspen.http.mapping import Mapping
 from aspen.context import Context
 from aspen.utils import ascii_dammit, typecheck
