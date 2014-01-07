@@ -6,7 +6,6 @@ from __future__ import unicode_literals
 
 from aspen.backcompat import CookieError, SimpleCookie
 
-from aspen.exceptions import CRLFInjection
 from aspen.http.mapping import CaseInsensitiveMapping
 from aspen.utils import typecheck
 
@@ -48,7 +47,8 @@ class BaseHeaders(CaseInsensitiveMapping):
 
         """
         if '\n' in value:
-            raise CRLFInjection
+            from aspen.exceptions import CRLFInjection
+            raise CRLFInjection()
         super(BaseHeaders, self).__setitem__(name, value)
 
 
