@@ -6,6 +6,8 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from aspen import Response
+
 
 class LoadError(Exception):
     """Represent a problem loading a resource.
@@ -13,6 +15,9 @@ class LoadError(Exception):
     # Define this here to avoid import issues when json doesn't exist.
 
 
-class CRLFInjection(Exception):
-    def __str__(self):
-        return "Possible CRLF injection detected."
+class CRLFInjection(Response):
+    """
+    A 400 Response (per #249) raised if there's a suspected CRLF Injection attack in the headers
+    """
+    def __init__(self):
+        Response.__init__(self, code=400, body="Possible CRLF Injection detected.")
