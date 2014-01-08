@@ -90,7 +90,6 @@ def get_response_for_resource(request, resource=None):
 
 
 def get_response_for_exception(exception):
-    sys.exc_clear()
     if isinstance(exception, Response):
         response = exception
     else:
