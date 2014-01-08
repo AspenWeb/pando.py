@@ -29,7 +29,6 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import sys
 import traceback
 
 import aspen
@@ -90,7 +89,6 @@ def get_response_for_resource(request, resource=None):
 
 
 def get_response_for_exception(exception):
-    sys.exc_clear()
     if isinstance(exception, Response):
         response = exception
     else:

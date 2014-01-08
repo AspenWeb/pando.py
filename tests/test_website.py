@@ -114,7 +114,6 @@ def test_resources_can_import_from_project_root(harness):
     harness.fs.www.mk(('index.html.spt', "from foo import bar\n[---]\nGreetings, %(bar)s!"))
     assert harness.client.GET(raise_immediately=False).body == "Greetings, baz!"
 
-
 def test_non_500_response_exceptions_dont_get_folded_to_500(harness):
     harness.fs.www.mk(('index.html.spt', '''
 from aspen import Response
@@ -124,6 +123,16 @@ raise Response(400)
     response = harness.client.GET(raise_immediately=False)
     assert response.code == 400
 
+def test_errors_show_tracebacks(harness):
+    harness.fs.www.mk(('index.html.spt', '''
+from aspen import Response
+website.show_tracebacks = 1
+raise Response(400,1,2,3,4,5,6,7,8,9)
+[---]
+'''))
+    response = harness.client.GET(raise_immediately=False)
+    assert response.code == 500
+    assert 'Response(400,1,2,3,4,5,6,7,8,9)' in response.body
 
 
 class TestMiddleware(object):
