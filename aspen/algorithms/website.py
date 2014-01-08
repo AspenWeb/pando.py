@@ -104,7 +104,7 @@ def log_traceback_for_5xx(response):
 
 
 def delegate_error_to_simplate(website, request, response):
-    if response.code < 400:
+    if response.code < 400 or response.body:
         return
 
     code = str(response.code)
