@@ -76,16 +76,16 @@ raise Response(420)
 
 def test_nice_error_response_can_be_overriden_by_simplate(harness):
     harness.fs.project.mk(('error.html', 'Told ya.'))
-    harness.fs.www.mk(('index.html.spt', """
+    harness.fs.www.mk(('foo.json.spt', """
 from aspen import Response
 [---]
 raise Response(420, "Different error")
-[---]"""))
-    response = harness.client.GET(raise_immediately=False)
+"""))
+    response = harness.client.GET("/foo.json", raise_immediately=False)
     assert response.code == 420
     assert response.body == 'Different error'
     assert 'content-type' in response.headers
-    assert response.headers['content-type'] == 'text/json'
+    assert response.headers['content-type'] == 'application/json'
 
 def test_nice_error_response_can_come_from_user_420_html(harness):
     harness.fs.project.mk(('420.html.spt', """
