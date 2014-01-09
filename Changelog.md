@@ -1,7 +1,7 @@
 Aspen-python Changelog
 ======================
 
-0.28.3 - Released Sat Jan  9 2014 by @whit537
+0.28.3 - Released Thu Jan  9 2014 by @whit537
 ---------------------------------------------
 
 * Fix bug where we were preventing tracebacks from reaching either the console
