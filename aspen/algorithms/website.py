@@ -96,13 +96,32 @@ def get_response_for_exception(exception):
     return {'response': response, 'exception': None}
 
 
+def set_contenttype_for_raisedresponse(response, resource=None):
+    # Need a resource or we can't do anything
+    if resource is None:
+        return
+
+    # only work on error responses that don't go through
+    # the error-simplate dispatch
+    if response.code < 400 or not response.body:
+        return
+
+    # skip it if there's already a content-type
+    if 'content-type' in response.headers:
+        return
+
+    ctype = getattr(resource, 'media_type', None)
+    if ctype is not None:
+        response.headers['content-type'] = ctype
+
+
 def log_traceback_for_5xx(response):
     if response.code >= 500:
         aspen.log_dammit(response.body)
 
 
 def delegate_error_to_simplate(website, request, response):
-    if response.code < 400:
+    if response.code < 400 or response.body:
         return
 
     code = str(response.code)
