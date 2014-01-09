@@ -1,6 +1,14 @@
 Aspen-python Changelog
 ======================
 
+0.28.3 - Released Sat Jan  9 2014 by @whit537
+---------------------------------------------
+
+* Fix bug where we were preventing tracebacks from reaching either the console
+  or the browser.
+
+* Return 400 from anti-CRLF-injection instead of 500
+
 0.28.2 - Released Sat Jan  4 2014 by @pjz
 -----------------------------------------
 
