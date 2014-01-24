@@ -93,7 +93,7 @@ raise Response(420)
 [---]"""))
     response = harness.client.GET(raise_immediately=False)
     assert response.code == 420
-    assert response.body == 'Told ya.'
+    assert response.body.strip() == 'Told ya.'
 
 def test_nice_error_response_can_come_from_user_420_spt(harness):
     harness.fs.project.mk(('420.spt', """
@@ -108,7 +108,7 @@ raise Response(420)
 [---]"""))
     response = harness.client.GET(raise_immediately=False)
     assert response.code == 420
-    assert response.body == 'Enhance your calm.'
+    assert response.body.strip() == 'Enhance your calm.'
 
 def test_default_error_spt_handles_text_html(harness):
     harness.fs.www.mk(('foo.html.spt',"""
@@ -130,11 +130,11 @@ raise Response(404)
     response = harness.client.GET('/foo.json', raise_immediately=False)
     assert response.code == 404
     assert response.headers['Content-Type'] == 'application/json'
-    assert response.body == '''\
+    assert response.body.strip() == '''\
 { "error_code": 404
 , "error_message_short": "Not Found"
 , "error_message_long": ""
- }
+ }\
 '''
 
 def test_default_error_spt_application_json_includes_msg_for_show_tracebacks(harness):
@@ -147,11 +147,11 @@ raise Response(404, "Right, sooo...")
     response = harness.client.GET('/foo.json', raise_immediately=False)
     assert response.code == 404
     assert response.headers['Content-Type'] == 'application/json'
-    assert response.body == '''\
+    assert response.body.strip() == '''\
 { "error_code": 404
 , "error_message_short": "Not Found"
 , "error_message_long": "Right, sooo..."
- }
+ }\
 '''
 
 def test_default_error_spt_falls_through_to_text_plain(harness):
@@ -164,7 +164,7 @@ raise Response(404)
     response = harness.client.GET('/foo.xml', raise_immediately=False)
     assert response.code == 404
     assert response.headers['Content-Type'] == 'text/plain; charset=UTF-8'
-    assert response.body == "Not found, program!\n\n"
+    assert response.body.strip() == "Not found, program!"
 
 def test_default_error_spt_fall_through_includes_msg_for_show_tracebacks(harness):
     harness.client.website.show_tracebacks = True
@@ -177,7 +177,7 @@ raise Response(404, "Try again!")
     response = harness.client.GET('/foo.xml', raise_immediately=False)
     assert response.code == 404
     assert response.headers['Content-Type'] == 'text/plain; charset=UTF-8'
-    assert response.body == "Not found, program!\nTry again!\n"
+    assert response.body.strip() == "Not found, program!\nTry again!"
 
 def test_custom_error_spt_without_text_plain_results_in_406(harness):
     harness.fs.project.mk(('error.spt', """
@@ -209,7 +209,7 @@ raise Response(404)
     response = harness.client.GET('/foo.xml', raise_immediately=False)
     assert response.code == 404
     assert response.headers['Content-Type'] == 'text/plain; charset=UTF-8'
-    assert response.body == "Oh no!\n"
+    assert response.body.strip() == "Oh no!"
 
 
 def test_autoindex_response_is_404_by_default(harness):
@@ -225,7 +225,7 @@ def test_autoindex_response_is_returned(harness):
 def test_resources_can_import_from_project_root(harness):
     harness.fs.project.mk(('foo.py', 'bar = "baz"'))
     harness.fs.www.mk(('index.html.spt', "from foo import bar\n[---]\nGreetings, %(bar)s!"))
-    assert harness.client.GET(raise_immediately=False).body == "Greetings, baz!"
+    assert harness.client.GET(raise_immediately=False).body == "\n\nGreetings, baz!"
 
 def test_non_500_response_exceptions_dont_get_folded_to_500(harness):
     harness.fs.www.mk(('index.html.spt', '''

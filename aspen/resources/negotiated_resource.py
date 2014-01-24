@@ -54,7 +54,7 @@ class NegotiatedResource(DynamicResource):
         """Given a bytestring, return a (renderer, media type) pair.
         """
         make_renderer, media_type = self._parse_specline(page.header)
-        renderer = make_renderer(self.fs, page.content)
+        renderer = make_renderer(self.fs, page.padded_content)
         if media_type in self.renderers:
             raise SyntaxError("Two content pages defined for %s." % media_type)
 
