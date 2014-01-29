@@ -63,8 +63,8 @@ raise Response(404)
 [---]"""))
     assert harness.client.GET(raise_immediately=False).code == 404
 
-def test_nice_error_response_can_come_from_user_error_html(harness):
-    harness.fs.project.mk(('error.html', 'Told ya.'))
+def test_nice_error_response_can_come_from_user_error_spt(harness):
+    harness.fs.project.mk(('error.spt', '[---]\n[---] text/plain\nTold ya.'))
     harness.fs.www.mk(('index.html.spt', """
 from aspen import Response
 [---]
@@ -74,10 +74,11 @@ raise Response(420)
     assert response.code == 420
     assert response.body == 'Told ya.'
 
-def test_nice_error_response_can_come_from_user_420_html(harness):
-    harness.fs.project.mk(('420.html.spt', """
-msg = "Enhance your calm." if response.code == 420 else "Ok."
+def test_nice_error_response_can_come_from_user_420_spt(harness):
+    harness.fs.project.mk(('420.spt', """
 [---]
+msg = "Enhance your calm." if response.code == 420 else "Ok."
+[---] text/plain
 %(msg)s"""))
     harness.fs.www.mk(('index.html.spt', """
 from aspen import Response

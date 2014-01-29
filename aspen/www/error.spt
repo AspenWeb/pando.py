@@ -36,7 +36,7 @@ else:
 
 msg_title = msg.title()
 
-[----------------------------------------] via stdlib_format
+[----------------------------------------] text/html via stdlib_format
 <html>
     <head>
         <title>{response.code} {msg_title}</title>
