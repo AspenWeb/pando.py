@@ -63,6 +63,16 @@ raise Response(404)
 [---]"""))
     assert harness.client.GET(raise_immediately=False).code == 404
 
+def test_default_error_simplate_exposes_any_raised_body(harness):
+    harness.fs.www.mk(('index.html.spt', """
+from aspen import Response
+[---]
+raise Response(404, "Um, yeah.")
+[---]"""))
+    response = harness.client.GET(raise_immediately=False)
+    assert response.code == 404
+    assert "Um, yeah." in response.body
+
 def test_nice_error_response_can_come_from_user_error_spt(harness):
     harness.fs.project.mk(('error.spt', '[---]\n[---] text/plain\nTold ya.'))
     harness.fs.www.mk(('index.html.spt', """
