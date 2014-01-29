@@ -10,5 +10,5 @@ def test_website_can_respond(harness):
 
 
 def test_404_comes_out_404(harness):
-    harness.fs.project.mk(('404.html.spt', 'Eep!'))
+    harness.fs.project.mk(('404.spt', '[---]\n[---] text/plain\nEep!'))
     assert harness.client.GET(raise_immediately=False).code == 404
