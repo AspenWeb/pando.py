@@ -64,11 +64,11 @@ err_json = json.dumps(err)
         <pre>{err}</pre>
     </body>
 </html>
-[----------------------------------------] application/json via stdlib_percent
-{ "error_code": %(response_code)s
-, "error_message_short": "%(msg_title)s"
-, "error_message_long": %(err_json)s
- }
+[----------------------------------------] application/json via stdlib_format
+{{ "error_code": {response_code}
+, "error_message_short": "{msg_title}"
+, "error_message_long": {err_json}
+ }}
 [----------------------------------------] text/plain via stdlib_format
 {msg}, program!
 {err}
