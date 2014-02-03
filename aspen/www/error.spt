@@ -3,7 +3,9 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from aspen import json
 from aspen.http import status_strings
+
 try:
     from pygments.lexers import PythonTracebackLexer
     from pygments.formatters import HtmlFormatter
@@ -35,6 +37,8 @@ else:
     err = ''
 
 msg_title = msg.title()
+response_code = response.code  # make this available to json section
+err_json = json.dumps(err)
 
 [----------------------------------------] text/html via stdlib_format
 <html>
@@ -60,3 +64,11 @@ msg_title = msg.title()
         <pre>{err}</pre>
     </body>
 </html>
+[----------------------------------------] application/json via stdlib_format
+{{ "error_code": {response_code}
+, "error_message_short": "{msg_title}"
+, "error_message_long": {err_json}
+ }}
+[----------------------------------------] text/plain via stdlib_format
+{msg}, program!
+{err}

@@ -101,7 +101,7 @@ def log_traceback_for_5xx(response):
         aspen.log_dammit(response.body)
 
 
-def delegate_error_to_simplate(website, request, response):
+def delegate_error_to_simplate(website, request, response, resource=None):
     if response.code < 400:
         return
 
@@ -111,9 +111,16 @@ def delegate_error_to_simplate(website, request, response):
 
     if fs is not None:
         request.fs = fs
-        request.original_resource = request.resource
+        request.original_resource = resource
+        if resource is not None:
+            # Try to return an error that matches the type of the original resource.
+            request.headers['Accept'] = resource.media_type + ', text/plain; q=0.1'
         resource = resources.get(request)
-        response = resource.respond(request, response)
+        try:
+            response = resource.respond(request, response)
+        except Response as response:
+            if response.code != 406:
+                raise
 
     return {'response': response, 'exception': None}
 
