@@ -42,9 +42,15 @@ setup( author = 'Chad Whitacre'
      , package_data = {'aspen': ['www/*', 'configuration/mime.types']}
      , install_requires = [ 'Cheroot==4.0.0beta'
                           , 'mimeparse==0.1.3'
-                          , 'first==2.0.0'
+                          , 'first==2.0.1'
                           , 'algorithm>=1.0.0'
                           , 'filesystem_tree>=1.0.0'
                            ]
      , extras_require = {'fcgi': ['flup']}
+     , tests_require = [ 'virtualenv>=1.11'
+                       , 'py'
+                       , 'coverage'
+                       , 'pytest'
+                       , 'pytest-cov'
+                        ]
       )
