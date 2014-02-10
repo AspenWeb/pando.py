@@ -9,45 +9,75 @@ from fabricate import main, run, shell, autoclean
 # We satisfy dependencies using local tarballs, to ensure that we can build
 # without a network connection. They're kept in our repo in ./vendor.
 
-ASPEN_DEPS = [ 'Cheroot-4.0.0beta.tar.gz', 'mimeparse-0.1.3.tar.gz', 'first-2.0.0.tar.gz' ]
+ASPEN_DEPS = [
+    'Cheroot>=4.0.0beta',
+    'mimeparse>=0.1.3',
+    'first>=2.0.1',
+    'algorithm>=1.0.0',
+    'filesystem_tree>=1.0.0',
+    'dependency_injection>=1.1.0',
+    ]
 
-TEST_DEPS = [ 'coverage-3.5.3.tar.gz'
-            , 'py-1.4.17.tar.gz'
-            , 'pytest-2.4.2.tar.gz'
-            , 'pytest-cov-1.6.tar.gz'
-             ]
+TEST_DEPS = [
+    'coverage>=3.7.1',
+    'cov-core>=1.7',
+    'py>=1.4.20',
+    'pytest>=2.5.2',
+    'pytest-cov>=1.6',
+    ]
+
+INSTALL_DIR = './vendor/install'
+TEST_DIR = './vendor/test'
+BOOTSTRAP_DIR = './vendor/bootstrap'
+
+ENV_ARGS = [
+    './vendor/virtualenv-1.11.2.py',
+    '--prompt=[aspen]',
+    '--extra-search-dir=' + BOOTSTRAP_DIR,
+    ]
+
 
 def _virt(cmd, envdir='env'):
     return os.path.join(envdir, 'bin', cmd)
 
-ENV_ARGS = [
-            './vendor/virtualenv-1.7.1.2.py',
-            '--distribute',
-            '--unzip-setuptools',
-            '--prompt=[aspen] ',
-            '--never-download',
-            '--extra-search-dir=./vendor/',
-            ]
+
+def _virt_version():
+    _env()
+    v = shell(_virt('python'), '-c',
+              'import sys; print(sys.version_info[:2])')
+    return eval(v)
+
 
 def _env():
-    if os.path.exists('env'): return
-    args = [ main.options.python ] + ENV_ARGS + [ 'env' ]
+    if os.path.exists('env'):
+        return
+    args = [main.options.python] + ENV_ARGS + ['env']
     run(*args)
 
+
 def aspen():
-    if os.path.exists('env/bin/aspen'): return
+    if os.path.exists(_virt('aspen')):
+        return
     _env()
     for dep in ASPEN_DEPS:
-        run(_virt('pip'), 'install', os.path.join('vendor', dep))
+        run(_virt('pip'), 'install', '--no-index',
+            '--find-links=' + INSTALL_DIR, dep)
     run(_virt('python'), 'setup.py', 'develop')
+
 
 def dev():
     _env()
+    # pytest will need argparse if its running under 2.6
+    if _virt_version() < (2, 7):
+        TEST_DEPS.insert(0, 'argparse')
     for dep in TEST_DEPS:
-        run(_virt('pip'), 'install', os.path.join('vendor', dep))
+        run(_virt('pip'), 'install', '--no-index',
+            '--find-links=' + TEST_DIR, dep)
+
 
 def clean_env():
     shell('rm', '-rf', 'env')
+
 
 def clean():
     autoclean()
@@ -62,18 +92,23 @@ def clean():
 # Doc / Smoke
 # ===========
 
+smoke_dir = 'smoke-test'
+
+
 def docs():
     aspen()
     run(_virt('pip'), 'install', 'aspen-tornado')
     run(_virt('pip'), 'install', 'pygments')
-    shell(_virt('aspen'), '-a:5370', '-wdoc', '-pdoc/.aspen', '--changes_reload=1', silent=False)
+    shell(_virt('aspen'), '-a:5370', '-wdoc', '-pdoc/.aspen',
+          '--changes_reload=1', silent=False)
 
-smoke_dir = 'smoke-test'
+
 def smoke():
     aspen()
     run('mkdir', smoke_dir)
-    open(os.path.join(smoke_dir, "index.html"),"w").write("Greetings, program!")
+    open(os.path.join(smoke_dir, "index.html"), "w").write("Greetings, program!")
     run(_virt('aspen'), '-w', smoke_dir)
+
 
 def clean_smoke():
     shell('rm', '-rf', smoke_dir)
@@ -87,23 +122,27 @@ def test():
     dev()
     shell(_virt('py.test'), 'tests/', ignore_status=True, silent=False)
 
+
 def pylint():
     _env()
     run(_virt('pip'), 'install', 'pylint')
-    run(_virt('pylint'), '--rcfile=.pylintrc', 'aspen', '|', 'tee', 'pylint.out', shell=True, ignore_status=True)
+    run(_virt('pylint'), '--rcfile=.pylintrc',
+        'aspen', '|', 'tee', 'pylint.out', shell=True, ignore_status=True)
+
 
 def analyse():
     pylint()
     dev()
     aspen()
     run(_virt('py.test'),
-            '--junitxml=testresults.xml',
-            '--cov-report', 'term',
-            '--cov-report', 'xml',
-            '--cov', 'aspen',
-            'tests/',
-            ignore_status=False)
+        '--junitxml=testresults.xml',
+        '--cov-report', 'term',
+        '--cov-report', 'xml',
+        '--cov', 'aspen',
+        'tests/',
+        ignore_status=False)
     print('done!')
+
 
 def clean_test():
     clean_env()
@@ -112,8 +151,14 @@ def clean_test():
 # Build
 # =====
 
+
 def build():
     run(main.options.python, 'setup.py', 'bdist_egg')
+
+
+def wheel():
+    run(main.options.python, 'setup.py', 'bdist_wheel')
+
 
 def clean_build():
     run('python', 'setup.py', 'clean', '-a')
@@ -121,7 +166,7 @@ def clean_build():
 
 # Jython
 # ======
-JYTHON_URL="http://search.maven.org/remotecontent?filepath=org/python/jython-installer/2.7-b1/jython-installer-2.7-b1.jar"
+JYTHON_URL = "http://search.maven.org/remotecontent?filepath=org/python/jython-installer/2.7-b1/jython-installer-2.7-b1.jar"
 
 def _jython_home():
     if not os.path.exists('jython_home'):
