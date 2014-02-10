@@ -41,6 +41,13 @@ def _virt(cmd, envdir='env'):
     return os.path.join(envdir, 'bin', cmd)
 
 
+def _virt_version():
+    _env()
+    v = shell(_virt('python'), '-c',
+              'import sys; print(sys.version_info[:2])')
+    return eval(v)
+
+
 def _env():
     if os.path.exists('env'):
         return
@@ -60,6 +67,9 @@ def aspen():
 
 def dev():
     _env()
+    # pytest will need argparse if its running under 2.6
+    if _virt_version() < (2, 7):
+        TEST_DEPS.insert(0, 'argparse')
     for dep in TEST_DEPS:
         run(_virt('pip'), 'install', '--no-index',
             '--find-links=' + TEST_DIR, dep)
@@ -116,7 +126,8 @@ def test():
 def pylint():
     _env()
     run(_virt('pip'), 'install', 'pylint')
-    run(_virt('pylint'), '--rcfile=.pylintrc', 'aspen', '|', 'tee', 'pylint.out', shell=True, ignore_status=True)
+    run(_virt('pylint'), '--rcfile=.pylintrc',
+        'aspen', '|', 'tee', 'pylint.out', shell=True, ignore_status=True)
 
 
 def analyse():
@@ -125,12 +136,13 @@ def analyse():
     aspen()
     run(_virt('py.test'),
         '--junitxml=testresults.xml',
-            '--cov-report', 'term',
-            '--cov-report', 'xml',
-            '--cov', 'aspen',
-            'tests/',
-            ignore_status=False)
+        '--cov-report', 'term',
+        '--cov-report', 'xml',
+        '--cov', 'aspen',
+        'tests/',
+        ignore_status=False)
     print('done!')
+
 
 def clean_test():
     clean_env()
@@ -139,11 +151,14 @@ def clean_test():
 # Build
 # =====
 
+
 def build():
     run(main.options.python, 'setup.py', 'bdist_egg')
 
+
 def wheel():
     run(main.options.python, 'setup.py', 'bdist_wheel')
+
 
 def clean_build():
     run('python', 'setup.py', 'clean', '-a')
@@ -151,7 +166,7 @@ def clean_build():
 
 # Jython
 # ======
-JYTHON_URL="http://search.maven.org/remotecontent?filepath=org/python/jython-installer/2.7-b1/jython-installer-2.7-b1.jar"
+JYTHON_URL = "http://search.maven.org/remotecontent?filepath=org/python/jython-installer/2.7-b1/jython-installer-2.7-b1.jar"
 
 def _jython_home():
     if not os.path.exists('jython_home'):
