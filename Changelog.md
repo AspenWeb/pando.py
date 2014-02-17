@@ -1,6 +1,13 @@
 Aspen-python Changelog
 ======================
 
+0.29 - Released Mon Feb 17 2014 by @pjz
+---------------------------------------
+
+* Only support negotiated simplates for errors - this simplifies the error path
+
+* Update packaging tools and packages to be somewhat modern (thanks @Ivoz!)
+
 0.28.3 - Released Thu Jan  9 2014 by @whit537
 ---------------------------------------------
 
