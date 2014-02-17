@@ -47,6 +47,15 @@ def test_resource_pages_work(harness):
     actual = harness.simple("foo = 'bar'\n[--------]\nGreetings, %(foo)s!").body
     assert actual == "\n\nGreetings, bar!"
 
+def test_resource_pages_are_padded_for_compilation_errors(harness):
+    harness.fs.www.mk(('index.html.spt', '''\
+    [---]
+    [---] text/html via stdlib_template
+    Greetings, $!
+    '''))
+    actual = str(raises(ValueError, harness.client.GET, '/').value)
+    assert 'line 3' in actual
+
 def test_resource_dunder_all_limits_vars(harness):
     actual = raises( KeyError
                             , harness.simple
