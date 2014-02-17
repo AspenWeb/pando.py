@@ -45,7 +45,16 @@ def test_charset_dynamic_barely_working(harness):
 
 def test_resource_pages_work(harness):
     actual = harness.simple("foo = 'bar'\n[--------]\nGreetings, %(foo)s!").body
-    assert actual == "Greetings, bar!"
+    assert actual == "\n\nGreetings, bar!"
+
+def test_resource_pages_are_padded_for_compilation_errors(harness):
+    harness.fs.www.mk(('index.html.spt', '''\
+    [---]
+    [---] text/html via stdlib_template
+    Greetings, $!
+    '''))
+    actual = str(raises(ValueError, harness.client.GET, '/').value)
+    assert 'line 3' in actual
 
 def test_resource_dunder_all_limits_vars(harness):
     actual = raises( KeyError
@@ -65,7 +74,7 @@ def test_path_part_params_are_available(harness):
         [---]
         %(a)s
     """, '/foo/index.html.spt', '/foo;a=1;b;a=3/')
-    assert response.body == "3\n"
+    assert response.body.strip() == "3"
 
 def test_utf8(harness):
     expected = unichr(1758).encode('utf8')
@@ -87,10 +96,10 @@ def test_resources_dont_leak_whitespace(harness):
         foo = [1,2,3,4]
         [--------------]
         %(foo)r""").body
-    assert actual == "[1, 2, 3, 4]"
+    assert actual == "\n\n\n\n[1, 2, 3, 4]"
 
 def test_negotiated_resource_doesnt_break(harness):
-    expected = "Greetings, bar!\n"
+    expected = "\n\n\n\nGreetings, bar!\n"
     actual = harness.simple("""
         [-----------]
         foo = 'bar'
@@ -151,7 +160,7 @@ def test_website_is_in_context(harness):
         [--------]
         [--------]
         It worked.""")
-    assert response.body == 'It worked.'
+    assert response.body == '\n\n\n\nIt worked.'
 
 def test_unknown_mimetype_yields_default_mimetype(harness):
     response = harness.simple( 'Greetings, program!'
@@ -161,7 +170,7 @@ def test_unknown_mimetype_yields_default_mimetype(harness):
 
 def test_templating_without_script_works(harness):
     response = harness.simple('[-----] via stdlib_format\n{request.line.uri.path.raw}')
-    assert response.body == '/'
+    assert response.body == '\n/'
 
 
 # Test offset calculation

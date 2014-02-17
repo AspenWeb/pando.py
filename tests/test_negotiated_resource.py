@@ -135,8 +135,8 @@ def test_get_response_gets_response(harness):
 def test_get_response_is_happy_not_to_negotiate(harness):
     harness.fs.www.mk(('index.spt', NEGOTIATED_RESOURCE))
     request = harness.make_request(filepath='index.spt', contents=NEGOTIATED_RESOURCE)
-    actual = get_response(request, Response()).body
-    assert actual == "Greetings, program!\n"
+    actual = get_response(request, Response()).body.strip()
+    assert actual == "Greetings, program!"
 
 def test_get_response_sets_content_type_when_it_doesnt_negotiate(harness):
     harness.fs.www.mk(('index.spt', NEGOTIATED_RESOURCE))
@@ -156,16 +156,16 @@ def test_get_response_negotiates(harness):
     harness.fs.www.mk(('index.spt', NEGOTIATED_RESOURCE))
     request = harness.make_request(filepath='index.spt', contents=NEGOTIATED_RESOURCE)
     request.headers['Accept'] = 'text/html'
-    actual = get_response(request, Response()).body
-    assert actual == "<h1>Greetings, program!</h1>\n"
+    actual = get_response(request, Response()).body.strip()
+    assert actual == "<h1>Greetings, program!</h1>"
 
 def test_handles_busted_accept(harness):
     harness.fs.www.mk(('index.spt', NEGOTIATED_RESOURCE))
     request = harness.make_request(filepath='index.spt', contents=NEGOTIATED_RESOURCE)
     # Set an invalid Accept header so it will return default (text/plain)
     request.headers['Accept'] = 'text/html;'
-    actual = get_response(request, Response()).body
-    assert actual == "Greetings, program!\n"
+    actual = get_response(request, Response()).body.strip()
+    assert actual == "Greetings, program!"
 
 def test_get_response_sets_content_type_when_it_negotiates(harness):
     harness.fs.www.mk(('index.spt', NEGOTIATED_RESOURCE))
@@ -247,15 +247,15 @@ Greetings, %(foo)s!"""
 def test_indirect_negotiation_sets_media_type(harness):
     harness.fs.www.mk(('/foo.spt', INDIRECTLY_NEGOTIATED_RESOURCE))
     response = harness.client.GET('/foo.html')
-    expected = "<h1>Greetings, program!</h1>\n"
-    actual = response.body
+    expected = "<h1>Greetings, program!</h1>"
+    actual = response.body.strip()
     assert actual == expected
 
 def test_indirect_negotiation_sets_media_type_to_secondary(harness):
     harness.fs.www.mk(('/foo.spt', INDIRECTLY_NEGOTIATED_RESOURCE))
     response = harness.client.GET('/foo.txt')
     expected = "Greetings, program!"
-    actual = response.body
+    actual = response.body.strip()
     assert actual == expected
 
 def test_indirect_negotiation_with_unsupported_media_type_is_404(harness):
@@ -277,7 +277,7 @@ def test_negotiated_inside_virtual_path(harness):
     harness.fs.www.mk(('/%foo/bar.spt', INDIRECTLY_NEGOTIATED_VIRTUAL_RESOURCE ))
     response = harness.client.GET('/program/bar.txt')
     expected = "Greetings, program!"
-    actual = response.body
+    actual = response.body.strip()
     assert actual == expected
 
 INDIRECTLY_NEGOTIATED_VIRTUAL_RESOURCE_STARTYPE = """\
@@ -300,7 +300,7 @@ def test_negotiated_inside_virtual_path_with_startype_partial_match(harness):
     harness.fs.www.mk(('/%foo/bar.spt', INDIRECTLY_NEGOTIATED_VIRTUAL_RESOURCE_STARTYPE ))
     response = harness.client.GET('/program/bar.txt')
     expected = "Greetings, program!"
-    actual = response.body
+    actual = response.body.strip()
     assert actual == expected
 
 def test_negotiated_inside_virtual_path_with_startype_fallback(harness):

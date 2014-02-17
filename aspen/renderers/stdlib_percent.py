@@ -11,6 +11,7 @@ class Renderer(renderers.Renderer):
         return raw
 
     def render_content(self, context):
+        print(repr(self.compiled))
         return self.compiled % context
 
 

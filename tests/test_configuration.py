@@ -123,7 +123,7 @@ def test_configuration_scripts_works_at_all():
     assert actual == expected
 
 def assert_body(harness, uripath, expected_body):
-    actual = harness.simple(filepath=None, uripath=uripath, want='response.body')
+    actual = harness.simple(filepath=None, uripath=uripath, want='response.body').strip()
     assert actual == expected_body
 
 def test_configuration_script_can_set_renderer_default(harness):
@@ -137,7 +137,7 @@ Greetings, {name}!
     """
     harness.fs.project.mk(('configure-aspen.py', CONFIG),)
     harness.fs.www.mk(('index.html.spt', SIMPLATE),)
-    assert_body(harness, '/', 'Greetings, program!\n')
+    assert_body(harness, '/', 'Greetings, program!')
 
 def test_configuration_script_ignores_blank_indexfilenames():
     w = Website(['--indices', 'index.html,, ,default.html'])

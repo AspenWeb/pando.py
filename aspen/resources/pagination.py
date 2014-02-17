@@ -25,7 +25,7 @@ class Page(object):
 
     @property
     def padded_content(self):
-        return ('\n' * self.offset) + self.content
+        return (b'\n' * self.offset) + self.content
 
 
 def split(raw):
