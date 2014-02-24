@@ -274,6 +274,7 @@ class Configurable(object):
             aspen.log_dammit("Found plugin for renderer '%s'" % entrypoint.name)
 
         self.default_renderers_by_media_type = defaultdict(lambda: self.renderer_default)
+        self.default_renderers_by_media_type[self.media_type_json] = 'json_dump'
 
         # mime.types
         # ==========
