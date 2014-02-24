@@ -126,6 +126,7 @@ def test_default_error_spt_handles_application_json(harness):
 from aspen import Response
 [---]
 raise Response(404)
+[---]
     """))
     response = harness.client.GET('/foo.json', raise_immediately=False)
     assert response.code == 404
@@ -143,6 +144,7 @@ def test_default_error_spt_application_json_includes_msg_for_show_tracebacks(har
 from aspen import Response
 [---]
 raise Response(404, "Right, sooo...")
+[---]
     """))
     response = harness.client.GET('/foo.json', raise_immediately=False)
     assert response.code == 404
