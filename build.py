@@ -87,6 +87,7 @@ def clean():
     clean_jenv()
     clean_test()
     clean_build()
+    clean_sphinx()
 
 
 # Doc / Smoke
@@ -101,6 +102,24 @@ def docs():
     run(_virt('pip'), 'install', 'pygments')
     shell(_virt('aspen'), '-a:5370', '-wdoc', '-pdoc/.aspen',
           '--changes_reload=1', silent=False)
+
+
+def sphinx():
+    aspen()
+    #if shell('sphinx-build 2>&1 |grep ^Sphinx'
+    #  run(_virt('pip'), 'install', 'Sphinx')
+    buildcmd = '/usr/bin/sphinx-build'
+    builddir = 'sphinx-build'
+    srcdir = 'sphinx-src'
+    sphinxopts = []
+    args = ['-b', 'html', '-d', builddir + '/doctrees', sphinxopts, srcdir, builddir + '/html' ]
+    pypath = 'env/lib/python2.7/site-packages' # do better
+    run('mkdir', '-p', builddir)
+    run(buildcmd, args, env={'PYTHONPATH': pypath})
+
+
+def clean_sphinx():
+    shell('rm', '-rf', 'sphinx-build')
 
 
 def smoke():
