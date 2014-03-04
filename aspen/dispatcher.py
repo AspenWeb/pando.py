@@ -120,7 +120,7 @@ def dispatch_abstract(listnodes, is_leaf, traverse, find_index, noext_matched,
                 continue
             n_is_spt = n.endswith('.spt')
             n_nospt, _ = splitext(n)
-            if node == n or (n_is_spt and node == n_nospt): # exact name or name.spt
+            if (not n_is_spt and node == n) or (n_is_spt and node == n_nospt): # exact name or name.spt
                 found_direct = n
                 break
             n_is_leaf = is_leaf(traverse(curnode, n))

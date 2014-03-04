@@ -472,3 +472,11 @@ def test_robots_txt_also_shouldnt_be_redirected(harness):
     harness.fs.www.mk(('%value.html.spt', ''),)
     assert_raises_404(harness, '/robots.txt')
 
+def test_dont_serve_hidden_files(harness):
+    harness.fs.www.mk(('.secret_data', ''),)
+    assert_raises_404(harness, '/.secret_data')
+
+def test_dont_serve_spt_file_source(harness):
+    harness.fs.www.mk(('foo.html.spt', "Greetings, program!"),)
+    assert_raises_404(harness, '/foo.html.spt')
+   
