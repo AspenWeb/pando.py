@@ -88,17 +88,24 @@ def get_response_for_resource(request, resource=None):
         return {'response': resource.respond(request)}
 
 
-def get_response_for_exception(exception):
+def get_response_for_exception(website, exception):
+    tb = traceback.format_exc()
     if isinstance(exception, Response):
         response = exception
     else:
-        response = Response(500, traceback.format_exc())
-    return {'response': response, 'exception': None}
+        response = Response(500)
+        if website.show_tracebacks:
+            response.body = tb
+    return {'response': response, 'traceback': tb, 'exception': None}
 
 
-def log_traceback_for_5xx(response):
+def log_traceback_for_5xx(response, traceback=None):
     if response.code >= 500:
-        aspen.log_dammit(response.body)
+        if traceback:
+            aspen.log_dammit(traceback)
+        else:
+            aspen.log_dammit(response.body)
+    return {'traceback': None}
 
 
 def delegate_error_to_simplate(website, request, response, resource=None):
