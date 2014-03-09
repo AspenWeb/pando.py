@@ -63,15 +63,6 @@ file:</p>
 
 {{ screenshot("text.html") }}
 
-
-<h3>JSON</h3>
-
-<p>Aspen has special support for <a href="/simplates/json/">JSON simplates</a>.
-If you want to send something besides <code>application/json</code> for JSON
-files, use the <code>media_type_json</code> <a
-    href="/configuration/">configuration
-    knob</a>.</p>
-
 {% end %}
 
 

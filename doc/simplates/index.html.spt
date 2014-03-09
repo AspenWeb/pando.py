@@ -78,11 +78,6 @@ resources. Media types are inferred from the file extension.</p>
     are Python and then the third is <a href="template/">a templating
         syntax</a>.</li>
 
-    <li><a href="/simplates/json/"><b>JSON Simplates</b></a>&mdash;Aspen has
-    special support for JSON resources. There are only two pages, and whatever
-    you set response.body to in the second page is serialized to JSON with the
-    appropriate Content-Type.</li>
-
     <li><a href="/simplates/negotiated/"><b>Negotiated
             Simplates</b></a>&mdash;If a simplate file doesn&rsquo;t have a
     file extension, then it can be used to serve multiple media types.</li>
