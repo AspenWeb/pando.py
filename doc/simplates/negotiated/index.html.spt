@@ -22,7 +22,7 @@ of the file is like this:</p>
 \[---]
 data = foo.bar(request)
 
-\[---] #!pystache text/plain
+\[---] text/plain via pystache
 {&#123; data }}
 
 \[---] application/json
