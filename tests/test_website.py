@@ -9,6 +9,13 @@ import StringIO
 from aspen.website import Website
 
 
+simple_error_spt = """
+[---]
+[---] text/plain via stdlib_format
+{response.body}
+"""
+
+
 # Tests
 # =====
 
@@ -62,6 +69,27 @@ from aspen import Response
 raise Response(404)
 [---]"""))
     assert harness.client.GET(raise_immediately=False).code == 404
+
+def test_response_body_doesnt_expose_traceback_by_default(harness):
+    harness.fs.project.mk(('error.spt', simple_error_spt))
+    harness.fs.www.mk(('index.html.spt', """
+[---]
+raise Exception("Can I haz traceback ?")
+[---]"""))
+    response = harness.client.GET(raise_immediately=False)
+    assert response.code == 500
+    assert "Can I haz traceback ?" not in response.body
+
+def test_response_body_exposes_traceback_for_show_tracebacks(harness):
+    harness.client.website.show_tracebacks = True
+    harness.fs.project.mk(('error.spt', simple_error_spt))
+    harness.fs.www.mk(('index.html.spt', """
+[---]
+raise Exception("Can I haz traceback ?")
+[---]"""))
+    response = harness.client.GET(raise_immediately=False)
+    assert response.code == 500
+    assert "Can I haz traceback ?" in response.body
 
 def test_default_error_simplate_doesnt_expose_raised_body_by_default(harness):
     harness.fs.www.mk(('index.html.spt', """
