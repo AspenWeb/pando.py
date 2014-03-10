@@ -11,7 +11,7 @@ and then call json.dumps on the contents of the template section.  For example,
 a simplate like:
 
 <pre>
-[---] via json_dumps
+\[---] via json_dumps
 { 'Greetings': 'pro' + 'gram!' }
 </pre>
 
