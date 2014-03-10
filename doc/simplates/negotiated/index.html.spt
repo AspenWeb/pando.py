@@ -1,6 +1,5 @@
 doc_title = "Negotiated Simplates"
-doc_next = ("JSON Simplates", "/simplates/json/")
-
+doc_next = ('Request', '/request/')
 [----------------------------------------]
 {% extends doc.html %}
 {% block doc %}

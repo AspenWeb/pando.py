@@ -1,4 +1,4 @@
-doc_title = "JSON Simplates"
+doc_title = "JSON"
 doc_next = []
 [----------------------------------------]
 {% extends doc.html %}
