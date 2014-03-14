@@ -73,6 +73,7 @@ def dev():
     for dep in TEST_DEPS:
         run(_virt('pip'), 'install', '--no-index',
             '--find-links=' + TEST_DIR, dep)
+    run(_virt('pip'), 'install', 'sphinx')
 
 
 def clean_env():
@@ -105,23 +106,14 @@ def docs():
 
 
 def sphinx():
-    aspen()
-    buildcmd = 'sphinx-build'
-    if 'Sphinx' not in shell(buildcmd, ignore_status=True):
-        print("No sphinx found, installing...")
-        run(_virt('pip'), 'install', 'Sphinx')
-        buildcmd = _virt('sphinx-build')
-    else:
-        print("Using system-installed sphinx.")
-    builddir = 'sphinx-build'
-    srcdir = 'sphinx-src'
+    dev()
     sphinxopts = []
-    args = ['-b', 'html', '-d', builddir + '/doctrees', sphinxopts, srcdir, builddir + '/html' ]
-    pypath = 'env/lib/python2.7/site-packages' # do better
+    builddir = 'sphinx-build'
     run('mkdir', '-p', builddir)
     newenv = os.environ
-    newenv.update({'PYTHONPATH': pypath})
-    run(buildcmd, args, env=newenv)
+    newenv.update({'PYTHONPATH': 'env/lib/python2.7/site-packages'})
+    args = ['-b', 'html', '-d', builddir + '/doctrees', sphinxopts, 'sphinx-src', builddir + '/html' ]
+    run(_virt('sphinx-build'), args, env=newenv)
 
 
 def clean_sphinx():
