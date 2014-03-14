@@ -106,9 +106,9 @@ def docs():
 
 def sphinx():
     aspen()
-    #if shell('sphinx-build 2>&1 |grep ^Sphinx'
+    #TODO: if not shell('sphinx-build 2>&1 |grep ^Sphinx'):
     #  run(_virt('pip'), 'install', 'Sphinx')
-    buildcmd = '/usr/bin/sphinx-build'
+    buildcmd = 'sphinx-build'
     builddir = 'sphinx-build'
     srcdir = 'sphinx-src'
     sphinxopts = []
