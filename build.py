@@ -106,16 +106,22 @@ def docs():
 
 def sphinx():
     aspen()
-    #TODO: if not shell('sphinx-build 2>&1 |grep ^Sphinx'):
-    #  run(_virt('pip'), 'install', 'Sphinx')
     buildcmd = 'sphinx-build'
+    if 'Sphinx' not in shell(buildcmd, ignore_status=True):
+        print("No sphinx found, installing...")
+        run(_virt('pip'), 'install', 'Sphinx')
+        buildcmd = _virt('sphinx-build')
+    else:
+        print("Using system-installed sphinx.")
     builddir = 'sphinx-build'
     srcdir = 'sphinx-src'
     sphinxopts = []
     args = ['-b', 'html', '-d', builddir + '/doctrees', sphinxopts, srcdir, builddir + '/html' ]
     pypath = 'env/lib/python2.7/site-packages' # do better
     run('mkdir', '-p', builddir)
-    run(buildcmd, args, env={'PYTHONPATH': pypath})
+    newenv = os.environ
+    newenv.update({'PYTHONPATH': pypath})
+    run(buildcmd, args, env=newenv)
 
 
 def clean_sphinx():
