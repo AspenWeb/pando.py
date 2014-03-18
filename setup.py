@@ -40,7 +40,7 @@ setup( author = 'Chad Whitacre'
      , version = version
      , zip_safe = False
      , package_data = {'aspen': ['www/*', 'configuration/mime.types']}
-     , install_requires = [ 'Cheroot==4.0.0beta'
+     , install_requires = [ 'Cheroot==4.0.0beta-20140210'
                           , 'mimeparse==0.1.3'
                           , 'first==2.0.1'
                           , 'algorithm>=1.0.0'
