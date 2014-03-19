@@ -1,6 +1,13 @@
 Aspen-python Changelog
 ======================
 
+0.30 - Released Wed Mar 19 2014 by @pjz
+---------------------------------------
+    
+* Fix traceback handling - thanks @Changaco
+
+* Fix #267 - 404 on requests for .spt files
+
 0.29 - Released Mon Feb 17 2014 by @pjz
 ---------------------------------------
 
