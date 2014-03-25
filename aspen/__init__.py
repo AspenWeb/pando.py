@@ -27,6 +27,7 @@ for entrypoint in pkg_resources.iter_entry_points(group='aspen.network_engines')
 BUILTIN_RENDERERS = [ 'stdlib_format'
                     , 'stdlib_percent'
                     , 'stdlib_template'
+                    , 'json_dump'
                      ]
 
 RENDERERS = BUILTIN_RENDERERS[:]
