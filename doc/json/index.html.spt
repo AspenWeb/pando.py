@@ -1,28 +1,63 @@
-doc_title = "JSON"
+doc_title = "JSON Helpers"
 doc_next = []
 [----------------------------------------]
 {% extends doc.html %}
 {% block doc %}
 
-<p>Aspen has no special support for using <a href="/simplates/">simplates</a> to
-serve JSON resources; they're Rendered or Negotiated simplates like any other.
-What it <em>does</em> do is ship with a 'json_dumps' renderer that will eval
-and then call json.dumps on the contents of the template section.  For example,
-a simplate like:
+<p>Aspen ships with a <code>json_dump</code> <a
+href="http://w:5370/simplates/rendered/">renderer</a> that will
+Python-<code>eval</code> the contents of the template section and then call
+<code>json.dumps</code> on it.</p>
 
-<pre>
+<h4>Example</h4>
+
+<p>Make a <code>greetings.json.spt</code> file with this content:</p>
+
+<pre>import random
+n = random.choice(range(10))
+extra_excitement = "!" * n
 \[---] via json_dumps
-{ 'Greetings': 'pro' + 'gram!' }
-</pre>
+{'Greetings': 'program!' + extra_excitement}</pre>
 
-will output JSON of <code>{ "Greetings": "program!" }</code>.<p>
 
-Note that it will also set the Content-Type to the system-configured JSON Content-Type,
-if no content-type has been specified.
+<p>Now <a
+    href="http://localhost:8080/greetings.json">hit this</a> in your
+browser:</p>
 
-<p>Aspen will serialize instances of the following types.  Instances of any
-other type will raise <code>TypeError</code>, so be sure to pre-process your
-output if it contains anything else.</p>
+{{ screenshot("json") }}
+
+
+<a name="libraries"></a>
+<h3>The <code>aspen.json</code> Library</h3>
+
+<p>Aspen&rsquo;s <code>json_dump</code> renderer does not use the standard
+library's <code>json</code> module. Rather, it uses an extended version of it
+from <code>aspen.json</code>. The purpose of this extension is twofold:</p>
+
+<ol>
+    <li>to delegate to <code>simplejson</code> if available</li>
+    <li>to provide nicer encoder configuration</li>
+</ol>
+
+
+<h4>Supported Implementations</h4>
+
+<p>Aspen's <code>aspen.json</code> library will prefer <a
+href="http://pypi.python.org/pypi/simplejson/"><code>simplejson</code></a> if
+it is available, falling back to the standard library&rsquo;s <a
+href="http://docs.python.org/library/json.html"><code>json</code></a> module,
+which was added in Python 2.6. The latter is a more or less out-of-date version
+of the former. It also doesn&rsquo;t have any C speedups. If Aspen can&rsquo;t
+find either, then attempts to use the <code>json_dump</code> renderer will
+raise an <code>ImportError</code>.</p>
+
+
+<a name="encoders"></a>
+<h4>Default Encoders</h4>
+
+<p>Aspen's <code>aspen.json</code> will serialize instances of the following
+types. Instances of any other type will raise <code>TypeError</code>, so be
+sure to pre-process your output if it contains anything else.</p>
 
 <ul>
     <li><code>bool</code></li>
@@ -37,69 +72,12 @@ output if it contains anything else.</p>
 </ul>
 
 
-<h4>Example</h4>
-
-<p>Make a <code>greetings.spt</code> file with this content:</p>
-
-<pre>import random
-n = random.choice(range(10))
-extra_excitement = "!" * n
-\[---] via json_dumps
-{'Greetings': 'program!' + extra_excitement}</pre>
-
-
-<p>Notice that there is no third page. Now <a
-    href="http://localhost:8080/greetings">hit this</a> in your
-browser:</p>
-
-{{ screenshot("json") }}
-
-
-<h3>Configuring Content-Type</h3>
-
-<p>By default Aspen sets <code>Content-Type</code> to
-<code>application/json</code> for JSON simplates. If you would like to use
-something else while preserving special JSON simplate handling, don&rsquo;t use
-the normal <a href="/mime.types/"><code>mime.types</code></a> configuration
-file. Aspen uses the <code>mime.types</code> mapping to determine that a
-simplate is a JSON simplate (actually, any file with an extension that you
-configure to have a mimetype of <code>application/json</code> will be treated
-as a JSON simplate).  Instead, you should set the <code>media_type_json</code>
-key in <code><a
-        href="/configure-aspen.py/">configure-aspen.py</a></code>, like so:</p>
-
-<pre>website.media_type_json = "application/javascript"</pre>
-
-<p>If you need to bypass special JSON simplate handling altogether, you can use
-<a href="/mime.types/"><code>mime.types</code></a> to set the <code>json</code>
-extension to something besides <code>application/json</code> that browsers will
-still process as JSON:</p>
-
-<pre>application/javascript     json</pre>
-
-<p>This behavior holds true for both static and dynamic JSON simplates.</p>
-
-
-<a name="libraries"></a>
-<h3>Supported JSON Libraries</h3>
-
-<p>Aspen will prefer <a
-    href="http://pypi.python.org/pypi/simplejson/"><code>simplejson</code></a>
-if it is available, falling back to the standard library&rsquo;s <a
-    href="http://docs.python.org/library/json.html"><code>json</code></a>
-module, which was added in Python 2.6. The latter is a more or less out-of-date
-version of the former. It also doesn&rsquo;t have any C speedups. If Aspen
-can&rsquo;t find either, then dynamic JSON simplates will raise an
-<code>ImportError</code>, though static JSON simplates will still work.</p>
-
-
-<a name="encoders"></a>
-<h3>Custom Encoders</h3>
+<h4>Custom Encoders</h4>
 
 <p>It&rsquo;s fairly common to want to add encoders for custom classes or
-classes otherwise unknown to one or another version of simplejson. To this end,
-Aspen provides an API to manage a registry of encoders. These functions can be
-imported <code>from aspen.json</code>:</p>
+classes otherwise unknown to one or another version of <code>simplejson</code>.
+To this end, Aspen provides an API to manage a registry of encoders. These
+functions can be imported <code>from aspen.json</code>:</p>
 
 <pre>
 def register_encoder(cls, encode):
@@ -115,13 +93,14 @@ def unregister_encoder(cls):
     """
 </pre>
 
-<p>These functions don&rsquo;t affect the underlying simplejson library, only
-the Aspen abstraction layer. So if for example you have a simplejson that knows
-about Decimal objects (support for which was added in version 2.1 of the
-library), then if you register a custom encoder for Decimals, Aspen will use
-that where appropriate, and if you unregister it, the underlying implementation
-will be used again. Furthermore, if you use the simplejson library directly,
-the encoders registered with Aspen won&rsquo;t be used at all.</p>
+<p>These functions don&rsquo;t affect the underlying <code>simplejson</code>
+library, only the Aspen abstraction layer. So if for example you have a
+<code>simplejson</code> that knows about Decimal objects (support for which was
+        added in version 2.1 of the library), then if you register a custom
+encoder for Decimals, Aspen will use that where appropriate, and if you
+unregister it, the underlying implementation will be used again. Furthermore,
+if you use the <code>simplejson</code> library directly, the encoders
+registered with <code>aspen.json</code> won&rsquo;t be used at all.</p>
 
 {% end %}
 
