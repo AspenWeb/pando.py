@@ -4,7 +4,6 @@ Here is the class hierarchy:
 
     Resource                            Logic Pages     Content Pages
      +-- DynamicResource                -----------------------------
-     |    +-- JSONResource                  1 or 2          0
      |    +-- NegotiatedResource            2               1 or more
      |    |    +-- RenderedResource         1 or 2          1
      |    +-- SocketResource                1, 2, or 3      0
@@ -36,7 +35,6 @@ import sys
 import traceback
 
 from aspen.exceptions import LoadError
-from aspen.resources.json_resource import JSONResource
 from aspen.resources.negotiated_resource import NegotiatedResource
 from aspen.resources.rendered_resource import RenderedResource
 from aspen.resources.socket_resource import SocketResource
@@ -95,8 +93,6 @@ def load(request, mtime):
 
     if not is_spt:                                  # static
         Class = StaticResource
-    elif media_type == 'application/json':          # json
-        Class = JSONResource
     elif media_type == 'application/x-socket.io':   # socket
         Class = SocketResource
     elif '.' in os.path.basename(guess_with):       # rendered

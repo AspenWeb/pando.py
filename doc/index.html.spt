@@ -414,7 +414,6 @@ homepage = True
                 <li><a href="/simplates/static/">Static</a></li>
                 <li><a href="/simplates/rendered/">Rendered</a> (Templates)</li>
                 <li><a href="/simplates/negotiated/">Negotiated</a></li>
-                <li><a href="/simplates/json/">JSON</a></li>
             </ul>
             </li>
 
@@ -426,9 +425,10 @@ homepage = True
             </ul>
 
             <li><a href="/core-algorithms/">Core Algorithms</a></li>
+            <li><a href="/json/">JSON</a></li>
+            <li><a href="/testing/">Testing</a></li>
             <li><a href="/unicode/">Unicode</a></li>
             <li><a href="/virtual-paths/">Virtual Paths</a></li>
-            <li><a href="/testing/">Testing</a></li>
         </ul>
 
     </div></div>

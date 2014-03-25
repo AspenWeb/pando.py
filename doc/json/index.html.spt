@@ -1,0 +1,106 @@
+doc_title = "JSON Helpers"
+doc_next = []
+[----------------------------------------]
+{% extends doc.html %}
+{% block doc %}
+
+<p>Aspen ships with a <code>json_dump</code> <a
+href="http://w:5370/simplates/rendered/">renderer</a> that will
+Python-<code>eval</code> the contents of the template section and then call
+<code>json.dumps</code> on it.</p>
+
+<h4>Example</h4>
+
+<p>Make a <code>greetings.json.spt</code> file with this content:</p>
+
+<pre>import random
+n = random.choice(range(10))
+extra_excitement = "!" * n
+\[---] via json_dumps
+{'Greetings': 'program!' + extra_excitement}</pre>
+
+
+<p>Now <a
+    href="http://localhost:8080/greetings.json">hit this</a> in your
+browser:</p>
+
+{{ screenshot("json") }}
+
+
+<a name="libraries"></a>
+<h3>The <code>aspen.json</code> Library</h3>
+
+<p>Aspen&rsquo;s <code>json_dump</code> renderer does not use the standard
+library's <code>json</code> module. Rather, it uses an extended version of it
+from <code>aspen.json</code>. The purpose of this extension is twofold:</p>
+
+<ol>
+    <li>to delegate to <code>simplejson</code> if available</li>
+    <li>to provide nicer encoder configuration</li>
+</ol>
+
+
+<h4>Supported Implementations</h4>
+
+<p>Aspen's <code>aspen.json</code> library will prefer <a
+href="http://pypi.python.org/pypi/simplejson/"><code>simplejson</code></a> if
+it is available, falling back to the standard library&rsquo;s <a
+href="http://docs.python.org/library/json.html"><code>json</code></a> module,
+which was added in Python 2.6. The latter is a more or less out-of-date version
+of the former. It also doesn&rsquo;t have any C speedups. If Aspen can&rsquo;t
+find either, then attempts to use the <code>json_dump</code> renderer will
+raise an <code>ImportError</code>.</p>
+
+
+<a name="encoders"></a>
+<h4>Default Encoders</h4>
+
+<p>Aspen's <code>aspen.json</code> will serialize instances of the following
+types. Instances of any other type will raise <code>TypeError</code>, so be
+sure to pre-process your output if it contains anything else.</p>
+
+<ul>
+    <li><code>bool</code></li>
+    <li><code>complex</code> (serialized to two floats, [real, imaginary])</li>
+    <li><code>datetime.datetime</code> (serialized to <a href="http://en.wikipedia.org/wiki/ISO_8601">ISO 8601</a>)</li>
+    <li><code>float</code></li>
+    <li><code>int</code></li>
+    <li><code>long</code></li>
+    <li><code>None</code></li>
+    <li><code>str</code></li>
+    <li><code>unicode</code></li>
+</ul>
+
+
+<h4>Custom Encoders</h4>
+
+<p>It&rsquo;s fairly common to want to add encoders for custom classes or
+classes otherwise unknown to one or another version of <code>simplejson</code>.
+To this end, Aspen provides an API to manage a registry of encoders. These
+functions can be imported <code>from aspen.json</code>:</p>
+
+<pre>
+def register_encoder(cls, encode):
+    """Register the encode function for cls.
+
+    An encoder should take an instance of cls and return something
+    basically serializable (strings, lists, dictionaries).
+
+    """
+
+def unregister_encoder(cls):
+    """Given a class, remove any encoder that has been registered for it.
+    """
+</pre>
+
+<p>These functions don&rsquo;t affect the underlying <code>simplejson</code>
+library, only the Aspen abstraction layer. So if for example you have a
+<code>simplejson</code> that knows about Decimal objects (support for which was
+        added in version 2.1 of the library), then if you register a custom
+encoder for Decimals, Aspen will use that where appropriate, and if you
+unregister it, the underlying implementation will be used again. Furthermore,
+if you use the <code>simplejson</code> library directly, the encoders
+registered with <code>aspen.json</code> won&rsquo;t be used at all.</p>
+
+{% end %}
+

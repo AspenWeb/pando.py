@@ -1,6 +1,5 @@
 doc_title = "Negotiated Simplates"
-doc_next = ("JSON Simplates", "/simplates/json/")
-
+doc_next = ('Request', '/request/')
 [----------------------------------------]
 {% extends doc.html %}
 {% block doc %}
@@ -22,7 +21,7 @@ of the file is like this:</p>
 \[---]
 data = foo.bar(request)
 
-\[---] #!pystache text/plain
+\[---] text/plain via pystache
 {&#123; data }}
 
 \[---] application/json
