@@ -1,4 +1,8 @@
-"""Aspen uses resources to model HTTP resources.
+"""
+aspen.resources
++++++++++++++++
+
+Aspen uses resources to model HTTP resources.
 
 Here is the class hierarchy:
 

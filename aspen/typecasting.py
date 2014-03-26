@@ -1,3 +1,10 @@
+"""
+aspen.typecasting
++++++++++++++++++
+
+Pluggable typecasting of virtual path values
+
+"""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -5,10 +12,6 @@ from __future__ import unicode_literals
 
 from aspen import Response
 
-"""
-Pluggable typecasting of virtual path values
-
-"""
 
 class FailedTypecast(Response):
     def __init__(self, extension):
@@ -16,10 +19,10 @@ class FailedTypecast(Response):
         Response.__init__(self, code=404, body=body)
 
 """
-   A typecast dict (like 'defaults' below) is a map of 
+   A typecast dict (like 'defaults' below) is a map of
    suffix -> typecasting function.  The functions must take one unicode
-   argument, but may return any value.  If they raise an error, the 
-   typecasted key (the one without the suffix) will not be set, and 
+   argument, but may return any value.  If they raise an error, the
+   typecasted key (the one without the suffix) will not be set, and
    a FailedTypecast (a specialized 404) will be thrown.
 """
 
@@ -30,7 +33,7 @@ defaults = { 'int': int
 def apply_typecasters(typecasters, path):
     """Perform the typecasts (in-place!) on the supplied path Mapping.
        Note that the supplied mapping has keys with the typecast extensions
-       still attached (and unicode values).  This routine adds keys 
+       still attached (and unicode values).  This routine adds keys
        *without* those extensions attached anymore, but with typecast values.
        It also then removes the string-value keys (the ones with the extensions).
     """

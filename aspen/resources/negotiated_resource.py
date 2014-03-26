@@ -1,4 +1,8 @@
-"""Implements negotiated resources.
+"""
+aspen.resources.negotiated_resource
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Implements negotiated resources.
 
 Aspen supports content negotiation. If a file has no file extension, then it
 will be handled as a "negotiated resource". The format of the file is like
