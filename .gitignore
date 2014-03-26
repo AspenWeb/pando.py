@@ -7,7 +7,7 @@ __pycache__
 *\$py.class
 .tox
 /build/
-/sphinx-build/
+/docs/_build/
 /downloads/
 .coverage
 /.deps
