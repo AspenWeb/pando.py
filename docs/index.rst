@@ -6,6 +6,10 @@ Aspen
    :member-order: bysource
    :special-members:
 
+
+Library Reference
+-----------------
+
 .. automodule:: aspen.algorithms
    :members:
    :member-order: bysource

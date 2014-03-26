@@ -1,4 +1,8 @@
-"""Provide a WSGI callable.
+"""
+aspen.wsgi
+++++++++++
+
+Provide a WSGI callable.
 
 It would be a little nicer if this was at aspen:wsgi instead of
 aspen.wsgi:website, but then Website would be instantiated even if we don't

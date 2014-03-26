@@ -1,4 +1,8 @@
-"""This is a cookie authentication implementation for Aspen.
+"""
+aspen.auth.cookie
+~~~~~~~~~~~~~~~~~
+
+This is a cookie authentication implementation for Aspen.
 """
 from __future__ import absolute_import
 from __future__ import division

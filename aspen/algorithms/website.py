@@ -1,4 +1,8 @@
-"""These functions comprise the request processing functionality of Aspen.
+"""
+aspen.algorithms.website
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+These functions comprise the request processing functionality of Aspen.
 
 Per the algorithm.py module, the functions defined in this present module are
 executed in the order they're defined here, with dependencies injected as

@@ -1,4 +1,7 @@
 """
+aspen.configuration.exceptions
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 Exceptions used by Aspen's configuration module
 """
 from __future__ import absolute_import

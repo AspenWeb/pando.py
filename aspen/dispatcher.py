@@ -1,4 +1,8 @@
-"""Implement Aspen's filesystem dispatch algorithm.
+"""
+aspen.dispatcher
+++++++++++++++++
+
+Implement Aspen's filesystem dispatch algorithm.
 """
 from __future__ import absolute_import
 from __future__ import division
@@ -184,7 +188,7 @@ def dispatch_abstract(listnodes, is_leaf, traverse, find_index, noext_matched,
 
         if wildsubs:                            # wildcard subnode matches
             n = wildsubs[0]
-            wildvals[n[1:]] = node 
+            wildvals[n[1:]] = node
             curnode = traverse(curnode, n)
             debug(lambda: "Wildcard subnode match " + repr(n))
             continue

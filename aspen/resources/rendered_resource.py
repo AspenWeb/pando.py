@@ -1,4 +1,8 @@
-"""Implements rendered resources.
+"""
+aspen.resources.rendered_resource
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Implements rendered resources.
 """
 from __future__ import absolute_import
 from __future__ import division

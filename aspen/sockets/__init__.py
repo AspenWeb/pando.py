@@ -1,4 +1,8 @@
-"""Implement the server side of Socket.IO.
+"""
+aspen.sockets
++++++++++++++
+
+Implement the server side of Socket.IO.
 
     https://github.com/learnboost/socket.io-spec
 

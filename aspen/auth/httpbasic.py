@@ -1,4 +1,7 @@
 """
+aspen.auth.httpbasic
+~~~~~~~~~~~~~~~~~~~~
+
 HTTP BASIC Auth module for Aspen.
 
 To use:
