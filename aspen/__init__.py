@@ -55,7 +55,6 @@ Step 5: Check `localhost http://localhost:8080`_ for your new page!
 
     .. image:: greetings-program.png
 
-{% end %}
 """
 from __future__ import absolute_import
 from __future__ import division
