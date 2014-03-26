@@ -1,4 +1,8 @@
-"""Implement re-execution of the aspen process.
+"""
+aspen.execution
++++++++++++++++
+
+Implement re-execution of the aspen process.
 
 When files change on the filesystem or we receive HUP, we want to re-execute
 ourselves.

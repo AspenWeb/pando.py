@@ -1,3 +1,7 @@
+"""
+aspen.auth.httpdigest
+~~~~~~~~~~~~~~~~~~~~~
+"""
 # Originally by Josh Goldoot
 # version 0.01
 #  Public domain.

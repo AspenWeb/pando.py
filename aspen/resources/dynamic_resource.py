@@ -1,3 +1,7 @@
+"""
+aspen.resources.dynamic_resource
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+"""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -94,7 +98,7 @@ class DynamicResource(Resource):
         pages = list(split_and_escape(raw))
         npages = len(pages)
 
-        # Check for too few pages. 
+        # Check for too few pages.
         if npages < self.min_pages:
             type_name = self.__class__.__name__[:-len('resource')]
             msg = "%s resources must have at least %s pages; %s has %s."

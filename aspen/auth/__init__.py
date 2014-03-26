@@ -1,4 +1,7 @@
 """
+aspen.auth
+++++++++++
+
 Aspen's Auth modules.
 
 Currently:
