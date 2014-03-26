@@ -165,11 +165,6 @@ Library Reference
    :member-order: bysource
    :special-members:
 
-.. automodule:: aspen.rendering
-   :members:
-   :member-order: bysource
-   :special-members:
-
 .. automodule:: aspen.resources
    :members:
    :member-order: bysource
