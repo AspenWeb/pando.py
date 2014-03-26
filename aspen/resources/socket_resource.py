@@ -1,4 +1,8 @@
-"""Aspen supports Socket.IO sockets. http://socket.io/
+"""
+aspen.resources.socket_resource
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Aspen supports Socket.IO sockets. http://socket.io/
 """
 from __future__ import absolute_import
 from __future__ import division

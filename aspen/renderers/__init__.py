@@ -1,4 +1,8 @@
-"""This module implements pluggable content rendering.
+"""
+aspen.renderers
++++++++++++++++
+
+This module implements pluggable content rendering.
                                                                               #
 See user docs here:
 

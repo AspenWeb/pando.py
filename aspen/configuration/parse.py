@@ -1,4 +1,8 @@
-"""Define parser/validators for configuration system
+"""
+aspen.configuration.parse
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Define parser/validators for configuration system
 
 Each of these is guaranteed to be passed a unicode object as read from the
 environment or the command line.

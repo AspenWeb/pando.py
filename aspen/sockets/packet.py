@@ -1,4 +1,8 @@
-"""Packets.
+"""
+aspen.sockets.packet
+~~~~~~~~~~~~~~~~~~~~
+
+Packets.
 
 Socket.IO packets contain one or more frames of this format:
 

@@ -1,4 +1,8 @@
-"""Aspen logging. It's simple.
+"""
+aspen.logging
++++++++++++++
+
+Aspen logging. It's simple.
 
 There are log and log_dammit functions that take arbitrary positional
 arguments, stringify them, write them to stdout, and flush stdout. Each line
