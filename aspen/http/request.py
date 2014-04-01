@@ -635,7 +635,8 @@ class Body(Mapping):
 
         """
         typecheck(headers, Headers, server_software, str)
-        self.raw = self._read_raw(server_software, fp)  # XXX lazy!
+        raw_len = int(headers.get('Content-length', '') or '0')
+        self.raw = self._read_raw(server_software, fp, raw_len)  # XXX lazy!
         parsed = self._parse(headers, self.raw)
         if parsed is None:
             # There was no content-type. Use self.raw.
@@ -652,11 +653,11 @@ class Body(Mapping):
                 self[k] = v
 
 
-    def _read_raw(self, server_software, fp):
-        """Given str and a file-like object, return a bytestring.
+    def _read_raw(self, server_software, fp, raw_len):
+        """Given str, a file-like object, and the number of expected bytes, return a bytestring.
         """
         if not server_software.startswith('Rocket'):  # normal
-            raw = fp.read()
+            raw = fp.read(raw_len)
         else:                                                       # rocket
 
             # Email from Rocket guy: While HTTP stipulates that you shouldn't
@@ -686,7 +687,7 @@ class Body(Mapping):
             _tmp = fp._sock.timeout
             fp._sock.settimeout(0) # equiv. to non-blocking
             try:
-                raw = fp.read()
+                raw = fp.read(raw_len)
             except Exception, exc:
                 if exc.errno != 35:
                     raise
