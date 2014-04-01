@@ -11,9 +11,8 @@ from Cookie import SimpleCookie
 from StringIO import StringIO
 
 from aspen import Response
-from aspen.server import Server
 from aspen.utils import typecheck
-
+from aspen.website import Website
 
 BOUNDARY = b'BoUnDaRyStRiNg'
 MULTIPART_CONTENT = b'multipart/form-data; boundary=%s' % BOUNDARY
@@ -64,7 +63,7 @@ class Client(object):
             argv = [ '--www_root', self.www_root
                    , '--project_root', self.project_root
                     ] + ([] if argv is None else argv)
-            self._website = Server(argv).get_website()
+            self._website = Website(argv)
         return self._website
 
     website = property(hydrate_website)
