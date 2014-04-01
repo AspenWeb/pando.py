@@ -8,7 +8,7 @@ from collections import deque
 from cStringIO import StringIO
 
 from aspen import Response
-from aspen.http.request import Request
+from aspen.http.request import Request, Headers
 from aspen.sockets import FFFD
 from aspen.sockets.transport import XHRPollingTransport
 from aspen.sockets.message import Message
@@ -58,9 +58,11 @@ def test_transport_stays_in_state_1_after_second_request(harness):
 def test_transport_POST_gives_data_to_socket(harness):
     transport = harness.make_transport(state=1)
 
+    msg = b'3::/echo.sock:Greetings, program!'
     request = Request( 'POST'
                      , '/echo.sock'
-                     , body=StringIO(b'3::/echo.sock:Greetings, program!')
+                     , body=StringIO(msg)
+		     , headers={'content-length' : str(len(msg)), 'Host': 'Testhost' }
                       )
     transport.respond(request)
 
@@ -94,8 +96,9 @@ def test_transport_GET_blocks_for_empty_socket(harness):
 
 def test_transport_handles_roundtrip(harness):
     transport = harness.make_transport(state=1, content="socket.send(socket.recv())")
-
-    request = Request('POST', '/echo.sock', body=StringIO(b"3::/echo.sock:ping"))
+    msg = b"3::/echo.sock:ping"
+    request = Request('POST', '/echo.sock', body=StringIO(msg), 
+	    headers={ 'content-length' : str(len(msg)), 'Host': 'Testhost' })
     transport.respond(request)
     transport.socket.tick() # do it manually
 
