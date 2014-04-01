@@ -19,6 +19,8 @@ def make_body(raw, headers=None, content_type=WWWFORM):
         elif content_type is WWWFORM:
             content_type = "application/x-www-form-urlencoded"
         headers = {"Content-Type": content_type}
+    if not 'content-length' in headers:
+        headers['Content-length'] = str(len(raw))
     headers['Host'] = 'Blah'
     return Body( Headers(headers)
                , StringIO(raw)
