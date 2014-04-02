@@ -20,7 +20,6 @@ from collections import defaultdict
 
 import aspen
 import aspen.logging
-from aspen import execution
 from aspen.configuration import parse
 from aspen.configuration.exceptions import ConfigurationError
 from aspen.configuration.options import OptionParser, DEFAULT
@@ -399,9 +398,6 @@ class Configurable(object):
                 else:
                    # problems with default config files are okay, but get logged
                    aspen.log(msg)
-            else:
-                aspen.log_dammit("Loading configuration file '%s' (possibly changing settings)" % filepath)
-                execution.if_changes(filepath)
 
 
 

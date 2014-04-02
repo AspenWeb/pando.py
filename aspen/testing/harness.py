@@ -31,7 +31,6 @@ def teardown():
     - remove FSFIX = %{tempdir}/fsfix
     - reset Aspen's global state
     - clear out sys.path_importer_cache
-    - clear out execution.extras
 
     """
     os.chdir(CWD)
@@ -40,8 +39,6 @@ def teardown():
     sockets.__sockets__ = {}
     sockets.__channels__ = {}
     sys.path_importer_cache = {} # see test_weird.py
-    import aspen.execution
-    aspen.execution.clear_changes()
 
 teardown() # start clean
 
