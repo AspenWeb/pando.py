@@ -14,7 +14,7 @@ ASPEN_DEPS = [
     'mimeparse>=0.1.3',
     'first>=2.0.1',
     'algorithm>=1.0.0',
-    'filesystem_tree>=1.0.0',
+    'filesystem_tree>=1.0.1',
     'dependency_injection>=1.1.0',
     ]
 
