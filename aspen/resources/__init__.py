@@ -75,8 +75,9 @@ def load(request, mtime):
     # ===========
     # We work with resources exclusively as bytestrings. Renderers take note.
 
-    raw = open(request.fs, 'rb').read()
-
+    raw_fh = open(request.fs, 'rb')
+    raw = raw_fh.read()
+    raw_fh.close() # explicit is better than implicit
 
     # Compute a media type.
     # =====================
