@@ -38,7 +38,10 @@ ENV_ARGS = [
 
 
 def _virt(cmd, envdir='env'):
-    return os.path.join(envdir, 'bin', cmd)
+    if os.name == "nt":
+        return os.path.join(envdir, 'Scripts', cmd+ '.exe')
+    else:
+        return os.path.join(envdir, 'bin', cmd)
 
 
 def _virt_version():
