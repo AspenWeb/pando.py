@@ -82,7 +82,8 @@ def test_utf8(harness):
 
 def test_utf8_char(harness):
     expected = u'א'
-    actual = harness.simple("""
+    actual = harness.simple(b"""
+        # encoding=utf8
         "#empty first page"
         [------------------]
         text = u'א'
@@ -114,15 +115,12 @@ def test_negotiated_resource_doesnt_break(harness):
         , filepath='index.spt').body
     assert actual == expected
 
+# non-ascii/unicode testing
 
-# Unicode example in the /templating/ doc.
-# ========================================
-# See also: https://github.com/whit537/aspen/issues/10
-
-eg = """
+eg = b"""
 latinate = chr(181).decode('latin1')
 response.headers['Content-Type'] = 'text/plain; charset=latin1'
-r = latinate.encode('latin1')
+r = latinate
 [-------------------------------------]
  %(r)s"""
 
@@ -130,7 +128,7 @@ def test_content_type_is_right_in_template_doc_unicode_example(harness):
     assert harness.simple(eg).headers['Content-Type'] == "text/plain; charset=latin1"
 
 def test_body_is_right_in_template_doc_unicode_example(harness):
-    assert harness.simple(eg).body.strip() == chr(181)
+    assert harness.simple(eg).body.strip() == unichr(181)
 
 
 # raise Response
