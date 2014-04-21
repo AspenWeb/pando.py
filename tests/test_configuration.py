@@ -4,9 +4,10 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import os
+import sys
 import socket
 
-from pytest import raises
+from pytest import raises, mark
 
 import aspen
 from aspen.configuration import Configurable, ConfigurationError, parse
@@ -88,6 +89,8 @@ def test_www_root_defaults_to_cwd():
     actual = c.www_root
     assert actual == expected
 
+@mark.skipif(sys.platform == 'win32',
+             reason="Windows file locking makes this fail")
 def test_ConfigurationError_raised_if_no_cwd(harness):
     FSFIX = harness.fs.project.resolve('')
     os.chdir(FSFIX)
@@ -95,6 +98,8 @@ def test_ConfigurationError_raised_if_no_cwd(harness):
     c = Configurable()
     raises(ConfigurationError, c.configure, [])
 
+@mark.skipif(sys.platform == 'win32',
+             reason="Windows file locking makes this fail")
 def test_ConfigurationError_NOT_raised_if_no_cwd_but_do_have__www_root(harness):
     foo = os.getcwd()
     os.chdir(harness.fs.project.resolve(''))
