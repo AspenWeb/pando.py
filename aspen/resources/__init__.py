@@ -74,10 +74,8 @@ def load(request, mtime):
     # Load bytes.
     # ===========
     # We work with resources exclusively as bytestrings. Renderers take note.
-
-    raw_fh = open(request.fs, 'rb')
-    raw = raw_fh.read()
-    raw_fh.close() # explicit is better than implicit
+    from aspen.utils import safe_readfile
+    raw = safe_readfile(request.fs)
 
     # Compute a media type.
     # =====================
