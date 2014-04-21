@@ -4,9 +4,10 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import os
+import sys
 import socket
 
-from pytest import raises
+from pytest import raises, mark
 
 import aspen
 from aspen.configuration import Configurable, ConfigurationError, parse
@@ -88,6 +89,8 @@ def test_www_root_defaults_to_cwd():
     actual = c.www_root
     assert actual == expected
 
+@mark.skipif(sys.platform == 'win32',
+             reason="Windows file locking makes this fail")
 def test_ConfigurationError_raised_if_no_cwd(harness):
     FSFIX = harness.fs.project.resolve('')
     os.chdir(FSFIX)
@@ -95,6 +98,8 @@ def test_ConfigurationError_raised_if_no_cwd(harness):
     c = Configurable()
     raises(ConfigurationError, c.configure, [])
 
+@mark.skipif(sys.platform == 'win32',
+             reason="Windows file locking makes this fail")
 def test_ConfigurationError_NOT_raised_if_no_cwd_but_do_have__www_root(harness):
     foo = os.getcwd()
     os.chdir(harness.fs.project.resolve(''))
@@ -221,18 +226,11 @@ def test_parse_network_engine_good():
 def test_parse_network_engine_bad():
     raises(ValueError, parse.network_engine, u'floober')
 
-
+@mark.xfail(sys.platform == 'win32',
+            reason="Unix Socket (AF_UNIX) unavailable on Windows")
 def test_parse_network_address_unix_socket():
     actual = parse.network_address(u"/foo/bar")
     assert actual == ("/foo/bar", socket.AF_UNIX)
-
-def test_parse_network_address_unix_socket_fails_on_windows():
-    oldval = aspen.WINDOWS
-    try:
-        aspen.WINDOWS = True
-        raises(ValueError, parse.network_address, u"/foo/bar")
-    finally:
-        aspen.WINDOWS = oldval
 
 def test_parse_network_address_notices_ipv6():
     actual = parse.network_address(u"2607:f0d0:1002:51::4")
