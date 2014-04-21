@@ -226,18 +226,11 @@ def test_parse_network_engine_good():
 def test_parse_network_engine_bad():
     raises(ValueError, parse.network_engine, u'floober')
 
-
+@mark.xfail(sys.platform == 'win32',
+            reason="Unix Socket (AF_UNIX) unavailable on Windows")
 def test_parse_network_address_unix_socket():
     actual = parse.network_address(u"/foo/bar")
     assert actual == ("/foo/bar", socket.AF_UNIX)
-
-def test_parse_network_address_unix_socket_fails_on_windows():
-    oldval = aspen.WINDOWS
-    try:
-        aspen.WINDOWS = True
-        raises(ValueError, parse.network_address, u"/foo/bar")
-    finally:
-        aspen.WINDOWS = oldval
 
 def test_parse_network_address_notices_ipv6():
     actual = parse.network_address(u"2607:f0d0:1002:51::4")
