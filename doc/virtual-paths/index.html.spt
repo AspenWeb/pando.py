@@ -18,7 +18,7 @@ directories and files on your filesystem.</p>
 in there with this content:</p>
 
 <pre>[---] via pystache
-Greetings, {&#123; path['name'] }}!</pre>
+Greetings, {&#123; path.name }}!</pre>
 
 <p>Now hit <a
     href="http://localhost:8080/aspen/">http://localhost:8080/aspen/</a>. You
@@ -42,7 +42,7 @@ Make a simplate in <code>%name</code> named <code>%cheese.txt</code>, with this
 content:</p>
 
 <pre>[---] via pystache
-{&#123; path['name'].title() }} likes {&#123; path['cheese'] }} cheese.
+{&#123; path.name }} likes {&#123; path.cheese }} cheese.
 </pre>
 
 <p>Now <a href="http://localhost:8080/chad/cheddar.txt">test it out</a>:</p>
@@ -85,7 +85,7 @@ for <code>int</code> and <code>float</code> are included out of the box.</p>
 <p>Then put an <code>index.html.spt</code> in there with this content:
 
 <pre>[---] via pystache
-Tonight we're going to party like it's {&#123; path['year'] }}!</pre>
+Tonight we're going to party like it's {&#123; path.year }}!</pre>
 
 <p>Now hit <a
     href="http://localhost:8080/1999/">http://localhost:8080/1999/</a>.  What
