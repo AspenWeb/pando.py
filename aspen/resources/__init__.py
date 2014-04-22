@@ -70,19 +70,27 @@ class Entry:
 def load(request, mtime):
     """Given a Request and a mtime, return a Resource object (w/o caching).
     """
+    
+    is_spt = request.fs.endswith('.spt')
 
     # Load bytes.
     # ===========
-    # We work with resources exclusively as bytestrings. Renderers take note.
-    from aspen.utils import safe_readfile
-    raw = safe_readfile(request.fs)
+    # .spt files are simplates, which get loaded according to their encoding
+    #      and turned into unicode strings internally
+    # non-.spt files are static, possibly binary, so don't get decoded
+
+    if is_spt:
+        from aspen.utils import safe_readfile
+        raw = safe_readfile(request.fs)
+    else:
+        with open(request.fs, 'rb') as fh:
+            raw = fh.read()
 
     # Compute a media type.
     # =====================
     # For a negotiated resource we will ignore this.
 
     guess_with = request.fs
-    is_spt = request.fs.endswith('.spt')
     if is_spt:
         guess_with = guess_with[:-4]
     media_type = mimetypes.guess_type(guess_with, strict=False)[0]
