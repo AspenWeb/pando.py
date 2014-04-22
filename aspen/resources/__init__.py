@@ -34,10 +34,12 @@ from __future__ import unicode_literals
 
 import mimetypes
 import os
+import re
 import stat
 import sys
 import traceback
 
+from aspen.backcompat import StringIO
 from aspen.exceptions import LoadError
 from aspen.resources.negotiated_resource import NegotiatedResource
 from aspen.resources.rendered_resource import RenderedResource
@@ -64,6 +66,33 @@ class Entry:
         self.quadruple = ()
 
 
+def decode_raw(raw):
+    """Decode raw data according to the encoding specified in the first
+       couple lines of the data, or in ASCII.  Non-ASCII data without an
+       encoding specified will cause UnicodeDecodeError to be raised.
+    """ 
+    decl_re = re.compile(r'^[ \t\f]*#.*coding[:=][ \t]*([-\w.]+)')
+
+    def get_declaration(line):
+        match = decl_re.match(line)
+        if match:
+            return match.group(1)
+        return None
+
+    encoding = b'ascii'
+    fulltext = b''
+    sio = StringIO(raw)
+    for line in (sio.readline(), sio.readline()):
+        potential = get_declaration(line)
+        if potential is not None:
+            encoding = potential
+        else:
+            fulltext += line
+    fulltext += sio.read()
+    sio.close() 
+    return fulltext.decode(encoding)
+
+
 # Core loaders
 # ============
 
@@ -79,12 +108,10 @@ def load(request, mtime):
     #      and turned into unicode strings internally
     # non-.spt files are static, possibly binary, so don't get decoded
 
+    with open(request.fs, 'rb') as fh:
+        raw = fh.read()
     if is_spt:
-        from aspen.utils import safe_readfile
-        raw = safe_readfile(request.fs)
-    else:
-        with open(request.fs, 'rb') as fh:
-            raw = fh.read()
+        raw = decode_raw(raw)
 
     # Compute a media type.
     # =====================

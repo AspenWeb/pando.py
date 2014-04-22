@@ -415,44 +415,6 @@ def Canonizer(expected):
     return expected and canonize or noop
 
 
-def safe_readfile(filename):
-    """Load a file according to encoding specified in the first
-       couple lines of the file, or in ASCII.  Non-ASCII files
-       without encodings will cause None to be returned.
-    """ 
-
-    decl_re = re.compile(r'^[ \t\f]*#.*coding[:=][ \t]*([-\w.]+)')
-
-    def get_declaration(line):
-        match = decl_re.match(line)
-        if match:
-            return match.group(1)
-        return None
-
-    try:
-        with open(filename, 'rU') as infile:
-            fulltext = b''
-            encoding = b'ascii'
-            for line in (infile.readline(), infile.readline()):
-                potential = get_declaration(line)
-                if potential is not None:
-                    encoding = potential
-                else:
-                    fulltext += line
-            fulltext += infile.read()
-
-            try:
-                # try to turn the full text into unicode
-                return fulltext.decode(encoding)
-                #return unicode(fulltext, encoding)
-            except UnicodeDecodeError:
-                # couldn't do it, so the encoding is lying, or it's binary
-                return None
-
-    except IOError: # Problem opening the file - error
-        return None
-
-
 if __name__ == '__main__':
     import doctest
     doctest.testmod()
