@@ -58,6 +58,19 @@ def test_decode_raw_can_take_encoding_from_second_line():
     """
     assert actual == expected
 
+def test_decode_raw_prefers_first_line_to_second():
+    actual = decode_raw(b"""\
+    # -*- coding: utf8 -*-
+    # -*- coding: ascii -*-
+    text = u'א'
+    """)
+    expected = """\
+    # encoding set to utf8
+    # -*- coding: ascii -*-
+    text = u'א'
+    """
+    assert actual == expected
+
 def test_decode_raw_can_take_encoding_from_various_line_formats():
     formats = [ b'-*- coding: utf8 -*-'
               , b'-*- encoding: utf8 -*-'
