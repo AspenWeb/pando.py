@@ -114,21 +114,6 @@ def test_negotiated_resource_doesnt_break(harness):
         , filepath='index.spt').body
     assert actual == expected
 
-# non-ascii/unicode testing
-
-eg = b"""
-latinate = chr(181).decode('latin1')
-response.headers['Content-Type'] = 'text/plain; charset=latin1'
-r = latinate
-[-------------------------------------]
- %(r)s"""
-
-def test_content_type_is_right_in_template_doc_unicode_example(harness):
-    assert harness.simple(eg).headers['Content-Type'] == "text/plain; charset=latin1"
-
-def test_body_is_right_in_template_doc_unicode_example(harness):
-    assert harness.simple(eg).body.strip() == unichr(181)
-
 
 # raise Response
 # ==============
