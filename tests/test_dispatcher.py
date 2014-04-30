@@ -240,7 +240,7 @@ userclassconfigure="""
 import aspen.typecasting
 
 class User:
-    
+
     def __init__(self, name):
         self.username = name
 
@@ -255,7 +255,7 @@ website.typecasters['user'] = User.toUser
 def test_virtual_path_file_key_val_cast_custom(harness):
     harness.fs.project.mk(('configure-aspen.py', userclassconfigure),)
     harness.fs.www.mk(('user/%user.user.html.spt', "\nusername=path['user']\n[-----]\nGreetings, %(username)s!"),)
-    actual = harness.simple(filepath=None, uripath='/user/chad.html', want='request.line.uri.path', 
+    actual = harness.simple(filepath=None, uripath='/user/chad.html', want='request.line.uri.path',
             run_through='apply_typecasters_to_path')
     assert actual['user'].username == 'chad'
 
@@ -479,4 +479,4 @@ def test_dont_serve_hidden_files(harness):
 def test_dont_serve_spt_file_source(harness):
     harness.fs.www.mk(('foo.html.spt', "Greetings, program!"),)
     assert_raises_404(harness, '/foo.html.spt')
-   
+
