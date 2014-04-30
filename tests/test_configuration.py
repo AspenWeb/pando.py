@@ -111,7 +111,7 @@ def test_ConfigurationError_NOT_raised_if_no_cwd_but_do_have__www_root(harness):
 def test_configurable_sees_root_option(harness):
     c = Configurable()
     c.configure(['--www_root', harness.fs.project.resolve('')])
-    expected = os.getcwd()
+    expected = harness.fs.project.root
     actual = c.www_root
     assert actual == expected
 

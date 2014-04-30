@@ -255,7 +255,6 @@ class Configurable(object):
                                          "or --www_root on the command line.")
 
         self.www_root = os.path.realpath(self.www_root)
-        os.chdir(self.www_root)
 
         # load renderers
         self.renderer_factories = {}
