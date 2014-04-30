@@ -70,7 +70,7 @@ def decode_raw(raw):
     """Decode raw data according to the encoding specified in the first
        couple lines of the data, or in ASCII.  Non-ASCII data without an
        encoding specified will cause UnicodeDecodeError to be raised.
-    """ 
+    """
     decl_re = re.compile(r'^[ \t\f]*#.*coding[:=][ \t]*([-\w.]+)')
 
     def get_declaration(line):
@@ -89,7 +89,7 @@ def decode_raw(raw):
         else:
             fulltext += line
     fulltext += sio.read()
-    sio.close() 
+    sio.close()
     return fulltext.decode(encoding)
 
 
@@ -99,7 +99,7 @@ def decode_raw(raw):
 def load(request, mtime):
     """Given a Request and a mtime, return a Resource object (w/o caching).
     """
-    
+
     is_spt = request.fs.endswith('.spt')
 
     # Load bytes.

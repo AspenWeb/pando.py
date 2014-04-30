@@ -97,7 +97,7 @@ def test_transport_GET_blocks_for_empty_socket(harness):
 def test_transport_handles_roundtrip(harness):
     transport = harness.make_transport(state=1, content="socket.send(socket.recv())")
     msg = b"3::/echo.sock:ping"
-    request = Request('POST', '/echo.sock', body=StringIO(msg), 
+    request = Request('POST', '/echo.sock', body=StringIO(msg),
 	    headers={ 'content-length' : str(len(msg)), 'Host': 'Testhost' })
     transport.respond(request)
     transport.socket.tick() # do it manually
