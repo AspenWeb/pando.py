@@ -12,13 +12,13 @@ project root, so a more likely incantation is:
 
     ASPEN_PROJECT_ROOT=/path/to/wherever python -m aspen
 
-For production deployment, you should probably deploy using 
-a higher performance WSGI server like Gunicorn, uwsgi, Spawning, 
+For production deployment, you should probably deploy using
+a higher performance WSGI server like Gunicorn, uwsgi, Spawning,
 or the like.
 """
 
-from aspen.website import Website                                                                           
-from wsgiref.simple_server import make_server                                                               
+from aspen.website import Website
+from wsgiref.simple_server import make_server
 
 
 
