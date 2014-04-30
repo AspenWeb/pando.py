@@ -34,10 +34,12 @@ from __future__ import unicode_literals
 
 import mimetypes
 import os
+import re
 import stat
 import sys
 import traceback
 
+from aspen.backcompat import StringIO
 from aspen.exceptions import LoadError
 from aspen.resources.negotiated_resource import NegotiatedResource
 from aspen.resources.rendered_resource import RenderedResource
@@ -64,27 +66,58 @@ class Entry:
         self.quadruple = ()
 
 
+def decode_raw(raw):
+    """Decode raw data according to the encoding specified in the first
+       couple lines of the data, or in ASCII.  Non-ASCII data without an
+       encoding specified will cause UnicodeDecodeError to be raised.
+    """ 
+    decl_re = re.compile(r'^[ \t\f]*#.*coding[:=][ \t]*([-\w.]+)')
+
+    def get_declaration(line):
+        match = decl_re.match(line)
+        if match:
+            return match.group(1)
+        return None
+
+    encoding = b'ascii'
+    fulltext = b''
+    sio = StringIO(raw)
+    for line in (sio.readline(), sio.readline()):
+        potential = get_declaration(line)
+        if potential is not None:
+            encoding = potential
+        else:
+            fulltext += line
+    fulltext += sio.read()
+    sio.close() 
+    return fulltext.decode(encoding)
+
+
 # Core loaders
 # ============
 
 def load(request, mtime):
     """Given a Request and a mtime, return a Resource object (w/o caching).
     """
+    
+    is_spt = request.fs.endswith('.spt')
 
     # Load bytes.
     # ===========
-    # We work with resources exclusively as bytestrings. Renderers take note.
+    # .spt files are simplates, which get loaded according to their encoding
+    #      and turned into unicode strings internally
+    # non-.spt files are static, possibly binary, so don't get decoded
 
-    raw_fh = open(request.fs, 'rb')
-    raw = raw_fh.read()
-    raw_fh.close() # explicit is better than implicit
+    with open(request.fs, 'rb') as fh:
+        raw = fh.read()
+    if is_spt:
+        raw = decode_raw(raw)
 
     # Compute a media type.
     # =====================
     # For a negotiated resource we will ignore this.
 
     guess_with = request.fs
-    is_spt = request.fs.endswith('.spt')
     if is_spt:
         guess_with = guess_with[:-4]
     media_type = mimetypes.guess_type(guess_with, strict=False)[0]
