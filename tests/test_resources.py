@@ -69,7 +69,6 @@ def test_path_part_params_are_available(harness):
     assert response.body == "3\n"
 
 def test_utf8(harness):
-    expected = unichr(1758).encode('utf8')
     expected = unichr(1758)
     actual = harness.simple("""
         "#empty first page"
