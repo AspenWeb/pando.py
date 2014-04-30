@@ -71,6 +71,21 @@ def test_decode_raw_prefers_first_line_to_second():
     """
     assert actual == expected
 
+def test_decode_raw_ignores_third_line():
+    actual = decode_raw(b"""\
+    # -*- coding: utf8 -*-
+    # -*- coding: ascii -*-
+    # -*- coding: cornnuts -*-
+    text = u'א'
+    """)
+    expected = """\
+    # encoding set to utf8
+    # -*- coding: ascii -*-
+    # -*- coding: cornnuts -*-
+    text = u'א'
+    """
+    assert actual == expected
+
 def test_decode_raw_can_take_encoding_from_various_line_formats():
     formats = [ b'-*- coding: utf8 -*-'
               , b'-*- encoding: utf8 -*-'
