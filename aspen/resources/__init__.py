@@ -86,6 +86,11 @@ def decode_raw(raw):
         potential = get_declaration(line)
         if potential is not None:
             encoding = potential
+
+            # Munge the encoding line. We want to preserve the line numbering,
+            # but when we exec down the line Python will complain if we have a
+            # coding: line in a unicode.
+            fulltext += line.split(b'#')[0] + b'# encoding set to {0}\n'.format(encoding)
         else:
             fulltext += line
     fulltext += sio.read()
