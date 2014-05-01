@@ -122,6 +122,7 @@ def test_decode_raw_cant_take_encoding_from_bad_line_formats():
               , b'  coding : utf8'
               , b'encoding : utf8'
               , b'  flubcoding =utf8'
+              , b'coding: '
                ]
     for fmt in formats:
         def test():
