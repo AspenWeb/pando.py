@@ -5,25 +5,22 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from aspen.resources import decode_raw
+from aspen.exceptions import LoadError
 from pytest import raises
 
 
-def test_utf8(harness):
-    expected = unichr(1758)
-    actual = harness.simple("""
-        "#empty first page"
+def test_non_ascii_bytes_fail_without_encoding(harness):
+    raises(LoadError, harness.simple, b"""
         [------------------]
-        text = unichr(1758)
+        text = u'א'
         [------------------]
         %(text)s
-    """).body.strip()
-    assert actual == expected
+    """)
 
-def test_utf8_char(harness):
+def test_non_ascii_bytes_work_with_encoding(harness):
     expected = u'א'
     actual = harness.simple(b"""
         # encoding=utf8
-        "#empty first page"
         [------------------]
         text = u'א'
         [------------------]
