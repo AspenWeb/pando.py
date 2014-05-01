@@ -84,16 +84,27 @@ def decode_raw(raw):
     sio = StringIO(raw)
     for line in (sio.readline(), sio.readline()):
         potential = get_declaration(line)
-        if encoding is not None:
-            # If we found a match in the first line, skip the second. This
-            # matches Python's observed behavior.
-            pass
-        elif potential is not None:
-            encoding = potential
-            # Munge the encoding line. We want to preserve the line numbering,
-            # but when we exec down the line Python will complain if we have a
-            # coding: line in a unicode.
-            line = line.split(b'#')[0] + b'# encoding set to {0}\n'.format(encoding)
+        if potential is not None:
+            if encoding is None:
+
+                # If both lines match, use the first. This matches Python's
+                # observed behavior.
+
+                encoding = potential
+                munged = b'# encoding set to {0}\n'.format(encoding)
+
+            else:
+
+                # But always munge any encoding line. We can't simply remove
+                # the line, because we want to preserve the line numbering.
+                # However, later on when we ask Python to exec a unicode
+                # object, we'll get a SyntaxError if we have a well-formed
+                # `coding: # ` line in it.
+
+                munged = b'# encoding NOT set to {0}\n'.format(potential)
+
+            line = line.split(b'#')[0] + munged
+
         fulltext += line
     fulltext += sio.read()
     sio.close()
