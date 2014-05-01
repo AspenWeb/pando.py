@@ -38,7 +38,7 @@ def test_response_as_wsgi_does_something_sane(harness):
         %(text)s
     """)
 
-    actual = ''.join(list(wsgi({}, lambda a,b: None)))
+    actual = b''.join(list(wsgi({}, lambda a,b: None)))
     assert actual == expected
 
 
