@@ -79,31 +79,22 @@ def decode_raw(raw):
             return match.group(1)
         return None
 
-    encoding = b'ascii'
+    encoding = None
     fulltext = b''
     sio = StringIO(raw)
-    first = sio.readline()
-    second = sio.readline()
-    for i, line in enumerate([first, second]):
+    for line in (sio.readline(), sio.readline()):
         potential = get_declaration(line)
-        if potential is not None:
+        if encoding is None and potential is not None:
             encoding = potential
-
             # Munge the encoding line. We want to preserve the line numbering,
             # but when we exec down the line Python will complain if we have a
             # coding: line in a unicode.
             fulltext += line.split(b'#')[0] + b'# encoding set to {0}\n'.format(encoding)
-
-            # If we find a match in the first line, we want to skip the second.
-            # This matches Python's observed behavior.
-            if i == 0:
-                fulltext += second
-                break
         else:
             fulltext += line
     fulltext += sio.read()
     sio.close()
-    return fulltext.decode(encoding)
+    return fulltext.decode(encoding or b'ascii')
 
 
 # Core loaders
