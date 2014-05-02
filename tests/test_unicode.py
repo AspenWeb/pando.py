@@ -36,8 +36,19 @@ def test_response_as_wsgi_does_something_sane(harness):
         text = u'א'
         [------------------]
         %(text)s""")
-
     actual = b''.join(list(wsgi({}, lambda a,b: None)))
+    assert actual == expected
+
+def test_the_exec_machinery_handles_two_encoding_lines_properly(harness):
+    expected = u'א'
+    actual = harness.simple(b"""\
+        # encoding=utf8
+        # encoding=ascii
+        [------------------]
+        text = u'א'
+        [------------------]
+        %(text)s
+    """).body.strip()
     assert actual == expected
 
 
@@ -75,7 +86,7 @@ def test_decode_raw_prefers_first_line_to_second():
     """)
     expected = """\
     # encoding set to utf8
-    # -*- coding: ascii -*-
+    # encoding NOT set to ascii
     text = u'א'
     """
     assert actual == expected
@@ -89,7 +100,7 @@ def test_decode_raw_ignores_third_line():
     """)
     expected = """\
     # encoding set to utf8
-    # -*- coding: ascii -*-
+    # encoding NOT set to ascii
     # -*- coding: cornnuts -*-
     text = u'א'
     """
