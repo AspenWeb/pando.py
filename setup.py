@@ -29,10 +29,7 @@ setup( author = 'Chad Whitacre'
      , classifiers = classifiers
      , description = ('Aspen is a Python web framework. '
                       'Simplates are the main attraction.')
-     , entry_points = {'console_scripts': [ 'aspen = aspen.server:main'
-                                          , 'thrash = thrash:main'
-                                          , 'fcgi_aspen = fcgi_aspen:main [fcgi]'
-                                           ]}
+     , entry_points = {'console_scripts': ['fcgi_aspen = fcgi_aspen:main [fcgi]']}
      , name = 'aspen'
      , packages = find_packages(exclude=['aspen.tests', 'aspen.tests.*'])
      , py_modules = ['thrash', 'fcgi_aspen']

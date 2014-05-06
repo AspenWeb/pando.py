@@ -11,18 +11,6 @@ you need more control, you can instantiate that class yourself. In any case,
 here are some ways to get it on the network.</p>
 
 
-<h4>Aspen</h4>
-
-<p>Aspen bundles its own server, called <a
-    href="/aspen/"><code>aspen</code></a>. It is suitable for production.</p>
-
-<pre>
-$ cd /path/to/my/website
-$ aspen
-Greetings, program! Welcome to port 8080.
-</pre>
-
-
 <h4>Gunicorn</h4>
 
 <p><a href="http://gunicorn.org/">Gunicorn</a> is a preforking server ported
