@@ -437,11 +437,6 @@ homepage = True
                 <li><a href="/project_root/"><code>project_root</code></a></li>
             </ul>
             </li>
-            <li>Executable
-            <ul>
-                <li><a href="/aspen/"><code>aspen</code></a></li>
-            </ul>
-            </li>
         </ul>
 
     </div></div>
