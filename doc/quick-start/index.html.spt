@@ -31,8 +31,8 @@ blah</pre>
 <p>Step 4: Create a web page, and start aspen inside it:</p>
 
 <pre>(foo)$ echo Greetings, program! > index.html.spt
-(foo)$ aspen
-Greetings, program! Welcome to port 8080.</pre>
+(foo)$ python -m aspen
+[...]Greetings, program! Welcome to port 8080.</pre>
 
 <p>Step 5: Check <a href="http://localhost:8080/">localhost</a> for
 your new page!</p>
