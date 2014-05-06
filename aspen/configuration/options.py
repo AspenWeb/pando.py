@@ -53,18 +53,6 @@ def OptionParser():
                             "$ASPEN_PROJECT_ROOT/configure-aspen.py")
                     , default=DEFAULT
                      )
-    basic.add_option( "-a", "--network_address"
-                    , help=("the IPv4, IPv6, or Unix address to bind to "
-                            "[0.0.0.0:8080]")
-                    , default=DEFAULT
-                     )
-    basic.add_option( "-e", "--network_engine"
-                    , help=( "the HTTP engine to use, one of "
-                           + "{%s}" % ','.join(aspen.NETWORK_ENGINES)
-                           + " [%s]" % aspen.NETWORK_ENGINES[0]
-                            )
-                    , default=DEFAULT
-                     )
     basic.add_option( "-l", "--logging_threshold"
                     , help=("a small integer; 1 will suppress most of aspen's "
                             "internal logging, 2 will suppress all it [0]")

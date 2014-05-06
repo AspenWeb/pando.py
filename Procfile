@@ -1,1 +1,1 @@
-web: aspen --network_address=:$PORT --www_root=doc/ --project_root=doc/.aspen
+web: python -m aspen --www_root=doc/ --project_root=doc/.aspen

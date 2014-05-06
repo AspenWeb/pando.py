@@ -16,11 +16,18 @@ For production deployment, you should probably deploy using
 a higher performance WSGI server like Gunicorn, uwsgi, Spawning,
 or the like.
 """
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
 
+from aspen import log_dammit
 from aspen.website import Website
 from wsgiref.simple_server import make_server
 
 
-
 if __name__ == '__main__':
-    make_server('0.0.0.0', 8080, Website()).serve_forever()
+    website = Website()
+    server = make_server('0.0.0.0', 8080, website)
+    log_dammit("Greetings, program! Welcome to port 8080.")
+    server.serve_forever()

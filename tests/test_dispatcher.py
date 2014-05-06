@@ -399,26 +399,6 @@ def test_virtual_path_docs_6(harness):
     assert_body(harness, '/1999/', "Tonight we're going to party like it's 1999!")
 
 
-# intercept_socket
-# ================
-
-def test_intercept_socket_protects_direct_access():
-    request = Request(uri="/foo.sock")
-    raises(Response, dispatcher.dispatch, request)
-
-def test_intercept_socket_intercepts_handshake():
-    request = Request(uri="/foo.sock/1")
-    actual = dispatcher.extract_socket_info(request.line.uri.path.decoded)
-    expected = ('/foo.sock', '1')
-    assert actual == expected
-
-def test_intercept_socket_intercepts_transported():
-    request = Request(uri="/foo.sock/1/websocket/46327hfjew3?foo=bar")
-    actual = dispatcher.extract_socket_info(request.line.uri.path.decoded)
-    expected = ('/foo.sock', '1/websocket/46327hfjew3')
-    assert actual == expected
-
-
 # mongs
 # =====
 # These surfaced when porting mongs from Aspen 0.8.

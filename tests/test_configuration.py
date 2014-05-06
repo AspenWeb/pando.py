@@ -5,11 +5,9 @@ from __future__ import unicode_literals
 
 import os
 import sys
-import socket
 
 from pytest import raises, mark
 
-import aspen
 from aspen.configuration import Configurable, ConfigurationError, parse
 from aspen.configuration.options import OptionParser, DEFAULT
 from aspen.website import Website
@@ -19,8 +17,6 @@ def test_everything_defaults_to_empty_string():
     o = OptionParser()
     opts, args = o.parse_args([])
     actual = ( opts.configuration_scripts
-             , opts.network_address
-             , opts.network_engine
              , opts.logging_threshold
              , opts.project_root
              , opts.www_root
@@ -34,8 +30,8 @@ def test_everything_defaults_to_empty_string():
              , opts.renderer_default
              , opts.show_tracebacks
               )
-    expected = ( DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT
-               , DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT
+    expected = ( DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT
+               , DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT
                 )
     assert actual == expected
 
@@ -111,13 +107,8 @@ def test_ConfigurationError_NOT_raised_if_no_cwd_but_do_have__www_root(harness):
 def test_configurable_sees_root_option(harness):
     c = Configurable()
     c.configure(['--www_root', harness.fs.project.resolve('')])
-    expected = os.getcwd()
+    expected = harness.fs.project.root
     actual = c.www_root
-    assert actual == expected
-
-def test_address_can_be_localhost():
-    expected = (('127.0.0.1', 8000), 2)
-    actual = parse.network_address(u'localhost:8000')
     assert actual == expected
 
 def test_configuration_scripts_works_at_all():
@@ -217,46 +208,3 @@ def test_parse_renderer_good():
 
 def test_parse_renderer_bad():
     raises(ValueError, parse.renderer, u'floober')
-
-
-def test_parse_network_engine_good():
-    actual = parse.network_engine(u'cheroot')
-    assert actual == 'cheroot'
-
-def test_parse_network_engine_bad():
-    raises(ValueError, parse.network_engine, u'floober')
-
-@mark.xfail(sys.platform == 'win32',
-            reason="Unix Socket (AF_UNIX) unavailable on Windows")
-def test_parse_network_address_unix_socket():
-    actual = parse.network_address(u"/foo/bar")
-    assert actual == ("/foo/bar", socket.AF_UNIX)
-
-def test_parse_network_address_notices_ipv6():
-    actual = parse.network_address(u"2607:f0d0:1002:51::4")
-    assert actual == (u"2607:f0d0:1002:51::4", socket.AF_INET6)
-
-def test_parse_network_address_sees_one_colon_as_ipv4():
-    actual = parse.network_address(u"192.168.1.1:8080")
-    assert actual == ((u"192.168.1.1", 8080), socket.AF_INET)
-
-def test_parse_network_address_need_colon_for_ipv4():
-    raises(ValueError, parse.network_address, u"192.168.1.1 8080")
-
-def test_parse_network_address_defaults_to_inaddr_any():
-    actual = parse.network_address(u':8080')
-    assert actual == ((u'0.0.0.0', 8080), socket.AF_INET)
-
-def test_parse_network_address_with_bad_address():
-    raises(ValueError, parse.network_address, u'0 0 0 0:8080')
-
-def test_parse_network_address_with_bad_port():
-    raises(ValueError, parse.network_address, u':80 0')
-
-def test_parse_network_address_with_port_too_low():
-    actual = raises(ValueError, parse.network_address, u':-1').value.args[0]
-    assert actual == "invalid port (out of range)"
-
-def test_parse_network_address_with_port_too_high():
-    actual = raises(ValueError, parse.network_address, u':65536').value.args[0]
-    assert actual == "invalid port (out of range)"

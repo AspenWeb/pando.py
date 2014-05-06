@@ -12,7 +12,6 @@ from __future__ import unicode_literals
 import errno
 import mimetypes
 import os
-import socket
 import sys
 import traceback
 import pkg_resources
@@ -20,7 +19,6 @@ from collections import defaultdict
 
 import aspen
 import aspen.logging
-from aspen import execution
 from aspen.configuration import parse
 from aspen.configuration.exceptions import ConfigurationError
 from aspen.configuration.options import OptionParser, DEFAULT
@@ -35,10 +33,6 @@ from aspen.typecasting import defaults as default_typecasters
 
 KNOBS = \
     { 'configuration_scripts': (lambda: [], parse.list_)
-    , 'network_engine':     ('cheroot', parse.network_engine)
-    , 'network_address':    ( (('0.0.0.0', 8080), socket.AF_INET)
-                            , parse.network_address
-                             )
     , 'project_root':       (None, parse.identity)
     , 'logging_threshold':  (0, int)
     , 'www_root':           (None, parse.identity)
@@ -256,7 +250,6 @@ class Configurable(object):
                                          "or --www_root on the command line.")
 
         self.www_root = os.path.realpath(self.www_root)
-        os.chdir(self.www_root)
 
         # load renderers
         self.renderer_factories = {}
@@ -289,40 +282,6 @@ class Configurable(object):
 
         if not mimetypes.inited:
             mimetypes.init()
-
-        # network_engine
-
-        ## Load modules
-        ENGINES = {}
-        for entrypoint in pkg_resources.iter_entry_points(group='aspen.network_engines'):
-            ENGINES[entrypoint.name] = entrypoint.load()
-
-        if self.network_engine in ENGINES:
-            # found in a module
-            Engine = ENGINES[self.network_engine].Engine
-        else:
-            # look for a built-in one
-            try:
-                capture = {}
-                python_syntax = 'from aspen.network_engines.%s_ import Engine'
-                exec python_syntax % self.network_engine in capture
-                Engine = capture['Engine']
-            except ImportError:
-                # ANSI colors:
-                #   http://stackoverflow.com/questions/287871/
-                #   http://en.wikipedia.org/wiki/ANSI_escape_code#CSI_codes
-                #   XXX consider http://pypi.python.org/pypi/colorama
-                msg = "\033[1;31mImportError loading the %s network engine:\033[0m"
-                aspen.log_dammit(msg % self.network_engine)
-                raise
-        self.network_engine = Engine(self.network_engine, self)
-
-        # network_address, network_sockfam, network_port
-        self.network_address, self.network_sockfam = self.network_address
-        if self.network_sockfam == socket.AF_INET:
-            self.network_port = self.network_address[1]
-        else:
-            self.network_port = None
 
         self.run_config_scripts()
         self.show_renderers()
@@ -399,9 +358,6 @@ class Configurable(object):
                 else:
                    # problems with default config files are okay, but get logged
                    aspen.log(msg)
-            else:
-                aspen.log_dammit("Loading configuration file '%s' (possibly changing settings)" % filepath)
-                execution.if_changes(filepath)
 
 
 

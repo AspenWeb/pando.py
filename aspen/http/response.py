@@ -29,11 +29,8 @@ class CloseWrapper(object):
         return iter(self.body)
 
     def close(self):
-        socket = getattr(self.request, "socket", None)
-        if socket is not None:
-            pass
-            # implement some socket closing logic here
-            #self.request.socket.close()
+        # No longer using this since we ripped out Socket.IO support.
+        pass
 
 
 # Define a charset name filter.
