@@ -79,9 +79,6 @@ __version__ = dist.version
 WINDOWS = sys.platform[:3] == 'win'
 NETWORK_ENGINES = ['cheroot']
 
-for entrypoint in pkg_resources.iter_entry_points(group='aspen.network_engines'):
-    NETWORK_ENGINES.append(entrypoint.name)
-
 BUILTIN_RENDERERS = [ 'stdlib_format'
                     , 'stdlib_percent'
                     , 'stdlib_template'

@@ -21,7 +21,7 @@ classifiers = [ 'Development Status :: 4 - Beta'
               , 'Programming Language :: Python :: 2.7'
               , 'Programming Language :: Python :: Implementation :: CPython'
               , 'Programming Language :: Python :: Implementation :: Jython'
-              , 'Topic :: Internet :: WWW/HTTP :: HTTP Servers'
+              , 'Topic :: Internet :: WWW/HTTP :: WSGI :: Application'
                ]
 
 setup( author = 'Chad Whitacre'
@@ -40,8 +40,7 @@ setup( author = 'Chad Whitacre'
      , version = version
      , zip_safe = False
      , package_data = {'aspen': ['www/*', 'configuration/mime.types']}
-     , install_requires = [ 'Cheroot==4.0.0beta'
-                          , 'mimeparse==0.1.3'
+     , install_requires = [ 'mimeparse==0.1.3'
                           , 'first==2.0.1'
                           , 'algorithm>=1.0.0'
                           , 'filesystem_tree>=1.0.0'

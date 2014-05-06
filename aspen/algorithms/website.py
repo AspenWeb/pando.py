@@ -66,9 +66,8 @@ def apply_typecasters_to_path(website, request):
     typecasting.apply_typecasters(website.typecasters, request.line.uri.path)
 
 
-def get_resource_for_request(request, response):
-    if response is None:
-        return {'resource': resources.get(request)}
+def get_resource_for_request(request):
+    return {'resource': resources.get(request)}
 
 
 def get_response_for_resource(request, resource=None):
