@@ -77,7 +77,6 @@ Response, json, is_callable, log, log_dammit
 dist = pkg_resources.get_distribution('aspen')
 __version__ = dist.version
 WINDOWS = sys.platform[:3] == 'win'
-NETWORK_ENGINES = ['cheroot']
 
 BUILTIN_RENDERERS = [ 'stdlib_format'
                     , 'stdlib_percent'
