@@ -36,10 +36,9 @@ from __future__ import unicode_literals
 import traceback
 
 import aspen
-from aspen import dispatcher, resources, sockets
+from aspen import dispatcher, resources
 from aspen.http.request import Request
 from aspen.http.response import Response
-from aspen.sockets.socket import Socket
 from aspen import typecasting
 from first import first as _first
 
@@ -65,21 +64,6 @@ def dispatch_request_to_filesystem(request):
 
 def apply_typecasters_to_path(website, request):
     typecasting.apply_typecasters(website.typecasters, request.line.uri.path)
-
-
-def get_response_for_socket(request):
-    socket = sockets.get(request)
-    if socket is None:
-        # This is not a socket request.
-        response = None
-    elif isinstance(socket, Response):
-        # Actually, this is a handshake request.
-        response = socket
-    else:
-        assert isinstance(socket, Socket)  # sanity check
-        # This is a socket ... request?
-        response = socket.respond(request)
-    return {'response': response}
 
 
 def get_resource_for_request(request, response):
