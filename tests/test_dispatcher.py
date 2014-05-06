@@ -240,7 +240,7 @@ userclassconfigure="""
 import aspen.typecasting
 
 class User:
-    
+
     def __init__(self, name):
         self.username = name
 
@@ -255,7 +255,7 @@ website.typecasters['user'] = User.toUser
 def test_virtual_path_file_key_val_cast_custom(harness):
     harness.fs.project.mk(('configure-aspen.py', userclassconfigure),)
     harness.fs.www.mk(('user/%user.user.html.spt', "\nusername=path['user']\n[-----]\nGreetings, %(username)s!"),)
-    actual = harness.simple(filepath=None, uripath='/user/chad.html', want='request.line.uri.path', 
+    actual = harness.simple(filepath=None, uripath='/user/chad.html', want='request.line.uri.path',
             run_through='apply_typecasters_to_path')
     assert actual['user'].username == 'chad'
 
@@ -399,26 +399,6 @@ def test_virtual_path_docs_6(harness):
     assert_body(harness, '/1999/', "Tonight we're going to party like it's 1999!")
 
 
-# intercept_socket
-# ================
-
-def test_intercept_socket_protects_direct_access():
-    request = Request(uri="/foo.sock")
-    raises(Response, dispatcher.dispatch, request)
-
-def test_intercept_socket_intercepts_handshake():
-    request = Request(uri="/foo.sock/1")
-    actual = dispatcher.extract_socket_info(request.line.uri.path.decoded)
-    expected = ('/foo.sock', '1')
-    assert actual == expected
-
-def test_intercept_socket_intercepts_transported():
-    request = Request(uri="/foo.sock/1/websocket/46327hfjew3?foo=bar")
-    actual = dispatcher.extract_socket_info(request.line.uri.path.decoded)
-    expected = ('/foo.sock', '1/websocket/46327hfjew3')
-    assert actual == expected
-
-
 # mongs
 # =====
 # These surfaced when porting mongs from Aspen 0.8.
@@ -479,4 +459,4 @@ def test_dont_serve_hidden_files(harness):
 def test_dont_serve_spt_file_source(harness):
     harness.fs.www.mk(('foo.html.spt', "Greetings, program!"),)
     assert_raises_404(harness, '/foo.html.spt')
-   
+
