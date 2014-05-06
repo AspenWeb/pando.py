@@ -1,6 +1,27 @@
 Aspen-python Changelog
 ======================
 
+0.31 - Released Tue May  6 2014 by @pjz
+---------------------------------------
+
+* Aspen server is gone! Aspen is now a pure-WSGI app!
+  ...well, okay, for dev purposes it'll run under wsgiref via
+  python -m aspen
+
+* Socket.IO support is gone! ..but not forgotten. We'll get it
+  back someday, when there's a sane way to do so.
+
+* The datapath is now much more unicode-clean
+
+* Simplate files can now specify their encodings
+
+* Tweaks to work better under windows (thanks @BigBlueHat!)
+
+* Documentation is moving toward Sphinx!
+
+* JSON support was moved into a renderer. It's no longer a special
+  simplate type.
+
 0.30 - Released Wed Mar 19 2014 by @pjz
 ---------------------------------------
     
