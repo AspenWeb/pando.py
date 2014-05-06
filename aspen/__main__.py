@@ -25,6 +25,7 @@ from aspen import log_dammit
 from aspen.website import Website
 from wsgiref.simple_server import make_server
 
+
 if __name__ == '__main__':
     website = Website()
     server = make_server('0.0.0.0', 8080, website)

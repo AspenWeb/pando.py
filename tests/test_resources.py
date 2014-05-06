@@ -67,18 +67,6 @@ def test_path_part_params_are_available(harness):
     """, '/foo/index.html.spt', '/foo;a=1;b;a=3/')
     assert response.body == "3\n"
 
-def test_utf8(harness):
-    expected = unichr(1758).encode('utf8')
-    expected = unichr(1758)
-    actual = harness.simple("""
-        "#empty first page"
-        [------------------]
-        text = unichr(1758)
-        [------------------]
-        %(text)s
-    """).body.strip()
-    assert actual == expected
-
 def test_resources_dont_leak_whitespace(harness):
     """This aims to resolve https://github.com/whit537/aspen/issues/8.
     """
@@ -101,24 +89,6 @@ def test_negotiated_resource_doesnt_break(harness):
         """
         , filepath='index.spt').body
     assert actual == expected
-
-
-# Unicode example in the /templating/ doc.
-# ========================================
-# See also: https://github.com/whit537/aspen/issues/10
-
-eg = """
-latinate = chr(181).decode('latin1')
-response.headers['Content-Type'] = 'text/plain; charset=latin1'
-r = latinate.encode('latin1')
-[-------------------------------------]
- %(r)s"""
-
-def test_content_type_is_right_in_template_doc_unicode_example(harness):
-    assert harness.simple(eg).headers['Content-Type'] == "text/plain; charset=latin1"
-
-def test_body_is_right_in_template_doc_unicode_example(harness):
-    assert harness.simple(eg).body.strip() == chr(181)
 
 
 # raise Response
