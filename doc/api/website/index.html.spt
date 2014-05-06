@@ -27,8 +27,6 @@ line (<code>--name</code>):</p>
     <tr><td>logging_threshold</td><td>0 (most verbose)</td> </tr>
     <tr><td>media_type_default</td><td>text/plain</td> </tr>
     <tr><td>media_type_json</td><td>application/json</td> </tr>
-    <tr><td>network_engine</td><td>cheroot</td> </tr>
-    <tr><td>network_address</td><td>(u'0.0.0.0', 8080), socket.AF_INET)</td> </tr>
     <tr><td>project_root</td><td>None</td> </tr>
     <tr><td>renderer_default</td><td>stdlib_percent</td> </tr>
     <tr><td>show_tracebacks</td><td>False</td> </tr>
@@ -62,15 +60,6 @@ configuration is processed, and before your <a
         href="/simplates/rendered/">renderers</a> are instantiated and
     populated: <b>renderer_factories</b> and
     <b>default_renderers_by_media_type</b>.</li>
-
-    <li>The <b>network_engine</b> attribute is hydrated into an Engine object.
-    If you haven&rsquo;t installed the necessary underlying library
-    you&rsquo;ll get an ImportError to this effect.</li>
-
-    <li>The <b>network_address</b> attribute is broken out into
-    network_address, network_sockfam, and network_port attributes. These are
-    used by the <code>aspen.server</code> machinery and the Engines to connect
-    to the network.</b>
 
 </ul>
 

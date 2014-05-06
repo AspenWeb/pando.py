@@ -59,9 +59,10 @@ def _env():
 
 
 def aspen():
-    if os.path.exists(_virt('aspen')):
-        return
     _env()
+    v = shell(_virt('python'), '-c', 'import aspen; print("found")', ignore_status=True)
+    if "found" in v:
+        return
     for dep in ASPEN_DEPS:
         run(_virt('pip'), 'install', '--no-index',
             '--find-links=' + INSTALL_DIR, dep)
@@ -102,7 +103,7 @@ def docs():
     aspen()
     run(_virt('pip'), 'install', 'aspen-tornado')
     run(_virt('pip'), 'install', 'pygments')
-    shell(_virt('aspen'), '-a:5370', '-wdoc', '-pdoc/.aspen',
+    shell(_virt('python'), '-m', 'aspen', '-a:5370', '-wdoc', '-pdoc/.aspen',
           '--changes_reload=1', silent=False)
 
 
@@ -110,7 +111,7 @@ def smoke():
     aspen()
     run('mkdir', smoke_dir)
     open(os.path.join(smoke_dir, "index.html"), "w").write("Greetings, program!")
-    run(_virt('aspen'), '-w', smoke_dir)
+    run(_virt('python'), '-m', 'aspen', '-w', smoke_dir)
 
 
 def clean_smoke():

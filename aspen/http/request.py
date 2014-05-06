@@ -186,7 +186,6 @@ class Request(str):
     """Represent an HTTP Request message. It's bytes, dammit. But lazy.
     """
 
-    socket = None
     resource = None
     original_resource = None
     server_software = ''

@@ -28,13 +28,16 @@ blah</pre>
 <pre>(foo)$ mkdir www
 (foo)$ cd www</pre>
 
-<p>Step 4: Create a web page, and start aspen inside it:</p>
+<p>Step 4: Create a web page:</p>
 
-<pre>(foo)$ echo Greetings, program! > index.html.spt
-(foo)$ aspen
-Greetings, program! Welcome to port 8080.</pre>
+<pre>(foo)$ echo Greetings, program! > index.html.spt</pre>
 
-<p>Step 5: Check <a href="http://localhost:8080/">localhost</a> for
+<p>Step 5: Start a dev server:</p>
+
+<pre>(foo)$ python -m aspen
+[...] Greetings, program! Welcome to port 8080.</pre>
+
+<p>Step 6: Check <a href="http://localhost:8080/">localhost</a> for
 your new page!</p>
 
 {{ screenshot("greetings-program") }}
