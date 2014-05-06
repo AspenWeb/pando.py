@@ -12,3 +12,4 @@ __pycache__
 .coverage
 /.deps
 /dist/
+local.env

@@ -1,1 +1,1 @@
-web: python -m aspen --www_root=doc/ --project_root=doc/.aspen
+web: uwsgi -w aspen.wsgi --callable website --http :$PORT --workers 4
