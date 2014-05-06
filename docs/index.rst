@@ -15,11 +15,6 @@ Library Reference
    :member-order: bysource
    :special-members:
 
-.. automodule:: aspen.algorithms.server
-   :members:
-   :member-order: bysource
-   :special-members:
-
 .. automodule:: aspen.algorithms.website
    :members:
    :member-order: bysource
@@ -125,21 +120,6 @@ Library Reference
    :member-order: bysource
    :special-members:
 
-.. automodule:: aspen.network_engines
-   :members:
-   :member-order: bysource
-   :special-members:
-
-.. automodule:: aspen.network_engines.cheroot_
-   :members:
-   :member-order: bysource
-   :special-members:
-
-.. automodule:: aspen.network_engines.gevent_
-   :members:
-   :member-order: bysource
-   :special-members:
-
 .. automodule:: aspen.renderers
    :members:
    :member-order: bysource
@@ -195,62 +175,12 @@ Library Reference
    :member-order: bysource
    :special-members:
 
-.. automodule:: aspen.resources.socket_resource
-   :members:
-   :member-order: bysource
-   :special-members:
-
 .. automodule:: aspen.resources.static_resource
    :members:
    :member-order: bysource
    :special-members:
 
 .. automodule:: aspen.server
-   :members:
-   :member-order: bysource
-   :special-members:
-
-.. automodule:: aspen.sockets
-   :members:
-   :member-order: bysource
-   :special-members:
-
-.. automodule:: aspen.sockets.buffer
-   :members:
-   :member-order: bysource
-   :special-members:
-
-.. automodule:: aspen.sockets.channel
-   :members:
-   :member-order: bysource
-   :special-members:
-
-.. automodule:: aspen.sockets.event
-   :members:
-   :member-order: bysource
-   :special-members:
-
-.. automodule:: aspen.sockets.loop
-   :members:
-   :member-order: bysource
-   :special-members:
-
-.. automodule:: aspen.sockets.message
-   :members:
-   :member-order: bysource
-   :special-members:
-
-.. automodule:: aspen.sockets.packet
-   :members:
-   :member-order: bysource
-   :special-members:
-
-.. automodule:: aspen.sockets.socket
-   :members:
-   :member-order: bysource
-   :special-members:
-
-.. automodule:: aspen.sockets.transport
    :members:
    :member-order: bysource
    :special-members:

@@ -28,13 +28,6 @@ Options:
                         comma-separated list of paths to configuration files
                         in Python syntax to exec in addition to
                         $ASPEN_PROJECT_ROOT/configure-aspen.py
-    -a NETWORK_ADDRESS, --network_address=NETWORK_ADDRESS
-                        the IPv4, IPv6, or Unix address to bind to
-                        [0.0.0.0:8080]
-    -e NETWORK_ENGINE, --network_engine=NETWORK_ENGINE
-                        the HTTP engine to use, one of {cheroot,cherrypy,
-                        diesel,eventlet,gevent,pants,rocket,tornado,twisted}
-                        [cheroot]
     -l LOGGING_THRESHOLD, --logging_threshold=LOGGING_THRESHOLD
                         a small integer; 1 will suppress most of aspen's
                         internal logging, 2 will suppress all it [0]
@@ -63,7 +56,7 @@ Options:
     --indices=INDICES   a comma-separated list of filenames to look for when a
                         directory is requested directly; prefix with + to
                         extend previous configuration instead of overriding
-                        [index.html, index.json, index.html.spt, 
+                        [index.html, index.json, index.html.spt,
                         index.json.spt]
     --list_directories=LIST_DIRECTORIES
                         if set to {yes,true,1}, aspen will serve a directory

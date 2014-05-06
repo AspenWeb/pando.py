@@ -385,15 +385,6 @@ homepage = True
                 for your Mac</a> (<a
                 href="http://static.whit537.org/2011/for-david.png">screenshot</a>)</li>
 
-            <li><a href="https://github.com/whit537/pictionary">Pictionary demo
-                of Socket.IO integration</a></li>
-
-            <li><a href="https://github.com/whit537/aspen-socket-toys">A couple
-                demos of Aspen&rsquo;s Socket.IO integration</a></li>
-
-            <li><a href="https://github.com/coopernurse/aspen-demo">Aspen +
-                diesel talking to a STOMP server</a></li>
-
             <li><a href="https://github.com/whit537/aspen-toy-blog">A toy blog,
                 demonstrating Aspen&rsquo;s core features</a></li>
 

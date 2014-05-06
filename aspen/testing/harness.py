@@ -11,12 +11,7 @@ import os
 import sys
 from collections import namedtuple
 
-from aspen import resources, sockets
-from aspen.http.request import Request
-from aspen.network_engines import ThreadedBuffer
-from aspen.sockets.channel import Channel
-from aspen.sockets.socket import Socket
-from aspen.sockets.transport import XHRPollingTransport
+from aspen import resources
 from aspen.testing.client import Client
 from filesystem_tree import FilesystemTree
 
@@ -36,8 +31,6 @@ def teardown():
     os.chdir(CWD)
     # Reset some process-global caches. Hrm ...
     resources.__cache__ = {}
-    sockets.__sockets__ = {}
-    sockets.__channels__ = {}
     sys.path_importer_cache = {} # see test_weird.py
 
 teardown() # start clean
@@ -88,43 +81,3 @@ class Harness(object):
         kw['return_after'] = 'dispatch_request_to_filesystem'
         kw['want'] = 'request'
         return self.simple(*a, **kw)
-
-
-    # Sockets
-    # =======
-
-    def make_transport(self, content='', state=0):
-        self.fs.www.mk(('echo.sock.spt', content))
-        socket = self.make_socket()
-        transport = XHRPollingTransport(socket)
-        transport.timeout = 0.05 # for testing, could screw up the test
-        if state == 1:
-            transport.respond(Request(uri='/echo.sock'))
-        return transport
-
-    def make_socket_request(self, filename='echo.sock.spt'):
-        request = Request(uri='/echo.sock')
-        request.website = self.client.website
-        request.fs = self.fs.www.resolve(filename)
-        return request
-
-    def make_socket(self, filename='echo.sock.spt', channel=None):
-        request = self.make_socket_request(filename='echo.sock.spt')
-        if channel is None:
-            channel = Channel(request.line.uri.path.raw, ThreadedBuffer)
-        socket = Socket(request, channel)
-        return socket
-
-    def SocketInThread(harness):
-
-        class _SocketInThread(object):
-
-            def __enter__(self, filename='echo.sock.spt'):
-                self.socket = harness.make_socket(filename)
-                self.socket.loop.start()
-                return self.socket
-
-            def __exit__(self, *a):
-                self.socket.loop.stop()
-
-        return _SocketInThread()

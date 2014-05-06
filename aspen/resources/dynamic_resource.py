@@ -25,7 +25,7 @@ ORDINALS = StringDefaultingList([ 'zero' , 'one' , 'two', 'three', 'four'
 
 
 class DynamicResource(Resource):
-    """This is the base for JSON, negotiating, socket, and rendered resources.
+    """This is the base for negotiating and rendered resources.
     """
 
     min_pages = None  # set on subclass
