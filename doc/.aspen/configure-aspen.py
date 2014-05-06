@@ -3,6 +3,7 @@ import os
 from aspen.configuration import parse
 from aspen_io import opts, add_stuff_to_request_context
 
+os.chdir(website.www_root)
 
 opts['show_ga'] = parse.yes_no(os.environ.get( 'ASPEN_IO_SHOW_GA'
                                              , 'no'
