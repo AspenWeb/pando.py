@@ -5,6 +5,7 @@ from __future__ import unicode_literals
 
 from aspen import json
 from aspen.http import status_strings
+from aspen.backcompat import html_escape
 
 try:
     from pygments.lexers import PythonTracebackLexer
@@ -39,7 +40,7 @@ else:
 msg_title = msg.title()
 response_code = response.code  # make this available to json section
 err_json = json.dumps(err)
-
+err_html = html_escape(err)
 [----------------------------------------] text/html via stdlib_format
 <html>
     <head>
@@ -61,7 +62,7 @@ err_json = json.dumps(err)
     </head>
     <body>
         {msg}, program!
-        <pre>{err}</pre>
+        <pre>{err_html}</pre>
     </body>
 </html>
 [----------------------------------------] application/json via stdlib_format
