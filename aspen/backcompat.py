@@ -16,6 +16,11 @@ try:
 except ImportError:
     from md5 import new as md5
 
+try:
+    from cStringIO import StringIO
+except ImportError:
+    from StringIO import StringIO
+
 try:                # Python >= 2.6
     from collections import Callable
     def is_callable(obj):

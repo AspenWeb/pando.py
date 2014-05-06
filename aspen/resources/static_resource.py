@@ -24,6 +24,7 @@ class StaticResource(Resource):
         """
         response = response or Response()
         # XXX Perform HTTP caching here.
+        assert type(self.raw) is str # sanity check
         response.body = self.raw
         response.headers['Content-Type'] = self.media_type
         if self.media_type.startswith('text/'):

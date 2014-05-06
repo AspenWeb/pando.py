@@ -110,7 +110,7 @@ class Response(Exception):
         body = self.body
         if isinstance(body, basestring):
             body = [body]
-        body = (x.encode('ascii') if isinstance(x, unicode) else x for x in body)
+        body = (x.encode(self.charset) if isinstance(x, unicode) else x for x in body)
         return CloseWrapper(self.request, body)
 
     def __repr__(self):
