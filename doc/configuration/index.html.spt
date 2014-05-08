@@ -6,7 +6,7 @@ doc_next = ""
 
 <p>Aspen can be configured consistently from the environment and the command
 line. For each of the following there is an environment variable like
-<code>ASPEN_NAME</code> and a <a href="/aspen/">command-line option</a>
+<code>ASPEN_NAME</code> and a <a href="#command-line-options">command-line option</a>
 <code>--name</code>. Here is an example configuration:</p>
 
 <table>
@@ -32,4 +32,74 @@ line. For each of the following there is an environment variable like
     href="/api/website/">the website object</a> in their namespace. Please
 refer to <a href="/api/website/">the website page</a> for defaults.</p>
 
+<h4 id="command-line-options">Command Line Options</h4>
+
+<p>You can serve Aspen websites with <a href="/deployment/">any WSGI
+    server</a>, and Aspen also bundles a production-quality server of its own.
+You can access it via the <code>aspen</code> python module: <code>python -m aspen</code>.</p>
+
+<p>Here's the usage info (accessible via <code>python -m aspen -h</code>):</p>
+
+<pre style="font-size: 10px;">Usage: aspen [options]
+
+Aspen is a Python web framework. By default this program will start serving a
+website from the current directory on port 8080. Options are as follows. See
+also http://aspen.io/.
+
+Options:
+  --version             show program's version number and exit
+  -h, --help            show this help message and exit
+
+  Basic Options:
+    -f CONFIGURATION_SCRIPTS, --configuration_scripts=CONFIGURATION_SCRIPTS
+                        comma-separated list of paths to configuration files
+                        in Python syntax to exec in addition to
+                        $ASPEN_PROJECT_ROOT/configure-aspen.py
+    -l LOGGING_THRESHOLD, --logging_threshold=LOGGING_THRESHOLD
+                        a small integer; 1 will suppress most of aspen's
+                        internal logging, 2 will suppress all it [0]
+    -p PROJECT_ROOT, --project_root=PROJECT_ROOT
+                        the filesystem path of the directory in which to look
+                        for project files like template bases and such.[]
+    -w WWW_ROOT, --www_root=WWW_ROOT
+                        the filesystem path of the document publishing root
+                        [.]
+
+  Extended Options:
+    I judge these variables to be less-often configured from the command
+    line. But who knows?
+
+    --changes_reload=CHANGES_RELOAD
+                        if set to yes/true/1, changes to configuration files
+                        and Python modules will cause aspen to re-exec, and
+                        template bases won't be cached [no]
+    --charset_dynamic=CHARSET_DYNAMIC
+                        this is set as the charset for rendered and negotiated
+                        resources of Content-Type text/* [UTF-8]
+    --charset_static=CHARSET_STATIC
+                        if set, this will be sent as the charset for static
+                        resources of Content-Type text/*; if you want to punt
+                        and let browsers guess, then just leave this unset []
+    --indices=INDICES   a comma-separated list of filenames to look for when a
+                        directory is requested directly; prefix with + to
+                        extend previous configuration instead of overriding
+                        [index.html, index.json, index.html.spt,
+                        index.json.spt]
+    --list_directories=LIST_DIRECTORIES
+                        if set to {yes,true,1}, aspen will serve a directory
+                        listing when no index is available [no]
+    --media_type_default=MEDIA_TYPE_DEFAULT
+                        this is set as the Content-Type for resources of
+                        otherwise unknown media type [text/plain]
+    --media_type_json=MEDIA_TYPE_JSON
+                        this is set as the Content-Type of JSON resources
+                        [application/json]
+    --renderer_default=RENDERER_DEFAULT
+                        the renderer to use by default; one of
+                        {stdlib_percent,stdlib_format,stdlib_template,jinja2,
+                         pystache,tornado} [stdlib_percent]
+    --show_tracebacks=SHOW_TRACEBACKS
+                        if set to {yes,true,1}, 500s will have a traceback in
+                        the browser [no]
+</pre>
 {% end %}
