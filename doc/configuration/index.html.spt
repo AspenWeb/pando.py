@@ -34,8 +34,9 @@ refer to <a href="/api/website/">the website page</a> for defaults.</p>
 
 <h4 id="command-line-options">Command Line Options</h4>
 
-<p>You can serve Aspen websites with <a href="/deployment/">any WSGI
-    server</a>, and Aspen also bundles a production-quality server of its own.
+<p>Production Aspen websites can (and should) be served with <a href="/deployment/">any WSGI
+server</a>. Aspen also bundles a server of its own suitable for development
+or localhost-ing purposes.
 You can access it via the <code>aspen</code> python module: <code>python -m aspen</code>.</p>
 
 <p>Here's the usage info (accessible via <code>python -m aspen -h</code>):</p>
