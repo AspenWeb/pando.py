@@ -6,7 +6,7 @@ from __future__ import unicode_literals
 from pytest import raises
 
 import aspen.utils # this happens to install the 'repr' error strategy
-from aspen.utils import ascii_dammit, unicode_dammit, to_age, utcnow
+from aspen.utils import ascii_dammit, unicode_dammit, to_age, to_rfc822, utcnow
 from datetime import datetime
 
 GARBAGE = b"\xef\xf9"
@@ -52,4 +52,7 @@ def test_to_age_formatting_works():
     actual = to_age(utcnow(), fmt_past="Cheese, for %(age)s!")
     assert actual == "Cheese, for just a moment!"
 
-
+def test_to_rfc822():
+    expected = 'Thu, 01 Jan 1970 00:00:00 GMT'
+    actual = to_rfc822(datetime(1970, 1, 1))
+    assert actual == expected
