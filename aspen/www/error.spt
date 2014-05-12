@@ -24,23 +24,25 @@ style = ''
 msg = status_strings.get(response.code, 'Sorry')
 msg = msg[0].upper() + msg[1:].lower()
 if request.website.show_tracebacks:
+    err_ascii = response.body
     if pygmentize:
+        # Pygments does HTML escaping
         sio = StringIO()
         formatter = HtmlFormatter()
-        tokens = PythonTracebackLexer().get_tokens(response.body)
+        tokens = PythonTracebackLexer().get_tokens(err_ascii)
         formatter.format(tokens, sio)
         sio.seek(0)
-        err = sio.read()
+        err_html = sio.read()
         style = formatter.get_style_defs()
     else:
-        err = response.body
+        # escape the HTML so it's legible
+        err_html = html_escape(err_ascii)
 else:
-    err = ''
+    err_html = err_ascii = ''
 
 msg_title = msg.title()
 response_code = response.code  # make this available to json section
-err_json = json.dumps(err)
-err_html = html_escape(err)
+err_json = json.dumps(err_ascii)
 [----------------------------------------] text/html via stdlib_format
 <html>
     <head>
@@ -72,4 +74,4 @@ err_html = html_escape(err)
  }}
 [----------------------------------------] text/plain via stdlib_format
 {msg}, program!
-{err}
+{err_ascii}
