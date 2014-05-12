@@ -53,6 +53,11 @@ response   a response object</pre>
 <p>The <a href="rendered/">template page</a> uses the template language from
     python by default, though others are available.</p>
 
+<p>By default, simplate files are presumed to be ASCII; if non-ASCII characters
+(utf8, for example) are to be included in the file, an encoding must be specifed as per 
+<a href="http://legacy.python.org/dev/peps/pep-0263/">PEP 263</a>, which means
+putting the phrase 'encoding: utf8' somewhere on the first two lines of the file.
+
 <p>All simplate pages are cached in a compiled state. This cache is invalidated
 whenever the underlying file changes, so simplate changes are always
 immediately available. When you change Python libraries or configuration files,
