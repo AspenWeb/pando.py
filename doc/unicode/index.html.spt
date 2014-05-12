@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 doc_title = "Unicode"
 doc_next = ('Virtual Paths', '/virtual-paths/')
 
