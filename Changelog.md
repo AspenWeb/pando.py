@@ -1,6 +1,15 @@
 Aspen-python Changelog
 ======================
 
+0.32 - Released Mon May 12 2014 by @pjz
+---------------------------------------
+
+* Fixes to the aspen.io site (Thanks @BigBlueHat!)
+
+* Make HTTP dates always end in GMT (Thanks @Changaco!)
+
+* Clean up error.spt a bit wrt pygmentation and show_traceback interactions
+
 0.31 - Released Tue May  6 2014 by @pjz
 ---------------------------------------
 
