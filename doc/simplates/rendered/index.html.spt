@@ -43,8 +43,7 @@ installed) in <a href="/configure-aspen.py/">configure-aspen.py</a> like so:
 
 <pre>website.default_renderers_by_media_type.default = 'pystache'</pre>
 
-<p>You can also set the default renderer globally using the --renderer_default
-command line switch or the ASPEN_RENDERER_DEFAULT environment variable.</p>
+<p>You can also set the default renderer globally using the ASPEN_RENDERER_DEFAULT environment variable.</p>
 
 
 <h2>Default Templating Language</h2>
