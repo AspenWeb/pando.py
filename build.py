@@ -10,7 +10,6 @@ from fabricate import main, run, shell, autoclean
 # without a network connection. They're kept in our repo in ./vendor.
 
 ASPEN_DEPS = [
-    'Cheroot>=4.0.0beta',
     'mimeparse>=0.1.3',
     'first>=2.0.1',
     'algorithm>=1.0.0',
@@ -103,8 +102,7 @@ def docs():
     aspen()
     run(_virt('pip'), 'install', 'aspen-tornado')
     run(_virt('pip'), 'install', 'pygments')
-    shell(_virt('python'), '-m', 'aspen', '-a:5370', '-wdoc', '-pdoc/.aspen',
-          '--changes_reload=1', silent=False)
+    shell(_virt('python'), '-m', 'aspen', '-wdoc', '-pdoc/.aspen', silent=False)
 
 
 def smoke():
