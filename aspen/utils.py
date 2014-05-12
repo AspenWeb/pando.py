@@ -11,8 +11,6 @@ import codecs
 import datetime
 import math
 import re
-import time
-from email import utils as email_utils
 
 import algorithm
 
@@ -198,14 +196,21 @@ def to_age(dt, fmt_past=None, fmt_future=None):
 def to_rfc822(dt):
     """Given a datetime.datetime, return an RFC 822-formatted unicode.
 
-        Sun, 06 Nov 1994 08:49:37 -0000
+        Sun, 06 Nov 1994 08:49:37 GMT
 
     According to RFC 1123, day and month names must always be in English. If
     not for that, this code could use strftime(). It can't because strftime()
     honors the locale and could generated non-English names.
 
     """
-    return email_utils.formatdate(time.mktime(dt.timetuple())).decode('US-ASCII')
+    t = dt.utctimetuple()
+    return '%s, %02d %s %04d %02d:%02d:%02d GMT' % (
+        ('Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun')[t[6]],
+        t[2],
+        ('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+         'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec')[t[1] - 1],
+        t[0], t[3], t[4], t[5]
+    )
 
 
 # Filters
