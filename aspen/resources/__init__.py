@@ -65,10 +65,11 @@ class Entry:
 
 
 def decode_raw(raw):
-    """Decode raw data according to the encoding specified in the first
-       couple lines of the data, or in ASCII.  Non-ASCII data without an
-       encoding specified will cause UnicodeDecodeError to be raised.
+    """As per PEP 263, decode raw data according to the encoding specified in
+       the first couple lines of the data, or in ASCII.  Non-ASCII data without
+       an encoding specified will cause UnicodeDecodeError to be raised.
     """
+
     decl_re = re.compile(r'^[ \t\f]*#.*coding[:=][ \t]*([-\w.]+)')
 
     def get_declaration(line):
