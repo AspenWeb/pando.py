@@ -137,10 +137,11 @@ def load(request, mtime):
     guess_with = request.fs
     if is_spt:
         guess_with = guess_with[:-4]
-    media_type = mimetypes.guess_type(guess_with, strict=False)[0]
-    if media_type is None:
+    fs_media_type = mimetypes.guess_type(guess_with, strict=False)[0]
+    if fs_media_type is None:
         media_type = request.website.media_type_default
-
+    else:
+        media_type = fs_media_type
 
     # Compute and instantiate a class.
     # ================================
@@ -148,7 +149,7 @@ def load(request, mtime):
 
     if not is_spt:                                  # static
         Class = StaticResource
-    elif '.' in os.path.basename(guess_with):       # rendered
+    elif fs_media_type is not None:                 # rendered
         Class = RenderedResource
     else:                                           # negotiated
         Class = NegotiatedResource
