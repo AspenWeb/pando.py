@@ -39,9 +39,13 @@ installed) in <a href="/configure-aspen.py/">configure-aspen.py</a> like so:
 
 <pre>website.default_renderers_by_media_type['text/html'] = 'pystache'</pre>
 
-<p>Here&rsquo;s how to set the default renderer for all media types:</p>
+<p>Here&rsquo;s how to directly set the default renderer for all media types:</p>
 
-<pre>website.default_renderers_by_media_type.default = 'pystache'</pre>
+<pre>website.default_renderers_by_media_type.default_factory = lambda: 'pystache'</pre>
+
+<p>If this is being done in configure-aspen.py, it can also be phrased as:</p>
+
+<pre>website.renderer_default = 'pystache'</pre>
 
 <p>You can also set the default renderer globally using the --renderer_default
 command line switch or the ASPEN_RENDERER_DEFAULT environment variable.</p>
