@@ -13,12 +13,12 @@ import mimetypes
 import os
 
 from aspen import Response
-from aspen.utils import typecheck
 from .backcompat import namedtuple
-from aspen.http.request import PathPart
+
 
 def debug_noop(*args, **kwargs):
     pass
+
 
 def debug_stdout(func):
     r = func()
@@ -31,7 +31,7 @@ debug = debug_stdout if 'ASPEN_DEBUG' in os.environ else debug_noop
 
 
 def splitext(name):
-    parts = name.rsplit('.',1) + [None]
+    parts = name.rsplit('.', 1) + [None]
     return parts[:2]
 
 
@@ -40,9 +40,10 @@ def strip_matching_ext(a, b):
     """
     aparts = splitext(a)
     bparts = splitext(b)
-    debug_ext = lambda: ( "exts: " + repr(a) + "( " + repr(aparts[1]) + " ) and "
-                        + repr(b) + "( " + repr(bparts[1]) + " )"
-                         )
+
+    def debug_ext():
+        return "exts: %r( %r ) and %r( %r )" % (a, aparts[1], b, bparts[1])
+
     if aparts[1] == bparts[1]:
         debug(lambda: debug_ext() + " matches")
         return aparts[0], bparts[0]
@@ -60,7 +61,7 @@ DispatchResult = namedtuple( 'DispatchResult'
 
 
 def dispatch_abstract(listnodes, is_leaf, traverse, find_index, noext_matched,
-        startnode, nodepath):
+                      startnode, nodepath):
     """Given a list of nodenames (in 'nodepath'), return a DispatchResult.
 
     We try to traverse the directed graph rooted at 'startnode' using the
@@ -89,150 +90,141 @@ def dispatch_abstract(listnodes, is_leaf, traverse, find_index, noext_matched,
     # TODO: noext_matched wildleafs are borken
     wildvals, wildleafs = {}, {}
     curnode = startnode
-    is_wild = lambda n: n.startswith('%')
+    is_spt = lambda n: n.endswith(".spt")
+    is_leaf_node = lambda n: is_leaf(traverse(curnode, n))
     lastnode_ext = splitext(nodepath[-1])[1]
+
+    def get_wildleaf_fallback():
+        wildleaf_fallback = lastnode_ext in wildleafs or None in wildleafs
+        if wildleaf_fallback:
+            ext = lastnode_ext if lastnode_ext in wildleafs else None
+            curnode, wildvals = wildleafs[ext]
+            debug(lambda: "Wildcard leaf match %r and ext %r" % (curnode, ext))
+            return DispatchResult(DispatchStatus.okay, curnode, wildvals, "Found.")
+        return None
 
     for depth, node in enumerate(nodepath):
 
-        if not node and depth + 1 == len(nodepath): # empty path segment in
-            subnode = traverse(curnode, node)       #  last position, so look
-            idx = find_index(subnode)               #  for index or 404
-            if idx is None:
-                # this makes the resulting path end in /, meaning autoindex or
-                # 404 as appropriate
-                idx = ""
-            curnode = traverse(subnode, idx)
-            break
-
-        if is_leaf(curnode):
-            # trying to treat a leaf node as a dir
-            errmsg = "Node " + repr(curnode) + " is a leaf node and has no children"
-            return DispatchResult(DispatchStatus.missing, None, None, errmsg)
-
-        subnodes = listnodes(curnode)
-        subnodes.sort()
+        # check all the possibilities:
+        # node.html, node.html.spt, node.spt, node.html/, %node.html/ %*.html.spt, %*.spt
+        subnodes = set([ n for n in listnodes(curnode) if not n.startswith('.') ])  # don't serve hidden files
         node_noext, node_ext = splitext(node)
 
+        maybe_wild_nodes = [ n for n in sorted(subnodes) if n.startswith("%") ]  # only maybe because non-spt files aren't wild
+        wild_leaf_ns = [ n for n in maybe_wild_nodes if is_leaf_node(n) and is_spt(n) ]
+        wild_nonleaf_ns = [ n for n in maybe_wild_nodes if not is_leaf_node(n) ]
 
-        # Look for matches, and gather future options.
-        # ============================================
-
-        found_direct, found_indirect = None, None
-        wildsubs = []
-        for n in subnodes:
-            if n.startswith('.'):               # don't serve hidden files
-                continue
-            n_is_spt = n.endswith('.spt')
-            n_nospt, _ = splitext(n)
-            if (not n_is_spt and node == n) or (n_is_spt and node == n_nospt): # exact name or name.spt
-                found_direct = n
-                break
-            n_is_leaf = is_leaf(traverse(curnode, n))
-            if n_is_leaf: # only files
-                          # negotiated/indirect filename
-                if node_noext == n or (n_is_spt and node_noext == n_nospt):
-                    found_indirect = n
-                    continue
-            if not is_wild(n):
-                continue
-            if not n_is_leaf:
-                debug(lambda: "not is_leaf " + n)
-                wildsubs.append(n)
-                continue
-            if not n_is_spt:
-                debug(lambda: "not is_spt " + n)
-                # only spts can be wild
-                continue
-
-            # if we get here, it's a wild leaf (file)
-
-            # wild leafs are fallbacks if anything goes missing
-            # though they still have to match extension
-
-            # Compute and store the wildcard value.
-            # =====================================
-
+        # store all the fallback possibilities
+        remaining = reduce(traverse, nodepath[depth:])
+        for n in wild_leaf_ns:
             wildwildvals = wildvals.copy()
-            remaining = reduce(traverse, nodepath[depth:])
-            k, v = strip_matching_ext(n_nospt[1:], remaining)
+            k, v = strip_matching_ext(n[1:-4], remaining)
             wildwildvals[k] = v
-            n_ext = splitext(n_nospt)[1]
+            n_ext = splitext(n[:-4])[1]
             wildleafs[n_ext] = (traverse(curnode, n), wildwildvals)
 
-        if found_direct:                        # exact match
-            debug(lambda: "Exact match " + repr(node))
-            curnode = traverse(curnode, found_direct)
-            continue
+        debug(lambda: "wildleafs is %r" % wildleafs)
 
-        if found_indirect:                      # matched but no extension
-            debug(lambda: "Indirect match " + repr(node))
-            noext_matched(node)
-            curnode = traverse(curnode, found_indirect)
-            continue
+        found_n = None
+        last_node = (depth + 1) == len(nodepath)
+        if last_node:
+            debug(lambda: "on last node %r" % node)
+            if node == '':  # dir request
+                debug(lambda: "...last node is empty")
+                path_so_far = traverse(curnode, node)
+                # return either an index file or have the path end in '/' which means 404 or autoindex as appropriate
+                found_n = find_index(path_so_far)
+                if found_n is None:
+                    found_n = ""
+                    if wild_leaf_ns:
+                        found_n = wild_leaf_ns[0]
+                        curnode = traverse(curnode, found_n)
+                        node_name = found_n[1:-4]  # strip leading % and trailing .spt
+                        wildvals[node_name] = node
+                        return DispatchResult(DispatchStatus.okay, curnode, wildvals, "Found.")
+            elif node in subnodes and is_leaf_node(node):
+                debug(lambda: "...found exact file, must be static")
+                if is_spt(node):
+                    return DispatchResult(DispatchStatus.missing, None, None, "Node %r Not Found" % node)
+                else:
+                    found_n = node
+            elif node + ".spt" in subnodes and is_leaf_node(node + ".spt"):
+                debug(lambda: "...found exact spt")
+                found_n = node + ".spt"
+            elif node_noext + ".spt" in subnodes and is_leaf_node(node_noext + ".spt") and node_ext:  # node has an extension
+                debug(lambda: "...found indirect spt")
+                # indirect match
+                noext_matched(node)
+                found_n = node_noext + ".spt"
 
+            if found_n is not None:
+                debug(lambda: "found_n: %r" % found_n)
+                curnode = traverse(curnode, found_n)
+            elif wild_nonleaf_ns:
+                debug(lambda: "wild_nonleaf_ns")
+                found_n = wild_nonleaf_ns[0]
+                curnode = traverse(curnode, found_n)
+                result = get_wildleaf_fallback()
+                if not result:
+                    return DispatchResult(DispatchStatus.non_leaf, curnode, None, "Tried to access non-leaf node as leaf.")
+                return result
+            elif node in subnodes:
+                debug(lambda: "exact dirmatch")
+                return DispatchResult(DispatchStatus.non_leaf, curnode, None, "Tried to access non-leaf node as leaf.")
+            else:
+                debug(lambda: "fallthrough")
+                result = get_wildleaf_fallback()
+                if not result:
+                    return DispatchResult(DispatchStatus.missing, None, None, "Node %r Not Found" % node)
+                return result
 
-        # Now look for wildcard matches.
-        # ==============================
+        if not last_node:  # not at last path seg in request
+            debug(lambda: "on node %r" % node)
+            if node in subnodes and not is_leaf_node(node):
+                found_n = node
+                debug(lambda: "Exact match " + repr(node))
+                curnode = traverse(curnode, found_n)
+            elif wild_nonleaf_ns:
+                # need to match a wildnode, and we're not the last node, so we should match non-leaf first, then leaf
+                found_n = wild_nonleaf_ns[0]
+                wildvals[found_n[1:]] = node
+                debug(lambda: "Wildcard match %r = %r " % (found_n, node))
+                curnode = traverse(curnode, found_n)
+            else:
+                debug(lambda: "No exact match for " + repr(node))
+                result = get_wildleaf_fallback()
+                if not result:
+                    return DispatchResult(DispatchStatus.missing, None, None, "Node %r Not Found" % node)
+                return result
 
-        wildleaf_fallback = lastnode_ext in wildleafs or None in wildleafs
-        last_pathseg = depth == len(nodepath) - 1
+    return DispatchResult(DispatchStatus.okay, curnode, wildvals, "Found.")
 
-        if wildleaf_fallback and (last_pathseg or not wildsubs):
-            ext = lastnode_ext if lastnode_ext in wildleafs else None
-            curnode, wildvals = wildleafs[ext]
-            debug( lambda: "Wildcard leaf match " + repr(curnode)
-                 + " because last_pathseg:" + repr(last_pathseg)
-                 + " and ext " + repr(ext)
-                  )
-            break
-
-        if wildsubs:                            # wildcard subnode matches
-            n = wildsubs[0]
-            wildvals[n[1:]] = node
-            curnode = traverse(curnode, n)
-            debug(lambda: "Wildcard subnode match " + repr(n))
-            continue
-
-        return DispatchResult( DispatchStatus.missing
-                             , None
-                             , None
-                             , "Node " + repr(node) +" Not Found"
-                              )
-    else:
-        debug(lambda: "else clause tripped; testing is_leaf " + str(curnode))
-        if not is_leaf(curnode):
-            return DispatchResult( DispatchStatus.non_leaf
-                                 , curnode
-                                 , None
-                                 , "Tried to access non-leaf node as leaf."
-                                  )
-
-    return DispatchResult( DispatchStatus.okay
-                         , curnode
-                         , wildvals
-                         , "Found."
-                          )
 
 def match_index(indices, indir):
+    """return the full path of the first index in indir, or None if not found"""
     for filename in indices:
         index = os.path.join(indir, filename)
         if os.path.isfile(index):
             return index
     return None
 
+
 def is_first_index(indices, basedir, name):
     """is the supplied name the first existing index in the basedir ?"""
     for i in indices:
-        if i == name: return True
+        if i == name:
+            return True
         if os.path.isfile(os.path.join(basedir, i)):
             return False
     return False
+
 
 def update_neg_type(request, filename):
     media_type = mimetypes.guess_type(filename, strict=False)[0]
     if media_type is None:
         media_type = request.website.media_type_default
     request.headers['X-Aspen-Accept'] = media_type
+    debug(lambda: "set x-aspen-accept to %r" % media_type)
 
 
 def dispatch(request, pure_dispatch=False):
@@ -272,6 +264,7 @@ def dispatch(request, pure_dispatch=False):
     debug(lambda: "dispatch_abstract returned: " + repr(result))
 
     if result.match:
+        debug(lambda: "result.match is true" )
         matchbase, matchname = result.match.rsplit(os.path.sep,1)
         if pathparts[-1] != '' and matchname in request.website.indices and \
                 is_first_index(request.website.indices, matchbase, matchname):

@@ -38,7 +38,11 @@ def assert_body(harness, uripath, expected_body):
     actual = harness.simple(filepath=None, uripath=uripath, want='response.body')
     assert actual == expected_body
 
-NEGOTIATED_SIMPLATE="""[-----]\n[-----] text/plain\nGreetings, program!"""
+NEGOTIATED_SIMPLATE="""[-----]
+[-----] text/plain
+Greetings, program!
+[-----] text/html
+<h1>Greetings, Program!</h1>"""
 
 # Indices
 # =======
@@ -123,12 +127,12 @@ def test_indirect_negotiation_can_passthrough_negotiated(harness):
     assert_fs(harness, 'foo', 'foo')
 
 def test_indirect_negotiation_modifies_one_dot(harness):
-    harness.fs.www.mk(('foo', "Greetings, program!"),)
-    assert_fs(harness, 'foo.html', 'foo')
+    harness.fs.www.mk(('foo.spt', NEGOTIATED_SIMPLATE),)
+    assert_fs(harness, 'foo.html', 'foo.spt')
 
 def test_indirect_negotiation_skips_two_dots(harness):
-    harness.fs.www.mk(('foo.bar', "Greetings, program!"),)
-    assert_fs(harness, 'foo.bar.html', 'foo.bar')
+    harness.fs.www.mk(('foo.bar.spt', NEGOTIATED_SIMPLATE),)
+    assert_fs(harness, 'foo.bar.html', 'foo.bar.spt')
 
 def test_indirect_negotiation_prefers_rendered(harness):
     harness.fs.www.mk( ('foo.html', "Greetings, program!")
@@ -168,7 +172,7 @@ def test_virtual_path_is_virtual(harness):
     assert_fs(harness, '/blah/foo.html', '%bar/foo.html')
 
 def test_virtual_path_sets_request_path(harness):
-    harness.fs.www.mk(('%bar/foo.html', "Greetings, program!"),)
+    harness.fs.www.mk(('%bar/foo.spt', NEGOTIATED_SIMPLATE),)
     assert_virtvals(harness, '/blah/foo.html', {'bar': [u'blah']} )
 
 def test_virtual_path_sets_unicode_request_path(harness):
@@ -273,8 +277,8 @@ def test_virtual_path_and_indirect_neg_noext(harness):
     assert_fs(harness, '/greet/bar', '%foo/bar')
 
 def test_virtual_path_and_indirect_neg_ext(harness):
-    harness.fs.www.mk(('%foo/bar', "Greetings program!"),)
-    assert_fs(harness, '/greet/bar.html', '%foo/bar')
+    harness.fs.www.mk(('%foo/bar.spt', NEGOTIATED_SIMPLATE),)
+    assert_fs(harness, '/greet/bar.html', '%foo/bar.spt')
 
 
 # trailing slash
