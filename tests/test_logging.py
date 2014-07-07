@@ -8,7 +8,10 @@ import sys
 from StringIO import StringIO
 
 import aspen.logging
+from algorithm import Algorithm
+from aspen import Response
 from aspen.logging import log, log_dammit
+from aspen.algorithms.website import log_result_of_request
 
 
 pat = re.compile("pid-\d* thread--?\d* \(MainThread\) (.*)")
@@ -54,3 +57,33 @@ def test_logging_unicode_works():
     actual = capture("oh \u2614 heck", level=4)
     assert actual == ["oh \u2614 heck"]
 
+
+
+# lror - log_result_of_request
+
+def lror(**kw):
+    """Wrap log_result_of_request in an Algorithm to better simulate reality.
+    """
+    Algorithm(log_result_of_request).run(**kw)
+
+def test_lror_logs_result_of_request(harness):
+    request = harness.make_request()
+    response = Response(200, "Greetings, program!")
+    actual = capture(func=lror, website=harness.client.website, request=request, response=response)
+    assert actual == [
+        '200 OK                               /                        ./index.html.spt'
+    ]
+
+def test_lror_logs_result_of_request_when_request_is_none(harness):
+    response = Response(500, "Failure, program!")
+    actual = capture(func=lror, website=harness.client.website, response=response)
+    assert actual == [
+        '500 Internal Server Error            (no request available)'
+    ]
+
+def test_lror_logs_result_of_request_when_response_is_none(harness):
+    request = harness.make_request()
+    actual = capture(func=lror, website=harness.client.website, request=request)
+    assert actual == [
+        '(no response available)              /                        ./index.html.spt'
+    ]
