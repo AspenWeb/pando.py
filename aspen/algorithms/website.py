@@ -128,7 +128,7 @@ def log_traceback_for_exception(website, exception):
     return {'response': response, 'exception': None}
 
 
-def log_result_of_request(website, response, request):
+def log_result_of_request(website, request=None, response=None):
     """Log access. With our own format (not Apache's).
     """
 
@@ -139,24 +139,30 @@ def log_result_of_request(website, response, request):
     # What was the URL path translated to?
     # ====================================
 
-    fs = getattr(request, 'fs', '')
-    if fs.startswith(website.www_root):
-        fs = fs[len(website.www_root):]
-        if fs:
-            fs = '.'+fs
+    if request is None:
+        msg = "(no request available)"
     else:
-        fs = '...' + fs[-21:]
-    msg = "%-24s %s" % (request.line.uri.path.raw, fs)
+        fs = getattr(request, 'fs', '')
+        if fs.startswith(website.www_root):
+            fs = fs[len(website.www_root):]
+            if fs:
+                fs = '.'+fs
+        else:
+            fs = '...' + fs[-21:]
+        msg = "%-24s %s" % (request.line.uri.path.raw, fs)
 
 
     # Where was response raised from?
     # ===============================
 
-    filename, linenum = response.whence_raised()
-    if filename is not None:
-        response = "%s (%s:%d)" % (response, filename, linenum)
+    if response is None:
+        response = "(no response available)"
     else:
-        response = str(response)
+        filename, linenum = response.whence_raised()
+        if filename is not None:
+            response = "%s (%s:%d)" % (response, filename, linenum)
+        else:
+            response = str(response)
 
     # Log it.
     # =======
