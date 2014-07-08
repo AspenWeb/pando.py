@@ -14,7 +14,7 @@ import base64
 
 def _auth_header(username, password):
     """return the value part of an Authorization: header for basic auth with the specified username and password"""
-    return "Basic " + base64.b64encode(username + ":" + password)
+    return b"Basic " + base64.b64encode(username + ":" + password)
 
 # tests
 
@@ -61,7 +61,7 @@ def test_bad_fails(request_with):
 
 def test_wrong_auth(request_with):
     auth = lambda u, p: u == "username" and p == "password"
-    response = raises(Response, request_with, auth, "Wacky xxx").value
+    response = raises(Response, request_with, auth, b"Wacky xxx").value
     assert response.code == 400
 
 def test_malformed_password(request_with):
@@ -69,8 +69,8 @@ def test_malformed_password(request_with):
     response = raises( Response
                      , request_with
                      , auth
-                     , "Basic " + base64.b64encode("usernamepassword")
+                     , b"Basic " + base64.b64encode("usernamepassword")
                       ).value
     assert response.code == 400
-    response = raises(Response, request_with, auth, "Basic xxx").value
+    response = raises(Response, request_with, auth, b"Basic xxx").value
     assert response.code == 400

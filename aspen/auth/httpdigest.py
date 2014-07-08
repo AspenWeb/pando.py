@@ -36,7 +36,7 @@ class AspenHTTPProvider:
         return self.request.headers.get('Authorization', default)
 
     def user_agent(self):
-        return self.request.headers.get('User-Agent') or ''
+        return self.request.headers.get('User-Agent') or b''
 
     def request_method(self):
         return self.request.line.method
