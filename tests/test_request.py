@@ -159,6 +159,17 @@ def test_goad_makes_franken_headers():
     actual = kick_against_goad(environ)
     assert actual == expected
 
+def test_goad_makes_franken_headers_from_non_ascii_values():
+    environ = {}
+    environ['REQUEST_METHOD'] = b''
+    environ['SERVER_PROTOCOL'] = b''
+    environ['HTTP_FOO_BAR'] = b'\xdead\xbeef'
+    environ['wsgi.input'] = b''
+
+    expected = (b'', b'', b'', b'', b'FOO-BAR: \xdead\beef', b'')
+    actual = kick_against_goad(environ)
+    assert actual == expected
+
 def test_goad_passes_body_through():
     environ = {}
     environ['REQUEST_METHOD'] = b''
