@@ -17,7 +17,8 @@ from aspen.utils import typecheck
 class BaseHeaders(CaseInsensitiveMapping):
     """Represent the headers in an HTTP Request or Response message.
        http://stackoverflow.com/questions/5423223/how-to-send-non-english-unicode-string-using-http-header
-       has good notes on why we do everything as pure bytes here
+       and http://stackoverflow.com/questions/4400678/http-header-should-use-what-character-encoding
+       have good notes on why we do everything as pure bytes here
     """
 
     def __init__(self, d):
