@@ -10,6 +10,8 @@ Aspen-python Changelog
 
 * Fixes bug in request logging during exception handling (#291)
 
+* Fixes to the aspen.io site
+
 0.32 - Released Mon May 12 2014 by @pjz
 ---------------------------------------
 
