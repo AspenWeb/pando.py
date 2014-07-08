@@ -1,6 +1,15 @@
 Aspen-python Changelog
 ======================
 
+0.33 - Released Tue Jul 8 2014 by @whit537
+-------------------------------------------
+
+* Cleans up implicit casting to unicode in headers (#364)
+
+* Fixes regression w/ request bodies in test client (#360)
+
+* Fixes bug in request logging during exception handling (#291)
+
 0.32 - Released Mon May 12 2014 by @pjz
 ---------------------------------------
 
