@@ -1,3 +1,4 @@
+# encoding: utf8
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -211,23 +212,6 @@ def test_case_insensitive_mapping_ones_is_case_insensitive():
     assert actual == expected
 
 
-def est_headers_are_case_insensitive():
-    headers = BaseHeaders('Foo: bar')
-    expected = 'bar'
-    actual = headers.one('foo')
-    assert actual == expected
-
-def est_querystring_basically_works():
-    querystring = Querystring('Foo=bar')
-    expected = 'bar'
-    actual = querystring.one('Foo', default='missing')
-    assert actual == expected
-
-def est_querystring_is_case_sensitive():
-    querystring = Querystring('Foo=bar')
-    expected = 'missing'
-    actual = querystring.one('foo', default='missing')
-    assert actual == expected
-
-
-
+def test_headers_can_be_raw_when_non_ascii():
+    headers = BaseHeaders(b'Foo: bëar\r\nOh: Yeah!')
+    assert headers.raw == b'Foo: bëar\r\nOh: Yeah!'
