@@ -6,7 +6,7 @@ from __future__ import unicode_literals
 from pytest import raises
 
 from aspen import Response
-from aspen.http.request import kick_against_goad, Request
+from aspen.http.request import make_franken_headers, kick_against_goad, Request
 from aspen.http.baseheaders import BaseHeaders
 
 
@@ -170,6 +170,11 @@ def test_goad_passes_body_through():
     assert actual == expected
 
 
+def test_can_make_franken_headers_from_non_ascii_values():
+    actual = make_franken_headers({b'HTTP_FOO_BAR': b'\xdead\xbeef'})
+    assert actual == b'FOO-BAR: \xdead\xbeef'
+
+
 def test_request_redirect_works_on_instance():
     request = Request()
     actual = raises(Response, request.redirect, '/').value.code
@@ -186,6 +191,3 @@ def test_request_redirect_code_is_settable():
 def test_request_redirect_permanent_convenience():
     actual = raises(Response, Request.redirect, '/', permanent=True).value.code
     assert actual == 301
-
-
-

@@ -17,7 +17,8 @@ from aspen.utils import typecheck
 class BaseHeaders(CaseInsensitiveMapping):
     """Represent the headers in an HTTP Request or Response message.
        http://stackoverflow.com/questions/5423223/how-to-send-non-english-unicode-string-using-http-header
-       has good notes on why we do everything as pure bytes here
+       and http://stackoverflow.com/questions/4400678/http-header-should-use-what-character-encoding
+       have good notes on why we do everything as pure bytes here
     """
 
     def __init__(self, d):
@@ -50,7 +51,7 @@ class BaseHeaders(CaseInsensitiveMapping):
         http://www.acunetix.com/websitesecurity/crlf-injection/
 
         """
-        if '\n' in value:
+        if b'\n' in value:
             from aspen.exceptions import CRLFInjection
             raise CRLFInjection()
         super(BaseHeaders, self).__setitem__(name, value)
@@ -62,6 +63,6 @@ class BaseHeaders(CaseInsensitiveMapping):
         out = []
         for header, values in self.iteritems():
             for value in values:
-                out.append('%s: %s' % (header, value))
-        return '\r\n'.join(out)
+                out.append(b'%s: %s' % (header, value))
+        return b'\r\n'.join(out)
     raw = property(raw)
