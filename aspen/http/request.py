@@ -109,21 +109,21 @@ def make_franken_headers(environ):
 
     # There are a couple keys that CherryPyWSGIServer explicitly doesn't
     # include as HTTP_ keys. I'm not sure why, but I believe we want them.
-    also = ['CONTENT_TYPE', 'CONTENT_LENGTH']
+    also = [b'CONTENT_TYPE', b'CONTENT_LENGTH']
 
     headers = []
     for k, v in environ.items():
         val = None
-        if k.startswith('HTTP_'):
-            k = k[len('HTTP_'):]
+        if k.startswith(b'HTTP_'):
+            k = k[len(b'HTTP_'):]
             val = v
         elif k in also:
             val = v
         if val is not None:
-            k = k.replace('_', '-')
-            headers.append(': '.join([k, v]))
+            k = k.replace(b'_', b'-')
+            headers.append(b': '.join([k, v]))
 
-    return str('\r\n'.join(headers))  # *sigh*
+    return b'\r\n'.join(headers)
 
 
 def kick_against_goad(environ):
@@ -177,6 +177,7 @@ class PathPart(unicode):
         obj = super(PathPart, cls).__new__(cls, value)
         obj.params = params
         return obj
+
 
 ###########
 # Request #
