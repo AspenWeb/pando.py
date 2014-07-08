@@ -139,6 +139,6 @@ class Client(object):
         environ[b'REQUEST_METHOD'] = method.decode('ASCII')
         environ[b'SERVER_PROTOCOL'] = b'HTTP/1.1'
         environ[b'wsgi.input'] = StringIO(body)
-        environ[b'HTTP_CONTENT_LENGTH'] = str(len(body))
+        environ[b'HTTP_CONTENT_LENGTH'] = bytes(len(body))
         environ.update(kw)
         return environ
