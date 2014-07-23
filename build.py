@@ -38,7 +38,7 @@ ENV_ARGS = [
 
 def _virt(cmd, envdir='env'):
     if os.name == "nt":
-        return os.path.join(envdir, 'Scripts', cmd+ '.exe')
+        return os.path.join(envdir, 'Scripts', cmd + '.exe')
     else:
         return os.path.join(envdir, 'bin', cmd)
 
@@ -123,6 +123,12 @@ def test():
     aspen()
     dev()
     shell(_virt('py.test'), 'tests/', ignore_status=True, silent=False)
+
+
+def testf():
+    aspen()
+    dev()
+    shell(_virt('py.test'), '-x', 'tests/', ignore_status=True, silent=False)
 
 
 def pylint():
