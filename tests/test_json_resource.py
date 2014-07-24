@@ -153,3 +153,36 @@ def test_aspen_json_dumps_dumps():
     assert actual == '''{
     "cheese": "puffs"
 }'''
+
+# jsonp
+
+JSONP_SIMPLATE = """[---] application/javascript via jsonp_dump
+{'Greetings': 'program!'}"""
+
+JSONP_RESULT = '''foo({
+    "Greetings": "program!"
+});'''
+
+def _jsonp_query(harness, querystring):
+    return harness.simple(JSONP_SIMPLATE, QUERY_STRING=querystring).body
+
+def test_jsonp_basically_works(harness):
+    actual = _jsonp_query(harness, "jsonp=foo")
+    assert actual == JSONP_RESULT, "wanted %r got %r " % (JSONP_RESULT, actual)
+
+def test_jsonp_basically_works_with_callback(harness):
+    actual = _jsonp_query(harness, "callback=foo")
+    assert actual == JSONP_RESULT, "wanted %r got %r " % (JSONP_RESULT, actual)
+
+def test_jsonp_basically_works_with_no_callback(harness):
+    expected = '''callback({
+    "Greetings": "program!"
+});'''
+    actual = harness.simple(JSONP_SIMPLATE).body
+    assert actual == expected, "wanted %r got %r " % (expected, actual)
+
+def test_jsonp_filters_disallowed_chars(harness):
+    actual = _jsonp_query(harness, "callback=f+o+o")
+    assert actual == JSONP_RESULT, "wanted %r got %r " % (JSONP_RESULT, actual)
+
+
