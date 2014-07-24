@@ -82,6 +82,7 @@ BUILTIN_RENDERERS = [ 'stdlib_format'
                     , 'stdlib_percent'
                     , 'stdlib_template'
                     , 'json_dump'
+                    , 'jsonp_dump'
                      ]
 
 RENDERERS = BUILTIN_RENDERERS[:]
