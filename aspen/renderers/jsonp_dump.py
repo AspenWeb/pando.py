@@ -17,15 +17,24 @@ CALLBACK_RE = re.compile(r'[^_a-zA-Z0-9]')
 
 class Renderer(JsonRenderer):
     def render_content(self, context):
-        # get the jsonp callback (or use the default of 'callback')
+        # get the jsonp callback
         qs = context['request'].line.uri.querystring
-        callback = qs.get('callback', qs.get('jsonp', 'callback'))
-
-        # sanify it by nuking invalid characters
-        callback = CALLBACK_RE.sub('', callback)
+        callback = qs.get('callback', qs.get('jsonp', None))
 
         # get the json
         json = JsonRenderer.render_content(self, context)
+
+        # return the json if no callback requested
+        if callback is None:
+            return json
+
+        response = context['response']
+
+        # jsonp requested; fix the content-type
+        response.headers['Content-Type'] = 'application/javascript'
+
+        # sanify/sanitize the callback by nuking invalid characters
+        callback = CALLBACK_RE.sub('', callback)
 
         # return the wrapped json
         return callback + "(" + json + ");"
