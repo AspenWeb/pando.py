@@ -174,10 +174,10 @@ def test_jsonp_basically_works_with_callback(harness):
     actual = _jsonp_query(harness, "callback=foo")
     assert actual == JSONP_RESULT, "wanted %r got %r " % (JSONP_RESULT, actual)
 
-def test_jsonp_basically_works_with_no_callback(harness):
-    expected = '''callback({
+def test_jsonp_defaults_to_json_with_no_callback(harness):
+    expected = '''{
     "Greetings": "program!"
-});'''
+}'''
     actual = harness.simple(JSONP_SIMPLATE).body
     assert actual == expected, "wanted %r got %r " % (expected, actual)
 
