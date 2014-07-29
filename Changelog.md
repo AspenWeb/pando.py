@@ -1,6 +1,15 @@
 Aspen-python Changelog
 ======================
 
+0.34 - Released Tue Jul 29 2014 by @pjz
+---------------------------------------
+
+* Finally fix the dispatcher to fully work with .spt files
+
+* Add a data-driven test suite for the dispatcher
+
+* Add a jsonp_dump renderer
+
 0.33 - Released Tue Jul 8 2014 by @whit537
 -------------------------------------------
 
