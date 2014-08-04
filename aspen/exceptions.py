@@ -24,3 +24,13 @@ class CRLFInjection(Response):
     """
     def __init__(self):
         Response.__init__(self, code=400, body="Possible CRLF Injection detected.")
+
+
+class MalformedHeader(Response):
+    """
+    A 400 Response (per http://tools.ietf.org/html/rfc7230#section-3.2.4) raised
+    if there's no : in a header field, or if there's leading or trailing
+    whitespace in the key part of a header field
+    """
+    def __init__(self, header):
+        Response.__init__(self, code=400, body="Malformed header: %s" % header)
