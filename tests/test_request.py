@@ -8,6 +8,7 @@ from pytest import raises
 from aspen import Response
 from aspen.http.request import make_franken_headers, kick_against_goad, Request
 from aspen.http.baseheaders import BaseHeaders
+from aspen.exceptions import MalformedHeader
 
 
 def test_request_line_raw_works(harness):
@@ -112,6 +113,12 @@ def test_headers_dont_unicodify_cookie():
     expected = b"somecookiedata"
     actual = headers[b'Cookie']
     assert actual == expected
+
+def test_headers_handle_no_colon():
+    raises(MalformedHeader, BaseHeaders, b"Foo Bar")
+
+def test_headers_handle_bad_spaces():
+    raises(MalformedHeader, BaseHeaders, b"Foo : Bar")
 
 
 # kick_against_goad
