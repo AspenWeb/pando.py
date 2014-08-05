@@ -1,11 +1,13 @@
 doc_title = "Simplates"
 doc_next = ('Request', '/request/')
-[----------------------------------------]
+[---]
+[---]
 {% extends doc.html %}
 {% block doc %}
 
-<p>Simplates are the file format Aspen uses to represent HTTP resources.  They
-are Aspen&rsquo;s main attraction. Here&rsquo;s what a simplate looks like:</p>
+<p><a href="http://simplates.org">Simplates</a> are the file format Aspen uses
+to represent HTTP resources.  They are Aspen&rsquo;s main attraction.
+Here&rsquo;s what a simplate looks like:</p>
 
 <pre>"""This is my simplate.
 """
