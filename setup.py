@@ -32,7 +32,7 @@ setup( author = 'Chad Whitacre'
      , entry_points = {'console_scripts': ['fcgi_aspen = fcgi_aspen:main [fcgi]']}
      , name = 'aspen'
      , packages = find_packages(exclude=['aspen.tests', 'aspen.tests.*'])
-     , py_modules = ['thrash', 'fcgi_aspen']
+     , py_modules = ['fcgi_aspen']
      , url = 'http://aspen.io/'
      , version = version
      , zip_safe = False
