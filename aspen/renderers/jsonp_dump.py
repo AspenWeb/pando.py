@@ -37,7 +37,8 @@ class Renderer(JsonRenderer):
         callback = CALLBACK_RE.sub('', callback)
 
         # return the wrapped json
-        return callback + "(" + json + ");"
+        # (preceding comment block prevent a Rosetta-Flash based attack)
+        return "/**/ " + callback + "(" + json + ");"
 
 
 class Factory(renderers.Factory):
