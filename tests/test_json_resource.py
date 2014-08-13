@@ -159,7 +159,7 @@ def test_aspen_json_dumps_dumps():
 JSONP_SIMPLATE = """[---] application/javascript via jsonp_dump
 {'Greetings': 'program!'}"""
 
-JSONP_RESULT = '''foo({
+JSONP_RESULT = '''/**/ foo({
     "Greetings": "program!"
 });'''
 
