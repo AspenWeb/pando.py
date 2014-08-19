@@ -24,6 +24,8 @@ from aspen.configuration.exceptions import ConfigurationError
 from aspen.configuration.options import OptionParser, DEFAULT
 from aspen.utils import ascii_dammit
 from aspen.typecasting import defaults as default_typecasters
+import aspen.body_parsers
+
 
 # Defaults
 # ========
@@ -250,6 +252,13 @@ class Configurable(object):
                                          "or --www_root on the command line.")
 
         self.www_root = os.path.realpath(self.www_root)
+
+        # load bodyparsers
+        self.body_parsers = {
+            "application/x-www-form-urlencoded": aspen.body_parsers.formdata,
+            "multipart/form-data": aspen.body_parsers.formdata,
+            self.media_type_json: aspen.body_parsers.jsondata
+            }
 
         # load renderers
         self.renderer_factories = {}

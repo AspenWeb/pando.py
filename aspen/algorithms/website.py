@@ -36,7 +36,7 @@ from __future__ import unicode_literals
 import traceback
 
 import aspen
-from aspen import dispatcher, resources
+from aspen import dispatcher, resources, body_parsers
 from aspen.http.request import Request
 from aspen.http.response import Response
 from aspen import typecasting
@@ -45,6 +45,10 @@ from first import first as _first
 
 def parse_environ_into_request(environ):
     return {'request': Request.from_wsgi(environ)}
+
+
+def parse_body_into_request(request, website):
+    request.body = body_parsers.parse_body(request.raw_body, request.headers, website.body_parsers)
 
 
 def tack_website_onto_request(request, website):

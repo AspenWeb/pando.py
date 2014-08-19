@@ -80,7 +80,21 @@ class DynamicResource(Resource):
     def populate_context(self, request, response):
         """Factored out to support testing.
         """
-        context = request.context
+        context = {
+            'website': None,
+            'body': request.body,
+            'headers': request.headers,
+            'cookie': request.headers.cookie,
+            'path': request.line.uri.path,
+            'qs': request.line.uri.querystring,
+            'request': request,
+            'channel': None
+        }
+        # http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html
+        for method in ['OPTIONS', 'GET', 'HEAD', 'POST', 'PUT', 'DELETE',
+                       'TRACE', 'CONNECT']:
+            context[method] = (method == request.line.method)
+
         context.update(self.pages[0])
         context['request'] = request
         context['response'] = response
