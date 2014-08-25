@@ -210,7 +210,7 @@ class Request(str):
                 body = StringIO('')
             raw_len = int(obj.headers.get('Content-length', '') or '0')
             obj.raw_body = body.read(raw_len)
-            obj.body = obj.raw_body
+            #obj.body = obj.raw_body
         except UnicodeError:
             # Figure out where the error occurred.
             # ====================================
@@ -227,6 +227,26 @@ class Request(str):
             raise Response(400, "Request is undecodable. "
                                 "(%s:%d)" % (filename, frame.f_lineno))
         return obj
+
+
+    @property
+    def body(self):
+        '''Lazily parse the body, iff _parse_body is set.
+           Otherwise default to raw_body.  In the normal course of things,
+           _parse_body is set in aspen.algorithm.website
+        '''
+        if hasattr(self, 'parsed_body'):
+            return self.parsed_body
+        if hasattr(self, '_parse_body'):
+            self.parsed_body = self._parse_body(self)
+            return self.parsed_body
+        return self.raw_body
+
+    @body.setter
+    def body(self, value):
+        '''Let the developer set the body to something if they want'''
+        self.parsed_body = value
+
 
     @classmethod
     def from_wsgi(cls, environ):

@@ -80,25 +80,33 @@ class DynamicResource(Resource):
     def populate_context(self, request, response):
         """Factored out to support testing.
         """
-        context = {
+        dynamics = { 'body' : lambda: request.body }
+        class Context(dict):
+            def __getitem__(self, key):
+                if key in dynamics:
+                    return dynamics[key]()
+                return dict.__getitem__(self, key)
+        context = Context()
+        context.update({
             'website': None,
-            'body': request.body,
             'headers': request.headers,
             'cookie': request.headers.cookie,
             'path': request.line.uri.path,
             'qs': request.line.uri.querystring,
-            'request': request,
             'channel': None
-        }
+        })
         # http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html
         for method in ['OPTIONS', 'GET', 'HEAD', 'POST', 'PUT', 'DELETE',
                        'TRACE', 'CONNECT']:
             context[method] = (method == request.line.method)
-
+        # insert the residual context from the initialization page
         context.update(self.pages[0])
-        context['request'] = request
-        context['response'] = response
-        context['resource'] = self
+        # don't let the page override these
+        context.update({
+            'request' : request,
+            'response': response,
+            'resource': self
+        })
         return context
 
 
