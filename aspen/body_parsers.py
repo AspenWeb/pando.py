@@ -18,6 +18,7 @@ from aspen import json_ as json
 from aspen.utils import typecheck
 from aspen.http.request import Headers
 from aspen.http.mapping import Mapping
+from aspen.exceptions import UnknownBodyType
 
 def formdata(raw, headers):
     """Parse raw as form data"""
@@ -67,9 +68,7 @@ def parse_body(raw, headers, parsers):
     # Note we ignore parameters for now
     content_type = headers.get("Content-Type", "").split(';')[0]
 
-    parser = parsers.get(content_type, None)
-    if parser is not None:
-        return parser(raw, headers)
-    return raw
+    def default_parser(raw, headers):
+        raise UnknownBodyType(content_type)
 
-
+    return parsers.get(content_type, default_parser)(raw, headers)

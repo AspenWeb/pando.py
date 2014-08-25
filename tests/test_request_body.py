@@ -3,8 +3,11 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from pytest import raises
+
 from aspen.http.request import Headers
 import aspen.body_parsers as parsers
+from aspen.exceptions import UnknownBodyType
 
 
 FORMDATA = object()
@@ -29,8 +32,7 @@ def make_body(raw, headers=None, content_type=WWWFORM):
 
 def test_body_is_unparsed_for_empty_content_type():
     raw = "cheese=yes"
-    actual = make_body(raw, headers={})
-    assert actual == raw
+    raises(UnknownBodyType, make_body, raw, headers={})
 
 def test_body_barely_works():
     body = make_body("cheese=yes")

@@ -34,3 +34,11 @@ class MalformedHeader(Response):
     """
     def __init__(self, header):
         Response.__init__(self, code=400, body="Malformed header: %s" % header)
+
+class UnknownBodyType(Response):
+    """
+    A 415 Response raised if the Content-Type of the body of a POST request
+    doesn't have a body_parser registered for it.
+    """
+    def __init__(self, ctype):
+        Response.__init__(self, code=415, body="Unknown body Content-Type: %s" % ctype)
