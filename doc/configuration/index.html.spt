@@ -14,7 +14,6 @@ line. For each of the following there is an environment variable like
     <tr><td>changes_reload</td>             <td>yes</td> </tr>
     <tr><td>charset_dynamic</td>            <td>ISO-8859-1</td> </tr>
     <tr><td>charset_static</td>             <td>windows-1252</td> </tr>
-    <tr><td>configuration_scripts&nbsp;</td><td>script-one.py,another.py</td> </tr>
     <tr><td>indices</td>                    <td>index.html, README</td> </tr>
     <tr><td>list_directories</td>           <td>False</td> </tr>
     <tr><td>logging_threshold</td>          <td>1</td> </tr>
@@ -26,11 +25,8 @@ line. For each of the following there is an environment variable like
     <tr><td>unavailable</td>                <td>0</td> </tr>
 </table>
 
-<p>Once aspen is initially configured, the <a
-    href="/configure-aspen.py/">scripts named by
-    <code>configuration_scripts</code></a> are executed with <a
-    href="/api/website/">the website object</a> in their namespace. Please
-refer to <a href="/api/website/">the website page</a> for defaults.</p>
+<p>Please refer to <a href="/api/website/">the website page</a> for
+defaults.</p>
 
 <h4 id="command-line-options">Command Line Options</h4>
 
@@ -52,10 +48,6 @@ Options:
   -h, --help            show this help message and exit
 
   Basic Options:
-    -f CONFIGURATION_SCRIPTS, --configuration_scripts=CONFIGURATION_SCRIPTS
-                        comma-separated list of paths to configuration files
-                        in Python syntax to exec in addition to
-                        $ASPEN_PROJECT_ROOT/configure-aspen.py
     -l LOGGING_THRESHOLD, --logging_threshold=LOGGING_THRESHOLD
                         a small integer; 1 will suppress most of aspen's
                         internal logging, 2 will suppress all it [0]
