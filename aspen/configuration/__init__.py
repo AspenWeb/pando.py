@@ -56,7 +56,6 @@ KNOBS = \
     , 'show_tracebacks':    (False, parse.yes_no)
      }
 
-DEFAULT_CONFIG_FILE = 'configure-aspen.py'
 
 # Configurable
 # ============
@@ -235,12 +234,6 @@ class Configurable(object):
             users_mimetypes = os.path.join(self.project_root, 'mime.types')
             mimetypes.knownfiles += [users_mimetypes]
 
-            # configure-aspen.py
-            configure_aspen_py = os.path.join( self.project_root
-                                             , DEFAULT_CONFIG_FILE
-                                              )
-            self.configuration_scripts.append(configure_aspen_py)  # last word
-
             # PYTHONPATH
             sys.path.insert(0, self.project_root)
 
@@ -292,7 +285,6 @@ class Configurable(object):
         if not mimetypes.inited:
             mimetypes.init()
 
-        self.run_config_scripts()
         self.show_renderers()
 
     def show_renderers(self):
@@ -316,58 +308,3 @@ class Configurable(object):
             aspen.log_dammit(msg % self.renderer_default)
             sys.excepthook(*default_renderer.info)
             raise default_renderer
-
-
-    def run_config_scripts(self):
-        # Finally, exec any configuration scripts.
-        # ========================================
-        # The user gets self as 'website' inside their configuration scripts.
-        default_cfg_filename = None
-        if self.project_root is not None:
-            default_cfg_filename = os.path.join(self.project_root, DEFAULT_CONFIG_FILE)
-
-        for filepath in self.configuration_scripts:
-            if not filepath.startswith(os.sep):
-                if self.project_root is None:
-                    raise ConfigurationError("You must set project_root in "
-                                             "order to specify a configuratio"
-                                             "n_script relatively.")
-                filepath = os.path.join(self.project_root, filepath)
-                filepath = os.path.realpath(filepath)
-            try:
-                execfile(filepath, {'website': self})
-            except IOError, err:
-                # Re-raise the error if it happened inside the script.
-                if err.filename != filepath:
-                    raise
-
-                # I was checking os.path.isfile for these, but then we have a
-                # race condition that smells to me like a potential security
-                # vulnerability.
-
-                ## determine if it's a default configscript or a specified one
-                cfgtype = "configuration"
-                if filepath == default_cfg_filename:
-                    cfgtype = "default " + cfgtype
-                ## pick the right error mesage
-                if err.errno == errno.ENOENT:
-                    msg = ("The %s script %s doesn't seem to exist.")
-                elif err.errno == errno.EACCES:
-                    msg = ("It appears that you don't have permission to read "
-                           "the %s script %s.")
-                else:
-                    msg = ("There was a problem reading the %s script %s:")
-                    msg += os.sep + traceback.format_exc()
-                ## do message-string substitutions
-                msg = msg % (cfgtype, filepath)
-                ## output the message
-                if not "default" in cfgtype:
-                   # if you specify a config file, it's an error if there's a problem
-                   raise ConfigurationError(msg)
-                else:
-                   # problems with default config files are okay, but get logged
-                   aspen.log(msg)
-
-
-
-
