@@ -3,9 +3,12 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from StringIO import StringIO
+from pytest import raises
 
-from aspen.http.request import Body, Headers
+from aspen.http.request import Headers
+import aspen.body_parsers as parsers
+from aspen.exceptions import UnknownBodyType
+
 
 FORMDATA = object()
 WWWFORM = object()
@@ -14,32 +17,22 @@ def make_body(raw, headers=None, content_type=WWWFORM):
     if isinstance(raw, unicode):
         raw = raw.encode('ascii')
     if headers is None:
-        if content_type is FORMDATA:
-            content_type = "multipart/form-data; boundary=AaB03x"
-        elif content_type is WWWFORM:
-            content_type = "application/x-www-form-urlencoded"
-        headers = {"Content-Type": content_type}
+        defaults = { FORMDATA: "multipart/form-data; boundary=AaB03x",
+                     WWWFORM: "application/x-www-form-urlencoded" }
+        headers = {"Content-Type": defaults.get(content_type, content_type)}
     if not 'content-length' in headers:
         headers['Content-length'] = str(len(raw))
+    body_parsers = {
+            "application/x-www-form-urlencoded": parsers.formdata,
+            "multipart/form-data": parsers.formdata
+    }
     headers['Host'] = 'Blah'
-    return Body( Headers(headers)
-               , StringIO(raw)
-               , b""
-                )
+    return parsers.parse_body(raw, Headers(headers), body_parsers)
 
-
-def test_body_is_instantiable():
-    body = make_body("cheese=yes")
-    actual = body.__class__.__name__
-    assert actual == "Body"
 
 def test_body_is_unparsed_for_empty_content_type():
-    actual = make_body("cheese=yes", headers={})
-    assert actual == {}
-
-def test_body_gives_empty_dict_for_empty_body():
-    actual = make_body("")
-    assert actual == {}
+    raw = "cheese=yes"
+    raises(UnknownBodyType, make_body, raw, headers={})
 
 def test_body_barely_works():
     body = make_body("cheese=yes")
