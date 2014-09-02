@@ -22,12 +22,8 @@ flat.</p>
 
 <h4>configuration files</h4>
 
-<p>Aspen will read the following files from <code>project_root</code>.</p>
-
-<ul>
-    <li><code><a href="/configure-aspen.py/">configure-aspen.py</a></code></li>
-    <li><code><a href="/mime.types/">mime.types</a></code></li>
-</ul>
+<p>Aspen will read the <code><a href="/mime.types/">mime.types</a></code> file
+from <code>project_root</code>.</p>
 
 
 <h4>Python modules</h4>
