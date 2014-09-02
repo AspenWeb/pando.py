@@ -50,10 +50,10 @@ def _virt_version():
     return eval(v)
 
 
-def _env():
-    if os.path.exists('env'):
+def _env(envdir='env'):
+    if os.path.exists(envdir):
         return
-    args = [main.options.python] + ENV_ARGS + ['env']
+    args = [main.options.python] + ENV_ARGS + [envdir]
     run(*args)
 
 
@@ -68,13 +68,13 @@ def aspen():
     run(_virt('python'), 'setup.py', 'develop')
 
 
-def dev():
-    _env()
+def dev(envdir='env'):
+    _env(envdir)
     # pytest will need argparse if its running under 2.6
     if _virt_version() < (2, 7):
         TEST_DEPS.insert(0, 'argparse')
     for dep in TEST_DEPS:
-        run(_virt('pip'), 'install', '--no-index',
+        run(_virt('pip', envdir), 'install', '--no-index',
             '--find-links=' + TEST_DIR, dep)
 
 
@@ -98,7 +98,7 @@ def clean():
 smoke_dir = 'smoke-test'
 
 
-def docs():
+def docserve():
     aspen()
     run(_virt('pip'), 'install', 'aspen-tornado')
     run(_virt('pip'), 'install', 'pygments')
@@ -114,6 +114,24 @@ def smoke():
 
 def clean_smoke():
     shell('rm', '-rf', smoke_dir)
+
+
+def sphinx():
+    dev(envdir='denv')
+    run(_virt('pip', envdir='denv'), 'install', 'sphinx')
+    sphinxopts = []
+    builddir = 'docs/_build'
+    run('mkdir', '-p', builddir)
+    newenv = os.environ
+    newenv.update({'PYTHONPATH': 'env/lib/python2.7/site-packages'})
+    args = ['-b', 'html', '-d', builddir + '/doctrees', sphinxopts,
+            'docs', builddir + '/html']
+    run(_virt('sphinx-build', envdir='denv'), args, env=newenv)
+
+
+def clean_sphinx():
+    shell('rm', '-rf', 'docs/_build')
+    shell('rm', '-rf', 'denv')
 
 
 # Testing
@@ -216,13 +234,14 @@ def show_targets():
     build - build an aspen egg
     aspen - set up a test aspen environment in env/
     dev - set up an environment able to run tests in env/
-    docs - run the doc server
+    docserve - run the doc server
+    sphinx - build the html docs in docs/_build/html
     smoke - run a smoke test
     test - run the unit tests
     analyse - run the unit tests with code coverage enabled
     pylint - run pylint on the source
     clean - remove all build artifacts
-    clean_{env,jenv,smoke,test,jtest} - clean some build artifacts
+    clean_{env,jenv,sphinx,smoke,test,jtest} - clean some build artifacts
 
     jython_test - install jython and run unit tests with code coverage.
                   (requires java)
