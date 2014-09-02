@@ -37,7 +37,6 @@ from __future__ import unicode_literals
 
 
 import cgi
-import mimetypes
 import re
 import sys
 import urllib
@@ -47,8 +46,7 @@ from cStringIO import StringIO
 from aspen import Response
 from aspen.http.baseheaders import BaseHeaders
 from aspen.http.mapping import Mapping
-from aspen.context import Context
-from aspen.utils import ascii_dammit, typecheck
+from aspen.utils import ascii_dammit
 
 
 # WSGI Do Our Best
@@ -198,7 +196,7 @@ class Request(str):
 
     def __new__(cls, method=b'GET', uri=b'/', server_software=b'',
                 version=b'HTTP/1.1', headers=b'', body=None):
-        """Takes five bytestrings and an iterable of bytestrings.
+        """Takes five bytestrings and a file-like object.
         """
         obj = str.__new__(cls, '') # start with an empty string, see below for
                                    # laziness
@@ -210,11 +208,9 @@ class Request(str):
             obj.headers = Headers(headers)
             if body is None:
                 body = StringIO('')
-            obj.body = Body( obj.headers
-                           , body
-                           , obj.server_software
-                            )
-            obj.context = Context(obj)
+            raw_len = int(obj.headers.get('Content-length', '') or '0')
+            obj.raw_body = body.read(raw_len)
+            #obj.body = obj.raw_body
         except UnicodeError:
             # Figure out where the error occurred.
             # ====================================
@@ -231,6 +227,25 @@ class Request(str):
             raise Response(400, "Request is undecodable. "
                                 "(%s:%d)" % (filename, frame.f_lineno))
         return obj
+
+
+    @property
+    def body(self):
+        '''Lazily parse the body, iff _parse_body is set.
+           Otherwise default to raw_body.  In the normal course of things,
+           _parse_body is set in aspen.algorithm.website
+        '''
+        if hasattr(self, 'parsed_body'):
+            return self.parsed_body
+        if hasattr(self, '_parse_body'):
+            self.parsed_body = self._parse_body(self)
+            return self.parsed_body
+        return self.raw_body
+
+    @body.setter
+    def body(self, value):
+        '''Let the developer set the body to something if they want'''
+        self.parsed_body = value
 
 
     @classmethod
@@ -260,7 +275,7 @@ class Request(str):
         """
         if not self._raw:
             fmt = "%s\r\n%s\r\n\r\n%s"
-            self._raw = fmt % (self.line.raw, self.headers.raw, self.body.raw)
+            self._raw = fmt % (self.line.raw, self.headers.raw, self.raw_body)
         return self._raw
 
     def __repr__(self):
@@ -313,21 +328,6 @@ class Request(str):
             code = permanent is True and 301 or 302
         raise Response(code, headers={'Location': location})
 
-
-    def _infer_media_type(self):
-        """Guess a media type based on our filesystem path.
-
-        The gauntlet function indirect_negotiation modifies the filesystem
-        path, and we want to infer a media type from the path before that
-        change. However, we're not ready at that point to infer a media type
-        for *all* requests. So we need to perform this inference in a couple
-        places, and hence it's factored out here.
-
-        """
-        media_type = mimetypes.guess_type(self.fs, strict=False)[0]
-        if media_type is None:
-            media_type = self.website.media_type_default
-        return media_type
 
 # Request -> Line
 # ---------------
@@ -617,130 +617,3 @@ class Headers(BaseHeaders):
 
         scheme = 'https' if self.get('HTTPS', False) else 'http'
         self.scheme = UnicodeWithRaw(scheme)
-
-
-# Request -> Body
-# ---------------
-
-class Body(Mapping):
-    """Represent the body of an HTTP request.
-    """
-
-    def __init__(self, headers, fp, server_software):
-        """Takes a str, a file-like object, and another str.
-
-        If the Mapping API is used (in/one/all/has), then the iterable will be
-        read and parsed as media of type application/x-www-form-urlencoded or
-        multipart/form-data, according to content_type.
-
-        """
-        typecheck(headers, Headers, server_software, str)
-        raw_len = int(headers.get('Content-length', '') or '0')
-        self.raw = self._read_raw(server_software, fp, raw_len)  # XXX lazy!
-        parsed = self._parse(headers, self.raw)
-        if parsed is None:
-            # There was no content-type. Use self.raw.
-            pass
-        else:
-            for k in parsed.keys():
-                v = parsed[k]
-                if isinstance(v, cgi.MiniFieldStorage):
-                    v = v.value.decode("UTF-8")  # XXX Really? Always UTF-8?
-                else:
-                    assert isinstance(v, cgi.FieldStorage), v
-                    if v.filename is None:
-                        v = v.value.decode("UTF-8")
-                self[k] = v
-
-
-    def _read_raw(self, server_software, fp, raw_len):
-        """Given str, a file-like object, and the number of expected bytes, return a bytestring.
-        """
-        if not server_software.startswith('Rocket'):  # normal
-            raw = fp.read(raw_len)
-        else:                                                       # rocket
-
-            # Email from Rocket guy: While HTTP stipulates that you shouldn't
-            # read a socket unless you are specifically expecting data to be
-            # there, WSGI allows (but doesn't require) for that
-            # (http://www.python.org/dev/peps/pep-3333/#id25).  I've started
-            # support for this (if you feel like reading the code, its in the
-            # connection class) but this feature is not yet production ready
-            # (it works but it way too slow on cPython).
-            #
-            # The hacky solution is to grab the socket from the stream and
-            # manually set the timeout to 0 and set it back when you get your
-            # data (or not).
-            #
-            # If you're curious, those HTTP conditions are (it's better to do
-            # this anyway to avoid unnecessary and slow OS calls):
-            # - You can assume that there will be content in the body if the
-            #   request type is "POST" or "PUT"
-            # - You can figure how much to read by the "CONTENT_LENGTH" header
-            #   existence with a valid integer value
-            #   - alternatively "CONTENT_TYPE" can be set with no length and
-            #     you can read based on the body content ("content-encoding" =
-            #     "chunked" is a good example).
-            #
-            # Here's the "hacky solution":
-
-            _tmp = fp._sock.timeout
-            fp._sock.settimeout(0) # equiv. to non-blocking
-            try:
-                raw = fp.read(raw_len)
-            except Exception, exc:
-                if exc.errno != 35:
-                    raise
-                raw = ""
-            fp._sock.settimeout(_tmp)
-
-        return raw
-
-
-    def _parse(self, headers, raw):
-        """Takes a dict and a bytestring.
-
-        http://www.w3.org/TR/html401/interact/forms.html#h-17.13.4
-
-        """
-        typecheck(headers, Headers, raw, str)
-
-
-        # Switch on content type.
-
-        parts = [p.strip() for p in headers.get("Content-Type", "").split(';')]
-        content_type = parts.pop(0)
-
-        # XXX Do something with charset.
-        params = {}
-        for part in parts:
-            if '=' in part:
-                key, val = part.split('=', 1)
-                params[key] = val
-
-        if content_type == "application/x-www-form-urlencoded":
-            # Decode.
-            pass
-        elif content_type == "multipart/form-data":
-            # Deal with bytes.
-            pass
-        else:
-            # Bail.
-            return None
-
-
-        # Force the cgi module to parse as we want. If it doesn't find
-        # something besides GET or HEAD here then it ignores the fp
-        # argument and instead uses environ['QUERY_STRING'] or even
-        # sys.stdin(!). We want it to parse request bodies even if the
-        # method is GET (we already parsed the querystring elsewhere).
-
-        environ = {"REQUEST_METHOD": "POST"}
-
-
-        return cgi.FieldStorage( fp = cgi.StringIO(raw)  # Ack.
-                               , environ = environ
-                               , headers = headers
-                               , keep_blank_values = True
-                               , strict_parsing = False
-                                )
