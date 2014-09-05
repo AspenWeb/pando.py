@@ -389,7 +389,14 @@ def typecheck(*checks):
 # Hostname canonicalization
 # =========================
 
-def Canonizer(expected):
+def _extract_scheme(request):
+    return request.headers.get('X-Forwarded-Proto', 'http')  # Heroku
+
+def _extract_host(request):
+    return request.headers['Host']  # will 400 if missing
+
+def Canonizer(expected, permanent_redirect=False, extract_scheme=_extract_scheme,
+        extract_host=_extract_host):
     """Takes a netloc such as http://localhost:8080 (no path part).
     """
 
@@ -400,8 +407,8 @@ def Canonizer(expected):
         """Enforce a certain network location.
         """
 
-        scheme = request.headers.get('X-Forwarded-Proto', 'http') # XXX Heroku
-        host = request.headers['Host']  # will 400 if missing
+        scheme = extract_scheme(request)
+        host = extract_host(request)
 
         actual = scheme + "://" + host
 
@@ -415,7 +422,7 @@ def Canonizer(expected):
             else:
                 # For non-idempotent methods, redirect to homepage.
                 uri += '/'
-            request.redirect(uri, permanent=True)
+            request.redirect(uri, permanent=permanent_redirect)
 
     return expected and canonize or noop
 
