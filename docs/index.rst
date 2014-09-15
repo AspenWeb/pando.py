@@ -80,11 +80,6 @@ Library Reference
    :member-order: bysource
    :special-members:
 
-.. automodule:: aspen.execution
-   :members:
-   :member-order: bysource
-   :special-members:
-
 .. automodule:: aspen.http
    :members:
    :member-order: bysource
