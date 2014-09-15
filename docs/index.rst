@@ -50,7 +50,7 @@ Library Reference
    :member-order: bysource
    :special-members:
 
-.. automodule:: aspen.configuration.exception
+.. automodule:: aspen.configuration.exceptions
    :members:
    :member-order: bysource
    :special-members:
@@ -175,11 +175,6 @@ Library Reference
    :member-order: bysource
    :special-members:
 
-.. automodule:: aspen.server
-   :members:
-   :member-order: bysource
-   :special-members:
-
 .. automodule:: aspen.testing
    :members:
    :member-order: bysource
@@ -216,11 +211,6 @@ Library Reference
    :special-members:
 
 .. automodule:: aspen.wsgi
-   :members:
-   :member-order: bysource
-   :special-members:
-
-.. automodule:: aspen.www
    :members:
    :member-order: bysource
    :special-members:
