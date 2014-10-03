@@ -54,11 +54,6 @@ def parse_body_into_request(request, website):
                                                             )
 
 
-def tack_website_onto_request(request, website):
-    # XXX Why?
-    request.website = website
-
-
 def raise_200_for_OPTIONS(request):
     """A hook to return 200 to an 'OPTIONS *' request"""
     if request.line.method == "OPTIONS" and request.line.uri == "*":
