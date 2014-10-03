@@ -55,7 +55,7 @@ class DispatchStatus:
     okay, missing, non_leaf = range(3)
 
 
-DispatchResult = namedtuple('DispatchResult', 'status match wildcards detail'.split())
+DispatchResult = namedtuple('DispatchResult', 'status match wildcards detail extra'.split())
 
 
 def dispatch_abstract(listnodes, is_leaf, traverse, find_index, noext_matched,
@@ -98,7 +98,7 @@ def dispatch_abstract(listnodes, is_leaf, traverse, find_index, noext_matched,
             ext = lastnode_ext if lastnode_ext in wildleafs else None
             curnode, wildvals = wildleafs[ext]
             debug(lambda: "Wildcard leaf match %r and ext %r" % (curnode, ext))
-            return DispatchResult(DispatchStatus.okay, curnode, wildvals, "Found.")
+            return DispatchResult(DispatchStatus.okay, curnode, wildvals, "Found.", {})
         return None
 
     for depth, node in enumerate(nodepath):
@@ -145,7 +145,7 @@ def dispatch_abstract(listnodes, is_leaf, traverse, find_index, noext_matched,
                         curnode = traverse(curnode, found_n)
                         node_name = found_n[1:-4]  # strip leading % and trailing .spt
                         wildvals[node_name] = node
-                        return DispatchResult(DispatchStatus.okay, curnode, wildvals, "Found.")
+                        return DispatchResult(DispatchStatus.okay, curnode, wildvals, "Found.", {})
             elif node in subnodes and is_leaf_node(node):
                 debug(lambda: "...found exact file, must be static")
                 if is_spt(node):
@@ -153,6 +153,7 @@ def dispatch_abstract(listnodes, is_leaf, traverse, find_index, noext_matched,
                                          , None
                                          , None
                                          , "Node %r Not Found" % node
+                                         , {}
                                           )
                 else:
                     found_n = node
@@ -180,6 +181,7 @@ def dispatch_abstract(listnodes, is_leaf, traverse, find_index, noext_matched,
                                          , curnode
                                          , None
                                          , "Tried to access non-leaf node as leaf."
+                                         , {}
                                           )
                 return result
             elif node in subnodes:
@@ -188,6 +190,7 @@ def dispatch_abstract(listnodes, is_leaf, traverse, find_index, noext_matched,
                                      , curnode
                                      , None
                                      , "Tried to access non-leaf node as leaf."
+                                     , {}
                                       )
             else:
                 debug(lambda: "fallthrough")
@@ -197,6 +200,7 @@ def dispatch_abstract(listnodes, is_leaf, traverse, find_index, noext_matched,
                                          , None
                                          , None
                                          , "Node %r Not Found" % node
+                                         , {}
                                           )
                 return result
 
@@ -221,10 +225,11 @@ def dispatch_abstract(listnodes, is_leaf, traverse, find_index, noext_matched,
                                          , None
                                          , None
                                          , "Node %r Not Found" % node
+                                         , {}
                                           )
                 return result
 
-    return DispatchResult(DispatchStatus.okay, curnode, wildvals, "Found.")
+    return DispatchResult(DispatchStatus.okay, curnode, wildvals, "Found.", {})
 
 
 def match_index(indices, indir):
@@ -246,12 +251,12 @@ def is_first_index(indices, basedir, name):
     return False
 
 
-def update_neg_type(website, request, filename):
+def update_neg_type(website, capture_accept, filename):
     media_type = mimetypes.guess_type(filename, strict=False)[0]
     if media_type is None:
         media_type = website.media_type_default
-    request.headers['X-Aspen-Accept'] = media_type
-    debug(lambda: "set x-aspen-accept to %r" % media_type)
+    capture_accept['accept'] = media_type
+    debug(lambda: "set result.extra['accept'] to %r" % media_type)
 
 
 def dispatch(website, request, pure_dispatch=False):
@@ -259,7 +264,7 @@ def dispatch(website, request, pure_dispatch=False):
 
     This is all side-effecty on the request object, setting, at the least,
     request.fs, and at worst other random contents including but not limited
-    to: request.line.uri.path, request.headers.
+    to: request.line.uri.path.
 
     """
 
@@ -269,11 +274,12 @@ def dispatch(website, request, pure_dispatch=False):
     # Set up the real environment for the dispatcher.
     # ===============================================
 
+    capture_accept = {}
     listnodes = os.listdir
     is_leaf = os.path.isfile
     traverse = os.path.join
     find_index = lambda x: match_index(website.indices, x)
-    noext_matched = lambda x: update_neg_type(website, request, x)
+    noext_matched = lambda x: update_neg_type(website, capture_accept, x)
     startdir = website.www_root
 
     # Dispatch!
@@ -289,6 +295,9 @@ def dispatch(website, request, pure_dispatch=False):
                                )
 
     debug(lambda: "dispatch_abstract returned: " + repr(result))
+
+    if 'accept' in capture_accept:
+        result.extra['accept'] = capture_accept['accept']
 
     if result.match:
         debug(lambda: "result.match is true" )
@@ -315,7 +324,7 @@ def dispatch(website, request, pure_dispatch=False):
             if result.status != DispatchStatus.okay:
                 path = request.line.uri.path.raw[1:]
                 request.fs = website.find_ours(path)
-                return DispatchResult(DispatchStatus.okay, request.fs, {}, 'Found.')
+                return DispatchResult(DispatchStatus.okay, request.fs, {}, 'Found.', {})
 
 
         # robots.txt
@@ -338,8 +347,8 @@ def dispatch(website, request, pure_dispatch=False):
                 raise Response(404)
             autoindex = website.ours_or_theirs('autoindex.html.spt')
             assert autoindex is not None # sanity check
-            request.headers['X-Aspen-AutoIndexDir'] = result.match
             request.fs = autoindex
+            result.extra['autoindexdir'] = result.match
             return result  # return so we skip the no-escape check
         else:                                       # normal match
             request.fs = result.match
