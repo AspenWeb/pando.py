@@ -73,9 +73,10 @@ class NegotiatedResource(DynamicResource):
         """Given a context dict, return a response object.
         """
         request = context['request']
+        dispatch_result = context['dispatch_result']
 
         # find an Accept header
-        accept = request.headers.get('X-Aspen-Accept', None)
+        accept = dispatch_result.extra.get('accept', None)
         if accept is not None:      # indirect negotiation
             failure = Response(404)
         else:                       # direct negotiation

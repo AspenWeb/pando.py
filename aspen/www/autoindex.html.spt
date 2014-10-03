@@ -47,13 +47,14 @@ def _get_time(stats):
     """
     return str(datetime.fromtimestamp(stats[stat.ST_MTIME]))
 
+[----------------------------------------]
 
 # Get the directory to list.
 # ==========================
 # Support the case where we are in the directory where this file actually
 # lives!
 
-fspath = request.headers.get('X-Aspen-AutoIndexDir', os.path.dirname(__file__))
+fspath = dispatch_result.extra.get('autoindexdir', os.path.dirname(__file__))
 assert os.path.isdir(fspath) # sanity check
 
 urlpath = fspath[len(website.www_root):] + os.sep

@@ -13,7 +13,6 @@ import mimetypes
 import os
 
 from aspen import Response
-from .backcompat import namedtuple
 
 
 def debug_noop(*args, **kwargs):
@@ -51,13 +50,18 @@ def strip_matching_ext(a, b):
     return a, b
 
 
-class DispatchStatus:
+class DispatchStatus(object):
     okay, missing, non_leaf = range(3)
 
 
-DispatchResult = namedtuple( 'DispatchResult'
-                           , 'status match wildcards detail'.split()
-                            )
+class DispatchResult(object):
+    def __init__(self, status, match, wildcards, detail, extra):
+        self.status = status
+        self.match = match
+        self.wildcards = wildcards
+        self.detail = detail
+        self.extra = extra
+        self.constrain_path = True
 
 
 def dispatch_abstract(listnodes, is_leaf, traverse, find_index, noext_matched,
@@ -100,7 +104,7 @@ def dispatch_abstract(listnodes, is_leaf, traverse, find_index, noext_matched,
             ext = lastnode_ext if lastnode_ext in wildleafs else None
             curnode, wildvals = wildleafs[ext]
             debug(lambda: "Wildcard leaf match %r and ext %r" % (curnode, ext))
-            return DispatchResult(DispatchStatus.okay, curnode, wildvals, "Found.")
+            return DispatchResult(DispatchStatus.okay, curnode, wildvals, "Found.", {})
         return None
 
     for depth, node in enumerate(nodepath):
@@ -147,7 +151,7 @@ def dispatch_abstract(listnodes, is_leaf, traverse, find_index, noext_matched,
                         curnode = traverse(curnode, found_n)
                         node_name = found_n[1:-4]  # strip leading % and trailing .spt
                         wildvals[node_name] = node
-                        return DispatchResult(DispatchStatus.okay, curnode, wildvals, "Found.")
+                        return DispatchResult(DispatchStatus.okay, curnode, wildvals, "Found.", {})
             elif node in subnodes and is_leaf_node(node):
                 debug(lambda: "...found exact file, must be static")
                 if is_spt(node):
@@ -155,6 +159,7 @@ def dispatch_abstract(listnodes, is_leaf, traverse, find_index, noext_matched,
                                          , None
                                          , None
                                          , "Node %r Not Found" % node
+                                         , {}
                                           )
                 else:
                     found_n = node
@@ -182,6 +187,7 @@ def dispatch_abstract(listnodes, is_leaf, traverse, find_index, noext_matched,
                                          , curnode
                                          , None
                                          , "Tried to access non-leaf node as leaf."
+                                         , {}
                                           )
                 return result
             elif node in subnodes:
@@ -190,6 +196,7 @@ def dispatch_abstract(listnodes, is_leaf, traverse, find_index, noext_matched,
                                      , curnode
                                      , None
                                      , "Tried to access non-leaf node as leaf."
+                                     , {}
                                       )
             else:
                 debug(lambda: "fallthrough")
@@ -199,6 +206,7 @@ def dispatch_abstract(listnodes, is_leaf, traverse, find_index, noext_matched,
                                          , None
                                          , None
                                          , "Node %r Not Found" % node
+                                         , {}
                                           )
                 return result
 
@@ -223,10 +231,11 @@ def dispatch_abstract(listnodes, is_leaf, traverse, find_index, noext_matched,
                                          , None
                                          , None
                                          , "Node %r Not Found" % node
+                                         , {}
                                           )
                 return result
 
-    return DispatchResult(DispatchStatus.okay, curnode, wildvals, "Found.")
+    return DispatchResult(DispatchStatus.okay, curnode, wildvals, "Found.", {})
 
 
 def match_index(indices, indir):
@@ -248,35 +257,29 @@ def is_first_index(indices, basedir, name):
     return False
 
 
-def update_neg_type(website, request, filename):
+def update_neg_type(media_type_default, capture_accept, filename):
     media_type = mimetypes.guess_type(filename, strict=False)[0]
     if media_type is None:
-        media_type = website.media_type_default
-    request.headers['X-Aspen-Accept'] = media_type
-    debug(lambda: "set x-aspen-accept to %r" % media_type)
+        media_type = media_type_default
+    capture_accept['accept'] = media_type
+    debug(lambda: "set result.extra['accept'] to %r" % media_type)
 
 
-def dispatch(website, request, pure_dispatch=False):
+def dispatch(indices, media_type_default, pathparts, uripath, querystring, startdir,
+        directory_default, favicon_default):
     """Concretize dispatch_abstract.
-
-    This is all side-effecty on the request object, setting, at the least,
-    request.fs, and at worst other random contents including but not limited
-    to: request.line.uri.path, request.headers.
-
     """
-
-    # Handle URI path parts
-    pathparts = request.line.uri.path.parts
 
     # Set up the real environment for the dispatcher.
     # ===============================================
 
+    capture_accept = {}
     listnodes = os.listdir
     is_leaf = os.path.isfile
     traverse = os.path.join
-    find_index = lambda x: match_index(website.indices, x)
-    noext_matched = lambda x: update_neg_type(website, request, x)
-    startdir = website.www_root
+    find_index = lambda x: match_index(indices, x)
+    noext_matched = lambda x: update_neg_type(media_type_default, capture_accept, x)
+
 
     # Dispatch!
     # =========
@@ -292,71 +295,60 @@ def dispatch(website, request, pure_dispatch=False):
 
     debug(lambda: "dispatch_abstract returned: " + repr(result))
 
+    if 'accept' in capture_accept:
+        result.extra['accept'] = capture_accept['accept']
+
     if result.match:
         debug(lambda: "result.match is true" )
         matchbase, matchname = result.match.rsplit(os.path.sep,1)
-        if pathparts[-1] != '' and matchname in website.indices and \
-                is_first_index(website.indices, matchbase, matchname):
+        if pathparts[-1] != '' and matchname in indices and \
+                is_first_index(indices, matchbase, matchname):
             # asked for something that maps to a default index file; redirect to / per issue #175
             debug( lambda: "found default index '%s' maps into %r"
-                 % (pathparts[-1], website.indices)
+                 % (pathparts[-1], indices)
                   )
-            uri = request.line.uri
-            location = uri.path.raw[:-len(pathparts[-1])]
-            if uri.querystring.raw:
-                location += '?' + uri.querystring.raw
+            location = uripath[:-len(pathparts[-1])]
+            if querystring:
+                location += '?' + querystring
             raise Response(302, headers={'Location': location})
-
-    if not pure_dispatch:
-
-        # favicon.ico
-        # ===========
-        # Serve Aspen's favicon if there's not one.
-
-        if request.line.uri.path.raw == '/favicon.ico':
-            if result.status != DispatchStatus.okay:
-                path = request.line.uri.path.raw[1:]
-                request.fs = website.find_ours(path)
-                return
-
-
-        # robots.txt
-        # ==========
-        # Don't let robots.txt be handled by anything other than an actual
-        # robots.txt file
-
-        if request.line.uri.path.raw == '/robots.txt':
-            if result.status != DispatchStatus.missing:
-                if not result.match.endswith('robots.txt'):
-                    raise Response(404)
 
 
     # Handle returned states.
     # =======================
 
-    if result.status == DispatchStatus.okay:
-        if result.match.endswith('/'):              # autoindex
-            if not website.list_directories:
-                raise Response(404)
-            autoindex = website.ours_or_theirs('autoindex.html.spt')
-            assert autoindex is not None # sanity check
-            request.headers['X-Aspen-AutoIndexDir'] = result.match
-            request.fs = autoindex
-            return  # return so we skip the no-escape check
-        else:                                       # normal match
-            request.fs = result.match
-            for k, v in result.wildcards.iteritems():
-                request.line.uri.path[k] = v
+    if result.status != DispatchStatus.missing:
+        if uripath == '/robots.txt' and not result.match.endswith('robots.txt'):  # robots.txt
+            # Don't let robots.txt be handled by anything other than an actual robots.txt file,
+            # because if you don't have a robots.txt but you do have a wildcard, then you end
+            # up with logspam.
+            raise Response(404)
 
-    elif result.status == DispatchStatus.non_leaf:  # trailing-slash redirect
-        uri = request.line.uri
-        location = uri.path.raw + '/'
-        if uri.querystring.raw:
-            location += '?' + uri.querystring.raw
+    if result.status == DispatchStatus.okay:
+        if result.match.endswith('/'):
+            if directory_default:                                                 # autoindex
+                result.extra['autoindexdir'] = result.match  # order matters!
+                result.match = directory_default
+                result.wildcards = {}
+                result.detail = 'Directory default.'
+                result.constrain_path = False
+            else:
+                raise Response(404)
+
+    elif result.status == DispatchStatus.non_leaf:                                # trailing slash
+        location = uripath + '/'
+        if querystring:
+            location += '?' + querystring
         raise Response(302, headers={'Location': location})
 
-    elif result.status == DispatchStatus.missing:   # 404
-        raise Response(404)
+    elif result.status == DispatchStatus.missing:                                 # 404, but ...
+        if uripath == '/favicon.ico' and favicon_default:                         # favicon.ico
+            result.status = DispatchStatus.okay
+            result.match = favicon_default
+            result.wildcards = {}
+            result.detail = 'Favicon default.'
+            result.constrain_path = False
+        else:
+            raise Response(404)
 
     else:
         raise Response(500, "Unknown result status.")
@@ -365,6 +357,7 @@ def dispatch(website, request, pure_dispatch=False):
     # Protect against escaping the www_root.
     # ======================================
 
-    if not request.fs.startswith(startdir):
+    if result.constrain_path and not result.match.startswith(startdir):
         raise Response(404)
 
+    return result

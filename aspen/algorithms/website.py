@@ -41,6 +41,7 @@ from aspen.http.request import Request
 from aspen.http.response import Response
 from aspen import typecasting
 from first import first as _first
+from aspen.dispatcher import DispatchResult, DispatchStatus
 
 
 def parse_environ_into_request(environ):
@@ -61,20 +62,39 @@ def raise_200_for_OPTIONS(request):
 
 
 def dispatch_request_to_filesystem(website, request):
-    dispatcher.dispatch(website, request)
+
+    if website.list_directories:
+        directory_default = website.ours_or_theirs('autoindex.html.spt')
+        assert directory_default is not None  # sanity check
+    else:
+        directory_default = None
+
+    result = dispatcher.dispatch( indices               = website.indices
+                                , media_type_default    = website.media_type_default
+                                , pathparts             = request.line.uri.path.parts
+                                , uripath               = request.line.uri.path.raw
+                                , querystring           = request.line.uri.querystring.raw
+                                , startdir              = website.www_root
+                                , directory_default     = directory_default
+                                , favicon_default       = website.find_ours('favicon.ico')
+                                 )
+    request.fs = result.match
+    for k, v in result.wildcards.iteritems():
+        request.line.uri.path[k] = v
+    return {'dispatch_result': result}
 
 
 def apply_typecasters_to_path(website, request):
     typecasting.apply_typecasters(website.typecasters, request.line.uri.path)
 
 
-def get_resource_for_request(website, request):
+def get_resource_for_request(website, request, dispatch_result):
     return {'resource': resources.get(website, request)}
 
 
-def get_response_for_resource(request, resource=None):
+def get_response_for_resource(request, dispatch_result, resource=None):
     if resource is not None:
-        return {'response': resource.respond(request)}
+        return {'response': resource.respond(request, dispatch_result)}
 
 
 def get_response_for_exception(website, exception):
@@ -112,8 +132,9 @@ def delegate_error_to_simplate(website, request, response, resource=None):
             # Try to return an error that matches the type of the original resource.
             request.headers['Accept'] = resource.media_type + ', text/plain; q=0.1'
         resource = resources.get(website, request)
+        dispatch_result = DispatchResult(DispatchStatus.okay, fs, {}, 'Found.', {})
         try:
-            response = resource.respond(request, response)
+            response = resource.respond(request, dispatch_result, response)
         except Response as response:
             if response.code != 406:
                 raise
