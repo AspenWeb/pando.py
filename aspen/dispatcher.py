@@ -61,6 +61,7 @@ class DispatchResult(object):
         self.wildcards = wildcards
         self.detail = detail
         self.extra = extra
+        self.constrain_path = True
 
 
 def dispatch_abstract(listnodes, is_leaf, traverse, find_index, noext_matched,
@@ -264,8 +265,8 @@ def update_neg_type(media_type_default, capture_accept, filename):
     debug(lambda: "set result.extra['accept'] to %r" % media_type)
 
 
-def dispatch(website, indices, media_type_default, pathparts, uripath, querystring,
-        startdir, handle_directory, pure_dispatch=False):
+def dispatch(indices, media_type_default, pathparts, uripath, querystring, startdir,
+        directory_default, favicon_default):
     """Concretize dispatch_abstract.
     """
 
@@ -311,47 +312,43 @@ def dispatch(website, indices, media_type_default, pathparts, uripath, querystri
                 location += '?' + querystring
             raise Response(302, headers={'Location': location})
 
-    if not pure_dispatch:
-
-        # favicon.ico
-        # ===========
-        # Serve Aspen's favicon if there's not one.
-
-        if uripath == '/favicon.ico':
-            if result.status != DispatchStatus.okay:
-                result.status = DispatchStatus.okay
-                result.match = website.find_ours('favicon.ico')
-                result.wildcards = {}
-                result.detail = 'Found.'
-                return result
-
-
-        # robots.txt
-        # ==========
-        # Don't let robots.txt be handled by anything other than an actual
-        # robots.txt file
-
-        if uripath == '/robots.txt':
-            if result.status != DispatchStatus.missing:
-                if not result.match.endswith('robots.txt'):
-                    raise Response(404)
-
 
     # Handle returned states.
     # =======================
 
-    if result.status == DispatchStatus.okay:
-        if result.match.endswith('/'):              # autoindex
-            return handle_directory(result)  # return so we skip the no-escape check
+    if result.status != DispatchStatus.missing:
+        if uripath == '/robots.txt' and not result.match.endswith('robots.txt'):  # robots.txt
+            # Don't let robots.txt be handled by anything other than an actual robots.txt file,
+            # because if you don't have a robots.txt but you do have a wildcard, then you end
+            # up with logspam.
+            raise Response(404)
 
-    elif result.status == DispatchStatus.non_leaf:  # trailing-slash redirect
+    if result.status == DispatchStatus.okay:
+        if result.match.endswith('/'):
+            if directory_default:                                                 # autoindex
+                result.extra['autoindexdir'] = result.match  # order matters!
+                result.match = directory_default
+                result.wildcards = {}
+                result.detail = 'Directory default.'
+                result.constrain_path = False
+            else:
+                raise Response(404)
+
+    elif result.status == DispatchStatus.non_leaf:                                # trailing slash
         location = uripath + '/'
         if querystring:
             location += '?' + querystring
         raise Response(302, headers={'Location': location})
 
-    elif result.status == DispatchStatus.missing:   # 404
-        raise Response(404)
+    elif result.status == DispatchStatus.missing:                                 # 404, but ...
+        if uripath == '/favicon.ico' and favicon_default:                         # favicon.ico
+            result.status = DispatchStatus.okay
+            result.match = favicon_default
+            result.wildcards = {}
+            result.detail = 'Favicon default.'
+            result.constrain_path = False
+        else:
+            raise Response(404)
 
     else:
         raise Response(500, "Unknown result status.")
@@ -360,7 +357,7 @@ def dispatch(website, indices, media_type_default, pathparts, uripath, querystri
     # Protect against escaping the www_root.
     # ======================================
 
-    if not result.match.startswith(startdir):
+    if result.constrain_path and not result.match.startswith(startdir):
         raise Response(404)
 
     return result

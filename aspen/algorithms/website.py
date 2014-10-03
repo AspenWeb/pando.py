@@ -63,22 +63,20 @@ def raise_200_for_OPTIONS(request):
 
 def dispatch_request_to_filesystem(website, request):
 
-    def handle_directory(result):
-        if not website.list_directories:
-            raise Response(404)
-        result.extra['autoindexdir'] = result.match
-        result.match = website.ours_or_theirs('autoindex.html.spt')
-        assert result.match is not None # sanity check
-        return result
+    if website.list_directories:
+        directory_default = website.ours_or_theirs('autoindex.html.spt')
+        assert directory_default is not None  # sanity check
+    else:
+        directory_default = None
 
-    result = dispatcher.dispatch( website
-                                , indices               = website.indices
+    result = dispatcher.dispatch( indices               = website.indices
                                 , media_type_default    = website.media_type_default
                                 , pathparts             = request.line.uri.path.parts
                                 , uripath               = request.line.uri.path.raw
                                 , querystring           = request.line.uri.querystring.raw
                                 , startdir              = website.www_root
-                                , handle_directory      = handle_directory
+                                , directory_default     = directory_default
+                                , favicon_default       = website.find_ours('favicon.ico')
                                  )
     request.fs = result.match
     for k, v in result.wildcards.iteritems():
