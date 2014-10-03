@@ -265,7 +265,7 @@ def update_neg_type(media_type_default, capture_accept, filename):
 
 
 def dispatch(website, indices, media_type_default, pathparts, uripath, querystring,
-        startdir, pure_dispatch=False):
+        startdir, handle_directory, pure_dispatch=False):
     """Concretize dispatch_abstract.
     """
 
@@ -342,12 +342,7 @@ def dispatch(website, indices, media_type_default, pathparts, uripath, querystri
 
     if result.status == DispatchStatus.okay:
         if result.match.endswith('/'):              # autoindex
-            if not website.list_directories:
-                raise Response(404)
-            result.extra['autoindexdir'] = result.match
-            result.match = website.ours_or_theirs('autoindex.html.spt')
-            assert result.match is not None # sanity check
-            return result  # return so we skip the no-escape check
+            return handle_directory(result)  # return so we skip the no-escape check
 
     elif result.status == DispatchStatus.non_leaf:  # trailing-slash redirect
         location = uripath + '/'
