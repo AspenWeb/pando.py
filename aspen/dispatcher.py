@@ -259,17 +259,12 @@ def update_neg_type(website, capture_accept, filename):
     debug(lambda: "set result.extra['accept'] to %r" % media_type)
 
 
-def dispatch(website, request, pure_dispatch=False):
+def dispatch(website, request, pathparts, uripath, querystring, pure_dispatch=False):
     """Concretize dispatch_abstract.
 
-    This is all side-effecty on the request object, setting, at the least,
-    request.fs, and at worst other random contents including but not limited
-    to: request.line.uri.path.
+    This is side-effecty on the request object, setting request.fs.
 
     """
-
-    # Handle URI path parts
-    pathparts = request.line.uri.path.parts
 
     # Set up the real environment for the dispatcher.
     # ===============================================
@@ -281,6 +276,7 @@ def dispatch(website, request, pure_dispatch=False):
     find_index = lambda x: match_index(website.indices, x)
     noext_matched = lambda x: update_neg_type(website, capture_accept, x)
     startdir = website.www_root
+
 
     # Dispatch!
     # =========
@@ -308,10 +304,9 @@ def dispatch(website, request, pure_dispatch=False):
             debug( lambda: "found default index '%s' maps into %r"
                  % (pathparts[-1], website.indices)
                   )
-            uri = request.line.uri
-            location = uri.path.raw[:-len(pathparts[-1])]
-            if uri.querystring.raw:
-                location += '?' + uri.querystring.raw
+            location = uripath[:-len(pathparts[-1])]
+            if querystring:
+                location += '?' + querystring
             raise Response(302, headers={'Location': location})
 
     if not pure_dispatch:
@@ -320,10 +315,9 @@ def dispatch(website, request, pure_dispatch=False):
         # ===========
         # Serve Aspen's favicon if there's not one.
 
-        if request.line.uri.path.raw == '/favicon.ico':
+        if uripath == '/favicon.ico':
             if result.status != DispatchStatus.okay:
-                path = request.line.uri.path.raw[1:]
-                request.fs = website.find_ours(path)
+                request.fs = website.find_ours('favicon.ico')
                 return DispatchResult(DispatchStatus.okay, request.fs, {}, 'Found.', {})
 
 
@@ -332,7 +326,7 @@ def dispatch(website, request, pure_dispatch=False):
         # Don't let robots.txt be handled by anything other than an actual
         # robots.txt file
 
-        if request.line.uri.path.raw == '/robots.txt':
+        if uripath == '/robots.txt':
             if result.status != DispatchStatus.missing:
                 if not result.match.endswith('robots.txt'):
                     raise Response(404)
@@ -352,14 +346,11 @@ def dispatch(website, request, pure_dispatch=False):
             return result  # return so we skip the no-escape check
         else:                                       # normal match
             request.fs = result.match
-            for k, v in result.wildcards.iteritems():
-                request.line.uri.path[k] = v
 
     elif result.status == DispatchStatus.non_leaf:  # trailing-slash redirect
-        uri = request.line.uri
-        location = uri.path.raw + '/'
-        if uri.querystring.raw:
-            location += '?' + uri.querystring.raw
+        location = uripath + '/'
+        if querystring:
+            location += '?' + querystring
         raise Response(302, headers={'Location': location})
 
     elif result.status == DispatchStatus.missing:   # 404
