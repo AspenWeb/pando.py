@@ -56,7 +56,7 @@ def _get_time(stats):
 fspath = request.headers.get('X-Aspen-AutoIndexDir', os.path.dirname(__file__))
 assert os.path.isdir(fspath) # sanity check
 
-urlpath = fspath[len(request.website.www_root):] + os.sep
+urlpath = fspath[len(website.www_root):] + os.sep
 urlpath = '/'.join(urlpath.split(os.sep))
 title = urlpath and urlpath or '/'
 
@@ -90,7 +90,7 @@ dirs.sort()
 files.sort()
 others.sort()
 
-updir = "" if fspath == request.website.www_root else """
+updir = "" if fspath == website.www_root else """
             <tr>
                 <td class="odd"><a href="../">../</a></td>
                 <td>&nbsp;</td>
