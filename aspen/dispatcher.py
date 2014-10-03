@@ -55,9 +55,7 @@ class DispatchStatus:
     okay, missing, non_leaf = range(3)
 
 
-DispatchResult = namedtuple( 'DispatchResult'
-                           , 'status match wildcards detail'.split()
-                            )
+DispatchResult = namedtuple('DispatchResult', 'status match wildcards detail'.split())
 
 
 def dispatch_abstract(listnodes, is_leaf, traverse, find_index, noext_matched,
@@ -317,7 +315,7 @@ def dispatch(website, request, pure_dispatch=False):
             if result.status != DispatchStatus.okay:
                 path = request.line.uri.path.raw[1:]
                 request.fs = website.find_ours(path)
-                return
+                return DispatchResult(DispatchStatus.okay, request.fs, {}, 'Found.')
 
 
         # robots.txt
@@ -342,7 +340,7 @@ def dispatch(website, request, pure_dispatch=False):
             assert autoindex is not None # sanity check
             request.headers['X-Aspen-AutoIndexDir'] = result.match
             request.fs = autoindex
-            return  # return so we skip the no-escape check
+            return result  # return so we skip the no-escape check
         else:                                       # normal match
             request.fs = result.match
             for k, v in result.wildcards.iteritems():
@@ -368,3 +366,4 @@ def dispatch(website, request, pure_dispatch=False):
     if not request.fs.startswith(startdir):
         raise Response(404)
 
+    return result
