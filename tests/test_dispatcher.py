@@ -7,7 +7,7 @@ import os
 from pytest import raises
 
 import aspen
-from aspen import Response
+from aspen import dispatcher, Response
 
 
 # Helpers
@@ -42,6 +42,29 @@ NEGOTIATED_SIMPLATE="""[-----]
 Greetings, program!
 [-----] text/html
 <h1>Greetings, Program!</h1>"""
+
+
+# dispatcher.dispatch
+# ===================
+
+def test_dispatcher_returns_a_result(harness):
+    request = harness.make_request('Greetings, program!', 'index.html')
+    result = dispatcher.dispatch(harness.client.website, request)
+    assert result.status == dispatcher.DispatchStatus.okay
+    assert result.match == os.path.join(harness.fs.www.root, 'index.html')
+    assert result.wildcards == {}
+    assert result.detail == 'Found.'
+
+def test_dispatcher_returns_a_result_for_autoindex(harness):
+    request = harness.make_request('Greetings, program!', 'index.html')
+    os.remove(request.fs)
+    harness.client.website.list_directories = True
+    result = dispatcher.dispatch(harness.client.website, request)
+    assert result.status == dispatcher.DispatchStatus.okay
+    assert result.match == os.path.join(harness.fs.www.root, '')
+    assert result.wildcards == {}
+    assert result.detail == 'Found.'
+
 
 # Indices
 # =======
@@ -462,4 +485,3 @@ def test_dont_serve_hidden_files(harness):
 def test_dont_serve_spt_file_source(harness):
     harness.fs.www.mk(('foo.html.spt', "Greetings, program!"),)
     assert_raises_404(harness, '/foo.html.spt')
-
