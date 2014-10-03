@@ -73,8 +73,8 @@ def apply_typecasters_to_path(website, request):
     typecasting.apply_typecasters(website.typecasters, request.line.uri.path)
 
 
-def get_resource_for_request(request):
-    return {'resource': resources.get(request)}
+def get_resource_for_request(website, request):
+    return {'resource': resources.get(website, request)}
 
 
 def get_response_for_resource(request, resource=None):
@@ -116,7 +116,7 @@ def delegate_error_to_simplate(website, request, response, resource=None):
         if resource is not None:
             # Try to return an error that matches the type of the original resource.
             request.headers['Accept'] = resource.media_type + ', text/plain; q=0.1'
-        resource = resources.get(request)
+        resource = resources.get(website, request)
         try:
             response = resource.respond(request, response)
         except Response as response:
