@@ -131,7 +131,7 @@ def delegate_error_to_simplate(website, request, response, resource=None):
             # Try to return an error that matches the type of the original resource.
             request.headers['Accept'] = resource.media_type + ', text/plain; q=0.1'
         resource = resources.get(website, fspath)
-        dispatch_result = DispatchResult(DispatchStatus.okay, fspath, {}, 'Found.', {})
+        dispatch_result = DispatchResult(DispatchStatus.okay, fspath, {}, 'Found.', {}, True)
         try:
             response = resource.respond(request, dispatch_result, response)
         except Response as response:
