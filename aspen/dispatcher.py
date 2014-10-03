@@ -13,7 +13,6 @@ import mimetypes
 import os
 
 from aspen import Response
-from .backcompat import namedtuple
 
 
 def debug_noop(*args, **kwargs):
@@ -51,11 +50,17 @@ def strip_matching_ext(a, b):
     return a, b
 
 
-class DispatchStatus:
+class DispatchStatus(object):
     okay, missing, non_leaf = range(3)
 
 
-DispatchResult = namedtuple('DispatchResult', 'status match wildcards detail extra'.split())
+class DispatchResult(object):
+    def __init__(self, status, match, wildcards, detail, extra):
+        self.status = status
+        self.match = match
+        self.wildcards = wildcards
+        self.detail = detail
+        self.extra = extra
 
 
 def dispatch_abstract(listnodes, is_leaf, traverse, find_index, noext_matched,
@@ -261,9 +266,6 @@ def update_neg_type(website, capture_accept, filename):
 
 def dispatch(website, request, pathparts, uripath, querystring, pure_dispatch=False):
     """Concretize dispatch_abstract.
-
-    This is side-effecty on the request object, setting request.fs.
-
     """
 
     # Set up the real environment for the dispatcher.
@@ -317,8 +319,11 @@ def dispatch(website, request, pathparts, uripath, querystring, pure_dispatch=Fa
 
         if uripath == '/favicon.ico':
             if result.status != DispatchStatus.okay:
-                request.fs = website.find_ours('favicon.ico')
-                return DispatchResult(DispatchStatus.okay, request.fs, {}, 'Found.', {})
+                result.status = DispatchStatus.okay
+                result.match = website.find_ours('favicon.ico')
+                result.wildcards = {}
+                result.detail = 'Found.'
+                return result
 
 
         # robots.txt
@@ -341,11 +346,9 @@ def dispatch(website, request, pathparts, uripath, querystring, pure_dispatch=Fa
                 raise Response(404)
             autoindex = website.ours_or_theirs('autoindex.html.spt')
             assert autoindex is not None # sanity check
-            request.fs = autoindex
+            result.match = autoindex
             result.extra['autoindexdir'] = result.match
             return result  # return so we skip the no-escape check
-        else:                                       # normal match
-            request.fs = result.match
 
     elif result.status == DispatchStatus.non_leaf:  # trailing-slash redirect
         location = uripath + '/'
@@ -363,7 +366,7 @@ def dispatch(website, request, pathparts, uripath, querystring, pure_dispatch=Fa
     # Protect against escaping the www_root.
     # ======================================
 
-    if not request.fs.startswith(startdir):
+    if not result.match.startswith(startdir):
         raise Response(404)
 
     return result

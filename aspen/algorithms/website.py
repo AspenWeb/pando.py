@@ -67,6 +67,7 @@ def dispatch_request_to_filesystem(website, request):
                                 , uripath=request.line.uri.path.raw
                                 , querystring=request.line.uri.querystring.raw
                                  )
+    request.fs = result.match
     for k, v in result.wildcards.iteritems():
         request.line.uri.path[k] = v
     return {'dispatch_result': result}
