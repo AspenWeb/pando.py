@@ -50,35 +50,23 @@ Greetings, program!
 # ===================
 
 def test_dispatcher_returns_a_result(harness):
-    request = harness.make_request('Greetings, program!', 'index.html')
-    result = dispatcher.dispatch(harness.client.website, request, [''], '/', '')
+    harness.fs.www.mk(('index.html', 'Greetings, program!'),)
+    result = dispatcher.dispatch(harness.client.website, [''], '/', '')
     assert result.status == dispatcher.DispatchStatus.okay
     assert result.match == os.path.join(harness.fs.www.root, 'index.html')
     assert result.wildcards == {}
     assert result.detail == 'Found.'
 
 def test_dispatcher_returns_a_result_for_favicon(harness):
-    request = Request.from_wsgi({ b'REQUEST_METHOD': b'GET'
-                                , b'PATH_INFO': b'/favicon.ico'
-                                , b'SERVER_PROTOCOL': b'HTTP/1.1'
-                                , b'wsgi.input': StringIO()
-                                 })
-    result = dispatcher.dispatch( harness.client.website
-                                , request
-                                , ['favicon.ico']
-                                , '/favicon.ico'
-                                , ''
-                                 )
+    result = dispatcher.dispatch(harness.client.website, ['favicon.ico'], '/favicon.ico', '')
     assert result.status == dispatcher.DispatchStatus.okay
     assert result.match == harness.client.website.find_ours('favicon.ico')
     assert result.wildcards == {}
     assert result.detail == 'Found.'
 
 def test_dispatcher_returns_a_result_for_autoindex(harness):
-    request = harness.make_request('Greetings, program!', 'index.html')
-    os.remove(request.fs)
     harness.client.website.list_directories = True
-    result = dispatcher.dispatch(harness.client.website, request, [''], '/', '')
+    result = dispatcher.dispatch(harness.client.website, [''], '/', '')
     assert result.status == dispatcher.DispatchStatus.okay
     assert result.match == harness.client.website.find_ours('autoindex.html.spt')
     assert result.wildcards == {}

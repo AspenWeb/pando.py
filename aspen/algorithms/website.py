@@ -62,7 +62,6 @@ def raise_200_for_OPTIONS(request):
 
 def dispatch_request_to_filesystem(website, request):
     result = dispatcher.dispatch( website
-                                , request
                                 , pathparts=request.line.uri.path.parts
                                 , uripath=request.line.uri.path.raw
                                 , querystring=request.line.uri.querystring.raw
