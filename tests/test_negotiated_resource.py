@@ -120,7 +120,7 @@ def get_response(state, response):
               , 'dispatch_result': state['dispatch_result']
               , 'response': response
                }
-    resource = resources.load(state['website'], state['request'], 0)
+    resource = resources.load(state['website'], state['dispatch_result'].match, 0)
     return resource.get_response(context)
 
 NEGOTIATED_RESOURCE = """\

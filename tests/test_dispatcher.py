@@ -14,7 +14,7 @@ from aspen import dispatcher, Response
 # =======
 
 def assert_fs(harness, ask_uri, expect_fs):
-    actual = harness.simple(uripath=ask_uri, filepath=None, want='request.fs')
+    actual = harness.simple(uripath=ask_uri, filepath=None, want='dispatch_result.match')
     assert actual == harness.fs.www.resolve(expect_fs)
 
 def assert_raises_404(*args):
@@ -112,17 +112,17 @@ def test_dispatcher_in_algorithm_returns_a_better_result_for_autoindex(harness):
 
 def test_index_is_found(harness):
     expected = harness.fs.www.resolve('index.html')
-    actual = harness.make_request('Greetings, program!', 'index.html').fs
+    actual = harness.make_dispatch_result('Greetings, program!', 'index.html').match
     assert actual == expected
 
 def test_negotiated_index_is_found(harness):
     expected = harness.fs.www.resolve('index')
-    actual = harness.make_request('''
+    actual = harness.make_dispatch_result('''
         [----------] text/html
         <h1>Greetings, program!</h1>
         [----------] text/plain
         Greetings, program!
-    ''', 'index').fs
+    ''', 'index').match
     assert actual == expected
 
 def test_alternate_index_is_not_found(harness):
@@ -512,7 +512,7 @@ def test_file_with_no_extension_matches(harness):
 
 def test_aspen_favicon_doesnt_get_clobbered_by_virtual_path(harness):
     harness.fs.www.mk(('%value.html.spt', NEGOTIATED_SIMPLATE),)
-    actual = harness.simple(uripath='/favicon.ico', filepath=None, want='request.fs')
+    actual = harness.simple(uripath='/favicon.ico', filepath=None, want='dispatch_result.match')
     assert actual == os.path.join(os.path.dirname(aspen.__file__), 'www', 'favicon.ico')
 
 def test_robots_txt_also_shouldnt_be_redirected(harness):
