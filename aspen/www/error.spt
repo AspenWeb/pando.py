@@ -23,7 +23,7 @@ except ImportError:
 style = ''
 msg = status_strings.get(response.code, 'Sorry')
 msg = msg[0].upper() + msg[1:].lower()
-if request.website.show_tracebacks:
+if website.show_tracebacks:
     err_ascii = response.body
     if pygmentize:
         # Pygments does HTML escaping
