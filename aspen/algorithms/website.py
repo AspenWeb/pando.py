@@ -41,6 +41,7 @@ from aspen.http.request import Request
 from aspen.http.response import Response
 from aspen import typecasting
 from first import first as _first
+from aspen.dispatcher import DispatchResult, DispatchStatus
 
 
 def parse_environ_into_request(environ):
@@ -119,8 +120,9 @@ def delegate_error_to_simplate(website, request, response, resource=None):
             # Try to return an error that matches the type of the original resource.
             request.headers['Accept'] = resource.media_type + ', text/plain; q=0.1'
         resource = resources.get(website, request)
+        dispatch_result = DispatchResult(DispatchStatus.okay, fs, {}, 'Found.', {})
         try:
-            response = resource.respond(request, response)
+            response = resource.respond(request, dispatch_result, response)
         except Response as response:
             if response.code != 406:
                 raise

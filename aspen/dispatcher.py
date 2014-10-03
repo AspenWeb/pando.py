@@ -344,10 +344,9 @@ def dispatch(website, pathparts, uripath, querystring, pure_dispatch=False):
         if result.match.endswith('/'):              # autoindex
             if not website.list_directories:
                 raise Response(404)
-            autoindex = website.ours_or_theirs('autoindex.html.spt')
-            assert autoindex is not None # sanity check
-            result.match = autoindex
             result.extra['autoindexdir'] = result.match
+            result.match = website.ours_or_theirs('autoindex.html.spt')
+            assert result.match is not None # sanity check
             return result  # return so we skip the no-escape check
 
     elif result.status == DispatchStatus.non_leaf:  # trailing-slash redirect
