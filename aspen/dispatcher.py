@@ -13,6 +13,7 @@ import mimetypes
 import os
 
 from aspen import Response
+from .backcompat import namedtuple
 
 
 def debug_noop(*args, **kwargs):
@@ -54,14 +55,7 @@ class DispatchStatus(object):
     okay, missing, non_leaf = range(3)
 
 
-class DispatchResult(object):
-    def __init__(self, status, match, wildcards, detail, extra):
-        self.status = status
-        self.match = match
-        self.wildcards = wildcards
-        self.detail = detail
-        self.extra = extra
-        self.constrain_path = True
+DispatchResult = namedtuple('DispatchResult', 'status match wildcards detail extra constrain_path')
 
 
 def dispatch_abstract(listnodes, is_leaf, traverse, find_index, noext_matched,
@@ -104,7 +98,7 @@ def dispatch_abstract(listnodes, is_leaf, traverse, find_index, noext_matched,
             ext = lastnode_ext if lastnode_ext in wildleafs else None
             curnode, wildvals = wildleafs[ext]
             debug(lambda: "Wildcard leaf match %r and ext %r" % (curnode, ext))
-            return DispatchResult(DispatchStatus.okay, curnode, wildvals, "Found.", {})
+            return DispatchResult(DispatchStatus.okay, curnode, wildvals, "Found.", {}, True)
         return None
 
     for depth, node in enumerate(nodepath):
@@ -151,7 +145,13 @@ def dispatch_abstract(listnodes, is_leaf, traverse, find_index, noext_matched,
                         curnode = traverse(curnode, found_n)
                         node_name = found_n[1:-4]  # strip leading % and trailing .spt
                         wildvals[node_name] = node
-                        return DispatchResult(DispatchStatus.okay, curnode, wildvals, "Found.", {})
+                        return DispatchResult( DispatchStatus.okay
+                                             , curnode
+                                             , wildvals
+                                             , "Found."
+                                             , {}
+                                             , True
+                                              )
             elif node in subnodes and is_leaf_node(node):
                 debug(lambda: "...found exact file, must be static")
                 if is_spt(node):
@@ -160,6 +160,7 @@ def dispatch_abstract(listnodes, is_leaf, traverse, find_index, noext_matched,
                                          , None
                                          , "Node %r Not Found" % node
                                          , {}
+                                         , True
                                           )
                 else:
                     found_n = node
@@ -188,6 +189,7 @@ def dispatch_abstract(listnodes, is_leaf, traverse, find_index, noext_matched,
                                          , None
                                          , "Tried to access non-leaf node as leaf."
                                          , {}
+                                         , True
                                           )
                 return result
             elif node in subnodes:
@@ -197,6 +199,7 @@ def dispatch_abstract(listnodes, is_leaf, traverse, find_index, noext_matched,
                                      , None
                                      , "Tried to access non-leaf node as leaf."
                                      , {}
+                                     , True
                                       )
             else:
                 debug(lambda: "fallthrough")
@@ -207,6 +210,7 @@ def dispatch_abstract(listnodes, is_leaf, traverse, find_index, noext_matched,
                                          , None
                                          , "Node %r Not Found" % node
                                          , {}
+                                         , True
                                           )
                 return result
 
@@ -232,10 +236,11 @@ def dispatch_abstract(listnodes, is_leaf, traverse, find_index, noext_matched,
                                          , None
                                          , "Node %r Not Found" % node
                                          , {}
+                                         , True
                                           )
                 return result
 
-    return DispatchResult(DispatchStatus.okay, curnode, wildvals, "Found.", {})
+    return DispatchResult(DispatchStatus.okay, curnode, wildvals, "Found.", {}, True)
 
 
 def match_index(indices, indir):
@@ -326,11 +331,13 @@ def dispatch(indices, media_type_default, pathparts, uripath, querystring, start
     if result.status == DispatchStatus.okay:
         if result.match.endswith('/'):
             if directory_default:                                                 # autoindex
-                result.extra['autoindexdir'] = result.match  # order matters!
-                result.match = directory_default
-                result.wildcards = {}
-                result.detail = 'Directory default.'
-                result.constrain_path = False
+                result = DispatchResult( result.status
+                                       , directory_default
+                                       , {}
+                                       , 'Directory default.'
+                                       , {'autoindexdir': result.match}
+                                       , False
+                                        )
             else:
                 raise Response(404)
 
@@ -342,11 +349,13 @@ def dispatch(indices, media_type_default, pathparts, uripath, querystring, start
 
     elif result.status == DispatchStatus.missing:                                 # 404, but ...
         if uripath == '/favicon.ico' and favicon_default:                         # favicon.ico
-            result.status = DispatchStatus.okay
-            result.match = favicon_default
-            result.wildcards = {}
-            result.detail = 'Favicon default.'
-            result.constrain_path = False
+            result = DispatchResult( DispatchStatus.okay
+                                   , favicon_default
+                                   , {}
+                                   , 'Favicon default.'
+                                   , {}
+                                   , False
+                                    )
         else:
             raise Response(404)
 
