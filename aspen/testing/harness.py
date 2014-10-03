@@ -81,3 +81,8 @@ class Harness(object):
         kw['return_after'] = 'dispatch_request_to_filesystem'
         kw['want'] = 'request'
         return self.simple(*a, **kw)
+
+    def make_dispatch_result(self, *a, **kw):
+        kw['return_after'] = 'dispatch_request_to_filesystem'
+        kw['want'] = 'dispatch_result'
+        return self.simple(*a, **kw)
