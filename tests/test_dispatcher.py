@@ -5,9 +5,11 @@ from __future__ import unicode_literals
 
 import os
 from pytest import raises
+from StringIO import StringIO
 
 import aspen
 from aspen import dispatcher, Response
+from aspen.http.request import Request
 
 
 # Helpers
@@ -52,6 +54,18 @@ def test_dispatcher_returns_a_result(harness):
     result = dispatcher.dispatch(harness.client.website, request)
     assert result.status == dispatcher.DispatchStatus.okay
     assert result.match == os.path.join(harness.fs.www.root, 'index.html')
+    assert result.wildcards == {}
+    assert result.detail == 'Found.'
+
+def test_dispatcher_returns_a_result_for_favicon(harness):
+    request = Request.from_wsgi({ b'REQUEST_METHOD': b'GET'
+                                , b'PATH_INFO': b'/favicon.ico'
+                                , b'SERVER_PROTOCOL': b'HTTP/1.1'
+                                , b'wsgi.input': StringIO()
+                                 })
+    result = dispatcher.dispatch(harness.client.website, request)
+    assert result.status == dispatcher.DispatchStatus.okay
+    assert result.match == harness.client.website.find_ours('favicon.ico')
     assert result.wildcards == {}
     assert result.detail == 'Found.'
 
