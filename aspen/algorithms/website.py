@@ -68,6 +68,7 @@ def dispatch_request_to_filesystem(website, request):
                                 , pathparts=request.line.uri.path.parts
                                 , uripath=request.line.uri.path.raw
                                 , querystring=request.line.uri.querystring.raw
+                                , startdir=website.www_root
                                  )
     request.fs = result.match
     for k, v in result.wildcards.iteritems():
