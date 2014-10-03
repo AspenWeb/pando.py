@@ -80,7 +80,7 @@ def test_dispatcher_returns_a_result_for_autoindex(harness):
     harness.client.website.list_directories = True
     result = dispatcher.dispatch(harness.client.website, request, [''], '/', '')
     assert result.status == dispatcher.DispatchStatus.okay
-    assert result.match == os.path.join(harness.fs.www.root, '')
+    assert result.match == harness.client.website.find_ours('autoindex.html.spt')
     assert result.wildcards == {}
     assert result.detail == 'Found.'
 
