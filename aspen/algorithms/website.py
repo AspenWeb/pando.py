@@ -65,8 +65,8 @@ def raise_200_for_OPTIONS(request):
         raise Response(200)
 
 
-def dispatch_request_to_filesystem(request):
-    dispatcher.dispatch(request)
+def dispatch_request_to_filesystem(website, request):
+    dispatcher.dispatch(website, request)
 
 
 def apply_typecasters_to_path(website, request):
