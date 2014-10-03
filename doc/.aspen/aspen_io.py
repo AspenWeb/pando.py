@@ -6,14 +6,14 @@ from os.path import dirname
 opts = {} # populate this in configure-aspen.py
 
 
-def add_stuff_to_request_context(request):
+def add_stuff_to_request_context(website, request):
 
     # Define some closures for generating image markup.
     # =================================================
 
     def translate(src):
         if src[0] != '/':
-            rel = dirname(request.fs)[len(request.website.www_root):]
+            rel = dirname(request.fs)[len(website.www_root):]
             src = '/'.join([rel, src])
         src = opts['base'] + src
         return src
