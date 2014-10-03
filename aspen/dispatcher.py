@@ -265,7 +265,7 @@ def update_neg_type(media_type_default, capture_accept, filename):
 
 
 def dispatch(website, indices, media_type_default, pathparts, uripath, querystring,
-        pure_dispatch=False):
+        startdir, pure_dispatch=False):
     """Concretize dispatch_abstract.
     """
 
@@ -278,7 +278,6 @@ def dispatch(website, indices, media_type_default, pathparts, uripath, querystri
     traverse = os.path.join
     find_index = lambda x: match_index(indices, x)
     noext_matched = lambda x: update_neg_type(media_type_default, capture_accept, x)
-    startdir = website.www_root
 
 
     # Dispatch!
