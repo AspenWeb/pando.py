@@ -219,15 +219,15 @@ def is_first_index(indices, basedir, name):
     return False
 
 
-def update_neg_type(request, filename):
+def update_neg_type(website, request, filename):
     media_type = mimetypes.guess_type(filename, strict=False)[0]
     if media_type is None:
-        media_type = request.website.media_type_default
+        media_type = website.media_type_default
     request.headers['X-Aspen-Accept'] = media_type
     debug(lambda: "set x-aspen-accept to %r" % media_type)
 
 
-def dispatch(request, pure_dispatch=False):
+def dispatch(website, request, pure_dispatch=False):
     """Concretize dispatch_abstract.
 
     This is all side-effecty on the request object, setting, at the least,
@@ -245,9 +245,9 @@ def dispatch(request, pure_dispatch=False):
     listnodes = os.listdir
     is_leaf = os.path.isfile
     traverse = os.path.join
-    find_index = lambda x: match_index(request.website.indices, x)
-    noext_matched = lambda x: update_neg_type(request, x)
-    startdir = request.website.www_root
+    find_index = lambda x: match_index(website.indices, x)
+    noext_matched = lambda x: update_neg_type(website, request, x)
+    startdir = website.www_root
 
     # Dispatch!
     # =========
@@ -266,10 +266,10 @@ def dispatch(request, pure_dispatch=False):
     if result.match:
         debug(lambda: "result.match is true" )
         matchbase, matchname = result.match.rsplit(os.path.sep,1)
-        if pathparts[-1] != '' and matchname in request.website.indices and \
-                is_first_index(request.website.indices, matchbase, matchname):
+        if pathparts[-1] != '' and matchname in website.indices and \
+                is_first_index(website.indices, matchbase, matchname):
             # asked for something that maps to a default index file; redirect to / per issue #175
-            debug(lambda: "found default index '%s' maps into %r" % (pathparts[-1], request.website.indices))
+            debug(lambda: "found default index '%s' maps into %r" % (pathparts[-1], website.indices))
             uri = request.line.uri
             location = uri.path.raw[:-len(pathparts[-1])]
             if uri.querystring.raw:
@@ -285,7 +285,7 @@ def dispatch(request, pure_dispatch=False):
         if request.line.uri.path.raw == '/favicon.ico':
             if result.status != DispatchStatus.okay:
                 path = request.line.uri.path.raw[1:]
-                request.fs = request.website.find_ours(path)
+                request.fs = website.find_ours(path)
                 return
 
 
@@ -305,9 +305,9 @@ def dispatch(request, pure_dispatch=False):
 
     if result.status == DispatchStatus.okay:
         if result.match.endswith('/'):              # autoindex
-            if not request.website.list_directories:
+            if not website.list_directories:
                 raise Response(404)
-            autoindex = request.website.ours_or_theirs('autoindex.html.spt')
+            autoindex = website.ours_or_theirs('autoindex.html.spt')
             assert autoindex is not None # sanity check
             request.headers['X-Aspen-AutoIndexDir'] = result.match
             request.fs = autoindex

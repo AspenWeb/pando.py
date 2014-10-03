@@ -113,7 +113,7 @@ def decode_raw(raw):
 # Core loaders
 # ============
 
-def load(request, mtime):
+def load(website, request, mtime):
     """Given a Request and a mtime, return a Resource object (w/o caching).
     """
 
@@ -139,7 +139,7 @@ def load(request, mtime):
         guess_with = guess_with[:-4]
     fs_media_type = mimetypes.guess_type(guess_with, strict=False)[0]
     if fs_media_type is None:
-        media_type = request.website.media_type_default
+        media_type = website.media_type_default
     else:
         media_type = fs_media_type
 
@@ -154,14 +154,15 @@ def load(request, mtime):
     else:                                           # negotiated
         Class = NegotiatedResource
 
-    resource = Class(request.website, request.fs, raw, media_type, mtime)
+    resource = Class(website, request.fs, raw, media_type, mtime)
     return resource
 
 
-def get(request):
+def get(website, request):
     """Given a Request, return a Resource object (with caching).
 
-    We need the request because it carries media_type_default.
+    We need the request to pass through to the Resource constructor. That's
+    where it's placed into the simplate execution context.
 
     """
 
@@ -188,7 +189,7 @@ def get(request):
             raise entry.exc
     else:  # cache miss
         try:
-            entry.resource = load(request, mtime)
+            entry.resource = load(website, request, mtime)
         except:  # capture any Exception
             entry.exc = (LoadError(traceback.format_exc())
                         , sys.exc_info()[2]
