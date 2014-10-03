@@ -51,7 +51,7 @@ Greetings, program!
 
 def test_dispatcher_returns_a_result(harness):
     request = harness.make_request('Greetings, program!', 'index.html')
-    result = dispatcher.dispatch(harness.client.website, request)
+    result = dispatcher.dispatch(harness.client.website, request, [''], '/', '')
     assert result.status == dispatcher.DispatchStatus.okay
     assert result.match == os.path.join(harness.fs.www.root, 'index.html')
     assert result.wildcards == {}
@@ -63,7 +63,12 @@ def test_dispatcher_returns_a_result_for_favicon(harness):
                                 , b'SERVER_PROTOCOL': b'HTTP/1.1'
                                 , b'wsgi.input': StringIO()
                                  })
-    result = dispatcher.dispatch(harness.client.website, request)
+    result = dispatcher.dispatch( harness.client.website
+                                , request
+                                , ['favicon.ico']
+                                , '/favicon.ico'
+                                , ''
+                                 )
     assert result.status == dispatcher.DispatchStatus.okay
     assert result.match == harness.client.website.find_ours('favicon.ico')
     assert result.wildcards == {}
@@ -73,7 +78,7 @@ def test_dispatcher_returns_a_result_for_autoindex(harness):
     request = harness.make_request('Greetings, program!', 'index.html')
     os.remove(request.fs)
     harness.client.website.list_directories = True
-    result = dispatcher.dispatch(harness.client.website, request)
+    result = dispatcher.dispatch(harness.client.website, request, [''], '/', '')
     assert result.status == dispatcher.DispatchStatus.okay
     assert result.match == os.path.join(harness.fs.www.root, '')
     assert result.wildcards == {}
