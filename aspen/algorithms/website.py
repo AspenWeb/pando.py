@@ -68,13 +68,13 @@ def apply_typecasters_to_path(website, request):
     typecasting.apply_typecasters(website.typecasters, request.line.uri.path)
 
 
-def get_resource_for_request(website, request):
+def get_resource_for_request(website, request, dispatch_result):
     return {'resource': resources.get(website, request)}
 
 
-def get_response_for_resource(request, resource=None):
+def get_response_for_resource(request, dispatch_result, resource=None):
     if resource is not None:
-        return {'response': resource.respond(request)}
+        return {'response': resource.respond(request, dispatch_result)}
 
 
 def get_response_for_exception(website, exception):
