@@ -264,7 +264,8 @@ def update_neg_type(media_type_default, capture_accept, filename):
     debug(lambda: "set result.extra['accept'] to %r" % media_type)
 
 
-def dispatch(website, media_type_default, pathparts, uripath, querystring, pure_dispatch=False):
+def dispatch(website, indices, media_type_default, pathparts, uripath, querystring,
+        pure_dispatch=False):
     """Concretize dispatch_abstract.
     """
 
@@ -275,7 +276,7 @@ def dispatch(website, media_type_default, pathparts, uripath, querystring, pure_
     listnodes = os.listdir
     is_leaf = os.path.isfile
     traverse = os.path.join
-    find_index = lambda x: match_index(website.indices, x)
+    find_index = lambda x: match_index(indices, x)
     noext_matched = lambda x: update_neg_type(media_type_default, capture_accept, x)
     startdir = website.www_root
 
@@ -300,11 +301,11 @@ def dispatch(website, media_type_default, pathparts, uripath, querystring, pure_
     if result.match:
         debug(lambda: "result.match is true" )
         matchbase, matchname = result.match.rsplit(os.path.sep,1)
-        if pathparts[-1] != '' and matchname in website.indices and \
-                is_first_index(website.indices, matchbase, matchname):
+        if pathparts[-1] != '' and matchname in indices and \
+                is_first_index(indices, matchbase, matchname):
             # asked for something that maps to a default index file; redirect to / per issue #175
             debug( lambda: "found default index '%s' maps into %r"
-                 % (pathparts[-1], website.indices)
+                 % (pathparts[-1], indices)
                   )
             location = uripath[:-len(pathparts[-1])]
             if querystring:
