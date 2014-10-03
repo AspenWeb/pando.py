@@ -7,8 +7,7 @@ import os
 from pytest import raises
 
 import aspen
-from aspen import dispatcher, Response
-from aspen.http.request import Request
+from aspen import Response
 
 
 # Helpers
