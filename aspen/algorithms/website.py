@@ -48,7 +48,10 @@ def parse_environ_into_request(environ):
 
 
 def parse_body_into_request(request, website):
-    request._parse_body = lambda _: body_parsers.parse_body(request.raw_body, request.headers, website.body_parsers)
+    request._parse_body = lambda _: body_parsers.parse_body( request.raw_body
+                                                           , request.headers
+                                                           , website.body_parsers
+                                                            )
 
 
 def tack_website_onto_request(request, website):
