@@ -264,7 +264,7 @@ def update_neg_type(website, capture_accept, filename):
     debug(lambda: "set result.extra['accept'] to %r" % media_type)
 
 
-def dispatch(website, request, pathparts, uripath, querystring, pure_dispatch=False):
+def dispatch(website, pathparts, uripath, querystring, pure_dispatch=False):
     """Concretize dispatch_abstract.
     """
 
