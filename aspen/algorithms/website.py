@@ -63,6 +63,7 @@ def raise_200_for_OPTIONS(request):
 
 def dispatch_request_to_filesystem(website, request):
     result = dispatcher.dispatch( website
+                                , indices=website.indices
                                 , media_type_default=website.media_type_default
                                 , pathparts=request.line.uri.path.parts
                                 , uripath=request.line.uri.path.raw
