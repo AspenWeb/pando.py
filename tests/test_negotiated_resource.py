@@ -110,11 +110,17 @@ def test_get_renderer_factory_can_raise_syntax_error(get):
 
 # get_response
 
-def get_response(website, request, response):
-    context = { 'request': request
+def get_state(harness, *a, **kw):
+    kw['return_after'] = 'dispatch_request_to_filesystem'
+    kw['want'] = 'state'
+    return harness.simple(*a, **kw)
+
+def get_response(state, response):
+    context = { 'request': state['request']
+              , 'dispatch_result': state['dispatch_result']
               , 'response': response
                }
-    resource = resources.load(website, request, 0)
+    resource = resources.load(state['website'], state['dispatch_result'].match, 0)
     return resource.get_response(context)
 
 NEGOTIATED_RESOURCE = """\
@@ -128,76 +134,76 @@ Greetings, program!
 def test_get_response_gets_response(harness):
     harness.fs.www.mk(('index.spt', NEGOTIATED_RESOURCE))
     response = Response()
-    request = harness.make_request(filepath='index.spt', contents=NEGOTIATED_RESOURCE)
-    actual = get_response(harness.client.website, request, response)
+    state = get_state(harness, filepath='index.spt', contents=NEGOTIATED_RESOURCE)
+    actual = get_response(state, response)
     assert actual is response
 
 def test_get_response_is_happy_not_to_negotiate(harness):
     harness.fs.www.mk(('index.spt', NEGOTIATED_RESOURCE))
-    request = harness.make_request(filepath='index.spt', contents=NEGOTIATED_RESOURCE)
-    actual = get_response(harness.client.website, request, Response()).body
+    state = get_state(harness, filepath='index.spt', contents=NEGOTIATED_RESOURCE)
+    actual = get_response(state, Response()).body
     assert actual == "Greetings, program!\n"
 
 def test_get_response_sets_content_type_when_it_doesnt_negotiate(harness):
     harness.fs.www.mk(('index.spt', NEGOTIATED_RESOURCE))
-    request = harness.make_request(filepath='index.spt', contents=NEGOTIATED_RESOURCE)
-    actual = get_response(harness.client.website, request, Response()).headers['Content-Type']
+    state = get_state(harness, filepath='index.spt', contents=NEGOTIATED_RESOURCE)
+    actual = get_response(state, Response()).headers['Content-Type']
     assert actual == "text/plain; charset=UTF-8"
 
 def test_get_response_doesnt_reset_content_type_when_not_negotiating(harness):
     harness.fs.www.mk(('index.spt', NEGOTIATED_RESOURCE))
-    request = harness.make_request(filepath='index.spt', contents=NEGOTIATED_RESOURCE)
+    state = get_state(harness, filepath='index.spt', contents=NEGOTIATED_RESOURCE)
     response = Response()
     response.headers['Content-Type'] = 'never/mind'
-    actual = get_response(harness.client.website, request, response).headers['Content-Type']
+    actual = get_response(state, response).headers['Content-Type']
     assert actual == "never/mind"
 
 def test_get_response_negotiates(harness):
     harness.fs.www.mk(('index.spt', NEGOTIATED_RESOURCE))
-    request = harness.make_request(filepath='index.spt', contents=NEGOTIATED_RESOURCE)
-    request.headers['Accept'] = 'text/html'
-    actual = get_response(harness.client.website, request, Response()).body
+    state = get_state(harness, filepath='index.spt', contents=NEGOTIATED_RESOURCE)
+    state['request'].headers['Accept'] = 'text/html'
+    actual = get_response(state, Response()).body
     assert actual == "<h1>Greetings, program!</h1>\n"
 
 def test_handles_busted_accept(harness):
     harness.fs.www.mk(('index.spt', NEGOTIATED_RESOURCE))
-    request = harness.make_request(filepath='index.spt', contents=NEGOTIATED_RESOURCE)
+    state = get_state(harness, filepath='index.spt', contents=NEGOTIATED_RESOURCE)
     # Set an invalid Accept header so it will return default (text/plain)
-    request.headers['Accept'] = 'text/html;'
-    actual = get_response(harness.client.website, request, Response()).body
+    state['request'].headers['Accept'] = 'text/html;'
+    actual = get_response(state, Response()).body
     assert actual == "Greetings, program!\n"
 
 def test_get_response_sets_content_type_when_it_negotiates(harness):
     harness.fs.www.mk(('index.spt', NEGOTIATED_RESOURCE))
-    request = harness.make_request(filepath='index.spt', contents=NEGOTIATED_RESOURCE)
-    request.headers['Accept'] = 'text/html'
-    actual = get_response(harness.client.website, request, Response()).headers['Content-Type']
+    state = get_state(harness, filepath='index.spt', contents=NEGOTIATED_RESOURCE)
+    state['request'].headers['Accept'] = 'text/html'
+    actual = get_response(state, Response()).headers['Content-Type']
     assert actual == "text/html; charset=UTF-8"
 
 def test_get_response_doesnt_reset_content_type_when_negotiating(harness):
     harness.fs.www.mk(('index.spt', NEGOTIATED_RESOURCE))
-    request = harness.make_request(filepath='index.spt', contents=NEGOTIATED_RESOURCE)
-    request.headers['Accept'] = 'text/html'
+    state = get_state(harness, filepath='index.spt', contents=NEGOTIATED_RESOURCE)
+    state['request'].headers['Accept'] = 'text/html'
     response = Response()
     response.headers['Content-Type'] = 'never/mind'
-    actual = get_response(harness.client.website, request, response).headers['Content-Type']
+    actual = get_response(state, response).headers['Content-Type']
     response = Response()
     response.headers['Content-Type'] = 'never/mind'
-    actual = get_response(harness.client.website, request, response).headers['Content-Type']
+    actual = get_response(state, response).headers['Content-Type']
     assert actual == "never/mind"
 
 def test_get_response_raises_406_if_need_be(harness):
     harness.fs.www.mk(('index.spt', NEGOTIATED_RESOURCE))
-    request = harness.make_request(filepath='index.spt', contents=NEGOTIATED_RESOURCE)
-    request.headers['Accept'] = 'cheese/head'
-    actual = raises(Response, get_response, harness.client.website, request, Response()).value.code
+    state = get_state(harness, filepath='index.spt', contents=NEGOTIATED_RESOURCE)
+    state['request'].headers['Accept'] = 'cheese/head'
+    actual = raises(Response, get_response, state, Response()).value.code
     assert actual == 406
 
 def test_get_response_406_gives_list_of_acceptable_types(harness):
     harness.fs.www.mk(('index.spt', NEGOTIATED_RESOURCE))
-    request = harness.make_request(filepath='index.spt', contents=NEGOTIATED_RESOURCE)
-    request.headers['Accept'] = 'cheese/head'
-    actual = raises(Response, get_response, harness.client.website, request, Response()).value.body
+    state = get_state(harness, filepath='index.spt', contents=NEGOTIATED_RESOURCE)
+    state['request'].headers['Accept'] = 'cheese/head'
+    actual = raises(Response, get_response, state, Response()).value.body
     expected = "The following media types are available: text/plain, text/html."
     assert actual == expected
 
@@ -221,16 +227,16 @@ website.default_renderers_by_media_type['text/plain'] = 'glubber'
 def test_can_override_default_renderers_by_mimetype(harness):
     harness.fs.project.mk(('configure-aspen.py', OVERRIDE_SIMPLATE),)
     harness.fs.www.mk(('index.spt', NEGOTIATED_RESOURCE),)
-    request = harness.make_request(filepath='index.spt', contents=NEGOTIATED_RESOURCE)
-    request.headers['Accept'] = 'text/plain'
-    actual = get_response(harness.client.website, request, Response()).body
+    state = get_state(harness, filepath='index.spt', contents=NEGOTIATED_RESOURCE)
+    state['request'].headers['Accept'] = 'text/plain'
+    actual = get_response(state, Response()).body
     assert actual == "glubber"
 
 def test_can_override_default_renderer_entirely(harness):
     harness.fs.project.mk(('configure-aspen.py', OVERRIDE_SIMPLATE))
-    request = harness.make_request(filepath='index.spt', contents=NEGOTIATED_RESOURCE)
-    request.headers['Accept'] = 'text/plain'
-    actual = get_response(harness.client.website, request, Response()).body
+    state = get_state(harness, filepath='index.spt', contents=NEGOTIATED_RESOURCE)
+    state['request'].headers['Accept'] = 'text/plain'
+    actual = get_response(state, Response()).body
     assert actual == "glubber"
 
 
