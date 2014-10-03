@@ -67,14 +67,21 @@ def lror(**kw):
     Algorithm(log_result_of_request).run(**kw)
 
 def test_lror_logs_result_of_request(harness):
-    request = harness.make_request()
+    state = harness.simple(want='state', return_after='dispatch_request_to_filesystem')
+    request = state['request']
+    dispatch_result = state['dispatch_result']
     response = Response(200, "Greetings, program!")
-    actual = capture(func=lror, website=harness.client.website, request=request, response=response)
+    actual = capture( func=lror
+                    , website=harness.client.website
+                    , request=request
+                    , dispatch_result=dispatch_result
+                    , response=response
+                     )
     assert actual == [
         '200 OK                               /                        ./index.html.spt'
     ]
 
-def test_lror_logs_result_of_request_when_request_is_none(harness):
+def test_lror_logs_result_of_request_and_dispatch_result_are_none(harness):
     response = Response(500, "Failure, program!")
     actual = capture(func=lror, website=harness.client.website, response=response)
     assert actual == [
@@ -82,8 +89,14 @@ def test_lror_logs_result_of_request_when_request_is_none(harness):
     ]
 
 def test_lror_logs_result_of_request_when_response_is_none(harness):
-    request = harness.make_request()
-    actual = capture(func=lror, website=harness.client.website, request=request)
+    state = harness.simple(want='state', return_after='dispatch_request_to_filesystem')
+    request = state['request']
+    dispatch_result = state['dispatch_result']
+    actual = capture( func=lror
+                    , website=harness.client.website
+                    , request=request
+                    , dispatch_result=dispatch_result
+                     )
     assert actual == [
         '(no response available)              /                        ./index.html.spt'
     ]

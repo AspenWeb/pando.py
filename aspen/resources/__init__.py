@@ -113,7 +113,7 @@ def decode_raw(raw):
 # Core loaders
 # ============
 
-def load(website, request, fspath, mtime):
+def load(website, fspath, mtime):
     """Given a Request and a mtime, return a Resource object (w/o caching).
     """
 
@@ -154,16 +154,12 @@ def load(website, request, fspath, mtime):
     else:                                           # negotiated
         Class = NegotiatedResource
 
-    resource = Class(website, request, raw, media_type, mtime)
+    resource = Class(website, fspath, raw, media_type, mtime)
     return resource
 
 
-def get(website, request, fspath):
-    """Given a Request and a filesystem path, return a Resource object (with caching).
-
-    We need the request to pass through to the Resource constructor. That's
-    where it's placed into the simplate execution context.
-
+def get(website, fspath):
+    """Given a website and a filesystem path, return a Resource object (with caching).
     """
 
     # XXX This is not thread-safe. It used to be, but then I simplified it
@@ -189,7 +185,7 @@ def get(website, request, fspath):
             raise entry.exc
     else:  # cache miss
         try:
-            entry.resource = load(website, request, fspath, mtime)
+            entry.resource = load(website, fspath, mtime)
         except:  # capture any Exception
             entry.exc = (LoadError(traceback.format_exc()), sys.exc_info()[2])
         else:  # reset any previous Exception
