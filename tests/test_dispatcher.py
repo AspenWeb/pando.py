@@ -5,11 +5,9 @@ from __future__ import unicode_literals
 
 import os
 from pytest import raises
-from StringIO import StringIO
 
 import aspen
 from aspen import dispatcher, Response
-from aspen.http.request import Request
 
 
 # Helpers
@@ -58,6 +56,7 @@ def test_dispatcher_returns_a_result(harness):
                                 , '/'
                                 , ''
                                 , harness.fs.www.root
+                                , lambda result: result
                                  )
     assert result.status == dispatcher.DispatchStatus.okay
     assert result.match == os.path.join(harness.fs.www.root, 'index.html')
@@ -72,6 +71,7 @@ def test_dispatcher_returns_a_result_for_favicon(harness):
                                 , '/favicon.ico'
                                 , ''
                                 , harness.fs.www.root
+                                , lambda result: result
                                  )
     assert result.status == dispatcher.DispatchStatus.okay
     assert result.match == harness.client.website.find_ours('favicon.ico')
@@ -80,14 +80,21 @@ def test_dispatcher_returns_a_result_for_favicon(harness):
 
 def test_dispatcher_returns_a_result_for_autoindex(harness):
     harness.client.website.list_directories = True
-    result = dispatcher.dispatch( harness.client.website
+    tracer = object()
+    actual = dispatcher.dispatch( harness.client.website
                                 , []
                                 , ''
                                 , ['']
                                 , '/'
                                 , ''
                                 , harness.fs.www.root
+                                , lambda result: tracer
                                  )
+    assert actual is tracer
+
+def test_dispatcher_in_algorithm_returns_a_better_result_for_autoindex(harness):
+    harness.client.website.list_directories = True
+    result = harness.simple(filepath=None, uripath='/', want='dispatch_result')
     assert result.status == dispatcher.DispatchStatus.okay
     assert result.match == harness.client.website.find_ours('autoindex.html.spt')
     assert result.wildcards == {}
