@@ -51,14 +51,14 @@ Greetings, program!
 
 def test_dispatcher_returns_a_result(harness):
     harness.fs.www.mk(('index.html', 'Greetings, program!'),)
-    result = dispatcher.dispatch(harness.client.website, [''], '/', '')
+    result = dispatcher.dispatch(harness.client.website, '', [''], '/', '')
     assert result.status == dispatcher.DispatchStatus.okay
     assert result.match == os.path.join(harness.fs.www.root, 'index.html')
     assert result.wildcards == {}
     assert result.detail == 'Found.'
 
 def test_dispatcher_returns_a_result_for_favicon(harness):
-    result = dispatcher.dispatch(harness.client.website, ['favicon.ico'], '/favicon.ico', '')
+    result = dispatcher.dispatch(harness.client.website, '', ['favicon.ico'], '/favicon.ico', '')
     assert result.status == dispatcher.DispatchStatus.okay
     assert result.match == harness.client.website.find_ours('favicon.ico')
     assert result.wildcards == {}
@@ -66,7 +66,7 @@ def test_dispatcher_returns_a_result_for_favicon(harness):
 
 def test_dispatcher_returns_a_result_for_autoindex(harness):
     harness.client.website.list_directories = True
-    result = dispatcher.dispatch(harness.client.website, [''], '/', '')
+    result = dispatcher.dispatch(harness.client.website, '', [''], '/', '')
     assert result.status == dispatcher.DispatchStatus.okay
     assert result.match == harness.client.website.find_ours('autoindex.html.spt')
     assert result.wildcards == {}
