@@ -113,11 +113,11 @@ def decode_raw(raw):
 # Core loaders
 # ============
 
-def load(website, request, mtime):
+def load(website, request, fspath, mtime):
     """Given a Request and a mtime, return a Resource object (w/o caching).
     """
 
-    is_spt = request.fs.endswith('.spt')
+    is_spt = fspath.endswith('.spt')
 
     # Load bytes.
     # ===========
@@ -125,7 +125,7 @@ def load(website, request, mtime):
     #      and turned into unicode strings internally
     # non-.spt files are static, possibly binary, so don't get decoded
 
-    with open(request.fs, 'rb') as fh:
+    with open(fspath, 'rb') as fh:
         raw = fh.read()
     if is_spt:
         raw = decode_raw(raw)
@@ -134,7 +134,7 @@ def load(website, request, mtime):
     # =====================
     # For a negotiated resource we will ignore this.
 
-    guess_with = request.fs
+    guess_with = fspath
     if is_spt:
         guess_with = guess_with[:-4]
     fs_media_type = mimetypes.guess_type(guess_with, strict=False)[0]
@@ -154,12 +154,12 @@ def load(website, request, mtime):
     else:                                           # negotiated
         Class = NegotiatedResource
 
-    resource = Class(website, request.fs, raw, media_type, mtime)
+    resource = Class(website, request, raw, media_type, mtime)
     return resource
 
 
-def get(website, request):
-    """Given a Request, return a Resource object (with caching).
+def get(website, request, fspath):
+    """Given a Request and a filesystem path, return a Resource object (with caching).
 
     We need the request to pass through to the Resource constructor. That's
     where it's placed into the simplate execution context.
@@ -173,27 +173,25 @@ def get(website, request):
     # Get a cache Entry object.
     # =========================
 
-    if request.fs not in __cache__:
+    if fspath not in __cache__:
         entry = Entry()
-        __cache__[request.fs] = entry
+        __cache__[fspath] = entry
 
-    entry = __cache__[request.fs]
+    entry = __cache__[fspath]
 
 
     # Process the resource.
     # =====================
 
-    mtime = os.stat(request.fs)[stat.ST_MTIME]
+    mtime = os.stat(fspath)[stat.ST_MTIME]
     if entry.mtime == mtime:  # cache hit
         if entry.exc is not None:
             raise entry.exc
     else:  # cache miss
         try:
-            entry.resource = load(website, request, mtime)
+            entry.resource = load(website, request, fspath, mtime)
         except:  # capture any Exception
-            entry.exc = (LoadError(traceback.format_exc())
-                        , sys.exc_info()[2]
-                         )
+            entry.exc = (LoadError(traceback.format_exc()), sys.exc_info()[2])
         else:  # reset any previous Exception
             entry.exc = None
 

@@ -96,8 +96,7 @@ class DynamicResource(Resource):
             'channel': None
         })
         # http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html
-        for method in ['OPTIONS', 'GET', 'HEAD', 'POST', 'PUT', 'DELETE',
-                       'TRACE', 'CONNECT']:
+        for method in ['OPTIONS', 'GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'TRACE', 'CONNECT']:
             context[method] = (method == request.line.method)
         # insert the residual context from the initialization page
         context.update(self.pages[0])

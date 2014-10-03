@@ -78,7 +78,7 @@ def dispatch_request_to_filesystem(website, request):
                                 , directory_default     = directory_default
                                 , favicon_default       = website.find_ours('favicon.ico')
                                  )
-    request.fs = result.match
+
     for k, v in result.wildcards.iteritems():
         request.line.uri.path[k] = v
     return {'dispatch_result': result}
@@ -89,7 +89,7 @@ def apply_typecasters_to_path(website, request):
 
 
 def get_resource_for_request(website, request, dispatch_result):
-    return {'resource': resources.get(website, request)}
+    return {'resource': resources.get(website, request, dispatch_result.match)}
 
 
 def get_response_for_resource(request, dispatch_result, resource=None):
@@ -123,16 +123,15 @@ def delegate_error_to_simplate(website, request, response, resource=None):
 
     code = str(response.code)
     possibles = [code + ".spt", "error.spt"]
-    fs = _first(website.ours_or_theirs(errpage) for errpage in possibles)
+    fspath = _first(website.ours_or_theirs(errpage) for errpage in possibles)
 
-    if fs is not None:
-        request.fs = fs
+    if fspath is not None:
         request.original_resource = resource
         if resource is not None:
             # Try to return an error that matches the type of the original resource.
             request.headers['Accept'] = resource.media_type + ', text/plain; q=0.1'
         resource = resources.get(website, request)
-        dispatch_result = DispatchResult(DispatchStatus.okay, fs, {}, 'Found.', {})
+        dispatch_result = DispatchResult(DispatchStatus.okay, fspath, {}, 'Found.', {})
         try:
             response = resource.respond(request, dispatch_result, response)
         except Response as response:
