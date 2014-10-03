@@ -37,7 +37,7 @@ class DynamicResource(Resource):
         self.pages = self.compile_pages(pages)
 
 
-    def respond(self, request, response=None):
+    def respond(self, request, dispatch_result, response=None):
         """Given a Request and maybe a Response, return or raise a Response.
         """
         response = response or Response(charset=self.website.charset_dynamic)
@@ -46,7 +46,7 @@ class DynamicResource(Resource):
         # Populate context.
         # =================
 
-        context = self.populate_context(request, response)
+        context = self.populate_context(request, dispatch_result, response)
 
 
         # Exec page two.
@@ -77,7 +77,7 @@ class DynamicResource(Resource):
             return response
 
 
-    def populate_context(self, request, response):
+    def populate_context(self, request, dispatch_result, response):
         """Factored out to support testing.
         """
         dynamics = { 'body' : lambda: request.body }
@@ -96,16 +96,16 @@ class DynamicResource(Resource):
             'channel': None
         })
         # http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html
-        for method in ['OPTIONS', 'GET', 'HEAD', 'POST', 'PUT', 'DELETE',
-                       'TRACE', 'CONNECT']:
+        for method in ['OPTIONS', 'GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'TRACE', 'CONNECT']:
             context[method] = (method == request.line.method)
         # insert the residual context from the initialization page
         context.update(self.pages[0])
         # don't let the page override these
         context.update({
             'request' : request,
-            'response': response,
-            'resource': self
+            'dispatch_result': dispatch_result,
+            'resource': self,
+            'response': response
         })
         return context
 

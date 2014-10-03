@@ -67,13 +67,13 @@ def get_table_entries():
         results += [ (files, r, expected[i]) for i, r in enumerate(requests) ]
     return results
 
-def format_result(request):
+def format_result(request, dispatch_result=None, **ignored):
     """
     turn a raw request result into a string compatible with the table-driven test
     """
     wilds = request.line.uri.path
     wildtext = ",".join("%s='%s'" % (k, wilds[k]) for k in sorted(wilds))
-    result = request.fs
+    result = dispatch_result.match if dispatch_result else ''
     if wildtext: result += " (%s)" % wildtext
     return result
 
@@ -92,7 +92,12 @@ def test_all_table_entries(harness, files, request_uri, expected):
     response = harness.simple(uripath=request_uri, filepath=None, want='response', raise_immediately=False)
     result = unicode(response.code)
     if result == '200':
-        path = format_result(harness.simple(uripath=request_uri, filepath=None, want='request', raise_immediately=False))
+        state = harness.simple( uripath=request_uri
+                              , filepath=None
+                              , want='state'
+                              , raise_immediately=False
+                               )
+        path = format_result(**state)
         path = path[len(harness.fs.www.root)+1:]
         if path:
             result += " " + path
@@ -135,7 +140,12 @@ if __name__ == '__main__':
         for i,request_uri in enumerate(requests):
             result = unicode(harness.simple(uripath=request_uri, filepath=None, want='response.code', raise_immediately=False))
             if result not in [ '404' ]:
-                path = format_result(harness.simple(uripath=request_uri, filepath=None, want='request', raise_immediately=False))
+                state = harness.simple( uripath=request_uri
+                                      , filepath=None
+                                      , want='state'
+                                      , raise_immediately=False
+                                       )
+                path = format_result(**state)
                 path = path[len(harness.fs.www.root)+1:]
                 if path:
                     result += " " + path
