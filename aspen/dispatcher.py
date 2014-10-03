@@ -107,10 +107,15 @@ def dispatch_abstract(listnodes, is_leaf, traverse, find_index, noext_matched,
 
         # check all the possibilities:
         # node.html, node.html.spt, node.spt, node.html/, %node.html/ %*.html.spt, %*.spt
-        subnodes = set([ n for n in listnodes(curnode) if not n.startswith('.') ])  # don't serve hidden files
+
+        # don't serve hidden files
+        subnodes = set([ n for n in listnodes(curnode) if not n.startswith('.') ])
+
         node_noext, node_ext = splitext(node)
 
-        maybe_wild_nodes = [ n for n in sorted(subnodes) if n.startswith("%") ]  # only maybe because non-spt files aren't wild
+        # only maybe because non-spt files aren't wild
+        maybe_wild_nodes = [ n for n in sorted(subnodes) if n.startswith("%") ]
+
         wild_leaf_ns = [ n for n in maybe_wild_nodes if is_leaf_node(n) and is_spt(n) ]
         wild_nonleaf_ns = [ n for n in maybe_wild_nodes if not is_leaf_node(n) ]
 
@@ -132,7 +137,8 @@ def dispatch_abstract(listnodes, is_leaf, traverse, find_index, noext_matched,
             if node == '':  # dir request
                 debug(lambda: "...last node is empty")
                 path_so_far = traverse(curnode, node)
-                # return either an index file or have the path end in '/' which means 404 or autoindex as appropriate
+                # return either an index file or have the path end in '/' which means 404 or
+                # autoindex as appropriate
                 found_n = find_index(path_so_far)
                 if found_n is None:
                     found_n = ""
@@ -145,13 +151,19 @@ def dispatch_abstract(listnodes, is_leaf, traverse, find_index, noext_matched,
             elif node in subnodes and is_leaf_node(node):
                 debug(lambda: "...found exact file, must be static")
                 if is_spt(node):
-                    return DispatchResult(DispatchStatus.missing, None, None, "Node %r Not Found" % node)
+                    return DispatchResult( DispatchStatus.missing
+                                         , None
+                                         , None
+                                         , "Node %r Not Found" % node
+                                          )
                 else:
                     found_n = node
             elif node + ".spt" in subnodes and is_leaf_node(node + ".spt"):
                 debug(lambda: "...found exact spt")
                 found_n = node + ".spt"
-            elif node_noext + ".spt" in subnodes and is_leaf_node(node_noext + ".spt") and node_ext:  # node has an extension
+            elif node_noext + ".spt" in subnodes and is_leaf_node(node_noext + ".spt") \
+                    and node_ext:
+                # node has an extension
                 debug(lambda: "...found indirect spt")
                 # indirect match
                 noext_matched(node)
@@ -166,16 +178,28 @@ def dispatch_abstract(listnodes, is_leaf, traverse, find_index, noext_matched,
                 curnode = traverse(curnode, found_n)
                 result = get_wildleaf_fallback()
                 if not result:
-                    return DispatchResult(DispatchStatus.non_leaf, curnode, None, "Tried to access non-leaf node as leaf.")
+                    return DispatchResult( DispatchStatus.non_leaf
+                                         , curnode
+                                         , None
+                                         , "Tried to access non-leaf node as leaf."
+                                          )
                 return result
             elif node in subnodes:
                 debug(lambda: "exact dirmatch")
-                return DispatchResult(DispatchStatus.non_leaf, curnode, None, "Tried to access non-leaf node as leaf.")
+                return DispatchResult( DispatchStatus.non_leaf
+                                     , curnode
+                                     , None
+                                     , "Tried to access non-leaf node as leaf."
+                                      )
             else:
                 debug(lambda: "fallthrough")
                 result = get_wildleaf_fallback()
                 if not result:
-                    return DispatchResult(DispatchStatus.missing, None, None, "Node %r Not Found" % node)
+                    return DispatchResult( DispatchStatus.missing
+                                         , None
+                                         , None
+                                         , "Node %r Not Found" % node
+                                          )
                 return result
 
         if not last_node:  # not at last path seg in request
@@ -185,7 +209,8 @@ def dispatch_abstract(listnodes, is_leaf, traverse, find_index, noext_matched,
                 debug(lambda: "Exact match " + repr(node))
                 curnode = traverse(curnode, found_n)
             elif wild_nonleaf_ns:
-                # need to match a wildnode, and we're not the last node, so we should match non-leaf first, then leaf
+                # need to match a wildnode, and we're not the last node, so we should match
+                # non-leaf first, then leaf
                 found_n = wild_nonleaf_ns[0]
                 wildvals[found_n[1:]] = node
                 debug(lambda: "Wildcard match %r = %r " % (found_n, node))
@@ -194,7 +219,11 @@ def dispatch_abstract(listnodes, is_leaf, traverse, find_index, noext_matched,
                 debug(lambda: "No exact match for " + repr(node))
                 result = get_wildleaf_fallback()
                 if not result:
-                    return DispatchResult(DispatchStatus.missing, None, None, "Node %r Not Found" % node)
+                    return DispatchResult( DispatchStatus.missing
+                                         , None
+                                         , None
+                                         , "Node %r Not Found" % node
+                                          )
                 return result
 
     return DispatchResult(DispatchStatus.okay, curnode, wildvals, "Found.")
@@ -269,7 +298,9 @@ def dispatch(website, request, pure_dispatch=False):
         if pathparts[-1] != '' and matchname in website.indices and \
                 is_first_index(website.indices, matchbase, matchname):
             # asked for something that maps to a default index file; redirect to / per issue #175
-            debug(lambda: "found default index '%s' maps into %r" % (pathparts[-1], website.indices))
+            debug( lambda: "found default index '%s' maps into %r"
+                 % (pathparts[-1], website.indices)
+                  )
             uri = request.line.uri
             location = uri.path.raw[:-len(pathparts[-1])]
             if uri.querystring.raw:
