@@ -6,24 +6,9 @@ Aspen uses resources to model HTTP resources.
 
 Here is the class hierarchy:
 
-    Resource                            Logic Pages     Content Pages
-     +-- DynamicResource                -----------------------------
-     |    +-- NegotiatedResource            2               1 or more
-     |    |    +-- RenderedResource         1 or 2          1
-     +-- StaticResource                     0               1
-
-
-The call chain looks like this for static resources:
-
-    StaticResource.respond(request, response)
-
-
-It's more complicate for dynamic resources:
-
-    DynamicResource.respond
-        DynamicResource.parse
-
-
+    Resource
+     +-- NegotiatedResource
+     +-- StaticResource
 
 """
 from __future__ import absolute_import
@@ -41,7 +26,6 @@ import traceback
 from aspen.backcompat import StringIO
 from aspen.exceptions import LoadError
 from aspen.resources.negotiated_resource import NegotiatedResource
-from aspen.resources.rendered_resource import RenderedResource
 from aspen.resources.static_resource import StaticResource
 
 # Cache helpers
@@ -149,8 +133,6 @@ def load(website, fspath, mtime):
 
     if not is_spt:                                  # static
         Class = StaticResource
-    elif fs_media_type is not None:                 # rendered
-        Class = RenderedResource
     else:                                           # negotiated
         Class = NegotiatedResource
 
