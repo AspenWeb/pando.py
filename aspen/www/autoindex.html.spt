@@ -125,7 +125,7 @@ for el in (dirs, files, others):
 
 aspen_version = aspen.__version__
 
-[----------------------------------------] via stdlib_percent
+[----------------------------------------] text/html via stdlib_percent
 <html>
     <head>
         <title>%(title)s</title>

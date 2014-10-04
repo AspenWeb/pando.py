@@ -37,17 +37,18 @@ Greetings, program!
     assert actual == expected
 
 def test_fatal_error_response_is_returned(harness):
-    harness.fs.www.mk(('index.html.spt', "raise heck\n[---]\n"))
+    harness.fs.www.mk(('index.spt', "[---]\nraise heck\n[---] text/html\n"))
     expected = 500
     actual = harness.client.GET(raise_immediately=False).code
     assert actual == expected
 
 def test_redirect_has_only_location(harness):
-    harness.fs.www.mk(('index.html.spt', """
+    harness.fs.www.mk(('index.spt', """
 from aspen import Response
 [---]
 request.redirect('http://elsewhere', code=304)
-[---]"""))
+[---] text/html
+"""))
     actual = harness.client.GET(raise_immediately=False)
     assert actual.code == 304
     headers = actual.headers
@@ -55,27 +56,30 @@ request.redirect('http://elsewhere', code=304)
 
 def test_nice_error_response_is_returned(harness):
     harness.short_circuit = False
-    harness.fs.www.mk(('index.html.spt', """
+    harness.fs.www.mk(('index.spt', """
 from aspen import Response
 [---]
 raise Response(500)
-[---]"""))
+[---] text/html
+"""))
     assert harness.client.GET(raise_immediately=False).code == 500
 
 def test_nice_error_response_is_returned_for_404(harness):
-    harness.fs.www.mk(('index.html.spt', """
+    harness.fs.www.mk(('index.spt', """
 from aspen import Response
 [---]
 raise Response(404)
-[---]"""))
+[---] text/html
+"""))
     assert harness.client.GET(raise_immediately=False).code == 404
 
 def test_response_body_doesnt_expose_traceback_by_default(harness):
     harness.fs.project.mk(('error.spt', simple_error_spt))
-    harness.fs.www.mk(('index.html.spt', """
+    harness.fs.www.mk(('index.spt', """
 [---]
 raise Exception("Can I haz traceback ?")
-[---]"""))
+[---] text/html
+"""))
     response = harness.client.GET(raise_immediately=False)
     assert response.code == 500
     assert "Can I haz traceback ?" not in response.body
@@ -83,42 +87,46 @@ raise Exception("Can I haz traceback ?")
 def test_response_body_exposes_traceback_for_show_tracebacks(harness):
     harness.client.website.show_tracebacks = True
     harness.fs.project.mk(('error.spt', simple_error_spt))
-    harness.fs.www.mk(('index.html.spt', """
+    harness.fs.www.mk(('index.spt', """
 [---]
 raise Exception("Can I haz traceback ?")
-[---]"""))
+[---] text/html
+"""))
     response = harness.client.GET(raise_immediately=False)
     assert response.code == 500
     assert "Can I haz traceback ?" in response.body
 
 def test_default_error_simplate_doesnt_expose_raised_body_by_default(harness):
-    harness.fs.www.mk(('index.html.spt', """
+    harness.fs.www.mk(('index.spt', """
 from aspen import Response
 [---]
 raise Response(404, "Um, yeah.")
-[---]"""))
+[---] text/html
+"""))
     response = harness.client.GET(raise_immediately=False)
     assert response.code == 404
     assert "Um, yeah." not in response.body
 
 def test_default_error_simplate_exposes_raised_body_for_show_tracebacks(harness):
     harness.client.website.show_tracebacks = True
-    harness.fs.www.mk(('index.html.spt', """
+    harness.fs.www.mk(('index.spt', """
 from aspen import Response
 [---]
 raise Response(404, "Um, yeah.")
-[---]"""))
+[---] text/html
+"""))
     response = harness.client.GET(raise_immediately=False)
     assert response.code == 404
     assert "Um, yeah." in response.body
 
 def test_nice_error_response_can_come_from_user_error_spt(harness):
     harness.fs.project.mk(('error.spt', '[---]\n[---] text/plain\nTold ya.'))
-    harness.fs.www.mk(('index.html.spt', """
+    harness.fs.www.mk(('index.spt', """
 from aspen import Response
 [---]
 raise Response(420)
-[---]"""))
+[---] text/html
+"""))
     response = harness.client.GET(raise_immediately=False)
     assert response.code == 420
     assert response.body == 'Told ya.'
@@ -129,22 +137,23 @@ def test_nice_error_response_can_come_from_user_420_spt(harness):
 msg = "Enhance your calm." if response.code == 420 else "Ok."
 [---] text/plain
 %(msg)s"""))
-    harness.fs.www.mk(('index.html.spt', """
+    harness.fs.www.mk(('index.spt', """
 from aspen import Response
 [---]
 raise Response(420)
-[---]"""))
+[---] text/html
+"""))
     response = harness.client.GET(raise_immediately=False)
     assert response.code == 420
     assert response.body == 'Enhance your calm.'
 
 def test_default_error_spt_handles_text_html(harness):
-    harness.fs.www.mk(('foo.html.spt',"""
+    harness.fs.www.mk(('foo.spt',"""
 from aspen import Response
 [---]
 raise Response(404)
-[---]
-    """))
+[---] text/html
+"""))
     response = harness.client.GET('/foo.html', raise_immediately=False)
     assert response.code == 404
     assert 'text/html' in response.headers['Content-Type']
@@ -154,8 +163,8 @@ def test_default_error_spt_handles_application_json(harness):
 from aspen import Response
 [---]
 raise Response(404)
-[---]
-    """))
+[---] text/html
+"""))
     response = harness.client.GET('/foo.json', raise_immediately=False)
     assert response.code == 404
     assert response.headers['Content-Type'] == 'application/json'
@@ -172,8 +181,8 @@ def test_default_error_spt_application_json_includes_msg_for_show_tracebacks(har
 from aspen import Response
 [---]
 raise Response(404, "Right, sooo...")
-[---]
-    """))
+[---] text/html
+"""))
     response = harness.client.GET('/foo.json', raise_immediately=False)
     assert response.code == 404
     assert response.headers['Content-Type'] == 'application/json'
@@ -189,8 +198,8 @@ def test_default_error_spt_falls_through_to_text_plain(harness):
 from aspen import Response
 [---]
 raise Response(404)
-[---]
-    """))
+[---] text/html
+"""))
     response = harness.client.GET('/foo.xml', raise_immediately=False)
     assert response.code == 404
     assert response.headers['Content-Type'] == 'text/plain; charset=UTF-8'
@@ -202,8 +211,8 @@ def test_default_error_spt_fall_through_includes_msg_for_show_tracebacks(harness
 from aspen import Response
 [---]
 raise Response(404, "Try again!")
-[---]
-    """))
+[---] text/html
+"""))
     response = harness.client.GET('/foo.xml', raise_immediately=False)
     assert response.code == 404
     assert response.headers['Content-Type'] == 'text/plain; charset=UTF-8'
@@ -214,13 +223,13 @@ def test_custom_error_spt_without_text_plain_results_in_406(harness):
 [---]
 [---] text/html
 <h1>Oh no!</h1>
-    """))
-    harness.fs.www.mk(('foo.xml.spt',"""
+"""))
+    harness.fs.www.mk(('foo.spt',"""
 from aspen import Response
 [---]
 raise Response(404)
-[---]
-    """))
+[---] application/xml
+"""))
     response = harness.client.GET('/foo.xml', raise_immediately=False)
     assert response.code == 406
 
@@ -229,13 +238,13 @@ def test_custom_error_spt_with_text_plain_works(harness):
 [---]
 [---] text/plain
 Oh no!
-    """))
-    harness.fs.www.mk(('foo.xml.spt',"""
+"""))
+    harness.fs.www.mk(('foo.spt',"""
 from aspen import Response
 [---]
 raise Response(404)
-[---]
-    """))
+[---] application/xml
+"""))
     response = harness.client.GET('/foo.xml', raise_immediately=False)
     assert response.code == 404
     assert response.headers['Content-Type'] == 'text/plain; charset=UTF-8'
@@ -249,29 +258,33 @@ def test_autoindex_response_is_404_by_default(harness):
 def test_autoindex_response_is_returned(harness):
     harness.fs.www.mk(('README', "Greetings, program!"))
     harness.client.website.list_directories = True
-    body = harness.client.GET(raise_immediately=False).body
+    body = harness.client.GET(raise_immediately=True).body
     assert 'README' in body
 
 def test_resources_can_import_from_project_root(harness):
     harness.fs.project.mk(('foo.py', 'bar = "baz"'))
-    harness.fs.www.mk(('index.html.spt', "from foo import bar\n[---]\nGreetings, %(bar)s!"))
+    harness.fs.www.mk(( 'index.spt'
+                      , "from foo import bar\n[---]\n[---] text/html\nGreetings, %(bar)s!"
+                       ))
     assert harness.client.GET(raise_immediately=False).body == "Greetings, baz!"
 
 def test_non_500_response_exceptions_dont_get_folded_to_500(harness):
-    harness.fs.www.mk(('index.html.spt', '''
+    harness.fs.www.mk(('index.spt', '''
+[---]
 from aspen import Response
 raise Response(400)
-[---]
+[---] text/html
 '''))
     response = harness.client.GET(raise_immediately=False)
     assert response.code == 400
 
 def test_errors_show_tracebacks(harness):
-    harness.fs.www.mk(('index.html.spt', '''
+    harness.fs.www.mk(('index.spt', '''
+[---]
 from aspen import Response
 website.show_tracebacks = 1
 raise Response(400,1,2,3,4,5,6,7,8,9)
-[---]
+[---] text/html
 '''))
     response = harness.client.GET(raise_immediately=False)
     assert response.code == 500
