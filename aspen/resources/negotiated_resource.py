@@ -83,11 +83,7 @@ class NegotiatedResource(Resource):
         # Exec page two.
         # ==============
 
-        try:
-            exec self.pages[1] in context
-        except Response, response:
-            self.process_raised_response(response)
-            raise
+        exec self.pages[1] in context
 
         # if __all__ is defined, only pass those variables to templates
         # if __all__ is not defined, pass full context to templates
@@ -96,16 +92,7 @@ class NegotiatedResource(Resource):
             newcontext = dict([ (k, context[k]) for k in context['__all__'] ])
             context = newcontext
 
-        # Hook.
-        # =====
-
-        try:
-            response = self.get_response(context)
-        except Response, response:
-            self.process_raised_response(response)
-            raise
-        else:
-            return response
+        return self.get_response(context)
 
 
     def populate_context(self, request, dispatch_result, response):
