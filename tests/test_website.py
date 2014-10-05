@@ -159,11 +159,11 @@ raise Response(404)
     assert 'text/html' in response.headers['Content-Type']
 
 def test_default_error_spt_handles_application_json(harness):
-    harness.fs.www.mk(('foo.json.spt',"""
+    harness.fs.www.mk(('foo.spt',"""
 from aspen import Response
 [---]
 raise Response(404)
-[---] text/html
+[---] application/json
 """))
     response = harness.client.GET('/foo.json', raise_immediately=False)
     assert response.code == 404
@@ -177,11 +177,11 @@ raise Response(404)
 
 def test_default_error_spt_application_json_includes_msg_for_show_tracebacks(harness):
     harness.client.website.show_tracebacks = True
-    harness.fs.www.mk(('foo.json.spt',"""
+    harness.fs.www.mk(('foo.spt',"""
 from aspen import Response
 [---]
 raise Response(404, "Right, sooo...")
-[---] text/html
+[---] application/json
 """))
     response = harness.client.GET('/foo.json', raise_immediately=False)
     assert response.code == 404
@@ -194,11 +194,11 @@ raise Response(404, "Right, sooo...")
 '''
 
 def test_default_error_spt_falls_through_to_text_plain(harness):
-    harness.fs.www.mk(('foo.xml.spt',"""
+    harness.fs.www.mk(('foo.spt',"""
 from aspen import Response
 [---]
 raise Response(404)
-[---] text/html
+[---] application/xml
 """))
     response = harness.client.GET('/foo.xml', raise_immediately=False)
     assert response.code == 404
@@ -207,11 +207,11 @@ raise Response(404)
 
 def test_default_error_spt_fall_through_includes_msg_for_show_tracebacks(harness):
     harness.client.website.show_tracebacks = True
-    harness.fs.www.mk(('foo.xml.spt',"""
+    harness.fs.www.mk(('foo.spt',"""
 from aspen import Response
 [---]
 raise Response(404, "Try again!")
-[---] text/html
+[---] application/xml
 """))
     response = harness.client.GET('/foo.xml', raise_immediately=False)
     assert response.code == 404
