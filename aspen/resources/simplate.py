@@ -52,7 +52,7 @@ ORDINALS = StringDefaultingList([ 'zero' , 'one' , 'two', 'three', 'four'
                                  ])
 
 
-class NegotiatedResource(Resource):
+class Simplate(Resource):
     """This is a negotiated resource. It has three or more pages.
     """
 

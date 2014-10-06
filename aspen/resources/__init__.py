@@ -7,7 +7,7 @@ Aspen uses resources to model HTTP resources.
 Here is the class hierarchy:
 
     Resource
-     +-- NegotiatedResource
+     +-- Simplate
      +-- StaticResource
 
 """
@@ -25,7 +25,7 @@ import traceback
 
 from aspen.backcompat import StringIO
 from aspen.exceptions import LoadError
-from aspen.resources.negotiated_resource import NegotiatedResource
+from aspen.resources.simplate import Simplate
 from aspen.resources.static_resource import StaticResource
 
 # Cache helpers
@@ -131,11 +131,7 @@ def load(website, fspath, mtime):
     # ================================
     # An instantiated resource is compiled as far as we can take it.
 
-    if not is_spt:                                  # static
-        Class = StaticResource
-    else:                                           # negotiated
-        Class = NegotiatedResource
-
+    Class = Simplate if is_spt else StaticResource
     resource = Class(website, fspath, raw, media_type, mtime)
     return resource
 
