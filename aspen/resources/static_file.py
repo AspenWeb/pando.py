@@ -1,6 +1,6 @@
 """
-aspen.resource.static_resource
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+aspen.resource.static_file
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 """
 from __future__ import absolute_import
 from __future__ import division
@@ -12,7 +12,7 @@ from aspen import Response
 from aspen.resources.resource import Resource
 
 
-class StaticResource(Resource):
+class StaticFile(Resource):
 
     def __init__(self, *a, **kw):
         Resource.__init__(self, *a, **kw)

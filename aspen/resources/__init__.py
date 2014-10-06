@@ -8,7 +8,7 @@ Here is the class hierarchy:
 
     Resource
      +-- Simplate
-     +-- StaticResource
+     +-- StaticFile
 
 """
 from __future__ import absolute_import
@@ -26,7 +26,7 @@ import traceback
 from aspen.backcompat import StringIO
 from aspen.exceptions import LoadError
 from aspen.resources.simplate import Simplate
-from aspen.resources.static_resource import StaticResource
+from aspen.resources.static_file import StaticFile
 
 # Cache helpers
 # =============
@@ -116,7 +116,7 @@ def load(website, fspath, mtime):
 
     # Compute a media type.
     # =====================
-    # For a negotiated resource we will ignore this.
+    # For a resource we will ignore this.
 
     guess_with = fspath
     if is_spt:
@@ -131,7 +131,7 @@ def load(website, fspath, mtime):
     # ================================
     # An instantiated resource is compiled as far as we can take it.
 
-    Class = Simplate if is_spt else StaticResource
+    Class = Simplate if is_spt else StaticFile
     resource = Class(website, fspath, raw, media_type, mtime)
     return resource
 
