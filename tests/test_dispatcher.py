@@ -196,7 +196,7 @@ def test_indirect_negotiation_can_passthrough_static(harness):
     assert_fs(harness, 'foo.html', 'foo.html')
 
 def test_indirect_negotiation_can_passthrough_renderered(harness):
-    harness.fs.www.mk(('foo.spt', "Greetings, program!"),)
+    harness.fs.www.mk(('foo.spt', "[---]\n[---] text/html\nGreetings, program!"),)
     assert_fs(harness, 'foo.html', 'foo.spt')
 
 def test_indirect_negotiation_can_passthrough_negotiated(harness):
@@ -279,11 +279,11 @@ def test_virtual_path_directory(harness):
     assert_fs(harness, '/foo/', '%first/index.html')
 
 def test_virtual_path_file(harness):
-    harness.fs.www.mk(('foo/%bar.spt', "Greetings, program!"),)
+    harness.fs.www.mk(('foo/%bar.spt', "[---]\n[---] text/html\nGreetings, program!"),)
     assert_fs(harness, '/foo/blah.html', 'foo/%bar.spt')
 
 def test_virtual_path_file_only_last_part(harness):
-    harness.fs.www.mk(('foo/%bar.spt', "Greetings, program!"),)
+    harness.fs.www.mk(('foo/%bar.spt', "[---]\n[---] text/html\nGreetings, program!"),)
     assert_fs(harness, '/foo/blah/baz.html', 'foo/%bar.spt')
 
 def test_virtual_path_file_only_last_part____no_really(harness):
@@ -291,15 +291,15 @@ def test_virtual_path_file_only_last_part____no_really(harness):
     assert_raises_404(harness, '/foo/blah.html/')
 
 def test_virtual_path_file_key_val_set(harness):
-    harness.fs.www.mk(('foo/%bar.spt', "Greetings, program!"),)
+    harness.fs.www.mk(('foo/%bar.spt', "[---]\n[---] text/html\nGreetings, program!"),)
     assert_virtvals(harness, '/foo/blah.html', {'bar': [u'blah']})
 
 def test_virtual_path_file_key_val_not_cast(harness):
-    harness.fs.www.mk(('foo/%bar.spt', "Greetings, program!"),)
+    harness.fs.www.mk(('foo/%bar.spt', "[---]\n[---] text/html\nGreetings, program!"),)
     assert_virtvals(harness, '/foo/537.html', {'bar': [u'537']})
 
 def test_virtual_path_file_key_val_cast(harness):
-    harness.fs.www.mk(('foo/%bar.int.spt', "Greetings, program!"),)
+    harness.fs.www.mk(('foo/%bar.int.spt', "[---]\n[---] text/html\nGreetings, program!"),)
     assert_virtvals(harness, '/foo/537.html', {'bar': [537]})
 
 def test_virtual_path_file_not_dir(harness):
