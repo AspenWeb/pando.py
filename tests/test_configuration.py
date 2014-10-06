@@ -127,12 +127,13 @@ def test_configuration_script_can_set_renderer_default(harness):
 website.renderer_default="stdlib_format"
     """
     SIMPLATE = """
-name="program"
 [----]
+name="program"
+[----] text/html
 Greetings, {name}!
     """
     harness.fs.project.mk(('configure-aspen.py', CONFIG),)
-    harness.fs.www.mk(('index.html.spt', SIMPLATE),)
+    harness.fs.www.mk(('index.spt', SIMPLATE),)
     assert_body(harness, '/', 'Greetings, program!\n')
 
 def test_configuration_script_ignores_blank_indexfilenames():
