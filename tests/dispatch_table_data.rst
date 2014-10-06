@@ -125,4 +125,4 @@ Future work:
     * %bar/
     * %bar/index
     * %bar/baz.spt
-
+    * %bar.html.spt
