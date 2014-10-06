@@ -56,10 +56,6 @@ class Simplate(Resource):
     """This is a negotiated resource. It has three or more pages.
     """
 
-    min_pages = 3
-    max_pages = None
-
-
     def __init__(self, *a, **kw):
         Resource.__init__(self, *a, **kw)
         self.renderers = {}         # mapping of media type to render function
@@ -137,24 +133,13 @@ class Simplate(Resource):
 
         pages = list(split_and_escape(raw))
         npages = len(pages)
+        min_pages = 3
 
-        # Check for too few pages.
-        if npages < self.min_pages:
+        if npages < min_pages:
             type_name = self.__class__.__name__[:-len('resource')]
             msg = "%s resources must have at least %s pages; %s has %s."
             msg %= ( type_name
-                   , ORDINALS[self.min_pages]
-                   , self.fs
-                   , ORDINALS[npages]
-                    )
-            raise SyntaxError(msg)
-
-        # Check for too many pages. This is user error.
-        if self.max_pages is not None and npages > self.max_pages:
-            type_name = self.__class__.__name__[:-len('resource')]
-            msg = "%s resources must have at most %s pages; %s has %s."
-            msg %= ( type_name
-                   , ORDINALS[self.max_pages]
+                   , ORDINALS[min_pages]
                    , self.fs
                    , ORDINALS[npages]
                     )
