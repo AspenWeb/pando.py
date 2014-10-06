@@ -449,12 +449,12 @@ NAME_LIKES_CHEESE_SPT = """\
 [---------]
 name = path['name'].title()
 cheese = path['cheese']
-[---------] text/html
+[---------] text/plain
 %(name)s likes %(cheese)s cheese."""
 
 def test_virtual_path_docs_3(harness):
     harness.fs.www.mk( ( '%name/index.spt', GREETINGS_NAME_SPT)
-                     , ( '%name/%cheese.spt', NAME_LIKES_CHEESE_SPT)
+                     , ( '%name/%cheese.txt.spt', NAME_LIKES_CHEESE_SPT)
                       )
     assert_body(harness, '/chad/cheddar.txt', "Chad likes cheddar cheese.")
 
@@ -472,7 +472,7 @@ Tonight we're going to party like it's %(year)s!"""
 
 def test_virtual_path_docs_5(harness):
     harness.fs.www.mk( ('%name/index.spt', GREETINGS_NAME_SPT)
-                     , ('%name/%cheese.spt', NAME_LIKES_CHEESE_SPT)
+                     , ('%name/%cheese.txt.spt', NAME_LIKES_CHEESE_SPT)
                      , ('%year.int/index.spt', PARTY_LIKE_YEAR_SPT)
                       )
     assert_body(harness, '/1999/', 'Greetings, 1999!')
