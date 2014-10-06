@@ -102,7 +102,7 @@ def test_dispatcher_in_algorithm_returns_a_better_result_for_autoindex(harness):
     harness.client.website.list_directories = True
     result = harness.simple(filepath=None, uripath='/', want='dispatch_result')
     assert result.status == dispatcher.DispatchStatus.okay
-    assert result.match == harness.client.website.find_ours('autoindex.html.spt')
+    assert result.match == harness.client.website.find_ours('autoindex.spt')
     assert result.wildcards == {}
     assert result.detail == 'Directory default.'
 
@@ -139,35 +139,49 @@ def test_configure_aspen_py_setting_override_works_too(harness):
     assert_raises_404(harness, '/')
 
 def test_configure_aspen_py_setting_takes_first(harness):
-    harness.fs.project.mk(('configure-aspen.py', 'website.indices = ["index.html", "default.html"]'),)
+    harness.fs.project.mk(( 'configure-aspen.py'
+                          , 'website.indices = ["index.html", "default.html"]'
+                           ))
     harness.fs.www.mk( ('index.html', "Greetings, program!")
                      , ('default.html', "Greetings, program!")
                       )
     assert_fs(harness, '/', 'index.html')
 
 def test_configure_aspen_py_setting_takes_second_if_first_is_missing(harness):
-    harness.fs.project.mk(('configure-aspen.py', 'website.indices = ["index.html", "default.html"]'),)
+    harness.fs.project.mk(( 'configure-aspen.py'
+                          , 'website.indices = ["index.html", "default.html"]'
+                           ))
     harness.fs.www.mk(('default.html', "Greetings, program!"),)
     assert_fs(harness, '/', 'default.html')
 
 def test_configure_aspen_py_setting_strips_commas(harness):
-    harness.fs.project.mk(('configure-aspen.py', 'website.indices = ["index.html", "default.html"]'),)
+    harness.fs.project.mk(( 'configure-aspen.py'
+                          , 'website.indices = ["index.html", "default.html"]'
+                           ))
     harness.fs.www.mk(('default.html', "Greetings, program!"),)
     assert_fs(harness, '/', 'default.html')
 
 def test_redirect_indices_to_slash(harness):
-    harness.fs.project.mk(('configure-aspen.py', 'website.indices = ["index.html", "default.html"]'),)
+    harness.fs.project.mk(( 'configure-aspen.py'
+                          , 'website.indices = ["index.html", "default.html"]'
+                           ))
     harness.fs.www.mk(('index.html', "Greetings, program!"),)
     assert_raises_302(harness, '/index.html')
 
 def test_redirect_second_index_to_slash(harness):
-    harness.fs.project.mk(('configure-aspen.py', 'website.indices = ["index.html", "default.html"]'),)
+    harness.fs.project.mk(( 'configure-aspen.py'
+                          , 'website.indices = ["index.html", "default.html"]'
+                           ))
     harness.fs.www.mk(('default.html', "Greetings, program!"),)
     assert_raises_302(harness, '/default.html')
 
 def test_dont_redirect_second_index_if_first(harness):
-    harness.fs.project.mk(('configure-aspen.py', 'website.indices = ["index.html", "default.html"]'),)
-    harness.fs.www.mk(('default.html', "Greetings, program!"), ('index.html', "Greetings, program!"),)
+    harness.fs.project.mk(( 'configure-aspen.py'
+                          , 'website.indices = ["index.html", "default.html"]'
+                           ))
+    harness.fs.www.mk( ('default.html', "Greetings, program!")
+                     , ('index.html', "Greetings, program!")
+                      )
     # first index redirects
     assert_raises_302(harness, '/index.html')
     # second shouldn't
@@ -182,8 +196,8 @@ def test_indirect_negotiation_can_passthrough_static(harness):
     assert_fs(harness, 'foo.html', 'foo.html')
 
 def test_indirect_negotiation_can_passthrough_renderered(harness):
-    harness.fs.www.mk(('foo.html.spt', "Greetings, program!"),)
-    assert_fs(harness, 'foo.html', 'foo.html.spt')
+    harness.fs.www.mk(('foo.spt', "Greetings, program!"),)
+    assert_fs(harness, 'foo.html', 'foo.spt')
 
 def test_indirect_negotiation_can_passthrough_negotiated(harness):
     harness.fs.www.mk(('foo', "Greetings, program!"),)
@@ -198,21 +212,15 @@ def test_indirect_negotiation_skips_two_dots(harness):
     assert_fs(harness, 'foo.bar.html', 'foo.bar.spt')
 
 def test_indirect_negotiation_prefers_rendered(harness):
-    harness.fs.www.mk( ('foo.html', "Greetings, program!")
-          , ('foo', "blah blah blah")
-           )
+    harness.fs.www.mk(('foo.html', "Greetings, program!"), ('foo', "blah blah blah"))
     assert_fs(harness, 'foo.html', 'foo.html')
 
 def test_indirect_negotiation_really_prefers_rendered(harness):
-    harness.fs.www.mk( ('foo.html', "Greetings, program!")
-          , ('foo.', "blah blah blah")
-           )
+    harness.fs.www.mk(('foo.html', "Greetings, program!"), ('foo.', "blah blah blah"))
     assert_fs(harness, 'foo.html', 'foo.html')
 
 def test_indirect_negotiation_really_prefers_rendered_2(harness):
-    harness.fs.www.mk( ('foo.html', "Greetings, program!")
-          , ('foo', "blah blah blah")
-           )
+    harness.fs.www.mk(('foo.html', "Greetings, program!"), ('foo', "blah blah blah"))
     assert_fs(harness, 'foo.html', 'foo.html')
 
 def test_indirect_negotation_doesnt_do_dirs(harness):
@@ -262,8 +270,8 @@ def test_virtual_path_raises_404_on_direct_access(harness):
 
 def test_virtual_path_matches_the_first(harness):
     harness.fs.www.mk( ('%first/foo.html', "Greetings, program!")
-          , ('%second/foo.html', "WWAAAAAAAAAAAA!!!!!!!!")
-           )
+                     , ('%second/foo.html', "WWAAAAAAAAAAAA!!!!!!!!")
+                      )
     assert_fs(harness, '/1999/foo.html', '%first/foo.html')
 
 def test_virtual_path_directory(harness):
@@ -271,34 +279,34 @@ def test_virtual_path_directory(harness):
     assert_fs(harness, '/foo/', '%first/index.html')
 
 def test_virtual_path_file(harness):
-    harness.fs.www.mk(('foo/%bar.html.spt', "Greetings, program!"),)
-    assert_fs(harness, '/foo/blah.html', 'foo/%bar.html.spt')
+    harness.fs.www.mk(('foo/%bar.spt', "Greetings, program!"),)
+    assert_fs(harness, '/foo/blah.html', 'foo/%bar.spt')
 
 def test_virtual_path_file_only_last_part(harness):
-    harness.fs.www.mk(('foo/%bar.html.spt', "Greetings, program!"),)
-    assert_fs(harness, '/foo/blah/baz.html', 'foo/%bar.html.spt')
+    harness.fs.www.mk(('foo/%bar.spt', "Greetings, program!"),)
+    assert_fs(harness, '/foo/blah/baz.html', 'foo/%bar.spt')
 
 def test_virtual_path_file_only_last_part____no_really(harness):
     harness.fs.www.mk(('foo/%bar.html', "Greetings, program!"),)
     assert_raises_404(harness, '/foo/blah.html/')
 
 def test_virtual_path_file_key_val_set(harness):
-    harness.fs.www.mk(('foo/%bar.html.spt', "Greetings, program!"),)
+    harness.fs.www.mk(('foo/%bar.spt', "Greetings, program!"),)
     assert_virtvals(harness, '/foo/blah.html', {'bar': [u'blah']})
 
 def test_virtual_path_file_key_val_not_cast(harness):
-    harness.fs.www.mk(('foo/%bar.html.spt', "Greetings, program!"),)
+    harness.fs.www.mk(('foo/%bar.spt', "Greetings, program!"),)
     assert_virtvals(harness, '/foo/537.html', {'bar': [u'537']})
 
 def test_virtual_path_file_key_val_cast(harness):
-    harness.fs.www.mk(('foo/%bar.int.html.spt', "Greetings, program!"),)
+    harness.fs.www.mk(('foo/%bar.int.spt', "Greetings, program!"),)
     assert_virtvals(harness, '/foo/537.html', {'bar': [537]})
 
 def test_virtual_path_file_not_dir(harness):
     harness.fs.www.mk( ('%foo/bar.html', "Greetings from bar!")
-          , ('%baz.html.spt', "Greetings from baz!")
-           )
-    assert_fs(harness, '/bal.html', '%baz.html.spt')
+                     , ('%baz.spt', "[---]\n[---] text/html\nGreetings from baz!")
+                      )
+    assert_fs(harness, '/bal.html', '%baz.spt')
 
 # custom cast
 
@@ -320,19 +328,22 @@ website.typecasters['user'] = User.toUser
 """
 
 def test_virtual_path_file_key_val_cast_custom(harness):
-    harness.fs.project.mk(('configure-aspen.py', userclassconfigure),)
-    harness.fs.www.mk(('user/%user.user.html.spt', "\nusername=path['user']\n[-----]\nGreetings, %(username)s!"),)
-    actual = harness.simple(filepath=None, uripath='/user/chad.html', want='request.line.uri.path',
-            run_through='apply_typecasters_to_path')
+    harness.fs.project.mk(('configure-aspen.py', userclassconfigure))
+    harness.fs.www.mk(( 'user/%user.user.spt'
+                      , "\nusername=path['user']\n[-----]\nGreetings, %(username)s!"
+                       ))
+    actual = harness.simple( filepath=None
+                           , uripath='/user/chad.html'
+                           , want='request.line.uri.path'
+                           , run_through='apply_typecasters_to_path'
+                            )
     assert actual['user'].username == 'chad'
 
 # negotiated *and* virtual paths
 # ==============================
 
 def test_virtual_path__and_indirect_neg_file_not_dir(harness):
-    harness.fs.www.mk( ('%foo/bar.html', "Greetings from bar!")
-          , ('%baz.spt', NEGOTIATED_SIMPLATE)
-           )
+    harness.fs.www.mk(('%foo/bar.html', "Greetings from bar!"), ('%baz.spt', NEGOTIATED_SIMPLATE))
     assert_fs(harness, '/bal.html', '%baz.spt')
 
 def test_virtual_path_and_indirect_neg_noext(harness):
@@ -405,8 +416,8 @@ def test_path_part_params_static_file(harness):
     assert_fs(harness, '/foo/bar.html;a=1;b=;a=2;b=3', '/foo/bar.html')
 
 def test_path_part_params_simplate(harness):
-    harness.fs.www.mk(('/foo/bar.html.spt', "Greetings program!"),)
-    assert_fs(harness, '/foo/bar.html;a=1;b=;a=2;b=3', '/foo/bar.html.spt')
+    harness.fs.www.mk(('/foo/bar.spt', "[---]\n[---] text/html\nGreetings program!"),)
+    assert_fs(harness, '/foo/bar.html;a=1;b=;a=2;b=3', '/foo/bar.spt')
 
 def test_path_part_params_negotiated_simplate(harness):
     harness.fs.www.mk(('/foo/bar.spt', NEGOTIATED_SIMPLATE),)
@@ -420,49 +431,54 @@ def test_path_part_params_greedy_simplate(harness):
 # Docs
 # ====
 
-GREETINGS_NAME_SPT = """
-[-----]
-name = path['name']
+GREETINGS_NAME_SPT = """\
 [------]
+name = path['name']
+[------] text/html
 Greetings, %(name)s!"""
 
 def test_virtual_path_docs_1(harness):
-    harness.fs.www.mk(('%name/index.html.spt', GREETINGS_NAME_SPT),)
+    harness.fs.www.mk(('%name/index.spt', GREETINGS_NAME_SPT),)
     assert_body(harness, '/aspen/', 'Greetings, aspen!')
 
 def test_virtual_path_docs_2(harness):
-    harness.fs.www.mk(('%name/index.html.spt', GREETINGS_NAME_SPT),)
+    harness.fs.www.mk(('%name/index.spt', GREETINGS_NAME_SPT),)
     assert_body(harness, '/python/', 'Greetings, python!')
 
-NAME_LIKES_CHEESE_SPT = """
+NAME_LIKES_CHEESE_SPT = """\
+[---------]
 name = path['name'].title()
 cheese = path['cheese']
-[---------]
+[---------] text/html
 %(name)s likes %(cheese)s cheese."""
 
 def test_virtual_path_docs_3(harness):
-    harness.fs.www.mk( ( '%name/index.html.spt', GREETINGS_NAME_SPT)
-          , ( '%name/%cheese.txt.spt', NAME_LIKES_CHEESE_SPT)
-           )
+    harness.fs.www.mk( ( '%name/index.spt', GREETINGS_NAME_SPT)
+                     , ( '%name/%cheese.spt', NAME_LIKES_CHEESE_SPT)
+                      )
     assert_body(harness, '/chad/cheddar.txt', "Chad likes cheddar cheese.")
 
 def test_virtual_path_docs_4(harness):
-    harness.fs.www.mk( ('%name/index.html.spt', GREETINGS_NAME_SPT)
-          , ('%name/%cheese.txt.spt', NAME_LIKES_CHEESE_SPT)
-           )
+    harness.fs.www.mk( ('%name/index.spt', GREETINGS_NAME_SPT)
+                     , ('%name/%cheese.spt', NAME_LIKES_CHEESE_SPT)
+                      )
     assert_raises_404(harness, '/chad/cheddar.txt/')
 
-PARTY_LIKE_YEAR_SPT = "year = path['year']\n[----------]\nTonight we're going to party like it's %(year)s!"
+PARTY_LIKE_YEAR_SPT = """\
+[----------]
+year = path['year']
+[----------] text/html
+Tonight we're going to party like it's %(year)s!"""
 
 def test_virtual_path_docs_5(harness):
-    harness.fs.www.mk( ('%name/index.html.spt', GREETINGS_NAME_SPT)
-          , ('%name/%cheese.txt.spt', NAME_LIKES_CHEESE_SPT)
-          , ('%year.int/index.html.spt', PARTY_LIKE_YEAR_SPT)
-           )
+    harness.fs.www.mk( ('%name/index.spt', GREETINGS_NAME_SPT)
+                     , ('%name/%cheese.spt', NAME_LIKES_CHEESE_SPT)
+                     , ('%year.int/index.spt', PARTY_LIKE_YEAR_SPT)
+                      )
     assert_body(harness, '/1999/', 'Greetings, 1999!')
 
 def test_virtual_path_docs_6(harness):
-    harness.fs.www.mk(('%year.int/index.html.spt', PARTY_LIKE_YEAR_SPT),)
+    harness.fs.www.mk(('%year.int/index.spt', PARTY_LIKE_YEAR_SPT),)
     assert_body(harness, '/1999/', "Tonight we're going to party like it's 1999!")
 
 
@@ -471,25 +487,29 @@ def test_virtual_path_docs_6(harness):
 # These surfaced when porting mongs from Aspen 0.8.
 
 def test_virtual_path_parts_can_be_empty(harness):
-    harness.fs.www.mk(('foo/%bar/index.html.spt', "Greetings, program!"),)
+    harness.fs.www.mk(('foo/%bar/index.spt', "[---]\n[---] text/html\nGreetings, program!"),)
     assert_virtvals(harness, '/foo//' , {u'bar': [u'']})
 
 def test_file_matches_in_face_of_dir(harness):
-    harness.fs.www.mk( ('%page/index.html.spt', 'Nothing to see here.')
-          , ('%value.txt.spt', "Greetings, program!")
-           )
+    harness.fs.www.mk( ('%page/index.spt', '[---]\n[---] text/html\nNothing to see here.')
+                     , ('%value.txt.spt', "[---]\n[---] text/plain\nGreetings, program!")
+                      )
     assert_virtvals(harness, '/baz.txt', {'value': [u'baz']})
 
 def test_file_matches_extension(harness):
-    harness.fs.www.mk( ('%value.json.spt', '[-----]\n{"Greetings,": "program!"}')
-          , ('%value.txt.spt', "Greetings, program!")
-           )
+    harness.fs.www.mk( ( '%value.json.spt'
+                       , '[---]\n[---] application/json\n{"Greetings,": "program!"}'
+                        )
+                     , ('%value.txt.spt', "[---]\n[---]\nGreetings, program!")
+                      )
     assert_fs(harness, '/baz.json', "%value.json.spt")
 
 def test_file_matches_other_extension(harness):
-    harness.fs.www.mk( ('%value.json.spt', '[-----]\n{"Greetings,": "program!"}')
-          , ('%value.txt.spt', "Greetings, program!")
-           )
+    harness.fs.www.mk( ( '%value.json.spt'
+                       , '[---]\n[---] application/json\n{"Greetings,": "program!"}'
+                        )
+                     , ('%value.txt.spt', "[---]\n[---] text/plain\nGreetings, program!")
+                      )
     assert_fs(harness, '/baz.txt', "%value.txt.spt")
 
 
@@ -498,25 +518,21 @@ def test_virtual_file_with_no_extension_works(harness):
     assert_fs(harness, '/baz.txt', '%value.spt')
 
 def test_normal_file_with_no_extension_works(harness):
-    harness.fs.www.mk( ('%value.spt', NEGOTIATED_SIMPLATE)
-          , ('value', '{"Greetings,": "program!"}')
-           )
+    harness.fs.www.mk(('%value.spt', NEGOTIATED_SIMPLATE), ('value', '{"Greetings,": "program!"}'))
     assert_fs(harness, '/baz.txt', '%value.spt')
 
 def test_file_with_no_extension_matches(harness):
-    harness.fs.www.mk( ('%value.spt', NEGOTIATED_SIMPLATE)
-          , ('value', '{"Greetings,": "program!"}')
-           )
+    harness.fs.www.mk(('%value.spt', NEGOTIATED_SIMPLATE), ('value', '{"Greetings,": "program!"}'))
     assert_fs(harness, '/baz', '%value.spt')
     assert_virtvals(harness, '/baz', {'value': [u'baz']})
 
 def test_aspen_favicon_doesnt_get_clobbered_by_virtual_path(harness):
-    harness.fs.www.mk(('%value.html.spt', NEGOTIATED_SIMPLATE),)
+    harness.fs.www.mk(('%value.spt', NEGOTIATED_SIMPLATE),)
     actual = harness.simple(uripath='/favicon.ico', filepath=None, want='dispatch_result.match')
     assert actual == os.path.join(os.path.dirname(aspen.__file__), 'www', 'favicon.ico')
 
 def test_robots_txt_also_shouldnt_be_redirected(harness):
-    harness.fs.www.mk(('%value.html.spt', ''),)
+    harness.fs.www.mk(('%value.spt', ''),)
     assert_raises_404(harness, '/robots.txt')
 
 def test_dont_serve_hidden_files(harness):
@@ -524,5 +540,5 @@ def test_dont_serve_hidden_files(harness):
     assert_raises_404(harness, '/.secret_data')
 
 def test_dont_serve_spt_file_source(harness):
-    harness.fs.www.mk(('foo.html.spt', "Greetings, program!"),)
-    assert_raises_404(harness, '/foo.html.spt')
+    harness.fs.www.mk(('foo.spt', "Greetings, program!"),)
+    assert_raises_404(harness, '/foo.spt')

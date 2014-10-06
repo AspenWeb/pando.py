@@ -64,7 +64,7 @@ def raise_200_for_OPTIONS(request):
 def dispatch_request_to_filesystem(website, request):
 
     if website.list_directories:
-        directory_default = website.ours_or_theirs('autoindex.html.spt')
+        directory_default = website.ours_or_theirs('autoindex.spt')
         assert directory_default is not None  # sanity check
     else:
         directory_default = None
