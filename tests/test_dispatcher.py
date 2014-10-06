@@ -291,15 +291,15 @@ def test_virtual_path_file_only_last_part____no_really(harness):
     assert_raises_404(harness, '/foo/blah.html/')
 
 def test_virtual_path_file_key_val_set(harness):
-    harness.fs.www.mk(('foo/%bar.spt', "[---]\n[---] text/html\nGreetings, program!"),)
+    harness.fs.www.mk(('foo/%bar.html.spt', "[---]\n[---] text/html\nGreetings, program!"),)
     assert_virtvals(harness, '/foo/blah.html', {'bar': [u'blah']})
 
 def test_virtual_path_file_key_val_not_cast(harness):
-    harness.fs.www.mk(('foo/%bar.spt', "[---]\n[---] text/html\nGreetings, program!"),)
+    harness.fs.www.mk(('foo/%bar.html.spt', "[---]\n[---] text/html\nGreetings, program!"),)
     assert_virtvals(harness, '/foo/537.html', {'bar': [u'537']})
 
 def test_virtual_path_file_key_val_cast(harness):
-    harness.fs.www.mk(('foo/%bar.int.spt', "[---]\n[---] text/html\nGreetings, program!"),)
+    harness.fs.www.mk(('foo/%bar.int.html.spt', "[---]\n[---] text/html\nGreetings, program!"),)
     assert_virtvals(harness, '/foo/537.html', {'bar': [537]})
 
 def test_virtual_path_file_not_dir(harness):
@@ -329,8 +329,8 @@ website.typecasters['user'] = User.toUser
 
 def test_virtual_path_file_key_val_cast_custom(harness):
     harness.fs.project.mk(('configure-aspen.py', userclassconfigure))
-    harness.fs.www.mk(( 'user/%user.user.spt'
-                      , "\nusername=path['user']\n[-----]\nGreetings, %(username)s!"
+    harness.fs.www.mk(( 'user/%user.user.html.spt'
+                      , "[---]\nusername=path['user']\n[-----] text/html\nGreetings, %(username)s!"
                        ))
     actual = harness.simple( filepath=None
                            , uripath='/user/chad.html'
@@ -460,14 +460,14 @@ def test_virtual_path_docs_3(harness):
 
 def test_virtual_path_docs_4(harness):
     harness.fs.www.mk( ('%name/index.spt', GREETINGS_NAME_SPT)
-                     , ('%name/%cheese.spt', NAME_LIKES_CHEESE_SPT)
+                     , ('%name/%cheese.txt.spt', NAME_LIKES_CHEESE_SPT)
                       )
     assert_raises_404(harness, '/chad/cheddar.txt/')
 
 PARTY_LIKE_YEAR_SPT = """\
 [----------]
 year = path['year']
-[----------] text/html
+[----------] text/plain
 Tonight we're going to party like it's %(year)s!"""
 
 def test_virtual_path_docs_5(harness):
@@ -527,7 +527,7 @@ def test_file_with_no_extension_matches(harness):
     assert_virtvals(harness, '/baz', {'value': [u'baz']})
 
 def test_aspen_favicon_doesnt_get_clobbered_by_virtual_path(harness):
-    harness.fs.www.mk(('%value.spt', NEGOTIATED_SIMPLATE),)
+    harness.fs.www.mk(('%value.html.spt', NEGOTIATED_SIMPLATE),)
     actual = harness.simple(uripath='/favicon.ico', filepath=None, want='dispatch_result.match')
     assert actual == os.path.join(os.path.dirname(aspen.__file__), 'www', 'favicon.ico')
 
