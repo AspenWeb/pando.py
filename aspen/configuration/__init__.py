@@ -45,8 +45,7 @@ KNOBS = \
     , 'changes_reload':     (False, parse.yes_no)
     , 'charset_dynamic':    ('UTF-8', parse.charset)
     , 'charset_static':     (None, parse.charset)
-    , 'indices':            ( lambda: ['index.html', 'index.json', 'index'] +
-                                      ['index.html.spt', 'index.json.spt', 'index.spt']
+    , 'indices':            ( lambda: ['index.html', 'index.json', 'index', 'index.spt']
                             , parse.list_
                              )
     , 'list_directories':   (False, parse.yes_no)

@@ -33,25 +33,161 @@ import sys
 
 from aspen import Response, log
 import mimeparse
-from aspen.resources.dynamic_resource import DynamicResource
-from aspen.resources.pagination import parse_specline
+from aspen.resources.resource import Resource
+from aspen.resources.pagination import parse_specline, split_and_escape, Page
 
 renderer_re = re.compile(r'[a-z0-9.-_]+$')
 media_type_re = re.compile(r'[A-Za-z0-9.+*-]+/[A-Za-z0-9.+*-]+$')
 
 
-class NegotiatedResource(DynamicResource):
+class StringDefaultingList(list):
+    def __getitem__(self, key):
+        try:
+            return list.__getitem__(self, key)
+        except KeyError:
+            return str(key)
+
+ORDINALS = StringDefaultingList([ 'zero' , 'one' , 'two', 'three', 'four'
+                                , 'five', 'six', 'seven', 'eight', 'nine'
+                                 ])
+
+
+class Simplate(Resource):
     """This is a negotiated resource. It has three or more pages.
     """
 
-    min_pages = 3
-    max_pages = None
-
-
     def __init__(self, *a, **kw):
+        Resource.__init__(self, *a, **kw)
         self.renderers = {}         # mapping of media type to render function
         self.available_types = []   # ordered sequence of media types
-        DynamicResource.__init__(self, *a, **kw)
+        pages = self.parse_into_pages(self.raw)
+        self.pages = self.compile_pages(pages)
+
+
+    def respond(self, request, dispatch_result, response=None):
+        """Given a Request and maybe a Response, return or raise a Response.
+        """
+        response = response or Response(charset=self.website.charset_dynamic)
+
+
+        # Populate context.
+        # =================
+
+        context = self.populate_context(request, dispatch_result, response)
+
+
+        # Exec page two.
+        # ==============
+
+        exec self.pages[1] in context
+
+        # if __all__ is defined, only pass those variables to templates
+        # if __all__ is not defined, pass full context to templates
+
+        if '__all__' in context:
+            newcontext = dict([ (k, context[k]) for k in context['__all__'] ])
+            context = newcontext
+
+        return self.get_response(context)
+
+
+    def populate_context(self, request, dispatch_result, response):
+        """Factored out to support testing.
+        """
+        dynamics = { 'body' : lambda: request.body }
+        class Context(dict):
+            def __getitem__(self, key):
+                if key in dynamics:
+                    return dynamics[key]()
+                return dict.__getitem__(self, key)
+        context = Context()
+        context.update({
+            'website': None,
+            'headers': request.headers,
+            'cookie': request.headers.cookie,
+            'path': request.line.uri.path,
+            'qs': request.line.uri.querystring,
+            'channel': None
+        })
+        # http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html
+        for method in ['OPTIONS', 'GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'TRACE', 'CONNECT']:
+            context[method] = (method == request.line.method)
+        # insert the residual context from the initialization page
+        context.update(self.pages[0])
+        # don't let the page override these
+        context.update({
+            'request' : request,
+            'dispatch_result': dispatch_result,
+            'resource': self,
+            'response': response
+        })
+        return context
+
+
+    def parse_into_pages(self, raw):
+        """Given a bytestring, return a list of pages.
+
+        Subclasses extend this to implement additional semantics.
+
+        """
+
+        pages = list(split_and_escape(raw))
+        npages = len(pages)
+        min_pages = 3
+
+        if npages < min_pages:
+            type_name = self.__class__.__name__[:-len('resource')]
+            msg = "%s resources must have at least %s pages; %s has %s."
+            msg %= ( type_name
+                   , ORDINALS[min_pages]
+                   , self.fs
+                   , ORDINALS[npages]
+                    )
+            raise SyntaxError(msg)
+
+        return pages
+
+    def compile_pages(self, pages):
+        """Given a list of pages, replace the pages with objects.
+
+        All dynamic resources compile the first two pages the same way. It's
+        the third and following pages that differ, so we require subclasses to
+        supply a method for that: compile_page.
+
+        """
+
+        # Exec the first page and compile the second.
+        # ===========================================
+
+        one, two = pages[:2]
+
+        context = dict()
+        context['__file__'] = self.fs
+        context['website'] = self.website
+
+        one = compile(one.padded_content, self.fs, 'exec')
+        exec one in context    # mutate context
+        one = context          # store it
+
+        two = compile(two.padded_content, self.fs, 'exec')
+
+        pages[:2] = (one, two)
+
+        # Subclasses are responsible for the rest.
+        # ========================================
+
+        pages[2:] = (self.compile_page(page) for page in pages[2:])
+
+        return pages
+
+    @staticmethod
+    def _prepend_empty_pages(pages, min_length):
+        """Given a list of pages, and a min length, prepend blank pages to the
+        list until it is at least as long as min_length
+        """
+        num_extra_pages = min_length - len(pages)
+        #Note that range(x) returns an empty list if x < 1
+        pages[0:0] = (Page('') for _ in range(num_extra_pages))
 
 
     def compile_page(self, page):
@@ -92,7 +228,9 @@ class NegotiatedResource(DynamicResource):
                 media_type = mimeparse.best_match(self.available_types, accept)
             except:
                 # exception means don't override the defaults
-                log("Problem with mimeparse.best_match(%r, %r): %r " % (self.available_types, accept, sys.exc_info()))
+                log( "Problem with mimeparse.best_match(%r, %r): %r "
+                   % (self.available_types, accept, sys.exc_info())
+                    )
             else:
                 if media_type == '':    # breakdown in negotiations
                     raise failure

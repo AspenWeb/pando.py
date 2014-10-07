@@ -78,7 +78,7 @@ def test_lror_logs_result_of_request(harness):
                     , response=response
                      )
     assert actual == [
-        '200 OK                               /                        ./index.html.spt'
+        '200 OK                               /                        ./index.spt'
     ]
 
 def test_lror_logs_result_of_request_and_dispatch_result_are_none(harness):
@@ -98,5 +98,5 @@ def test_lror_logs_result_of_request_when_response_is_none(harness):
                     , dispatch_result=dispatch_result
                      )
     assert actual == [
-        '(no response available)              /                        ./index.html.spt'
+        '(no response available)              /                        ./index.spt'
     ]

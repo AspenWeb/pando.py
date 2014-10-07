@@ -64,7 +64,7 @@ def raise_200_for_OPTIONS(request):
 def dispatch_request_to_filesystem(website, request):
 
     if website.list_directories:
-        directory_default = website.ours_or_theirs('autoindex.html.spt')
+        directory_default = website.ours_or_theirs('autoindex.spt')
         assert directory_default is not None  # sanity check
     else:
         directory_default = None
@@ -117,7 +117,7 @@ def log_traceback_for_5xx(response, traceback=None):
     return {'traceback': None}
 
 
-def delegate_error_to_simplate(website, request, response, resource=None):
+def delegate_error_to_simplate(website, request, response, dispatch_result=None, resource=None):
     if response.code < 400:
         return
 
@@ -127,11 +127,16 @@ def delegate_error_to_simplate(website, request, response, resource=None):
 
     if fspath is not None:
         request.original_resource = resource
-        if resource is not None:
-            # Try to return an error that matches the type of the original resource.
-            request.headers['Accept'] = resource.media_type + ', text/plain; q=0.1'
-        resource = resources.get(website, fspath)
+        original_dispatch_result = dispatch_result
         dispatch_result = DispatchResult(DispatchStatus.okay, fspath, {}, 'Found.', {}, True)
+
+        # Try to return an error that matches the type of the original resource.
+        if original_dispatch_result is not None:
+            if 'accept' in original_dispatch_result.extra:
+                media_type = original_dispatch_result.extra['accept']
+                request.headers['Accept'] = media_type + ', text/plain; q=0.1'
+
+        resource = resources.get(website, fspath)
         try:
             response = resource.respond(request, dispatch_result, response)
         except Response as response:

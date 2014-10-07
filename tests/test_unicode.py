@@ -13,7 +13,7 @@ def test_non_ascii_bytes_fail_without_encoding(harness):
     raises(LoadError, harness.simple, b"""
         [------------------]
         text = u'א'
-        [------------------]
+        [------------------] text/html
         %(text)s
     """)
 
@@ -23,7 +23,7 @@ def test_non_ascii_bytes_work_with_encoding(harness):
         # encoding=utf8
         [------------------]
         text = u'א'
-        [------------------]
+        [------------------] text/html
         %(text)s
     """).body.strip()
     assert actual == expected
@@ -34,7 +34,7 @@ def test_response_as_wsgi_does_something_sane(harness):
         # encoding=utf8
         [------------------]
         text = u'א'
-        [------------------]
+        [------------------] text/html
         %(text)s""")
     actual = b''.join(list(wsgi({}, lambda a,b: None)))
     assert actual == expected
@@ -46,7 +46,7 @@ def test_the_exec_machinery_handles_two_encoding_lines_properly(harness):
         # encoding=ascii
         [------------------]
         text = u'א'
-        [------------------]
+        [------------------] text/html
         %(text)s
     """).body.strip()
     assert actual == expected

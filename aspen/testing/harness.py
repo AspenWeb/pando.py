@@ -54,7 +54,7 @@ class Harness(object):
     # Simple API
     # ==========
 
-    def simple(self, contents='Greetings, program!', filepath='index.html.spt', uripath=None,
+    def simple(self, contents='Greetings, program!', filepath='index.spt', uripath=None,
             argv=None, **kw):
         """A helper to create a file and hit it through our machinery.
         """

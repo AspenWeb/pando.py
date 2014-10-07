@@ -14,8 +14,8 @@ def test_json_basically_works(harness):
     expected = '''{
     "Greetings": "program!"
 }'''
-    actual = harness.simple( "[---] application/json\n{'Greetings': 'program!'}"
-                           , filepath="foo.json.spt"
+    actual = harness.simple( "[---]\n[---] application/json\n{'Greetings': 'program!'}"
+                           , filepath="foo.spt"
                             ).body
     assert actual == expected
 
@@ -42,18 +42,19 @@ def test_json_content_type_is_configurable_from_the_command_line(harness):
 
 def test_json_content_type_is_configurable_for_dynamic_json(harness):
     harness.fs.project.mk(('configure-aspen.py', 'website.media_type_json = "floober/blah"'))
-    actual = harness.simple( "[---] floober/blah\n{'Greetings': 'program!'}"
-                           , filepath="foo.json.spt"
+    actual = harness.simple( "[---]\n[---] floober/blah\n{'Greetings': 'program!'}"
+                           , filepath="foo.spt"
                             ).headers['Content-Type']
     assert actual == 'floober/blah'
 
 def test_json_content_type_is_per_file_configurable(harness):
     expected = 'floober/blah'
     actual = harness.simple('''
+        [---]
         response.headers['Content-type'] = 'floober/blah'
         [---] floober/blah
         {'Greetings': 'program!'}
-    ''', filepath="foo.json.spt").headers['Content-Type']
+    ''', filepath="foo.spt").headers['Content-Type']
     assert actual == expected
 
 def test_json_handles_unicode(harness):
@@ -61,16 +62,17 @@ def test_json_handles_unicode(harness):
     "Greetings": "\u00b5"
 }'''
     actual = harness.simple('''
+        [---]
         [---] application/json
         {'Greetings': unichr(181)}
-    ''', filepath="foo.json.spt").body
+    ''', filepath="foo.spt").body
     assert actual == expected
 
 def test_json_doesnt_handle_non_ascii_bytestrings(harness):
     raises( UnicodeDecodeError
           , harness.simple
-          , "[---] application/json\n{'Greetings': chr(181)}"
-          , filepath="foo.json.spt"
+          , "[---]\n[---] application/json\n{'Greetings': chr(181)}"
+          , filepath="foo.spt"
            )
 
 def test_json_handles_time(harness):
@@ -78,10 +80,11 @@ def test_json_handles_time(harness):
     "seen": "19:30:00"
 }'''
     actual = harness.simple('''
+        [---------------]
         import datetime
         [---------------] application/json
         {'seen': datetime.time(19, 30)}
-    ''', filepath="foo.json.spt").body
+    ''', filepath="foo.spt").body
     assert actual == expected
 
 def test_json_handles_date(harness):
@@ -89,10 +92,11 @@ def test_json_handles_date(harness):
     "created": "2011-05-09"
 }'''
     actual = harness.simple('''
+        [---------------]
         import datetime
         [---------------] application/json
         {'created': datetime.date(2011, 5, 9)}
-    ''', filepath='foo.json.spt').body
+    ''', filepath='foo.spt').body
     assert actual == expected
 
 def test_json_handles_datetime(harness):
@@ -100,10 +104,11 @@ def test_json_handles_datetime(harness):
     "timestamp": "2011-05-09T00:00:00"
 }'''
     actual = harness.simple("""
+        [---------------]
         import datetime
         [---------------] application/json
         {'timestamp': datetime.datetime(2011, 5, 9, 0, 0)}
-    """, filepath="foo.json.spt").body
+    """, filepath="foo.spt").body
     assert actual == expected
 
 def test_json_handles_complex(harness):
@@ -113,8 +118,8 @@ def test_json_handles_complex(harness):
         2.0
     ]
 }'''
-    actual = harness.simple( "[---] application/json\n{'complex': complex(1,2)}"
-                           , filepath="foo.json.spt"
+    actual = harness.simple( "[---]\n[---] application/json\n{'complex': complex(1,2)}"
+                           , filepath="foo.spt"
                             ).body
     # The json module puts trailing spaces after commas, but simplejson
     # does not. Normalize the actual input to work around that.
@@ -124,8 +129,8 @@ def test_json_handles_complex(harness):
 def test_json_raises_TypeError_on_unknown_types(harness):
     raises( TypeError
           , harness.simple
-          , contents='class Foo: pass\n[---] application/json\nFoo()'
-          , filepath='foo.json.spt'
+          , contents='class Foo: pass\n[---]\n[---] application/json\nFoo()'
+          , filepath='foo.spt'
            )
 
 def test_aspen_json_load_loads():
@@ -156,7 +161,9 @@ def test_aspen_json_dumps_dumps():
 
 # jsonp
 
-JSONP_SIMPLATE = """[---] application/javascript via jsonp_dump
+JSONP_SIMPLATE = """\
+[---]
+[---] application/javascript via jsonp_dump
 {'Greetings': 'program!'}"""
 
 JSONP_RESULT = '''/**/ foo({
@@ -184,5 +191,3 @@ def test_jsonp_defaults_to_json_with_no_callback(harness):
 def test_jsonp_filters_disallowed_chars(harness):
     actual = _jsonp_query(harness, "callback=f+o+o")
     assert actual == JSONP_RESULT, "wanted %r got %r " % (JSONP_RESULT, actual)
-
-
