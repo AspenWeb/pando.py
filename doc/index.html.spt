@@ -1,7 +1,7 @@
 import random
 impressions = ["""
             <li>&ldquo;<a
-                href="https://github.com/gittip/aspen-python/issues/179#issuecomment-17178655">I'm
+                href="https://github.com/gratipay/aspen-python/issues/179#issuecomment-17178655">I'm
                 finding Aspen frustrating to do simple things and easy to do
                 complex things.</a>&rdquo; &mdash;<a
                 href="http://joshuakehn.com/">Joshua Kehn</a></li>
@@ -309,16 +309,16 @@ homepage = True
                 <strong>aspen-{{ version }}.tar.bz2</strong></a>,
             <a href="http://pypi.python.org/packages/source/a/aspen/aspen-{{ version }}.tar.gz">tar.gz</a>,
             <a href="http://pypi.python.org/packages/source/a/aspen/aspen-{{ version }}.zip">zip</a>,
-            <a href="http://pypi.python.org/pypi/aspen/">pypi</a>,
-            <a href="https://github.com/gittip/aspen-python/">github</a>
+            <a href="http://pypi.python.org/pypi/aspen/">PyPI</a>,
+            <a href="https://github.com/gratipay/aspen-python/">GitHub</a>
         </p>
 
 
         <h2>Continuous Integration</h2>
 
         <ul>
-            <li><a href="http://travis-ci.org/gittip/aspen-python">Travis CI</a>&mdash;
-                <img id="travis" src="https://secure.travis-ci.org/gittip/aspen-python.png?branch=master" alt="Build Status" /></li>
+            <li><a href="http://travis-ci.org/gratipay/aspen-python">Travis CI</a>&mdash;
+                <img id="travis" src="https://secure.travis-ci.org/gratipay/aspen-python.png?branch=master" alt="Build Status" /></li>
             <li><a href="https://aspen.ci.cloudbees.com/">Jenkins</a> (registration required)
                 <!-- Requires reg?! img id="jenkins" src="https://aspen.ci.cloudbees.com/job/aspen/badge/icon" alt="Build Status" /--></li>
         </ul>
@@ -327,12 +327,11 @@ homepage = True
         <h2>Support</h2>
 
         <p>
-            <a href="mailto:chad@zetaweb.com">email</a>,
-            <a href="https://github.com/gittip/aspen-python/">github</a>,
+            <a href="mailto:chad@zetaweb.com">Email</a>,
+            <a href="https://github.com/gratipay/aspen-python/issues/new">GitHub</a>,
             <a href="irc://irc.freenode.net/#aspen">IRC</a>
-            (<a href="http://webchat.freenode.net/">web</a>),
-            <a href="http://groups.google.com/group/aspen-users">mailing list</a>,
-            <a href="http://twitter.com/whit537">twitter</a>,
+            (<a href="http://webchat.freenode.net/">Web</a>),
+            <a href="http://twitter.com/whit537">Twitter</a>,
             <a href="tel:+1-412-925-4220"
                 style="white-space: nowrap;">+1-412-925-4220</a> (call or text)
         </p>
@@ -349,8 +348,8 @@ homepage = True
 
         <ul>
 
-            <li><a href="https://www.gittip.com/">Gittip, a weekly gift
-                exchange</a></li>
+            <li><a href="https://gratipay.com/">Gratipay, weekly payments,
+                motivated by gratitude</a></li>
 
             <li><a
                 href="http://keystone.readthedocs.org/en/latest/index.html">Keystone,
@@ -369,7 +368,7 @@ homepage = True
                 Google Maps</a></li>
 
             <li><a
-                href="https://github.com/gittip/aspen-python/tree/master/doc">Source
+                href="https://github.com/gratipay/aspen-python/tree/master/doc">Source
                 code for http://aspen.io/ itself</a></li>
 
         </ul>
