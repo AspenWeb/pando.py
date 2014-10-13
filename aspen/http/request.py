@@ -210,7 +210,7 @@ class Request(str):
                 body = StringIO('')
             raw_len = int(obj.headers.get('Content-length', '') or '0')
             obj.raw_body = body.read(raw_len)
-            #obj.body = obj.raw_body
+            obj.context = {}
         except UnicodeError:
             # Figure out where the error occurred.
             # ====================================
