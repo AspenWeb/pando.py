@@ -15,4 +15,4 @@ opts['version'] = open(os.path.join(website.www_root,'..','version.txt')).read()
 website.renderer_default = 'tornado'
 open('/tmp/debugout','a').write('doccnf:' + website.renderer_default + '\n')
 
-website.algorithm.insert_after('parse_environ_into_request', add_stuff_to_request_context)
+website.algorithm.insert_after('dispatch_request_to_filesystem', add_stuff_to_request_context)
