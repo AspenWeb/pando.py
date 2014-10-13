@@ -87,6 +87,7 @@ class DynamicResource(Resource):
                     return dynamics[key]()
                 return dict.__getitem__(self, key)
         context = Context()
+        context.update(request.context)
         context.update({
             'website': None,
             'headers': request.headers,
