@@ -1,6 +1,31 @@
 Aspen-python Changelog
 ======================
 
+0.35 - Released Thu Oct 30 2014 by @whit537
+-------------------------------------------
+
+* Fixes a bug in error handling (#393)
+
+* Restores request.context (#392)
+
+* Introduces a dispatch_result object (#389)
+
+* Refactors the dispatcher (#389)
+
+* Removes the request.fs attribute (#389)
+
+* Removes the request.website attribute (#385)
+
+* Makes the Canonizer utility more configurable (#382)
+
+* Refactors request body parsing (#377)
+
+* Removes `thrash` utility (#376)
+
+* Adds support for PORT envvar to `python -m aspen` (#356)
+
+* Fixes a bug in header parsing (#369)
+
 0.34 - Released Tue Jul 29 2014 by @pjz
 ---------------------------------------
 
