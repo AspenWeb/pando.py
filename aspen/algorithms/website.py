@@ -117,7 +117,9 @@ def log_traceback_for_5xx(response, traceback=None):
     return {'traceback': None}
 
 
-def delegate_error_to_simplate(website, request, response, resource=None):
+def delegate_error_to_simplate(website, response, request=None, resource=None):
+    if request is None:
+        return  # early parsing must've failed
     if response.code < 400:
         return
 
