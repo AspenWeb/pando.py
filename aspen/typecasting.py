@@ -26,11 +26,11 @@ class FailedTypecast(Response):
    a FailedTypecast (a specialized 404) will be thrown.
 """
 
-defaults = { 'int': int
-           , 'float': float
+defaults = { 'int': lambda pathpart, context: int(pathpart)
+           , 'float': lambda pathpart, context: float(pathpart)
            }
 
-def apply_typecasters(typecasters, path):
+def apply_typecasters(typecasters, path, context):
     """Perform the typecasts (in-place!) on the supplied path Mapping.
        Note that the supplied mapping has keys with the typecast extensions
        still attached (and unicode values).  This routine adds keys
@@ -45,7 +45,7 @@ def apply_typecasters(typecasters, path):
                 try:
                     # path is a Mapping not a dict, so:
                     for v in path.all(part):
-                        path.add(var, typecasters[ext](v))
+                        path.add(var, typecasters[ext](v, context))
                     path.popall(part)
                 except:
                     raise FailedTypecast(ext)

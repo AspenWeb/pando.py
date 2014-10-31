@@ -312,7 +312,7 @@ class User:
         self.username = name
 
     @classmethod
-    def toUser(cls, name):
+    def toUser(cls, name, context):
         return cls(name)
 
 website.typecasters['user'] = User.toUser
