@@ -84,8 +84,11 @@ def dispatch_request_to_filesystem(website, request):
     return {'dispatch_result': result}
 
 
-def apply_typecasters_to_path(website, request):
-    typecasting.apply_typecasters(website.typecasters, request.line.uri.path)
+def apply_typecasters_to_path(website, request, state):
+    typecasting.apply_typecasters( website.typecasters
+                                 , request.line.uri.path
+                                 , state
+                                  )
 
 
 def get_resource_for_request(website, dispatch_result):
