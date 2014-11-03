@@ -88,7 +88,7 @@ def apply_typecasters_to_path(website, request):
     typecasting.apply_typecasters(website.typecasters, request.line.uri.path)
 
 
-def get_resource_for_request(website, request, dispatch_result):
+def get_resource_for_request(website, dispatch_result):
     return {'resource': resources.get(website, dispatch_result.match)}
 
 
