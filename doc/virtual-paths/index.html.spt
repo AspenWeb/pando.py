@@ -73,8 +73,12 @@ and are then unquoted (per <a
 href="http://docs.python.org/library/urllib.html#urllib.unquote">urllib.unquote</a>).
 You can also typecast path parts to arbitrary objects, by registering
 typecasters in the <code>website.typecasters</code> dictionary in your <a
-href="/configure-aspen.py/"><code>configure-aspen.py</code></a>. Typecasters
-for <code>int</code> and <code>float</code> are included out of the box.</p>
+href="/configure-aspen.py/"><code>configure-aspen.py</code></a>. A typecaster
+is a function that takes two positional arguments, the path part as a
+<code>unicode</code> and the <code>state</code> dictionary from the current <a
+href="http://aspen.io/core-algorithms/">algorithm run</a>, and returns an
+object. Typecasters for <code>int</code> and <code>float</code> are included
+out of the box.</p>
 
 <p>Make a directory called <code style="white-space: nowrap">%year.int</code>
 (for files, put the cast before the file extension, like
