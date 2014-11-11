@@ -14,9 +14,7 @@ try:
     pygmentize = True
 except ImportError:
     from aspen.logging import log
-    import sys
-    exc = sys.exc_info()[1]
-    log("Cannot import pygments: " + str(exc))
+    log("Failed to import pygments. Tracebacks won't be highlighted.")
     pygmentize = False
 
 [----------------------------------------]
