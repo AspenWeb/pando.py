@@ -38,19 +38,18 @@ class Simplate(Resource):
 
     def __init__(self, *a, **kw):
         Resource.__init__(self, *a, **kw)
-        self.is_bound = self.is_media_type_from_fs
-        self.min_pages, self.max_pages = self.set_page_range(self.is_bound)
-        pages = self.parse_into_pages(self.raw)
-
-        if self.is_bound:   # Pad front with empty pages for bound simplates.
-            num_extra_pages = self.min_pages - len(pages)
-            # Note that range(x) returns an empty list if x < 1
-            pages[0:0] = (Page('') for _ in range(num_extra_pages))
-
-        self.pages = self.compile_pages(pages)
 
         self.renderers = {}         # mapping of media type to render function
         self.available_types = []   # ordered sequence of media types
+        self.is_bound = self.is_media_type_from_fs
+        self.min_pages, self.max_pages = self.set_page_range(self.is_bound)
+
+        pages = self.parse_into_pages(self.raw)
+        if self.is_bound:   # Pad front with empty pages for bound simplates.
+            num_extra_pages = 3 - len(pages)
+            # Note that range(x) returns an empty list if x < 1
+            pages[0:0] = (Page('') for _ in range(num_extra_pages))
+        self.pages = self.compile_pages(pages)
 
 
     def set_page_range(self, is_bound):
@@ -78,11 +77,7 @@ class Simplate(Resource):
         # Exec page two.
         # ==============
 
-        try:
-            exec self.pages[1] in context
-        except Response, response:
-            self.process_raised_response(response)
-            raise
+        exec self.pages[1] in context
 
         # if __all__ is defined, only pass those variables to templates
         # if __all__ is not defined, pass full context to templates
