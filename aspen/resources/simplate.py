@@ -66,16 +66,7 @@ class Simplate(Resource):
         """Given a Request and maybe a Response, return or raise a Response.
         """
         response = response or Response(charset=self.website.charset_dynamic)
-
-
-        # Populate context.
-        # =================
-
         context = self.populate_context(request, dispatch_result, response)
-
-
-        # Exec page two.
-        # ==============
 
         exec self.pages[1] in context
 
@@ -86,16 +77,8 @@ class Simplate(Resource):
             newcontext = dict([ (k, context[k]) for k in context['__all__'] ])
             context = newcontext
 
-        # Hook.
-        # =====
-
-        try:
-            response = self.get_response(context)
-        except Response, response:
-            self.process_raised_response(response)
-            raise
-        else:
-            return response
+        response = self.get_response(context)
+        return response
 
 
     def populate_context(self, request, dispatch_result, response):
