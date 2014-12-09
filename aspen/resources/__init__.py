@@ -12,13 +12,6 @@ Here is the class hierarchy:
      |
      +-- StaticResource
 
-
-The call chain looks like this for static resources:
-
-    StaticResource.respond(request, response)
-
-
-It's more complicate for simplates.
 """
 from __future__ import absolute_import
 from __future__ import division
