@@ -32,17 +32,35 @@ ORDINALS = StringDefaultingList([ 'zero' , 'one' , 'two', 'three', 'four'
                                  ])
 
 
-class DynamicResource(Resource):
-    """This is the base for negotiating and rendered resources.
+class Simplate(Resource):
+    """A simplate is a dynamic resource with multiple syntaxes in one file.
     """
-
-    min_pages = None  # set on subclass
-    max_pages = None
 
     def __init__(self, *a, **kw):
         Resource.__init__(self, *a, **kw)
+        self.is_bound = self.is_media_type_from_fs
+        self.min_pages, self.max_pages = self.set_page_range(self.is_bound)
         pages = self.parse_into_pages(self.raw)
+
+        if self.is_bound:   # Pad front with empty pages for bound simplates.
+            num_extra_pages = self.min_pages - len(pages)
+            # Note that range(x) returns an empty list if x < 1
+            pages[0:0] = (Page('') for _ in range(num_extra_pages))
+
         self.pages = self.compile_pages(pages)
+
+        self.renderers = {}         # mapping of media type to render function
+        self.available_types = []   # ordered sequence of media types
+
+
+    def set_page_range(self, is_bound):
+        if is_bound:            # bound to a specific media type
+            min_pages = 1
+            max_pages = 4
+        else:                   # unbound, can serve multiple media types
+            min_pages = 3
+            max_pages = None
+        return min_pages, max_pages
 
 
     def respond(self, request, dispatch_result, response=None):
@@ -121,9 +139,6 @@ class DynamicResource(Resource):
 
     def parse_into_pages(self, raw):
         """Given a bytestring, return a list of pages.
-
-        Subclasses extend this to implement additional semantics.
-
         """
 
         pages = list(split_and_escape(raw))
@@ -153,6 +168,7 @@ class DynamicResource(Resource):
 
         return pages
 
+
     def compile_pages(self, pages):
         """Given a list of pages, replace the pages with objects.
 
@@ -178,51 +194,27 @@ class DynamicResource(Resource):
         two = compile(two.padded_content, self.fs, 'exec')
 
         pages[:2] = (one, two)
-
-        # Subclasses are responsible for the rest.
-        # ========================================
-
         pages[2:] = (self.compile_page(page) for page in pages[2:])
 
         return pages
-
-    @staticmethod
-    def _prepend_empty_pages(pages, min_length):
-        """Given a list of pages, and a min length, prepend blank pages to the
-        list until it is at least as long as min_length
-        """
-        num_extra_pages = min_length - len(pages)
-        #Note that range(x) returns an empty list if x < 1
-        pages[0:0] = (Page('') for _ in range(num_extra_pages))
-
-
-    # Negotiated
-    # ==========
-
-    min_pages = 3
-    max_pages = None
-
-
-    def __init__(self, *a, **kw):
-        self.renderers = {}         # mapping of media type to render function
-        self.available_types = []   # ordered sequence of media types
-        DynamicResource.__init__(self, *a, **kw)
 
 
     def compile_page(self, page):
         """Given a bytestring, return a (renderer, media type) pair.
         """
-        make_renderer, media_type = self._parse_specline(page.header)
+        _parse_specline = self._bound_parse_specline \
+                            if self.is_bound else self._unbound_parse_specline
+        make_renderer, media_type = _parse_specline(page.header)
         renderer = make_renderer(self.fs, page.content)
         if media_type in self.renderers:
             raise SyntaxError("Two content pages defined for %s." % media_type)
 
         # update internal data structures
         self.renderers[media_type] = renderer
-
         self.available_types.append(media_type)
 
         return (renderer, media_type)  # back to parent class
+
 
     def get_response(self, context):
         """Given a context dict, return a response object.
@@ -265,7 +257,30 @@ class DynamicResource(Resource):
 
         return response
 
-    def _parse_specline(self, specline):
+
+    def _bound_parse_specline(self, specline):
+        """Override to simplify.
+
+        Rendered resources have a simpler specline than negotiated resources.
+        They don't have a media type, and the renderer is optional.
+
+        """
+        #parse into parts.
+        parts = parse_specline(specline)
+
+        #Assign parts, discard media type
+        renderer = parts[1]
+        media_type = self.media_type
+        if not renderer:
+            renderer = self.website.default_renderers_by_media_type[media_type]
+
+        #Hydrate and validate renderer
+        make_renderer = self._get_renderer_factory(media_type, renderer)
+
+        return (make_renderer, media_type)
+
+
+    def _unbound_parse_specline(self, specline):
         """Given a bytestring, return a two-tuple.
 
         The incoming string is expected to be of the form:
@@ -333,41 +348,3 @@ class DynamicResource(Resource):
                              "renderers%s: %s."
                              % (media_type, renderer, legend, possible))
         return make_renderer
-
-
-
-    # Rendered
-    # ========
-
-    min_pages = 1
-    max_pages = 4
-
-
-    def parse_into_pages(self, raw):
-        """Extend to insert page one if needed.
-        """
-        pages = self.parse_into_pages(self, raw)
-        self._prepend_empty_pages(pages, 3)
-        return pages
-
-
-    def _parse_specline(self, specline):
-        """Override to simplify.
-
-        Rendered resources have a simpler specline than negotiated resources.
-        They don't have a media type, and the renderer is optional.
-
-        """
-        #parse into parts.
-        parts = parse_specline(specline)
-
-        #Assign parts, discard media type
-        renderer = parts[1]
-        media_type = self.media_type
-        if not renderer:
-            renderer = self.website.default_renderers_by_media_type[media_type]
-
-        #Hydrate and validate renderer
-        make_renderer = self._get_renderer_factory(media_type, renderer)
-
-        return (make_renderer, media_type)
