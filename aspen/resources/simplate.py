@@ -237,10 +237,10 @@ class Simplate(Resource):
 
 
     def _bound_parse_specline(self, specline):
-        """Override to simplify.
+        """Parse specline for bound simplate.
 
-        Rendered resources have a simpler specline than negotiated resources.
-        They don't have a media type, and the renderer is optional.
+        Bound simplates have a simpler specline than unbound simplates. They
+        don't have a media type, and the renderer is optional.
 
         """
         #parse into parts.
