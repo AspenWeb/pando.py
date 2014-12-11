@@ -399,13 +399,7 @@ homepage = True
             <li><a href="/quick-start/" class="highlighted">Quick
                 Start</a></li>
 
-            <li><a href="/simplates/">Simplates</a>
-            <ul>
-                <li><a href="/simplates/static/">Static</a></li>
-                <li><a href="/simplates/rendered/">Rendered</a> (Templates)</li>
-                <li><a href="/simplates/negotiated/">Negotiated</a></li>
-            </ul>
-            </li>
+            <li><a href="/simplates/">Simplates</a></li>
 
             <li>API
             <ul>
