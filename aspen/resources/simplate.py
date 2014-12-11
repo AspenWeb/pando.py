@@ -302,17 +302,13 @@ class Simplate(Resource):
             raise make_renderer
         elif make_renderer is None:
             possible = []
-            want_legend = False
+            legend = ''
             for k, v in sorted(factories.iteritems()):
                 if isinstance(v, ImportError):
                     k = '*' + k
-                    want_legend = True
+                    legend = " (starred are missing third-party libraries)"
                 possible.append(k)
             possible = ', '.join(possible)
-            if want_legend:
-                legend = " (starred are missing third-party libraries)"
-            else:
-                legend = ''
             raise ValueError("Unknown renderer for %s: %s. Possible "
                              "renderers%s: %s."
                              % (media_type, renderer, legend, possible))
