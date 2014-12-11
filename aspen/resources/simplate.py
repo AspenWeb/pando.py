@@ -41,20 +41,10 @@ class Simplate(Resource):
 
         self.renderers = {}         # mapping of media type to render function
         self.available_types = []   # ordered sequence of media types
-        self.min_pages, self.max_pages = self.set_page_range(self.is_bound)
+        self.min_pages, self.max_pages = (1, 4) if self.is_bound else (3, None)
 
         pages = self.parse_into_pages(self.raw, self.is_bound)
         self.pages = self.compile_pages(pages)
-
-
-    def set_page_range(self, is_bound):
-        if is_bound:            # bound to a specific media type
-            min_pages = 1
-            max_pages = 4
-        else:                   # unbound, can serve multiple media types
-            min_pages = 3
-            max_pages = None
-        return min_pages, max_pages
 
 
     def respond(self, request, dispatch_result, response=None):
