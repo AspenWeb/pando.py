@@ -12,10 +12,10 @@ class Resource(object):
     """This is a base class for both static and dynamic resources.
     """
 
-    def __init__(self, website, fs, raw, media_type, is_media_type_from_fs, mtime):
+    def __init__(self, website, fs, raw, media_type, is_bound, mtime):
         self.website = website
         self.fs = fs
         self.raw = raw
         self.media_type = media_type
-        self.is_media_type_from_fs = is_media_type_from_fs
+        self.is_bound = is_bound
         self.mtime = mtime
