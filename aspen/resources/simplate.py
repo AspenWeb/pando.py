@@ -41,14 +41,9 @@ class Simplate(Resource):
 
         self.renderers = {}         # mapping of media type to render function
         self.available_types = []   # ordered sequence of media types
-        self.is_bound = self.is_media_type_from_fs
         self.min_pages, self.max_pages = self.set_page_range(self.is_bound)
 
-        pages = self.parse_into_pages(self.raw)
-        if self.is_bound:   # Pad front with empty pages for bound simplates.
-            num_extra_pages = 3 - len(pages)
-            # Note that range(x) returns an empty list if x < 1
-            pages[0:0] = (Page('') for _ in range(num_extra_pages))
+        pages = self.parse_into_pages(self.raw, self.is_bound)
         self.pages = self.compile_pages(pages)
 
 
@@ -115,8 +110,8 @@ class Simplate(Resource):
         return context
 
 
-    def parse_into_pages(self, raw):
-        """Given a bytestring, return a list of pages.
+    def parse_into_pages(self, raw, is_bound):
+        """Given a bytestring and a boolean, return a list of pages.
         """
 
         pages = list(split_and_escape(raw))
@@ -143,6 +138,12 @@ class Simplate(Resource):
                    , ORDINALS[npages]
                     )
             raise SyntaxError(msg)
+
+        # Pad front with empty pages for bound simplates.
+        if is_bound:
+            num_extra_pages = 3 - len(pages)
+            # Note that range(x) returns an empty list if x < 1
+            pages[0:0] = (Page('') for _ in range(num_extra_pages))
 
         return pages
 
