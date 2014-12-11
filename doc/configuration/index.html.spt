@@ -75,8 +75,8 @@ Options:
                         and Python modules will cause aspen to re-exec, and
                         template bases won't be cached [no]
     --charset_dynamic=CHARSET_DYNAMIC
-                        this is set as the charset for rendered and negotiated
-                        resources of Content-Type text/* [UTF-8]
+                        this is set as the charset for simplates of 
+                        Content-Type text/* [UTF-8]
     --charset_static=CHARSET_STATIC
                         if set, this will be sent as the charset for static
                         resources of Content-Type text/*; if you want to punt

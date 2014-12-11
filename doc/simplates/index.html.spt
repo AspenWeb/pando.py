@@ -21,8 +21,11 @@ extra_excitement = "!" * n
 Greetings, program!%(extra_excitement)s
 </pre>
 
-<p>Simplates are a single file with one or more pages. The page separator is
-<code>[---]</code>.</p>
+<p>Simplates are a single file with one or more sections. The section separator
+is <code>[---]</code>.</p>
+
+
+<h3>Tutorial</h3>
 
 <p>Assuming you&rsquo;ve gone through the <a href="/quick-start/">Quick
 Start</a>, edit index.html.spt with the above content, then refresh.</p>
@@ -31,34 +34,88 @@ Start</a>, edit index.html.spt with the above content, then refresh.</p>
 
 <p>You&rsquo;re off and running!</p>
 
-<p>Give it a shot: Anything you define in the first two (Python) pages is
-available in the third (template) page.</p>
+<p>Give it a shot: Anything you define in the first two (Python) sections is
+available in the third (template) section.</p>
 
-<p>Can you guess what the difference is between the first two Python pages?
-The first one is run once, the first time the page is hit (<i>not</i> on
+<p>Can you guess what the difference is between the first two Python sections?
+The first one is run once, the first time the section is hit (<i>not</i> on
 startup), and again any time the simplate is changed. It&rsquo;s designed for
 imports and constants. The second is run once for each request.</p>
 
-<p>The first page has these variables defined and available to you:</p>
+
+<h3>Reference</h3>
+
+<p>A simplate is a file that contains multiple sections of varying syntax,
+separated by <code>[---]</code>.</p>
+
+<p>The first section is Python syntax. It is <code>exec</code>'d once, the
+first time the resource represented by the simplate is served, and it has these
+variables as builtins:</p>
 
 <pre>__file__   the absolute path to the simplate file (symlinks preserved)
 
 <a href="/api/website/">website</a>    an instance of a Website object that gives you access to
-           configuration objects</pre>
+           configuration</pre>
 
-<p>The second page has those, and adds:</p>
+<p>The second section is Python syntax, and is <code>exec</code>'d once per
+request. Its context cascades from the first section, and adds:</p>
 
 <pre>request    a request object
 
 response   a response object</pre>
 
-<p>The <a href="rendered/">template page</a> uses the template language from
-    python by default, though others are available.</p>
+<p>The third page uses the templating language of your choosing&mdash;we call
+this the &ldquo;renderer.&rdquo; The default renderer is the basic templating
+    language that Python uses to render strings: %(varname)s is replaced by the
+        variable 'varname' as a string.  More details are available in the <a
+            href="http://docs.python.org/2/library/stdtypes.html#string-formatting">Python
+            docs</a>. Other built-in templating languages are stdlib_format
+            (using <a
+                href="http://docs.python.org/2/library/string.html#format-string-syntax">
+                Python string formatting</a>), stdlib_template (using <a
+                href="http://docs.python.org/2/library/string.html#template-strings">Python
+                template strings</a>), and <a href="/json/">json</a>. There are
+                modules available with support for <a
+                    href="http://www.tornadoweb.org/">Tornado</a>
+                (aspen-tornado), <a href="http://jinja.pocoo.org/">Jinja2</a>
+                (aspen-jinja2) and <a
+                href="https://github.com/defunkt/pystache">Pystache</a>
+            (aspen-pystache).
+
+<p>The way to specify a renderer is with a so-called &ldquo;specline&rdquo; at
+the start of the content page:</p>
+
+<pre>program = "program"
+\[---] via pystache
+Greetings, {&#123; program }}!</pre>
+
+<p>You can set the default renderer for a given media type (presuming it is
+installed) in <a href="/configure-aspen.py/">configure-aspen.py</a> like so:
+</p>
+
+<pre>website.default_renderers_by_media_type['text/html'] = 'pystache'</pre>
+
+<p>Here&rsquo;s how to directly set the default renderer for all media types:</p>
+
+<pre>website.default_renderers_by_media_type.default_factory = lambda: 'pystache'</pre>
+
+<p>If this is being done in configure-aspen.py, it can also be phrased as:</p>
+
+<pre>website.renderer_default = 'pystache'</pre>
+
+<p>You can also set the default renderer globally using the --renderer_default
+command line switch or the ASPEN_RENDERER_DEFAULT environment variable.</p>
+
+
+<h4>Encoding</h4>
 
 <p>By default, simplate files are presumed to be ASCII; if non-ASCII characters
-(utf8, for example) are to be included in the file, an encoding must be specifed as per 
+(utf8, for example) are to be included in the file, an encoding must be specifed as per
 <a href="http://legacy.python.org/dev/peps/pep-0263/">PEP 263</a>, which means
 putting the phrase 'encoding: utf8' somewhere on the first two lines of the file.
+
+
+<h4>Caching</h4>
 
 <p>All simplate pages are cached in a compiled state. This cache is invalidated
 whenever the underlying file changes, so simplate changes are always
@@ -68,17 +125,7 @@ during development. When you change a simplate, the changes are always
 available immediately, without restarting the server.</p>
 
 
-<h3>Different Kinds of Simplates</h3>
-
-<p>Aspen uses the simplate file format to represent four different kinds of
-resources. Media types are inferred from the file extension.</p>
-
 <ol>
-
-    <li><a href="/simplates/template/"><b>Rendered Simplates</b></a>&mdash;This
-    is the main kind. It&rsquo;s what was introduced above. The first two pages
-    are Python and then the third is <a href="template/">a templating
-        syntax</a>.</li>
 
     <li><a href="/simplates/negotiated/"><b>Negotiated
             Simplates</b></a>&mdash;If a simplate file doesn&rsquo;t have a

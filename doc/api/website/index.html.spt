@@ -56,9 +56,8 @@ configuration is processed, and before your <a
     configure-aspen.py script in there will be executed; and it will be placed
     at the front of sys.path, so you can import Python modules from there</li>
 
-    <li>Two dictionaries associated with resolving <a
-        href="/simplates/rendered/">renderers</a> are instantiated and
-    populated: <b>renderer_factories</b> and
+    <li>Two dictionaries associated with resolving renderers are instantiated 
+    and populated: <b>renderer_factories</b> and
     <b>default_renderers_by_media_type</b>.</li>
 
 </ul>

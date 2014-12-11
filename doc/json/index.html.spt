@@ -4,8 +4,7 @@ doc_next = []
 {% extends doc.html %}
 {% block doc %}
 
-<p>Aspen ships with a <code>json_dump</code> <a
-href="http://w:5370/simplates/rendered/">renderer</a> that will
+<p>Aspen ships with a <code>json_dump</code> renderer that will
 Python-<code>eval</code> the contents of the template section and then call
 <code>json.dumps</code> on it.</p>
 
