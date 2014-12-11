@@ -75,11 +75,6 @@ resources. Media types are inferred from the file extension.</p>
 
 <ol>
 
-    <li><a href="/simplates/static/"><b>Static Simplates</b></a>&mdash;Any
-    text/* or application/json file with no \[---] in it is served directly as
-    a static file. Other media types are static unless they start with a
-    docstring or an import.</li>
-
     <li><a href="/simplates/template/"><b>Rendered Simplates</b></a>&mdash;This
     is the main kind. It&rsquo;s what was introduced above. The first two pages
     are Python and then the third is <a href="template/">a templating
