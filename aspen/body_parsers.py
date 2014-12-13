@@ -69,6 +69,8 @@ def parse_body(raw, headers, parsers):
     content_type = headers.get("Content-Type", "").split(';')[0]
 
     def default_parser(raw, headers):
+        if not content_type and not raw:
+            return {}
         raise UnknownBodyType(content_type)
 
     return parsers.get(content_type, default_parser)(raw, headers)
