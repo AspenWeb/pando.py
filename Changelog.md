@@ -1,6 +1,17 @@
 Aspen-python Changelog
 ======================
 
+0.36 - Released Mon Dec 15 2014 by @pjz
+---------------------------------------
+
+* Don't return a 415 when the body is empty (Thanks @Changaco!)
+
+* Simplify the simplate class hierarchy
+
+* Don't show scary tracebacks when pygments is missing (#268)
+
+* Let custom typecasters access global state. (#395)
+
 0.35 - Released Thu Oct 30 2014 by @whit537
 -------------------------------------------
 
