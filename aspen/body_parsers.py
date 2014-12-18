@@ -14,11 +14,11 @@ Headers mapping of the supplied headers
 """
 
 import cgi
-from aspen import json_ as json
+from aspen import Response, json_ as json
 from aspen.utils import typecheck
 from aspen.http.request import Headers
 from aspen.http.mapping import Mapping
-from aspen.exceptions import UnknownBodyType
+from aspen.exceptions import MalformedBody, UnknownBodyType
 
 def formdata(raw, headers):
     """Parse raw as form data"""
@@ -73,4 +73,7 @@ def parse_body(raw, headers, parsers):
             return {}
         raise UnknownBodyType(content_type)
 
-    return parsers.get(content_type, default_parser)(raw, headers)
+    try:
+        return parsers.get(content_type, default_parser)(raw, headers)
+    except ValueError as e:
+        raise MalformedBody(str(e))

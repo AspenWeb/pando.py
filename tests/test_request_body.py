@@ -7,7 +7,7 @@ from pytest import raises
 
 from aspen.http.request import Headers
 import aspen.body_parsers as parsers
-from aspen.exceptions import UnknownBodyType
+from aspen.exceptions import MalformedBody, UnknownBodyType
 
 
 FORMDATA = object()
@@ -23,6 +23,7 @@ def make_body(raw, headers=None, content_type=WWWFORM):
     if not 'content-length' in headers:
         headers['Content-length'] = str(len(raw))
     body_parsers = {
+            "application/json": parsers.jsondata,
             "application/x-www-form-urlencoded": parsers.formdata,
             "multipart/form-data": parsers.formdata
     }
@@ -69,3 +70,11 @@ def test_params_doesnt_break_www_form():
                      )
     actual = body['statement']
     assert actual == "foo"
+
+def test_malformed_body_jsondata():
+    with raises(MalformedBody):
+        make_body("foo", content_type="application/json")
+
+def test_malformed_body_formdata():
+    with raises(MalformedBody):
+        make_body("", content_type="multipart/form-data; boundary=\0")
