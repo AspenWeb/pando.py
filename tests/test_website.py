@@ -139,7 +139,14 @@ raise Response(420)
     assert response.body == 'Enhance your calm.'
 
 def test_delegate_error_to_simplate_respects_original_accept_header(harness):
-    harness.fs.project.mk(('error.spt', "[---]\n[---] text/fake\nLorem ipsum"))
+    harness.fs.project.mk(('error.spt', """[---]
+[---] text/fake
+Lorem ipsum
+[---] text/html
+<p>Error</p>
+[---] text/plain
+Error
+"""))
     harness.fs.www.mk(('foo.spt',"""
 from aspen import Response
 [---]
