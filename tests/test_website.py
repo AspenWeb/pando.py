@@ -138,6 +138,25 @@ raise Response(420)
     assert response.code == 420
     assert response.body == 'Enhance your calm.'
 
+def test_delegate_error_to_simplate_respects_original_accept_header(harness):
+    harness.fs.project.mk(('error.spt', """[---]
+[---] text/fake
+Lorem ipsum
+[---] text/html
+<p>Error</p>
+[---] text/plain
+Error
+"""))
+    harness.fs.www.mk(('foo.spt',"""
+from aspen import Response
+[---]
+raise Response(404)
+[---] text/plain
+    """))
+    response = harness.client.GET('/foo', raise_immediately=False, HTTP_ACCEPT=b'text/fake')
+    assert response.code == 404
+    assert 'text/fake' in response.headers['Content-Type']
+
 def test_default_error_spt_handles_text_html(harness):
     harness.fs.www.mk(('foo.html.spt',"""
 from aspen import Response

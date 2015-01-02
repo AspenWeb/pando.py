@@ -132,7 +132,7 @@ def delegate_error_to_simplate(website, response, request=None, resource=None):
 
     if fspath is not None:
         request.original_resource = resource
-        if resource is not None:
+        if resource is not None and resource.is_bound:
             # Try to return an error that matches the type of the original resource.
             request.headers['Accept'] = resource.media_type + ', text/plain; q=0.1'
         resource = resources.get(website, fspath)
