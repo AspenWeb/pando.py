@@ -28,3 +28,12 @@ def test_can_use_request_path(harness):
                                "{foo}"
                               )
     assert response.body == '/'
+
+
+def test_can_use_request_qs(harness):
+    response = harness.simple( "foo = request.qs['foo']\n"
+                               "[-----] via stdlib_format\n"
+                               "{foo}"
+                             , uripath='/?foo=bloo'
+                              )
+    assert response.body == 'bloo'
