@@ -47,11 +47,12 @@ class Simplate(Resource):
         self.pages = self.compile_pages(pages)
 
 
-    def respond(self, request, dispatch_result, response=None):
-        """Given a Request and maybe a Response, return or raise a Response.
-        """
-        response = response or Response(charset=self.website.charset_dynamic)
-        context = self.populate_context(request, dispatch_result, response)
+    def respond(self, **context):
+        context.update(self.pages[0])
+        response = context['response'] = context.get('response')
+        if response is None:
+            response = Response(charset=self.website.charset_dynamic)
+        context['response'] = response
 
         exec self.pages[1] in context
 
@@ -64,27 +65,6 @@ class Simplate(Resource):
 
         response = self.get_response(context)
         return response
-
-
-    def populate_context(self, request, dispatch_result, response):
-        """Factored out to support testing.
-        """
-        context = {}
-        context.update(request.context)
-        context.update({
-            'website': None,
-            'channel': None
-        })
-        # insert the residual context from the initialization page
-        context.update(self.pages[0])
-        # don't let the page override these
-        context.update({
-            'request' : request,
-            'dispatch_result': dispatch_result,
-            'resource': self,
-            'response': response
-        })
-        return context
 
 
     def parse_into_pages(self, raw, is_bound):

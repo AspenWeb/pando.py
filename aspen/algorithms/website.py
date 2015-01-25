@@ -95,9 +95,9 @@ def get_resource_for_request(website, dispatch_result):
     return {'resource': resources.get(website, dispatch_result.match)}
 
 
-def get_response_for_resource(request, dispatch_result, resource=None):
+def get_response_for_resource(state, resource=None):
     if resource is not None:
-        return {'response': resource.respond(request, dispatch_result)}
+        return {'response': resource.respond(**state)}
 
 
 def get_response_for_exception(website, exception):
@@ -120,7 +120,7 @@ def log_traceback_for_5xx(response, traceback=None):
     return {'traceback': None}
 
 
-def delegate_error_to_simplate(website, response, request=None, resource=None):
+def delegate_error_to_simplate(website, state, response, request=None, resource=None):
     if request is None:
         return  # early parsing must've failed
     if response.code < 400:
@@ -136,9 +136,15 @@ def delegate_error_to_simplate(website, response, request=None, resource=None):
             # Try to return an error that matches the type of the original resource.
             request.headers['Accept'] = resource.media_type + ', text/plain; q=0.1'
         resource = resources.get(website, fspath)
-        dispatch_result = DispatchResult(DispatchStatus.okay, fspath, {}, 'Found.', {}, True)
+        state['dispatch_result'] = DispatchResult( DispatchStatus.okay
+                                                 , fspath
+                                                 , {}
+                                                 , 'Found.'
+                                                 , {}
+                                                 , True
+                                                  )
         try:
-            response = resource.respond(request, dispatch_result, response)
+            response = resource.respond(**state)
         except Response as response:
             if response.code != 406:
                 raise
