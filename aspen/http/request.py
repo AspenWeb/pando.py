@@ -231,6 +231,7 @@ class Request(str):
         obj.cookie = obj.headers.cookie
         obj.path = obj.line.uri.path
         obj.qs = obj.line.uri.querystring
+        obj.method = obj.line.method
 
         return obj
 
