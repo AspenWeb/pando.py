@@ -95,6 +95,10 @@ def get_resource_for_request(website, dispatch_result):
     return {'resource': resources.get(website, dispatch_result.match)}
 
 
+def extract_accept_from_request(request):
+    return {'accept_header': request.headers.get('accept')}
+
+
 def get_response_for_resource(state, resource=None):
     if resource is not None:
         return {'response': resource.respond(**state)}
@@ -134,7 +138,7 @@ def delegate_error_to_simplate(website, state, response, request=None, resource=
         request.original_resource = resource
         if resource is not None and resource.is_bound:
             # Try to return an error that matches the type of the original resource.
-            request.headers['Accept'] = resource.media_type + ', text/plain; q=0.1'
+            state['accept_header'] = resource.media_type + ', text/plain; q=0.1'
         resource = resources.get(website, fspath)
         state['dispatch_result'] = DispatchResult( DispatchStatus.okay
                                                  , fspath
