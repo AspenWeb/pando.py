@@ -274,7 +274,7 @@ def test_indirect_negotiation_with_unsupported_media_type_is_404(harness):
 
 UNBOUND_SIMPLATE_VIRTUAL_PATH = """\
 [-------]
-foo = path['foo']
+foo = request.path['foo']
 [-------] text/html
 <h1>Greetings, %(foo)s!</h1>
 [-------] text/plain
@@ -290,7 +290,7 @@ def test_unbound_inside_virtual_path(harness):
 
 UNBOUND_SIMPLATE_STARTYPE = """\
 [-------]
-foo = path['foo']
+foo = request.path['foo']
 [-------] */*
 Unknown request type, %(foo)s!
 [-------] text/html
