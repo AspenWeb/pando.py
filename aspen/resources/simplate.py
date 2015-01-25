@@ -155,7 +155,6 @@ class Simplate(Resource):
     def get_response(self, context):
         """Given a context dict, return a response object.
         """
-        request = context['request']
         dispatch_result = context['dispatch_result']
 
         # find an Accept header
@@ -163,7 +162,7 @@ class Simplate(Resource):
         if accept is not None:      # indirect negotiation
             failure = Response(404)
         else:                       # direct negotiation
-            accept = request.headers.get('Accept', None)
+            accept = context.get('accept_header')
             msg = "The following media types are available: %s."
             msg %= ', '.join(self.available_types)
             failure = Response(406, msg.encode('US-ASCII'))

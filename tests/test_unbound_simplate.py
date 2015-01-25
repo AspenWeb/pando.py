@@ -163,7 +163,7 @@ def test_get_response_doesnt_reset_content_type_when_not_negotiating(harness):
 def test_get_response_negotiates(harness):
     harness.fs.www.mk(('index.spt', UNBOUND_SIMPLATE))
     state = _get_state(harness, filepath='index.spt', contents=UNBOUND_SIMPLATE)
-    state['request'].headers['Accept'] = 'text/html'
+    state['accept_header'] = 'text/html'
     actual = _get_response(state).body
     assert actual == "<h1>Greetings, program!</h1>\n"
 
@@ -178,7 +178,7 @@ def test_handles_busted_accept(harness):
 def test_get_response_sets_content_type_when_it_negotiates(harness):
     harness.fs.www.mk(('index.spt', UNBOUND_SIMPLATE))
     state = _get_state(harness, filepath='index.spt', contents=UNBOUND_SIMPLATE)
-    state['request'].headers['Accept'] = 'text/html'
+    state['accept_header'] = 'text/html'
     actual = _get_response(state).headers['Content-Type']
     assert actual == "text/html; charset=UTF-8"
 
@@ -199,14 +199,14 @@ def test_get_response_doesnt_reset_content_type_when_negotiating(harness):
 def test_get_response_raises_406_if_need_be(harness):
     harness.fs.www.mk(('index.spt', UNBOUND_SIMPLATE))
     state = _get_state(harness, filepath='index.spt', contents=UNBOUND_SIMPLATE)
-    state['request'].headers['Accept'] = 'cheese/head'
+    state['accept_header'] = 'cheese/head'
     actual = raises(Response, _get_response, state).value.code
     assert actual == 406
 
 def test_get_response_406_gives_list_of_acceptable_types(harness):
     harness.fs.www.mk(('index.spt', UNBOUND_SIMPLATE))
     state = _get_state(harness, filepath='index.spt', contents=UNBOUND_SIMPLATE)
-    state['request'].headers['Accept'] = 'cheese/head'
+    state['accept_header'] = 'cheese/head'
     actual = raises(Response, _get_response, state).value.body
     expected = "The following media types are available: text/plain, text/html."
     assert actual == expected
