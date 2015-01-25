@@ -20,3 +20,11 @@ def test_can_use_request_cookie(harness):
                              , HTTP_COOKIE=b'foo=bar'
                               )
     assert response.body == 'bar'
+
+
+def test_can_use_request_path(harness):
+    response = harness.simple( "foo = request.path.raw\n"
+                               "[-----] via stdlib_format\n"
+                               "{foo}"
+                              )
+    assert response.body == '/'

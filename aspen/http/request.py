@@ -229,6 +229,7 @@ class Request(str):
 
         # set up aliases
         obj.cookie = obj.headers.cookie
+        obj.path = obj.line.uri.path
 
         return obj
 

@@ -79,7 +79,6 @@ class Simplate(Resource):
         context.update(request.context)
         context.update({
             'website': None,
-            'path': request.line.uri.path,
             'qs': request.line.uri.querystring,
             'channel': None
         })
