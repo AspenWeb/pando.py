@@ -37,3 +37,12 @@ def test_can_use_request_qs(harness):
                              , uripath='/?foo=bloo'
                               )
     assert response.body == 'bloo'
+
+
+def test_can_use_request_method(harness):
+    response = harness.simple( "foo = request.method\n"
+                               "[-----] via stdlib_format\n"
+                               "{foo}"
+                             , uripath='/?foo=bloo'
+                              )
+    assert response.body == 'GET'
