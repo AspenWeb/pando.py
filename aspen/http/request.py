@@ -226,6 +226,10 @@ class Request(str):
 
             raise Response(400, "Request is undecodable. "
                                 "(%s:%d)" % (filename, frame.f_lineno))
+
+        # set up aliases
+        obj.cookie = obj.headers.cookie
+
         return obj
 
 

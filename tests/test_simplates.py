@@ -14,7 +14,7 @@ def test_can_use_request_headers(harness):
 
 
 def test_can_use_request_cookie(harness):
-    response = harness.simple( "foo = request.cookie['Foo']\n"
+    response = harness.simple( "foo = request.cookie['foo'].value\n"
                                "[-----] via stdlib_format\n"
                                "{foo}"
                              , HTTP_COOKIE=b'foo=bar'
