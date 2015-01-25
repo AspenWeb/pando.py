@@ -69,13 +69,7 @@ class Simplate(Resource):
     def populate_context(self, request, dispatch_result, response):
         """Factored out to support testing.
         """
-        dynamics = { 'body' : lambda: request.body }
-        class Context(dict):
-            def __getitem__(self, key):
-                if key in dynamics:
-                    return dynamics[key]()
-                return dict.__getitem__(self, key)
-        context = Context()
+        context = {}
         context.update(request.context)
         context.update({
             'website': None,
