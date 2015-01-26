@@ -101,7 +101,7 @@ def extract_accept_from_request(request):
 
 def get_response_for_resource(state, resource=None):
     if resource is not None:
-        return {'response': resource.respond(**state)}
+        return {'response': resource.respond(state)}
 
 
 def get_response_for_exception(website, exception):
@@ -148,7 +148,7 @@ def delegate_error_to_simplate(website, state, response, request=None, resource=
                                                  , True
                                                   )
         try:
-            response = resource.respond(**state)
+            response = resource.respond(state)
         except Response as response:
             if response.code != 406:
                 raise

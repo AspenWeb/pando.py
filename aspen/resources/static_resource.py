@@ -19,7 +19,7 @@ class StaticResource(Resource):
         if self.media_type == 'application/json':
             self.media_type = self.website.media_type_json
 
-    def respond(self, **context):
+    def respond(self, context):
         response = context.get('response', Response())
         # XXX Perform HTTP caching here.
         assert type(self.raw) is str # sanity check
