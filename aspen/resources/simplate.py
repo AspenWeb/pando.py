@@ -47,9 +47,9 @@ class Simplate(Resource):
         self.pages = self.compile_pages(pages)
 
 
-    def respond(self, **context):
+    def respond(self, context):
         context.update(self.pages[0])
-        response = context['response'] = context.get('response')
+        response = context.get('response')
         if response is None:
             response = Response(charset=self.website.charset_dynamic)
         context['response'] = response
