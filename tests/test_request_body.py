@@ -64,6 +64,11 @@ def test_simple_values_are_simple():
     actual = body['submit-name']
     assert actual == "Larry"
 
+def test_multiple_values_are_multiple():
+    body = make_body("cheese=yes&cheese=burger")
+    actual = body['cheese']
+    assert actual == "yes"
+
 def test_params_doesnt_break_www_form():
     body = make_body("statement=foo"
                     , content_type="application/x-www-form-urlencoded; charset=UTF-8; cheese=yummy"
