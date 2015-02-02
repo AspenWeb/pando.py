@@ -66,8 +66,7 @@ def test_simple_values_are_simple():
 
 def test_multiple_values_are_multiple():
     body = make_body("cheese=yes&cheese=burger")
-    actual = body['cheese']
-    assert actual == "yes"
+    assert body.all('cheese') == ["yes", "burger"]
 
 def test_params_doesnt_break_www_form():
     body = make_body("statement=foo"

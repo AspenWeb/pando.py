@@ -31,21 +31,24 @@ def formdata(raw, headers):
 
     environ = {"REQUEST_METHOD": "POST"}
     parsed = cgi.FieldStorage( fp = cgi.StringIO(raw)  # Ack.
-                           , environ = environ
-                           , headers = headers
-                           , keep_blank_values = True
-                           , strict_parsing = False
-                            )
+                             , environ = environ
+                             , headers = headers
+                             , keep_blank_values = True
+                             , strict_parsing = False
+                              )
     result = Mapping()
     for k in parsed.keys():
-        v = parsed[k]
-        if isinstance(v, cgi.MiniFieldStorage):
-            v = v.value.decode("UTF-8")  # XXX Really?  Always UTF-8?
-        else:
-            assert isinstance(v, cgi.FieldStorage), v
-            if v.filename is None:
-                v = v.value.decode("UTF-8")
-        result[k] = v
+        vals = parsed[k]
+        if not isinstance(vals, list):
+            vals = [vals]
+        for v in vals:
+            if isinstance(v, cgi.MiniFieldStorage):
+                v = v.value.decode("UTF-8")  # XXX Really?  Always UTF-8?
+            else:
+                assert isinstance(v, cgi.FieldStorage), v
+                if v.filename is None:
+                    v = v.value.decode("UTF-8")
+            result.add(k, v)
     return result
 
 
