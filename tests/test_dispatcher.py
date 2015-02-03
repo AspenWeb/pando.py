@@ -321,7 +321,9 @@ website.typecasters['user'] = User.toUser
 
 def test_virtual_path_file_key_val_cast_custom(harness):
     harness.fs.project.mk(('configure-aspen.py', userclassconfigure),)
-    harness.fs.www.mk(('user/%user.user.html.spt', "\nusername=path['user']\n[-----]\nGreetings, %(username)s!"),)
+    harness.fs.www.mk(( 'user/%user.user.html.spt'
+                      , "\nusername=request.path['user']\n[-----]\nGreetings, %(username)s!"
+                       ),)
     actual = harness.simple(filepath=None, uripath='/user/chad.html', want='request.line.uri.path',
             run_through='apply_typecasters_to_path')
     assert actual['user'].username == 'chad'
@@ -422,7 +424,7 @@ def test_path_part_params_greedy_simplate(harness):
 
 GREETINGS_NAME_SPT = """
 [-----]
-name = path['name']
+name = request.path['name']
 [------]
 Greetings, %(name)s!"""
 
@@ -435,8 +437,8 @@ def test_virtual_path_docs_2(harness):
     assert_body(harness, '/python/', 'Greetings, python!')
 
 NAME_LIKES_CHEESE_SPT = """
-name = path['name'].title()
-cheese = path['cheese']
+name = request.path['name'].title()
+cheese = request.path['cheese']
 [---------]
 %(name)s likes %(cheese)s cheese."""
 
@@ -452,7 +454,10 @@ def test_virtual_path_docs_4(harness):
            )
     assert_raises_404(harness, '/chad/cheddar.txt/')
 
-PARTY_LIKE_YEAR_SPT = "year = path['year']\n[----------]\nTonight we're going to party like it's %(year)s!"
+PARTY_LIKE_YEAR_SPT = """\
+year = request.path['year']
+[----------]
+Tonight we're going to party like it's %(year)s!"""
 
 def test_virtual_path_docs_5(harness):
     harness.fs.www.mk( ('%name/index.html.spt', GREETINGS_NAME_SPT)

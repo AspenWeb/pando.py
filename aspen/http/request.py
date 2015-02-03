@@ -226,6 +226,13 @@ class Request(str):
 
             raise Response(400, "Request is undecodable. "
                                 "(%s:%d)" % (filename, frame.f_lineno))
+
+        # set up aliases
+        obj.cookie = obj.headers.cookie
+        obj.path = obj.line.uri.path
+        obj.qs = obj.line.uri.querystring
+        obj.method = obj.line.method
+
         return obj
 
 

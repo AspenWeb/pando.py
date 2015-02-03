@@ -18,11 +18,11 @@ def test_404_comes_out_404(harness):
     assert harness.client.GET(raise_immediately=False).code == 404
 
 
-def test_request_context_can_be_populated_by_user(harness):
+def test_user_can_influence_request_context_via_algorithm_state(harness):
     harness.fs.www.mk(('index.html.spt', '%(foo)s'))
     harness.fs.project.mk(('configure-aspen.py', """\
 def add_foo_to_context(request):
-    request.context['foo'] = 'bar'
+    return {'foo': 'bar'}
 
 website.algorithm.insert_after('parse_environ_into_request', add_foo_to_context)
 """))
