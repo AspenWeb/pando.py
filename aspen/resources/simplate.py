@@ -47,11 +47,12 @@ class Simplate(Resource):
         self.pages = self.compile_pages(pages)
 
 
-    def respond(self, request, dispatch_result, response=None):
-        """Given a Request and maybe a Response, return or raise a Response.
-        """
-        response = response or Response(charset=self.website.charset_dynamic)
-        context = self.populate_context(request, dispatch_result, response)
+    def respond(self, context):
+        context.update(self.pages[0])
+        response = context.get('response')
+        if response is None:
+            response = Response(charset=self.website.charset_dynamic)
+        context['response'] = response
 
         exec self.pages[1] in context
 
@@ -64,40 +65,6 @@ class Simplate(Resource):
 
         response = self.get_response(context)
         return response
-
-
-    def populate_context(self, request, dispatch_result, response):
-        """Factored out to support testing.
-        """
-        dynamics = { 'body' : lambda: request.body }
-        class Context(dict):
-            def __getitem__(self, key):
-                if key in dynamics:
-                    return dynamics[key]()
-                return dict.__getitem__(self, key)
-        context = Context()
-        context.update(request.context)
-        context.update({
-            'website': None,
-            'headers': request.headers,
-            'cookie': request.headers.cookie,
-            'path': request.line.uri.path,
-            'qs': request.line.uri.querystring,
-            'channel': None
-        })
-        # http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html
-        for method in ['OPTIONS', 'GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'TRACE', 'CONNECT']:
-            context[method] = (method == request.line.method)
-        # insert the residual context from the initialization page
-        context.update(self.pages[0])
-        # don't let the page override these
-        context.update({
-            'request' : request,
-            'dispatch_result': dispatch_result,
-            'resource': self,
-            'response': response
-        })
-        return context
 
 
     def parse_into_pages(self, raw, is_bound):
@@ -188,7 +155,6 @@ class Simplate(Resource):
     def get_response(self, context):
         """Given a context dict, return a response object.
         """
-        request = context['request']
         dispatch_result = context['dispatch_result']
 
         # find an Accept header
@@ -196,7 +162,7 @@ class Simplate(Resource):
         if accept is not None:      # indirect negotiation
             failure = Response(404)
         else:                       # direct negotiation
-            accept = request.headers.get('Accept', None)
+            accept = context.get('accept_header')
             msg = "The following media types are available: %s."
             msg %= ', '.join(self.available_types)
             failure = Response(406, msg.encode('US-ASCII'))
