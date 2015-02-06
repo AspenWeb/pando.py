@@ -121,6 +121,45 @@ def test_headers_handle_bad_spaces():
     raises(MalformedHeader, BaseHeaders, b"Foo : Bar")
 
 
+# aliases
+
+def test_cookie_alias_is_readable(harness):
+    request = harness.make_request()
+    assert request.cookie.values() == []
+
+def test_cookie_alias_is_read_only(harness):
+    request = harness.make_request()
+    with raises(Exception):
+        request.cookie = 'foo'
+
+def test_path_alias_is_readable(harness):
+    request = harness.make_request()
+    assert request.path.raw == '/'
+
+def test_path_alias_is_read_only(harness):
+    request = harness.make_request()
+    with raises(Exception):
+        request.path = 'foo'
+
+def test_qs_alias_is_readable(harness):
+    request = harness.make_request()
+    assert request.qs == {}
+
+def test_qs_alias_is_read_only(harness):
+    request = harness.make_request()
+    with raises(Exception):
+        request.qs = 'foo'
+
+def test_method_alias_is_readable(harness):
+    request = harness.make_request()
+    assert request.method == 'GET'
+
+def test_method_alias_is_read_only(harness):
+    request = harness.make_request()
+    with raises(Exception):
+        request.method = 'foo'
+
+
 # kick_against_goad
 
 def test_goad_passes_method_through():
