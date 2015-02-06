@@ -123,14 +123,14 @@ def test_headers_handle_bad_spaces():
 
 # aliases
 
-def test_cookie_alias_is_readable(harness):
+def test_method_alias_is_readable(harness):
     request = harness.make_request()
-    assert request.cookie.values() == []
+    assert request.method == 'GET'
 
-def test_cookie_alias_is_read_only(harness):
+def test_method_alias_is_read_only(harness):
     request = harness.make_request()
-    with raises(Exception):
-        request.cookie = 'foo'
+    with raises(AttributeError):
+        request.method = 'foo'
 
 def test_path_alias_is_readable(harness):
     request = harness.make_request()
@@ -138,7 +138,7 @@ def test_path_alias_is_readable(harness):
 
 def test_path_alias_is_read_only(harness):
     request = harness.make_request()
-    with raises(Exception):
+    with raises(AttributeError):
         request.path = 'foo'
 
 def test_qs_alias_is_readable(harness):
@@ -147,17 +147,17 @@ def test_qs_alias_is_readable(harness):
 
 def test_qs_alias_is_read_only(harness):
     request = harness.make_request()
-    with raises(Exception):
+    with raises(AttributeError):
         request.qs = 'foo'
 
-def test_method_alias_is_readable(harness):
+def test_cookie_alias_is_readable(harness):
     request = harness.make_request()
-    assert request.method == 'GET'
+    assert request.cookie.values() == []
 
-def test_method_alias_is_read_only(harness):
+def test_cookie_alias_is_read_only(harness):
     request = harness.make_request()
-    with raises(Exception):
-        request.method = 'foo'
+    with raises(AttributeError):
+        request.cookie = 'foo'
 
 
 # kick_against_goad
