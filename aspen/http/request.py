@@ -227,14 +227,41 @@ class Request(str):
             raise Response(400, "Request is undecodable. "
                                 "(%s:%d)" % (filename, frame.f_lineno))
 
-        # set up aliases
-        obj.cookie = obj.headers.cookie
-        obj.path = obj.line.uri.path
-        obj.qs = obj.line.uri.querystring
-        obj.method = obj.line.method
-
         return obj
 
+
+    @classmethod
+    def from_wsgi(cls, environ):
+        """Given a WSGI environ, return an instance of cls.
+
+        The conversion from HTTP to WSGI is lossy. This method does its best to
+        go the other direction, but we can't guarantee that we've reconstructed
+        the bytes as they were on the wire (which is what I want). It would
+        also be more efficient to parse directly for our API. But people love
+        their gunicorn. :-/
+
+        """
+        return cls(*kick_against_goad(environ))
+
+
+    # Set up some aliases.
+    # ====================
+
+    @property
+    def method(self):
+        return self.line.method
+
+    @property
+    def path(self):
+        return self.line.uri.path
+
+    @property
+    def qs(self):
+        return self.line.uri.querystring
+
+    @property
+    def cookie(self):
+        return self.headers.cookie
 
     @property
     def body(self):
@@ -253,20 +280,6 @@ class Request(str):
     def body(self, value):
         '''Let the developer set the body to something if they want'''
         self.parsed_body = value
-
-
-    @classmethod
-    def from_wsgi(cls, environ):
-        """Given a WSGI environ, return an instance of cls.
-
-        The conversion from HTTP to WSGI is lossy. This method does its best to
-        go the other direction, but we can't guarantee that we've reconstructed
-        the bytes as they were on the wire (which is what I want). It would
-        also be more efficient to parse directly for our API. But people love
-        their gunicorn. :-/
-
-        """
-        return cls(*kick_against_goad(environ))
 
 
     # Extend str to lazily load bytes.
