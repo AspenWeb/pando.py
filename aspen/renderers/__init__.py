@@ -86,7 +86,7 @@ from __future__ import unicode_literals
 
 class Renderer(object):
 
-    def __init__(self, factory, filepath, raw):
+    def __init__(self, factory, filepath, raw, media_type, offset):
         """Takes a Factory and two bytestrings.
         """
         self._filepath = filepath
@@ -94,6 +94,8 @@ class Renderer(object):
         self._changes_reload = factory._changes_reload
         self.meta = self._factory.meta
         self.raw = raw
+        self.media_type = media_type
+        self.offset = offset
         self.compiled = self.compile(self._filepath, self.raw)
 
     def __call__(self, context):
@@ -136,11 +138,11 @@ class Factory(object):
         self._changes_reload = configuration.changes_reload
         self.meta = self.compile_meta(configuration)
 
-    def __call__(self, filepath, raw):
+    def __call__(self, filepath, raw, media_type, offset):
         """Given two bytestrings, return a callable.
         """
         self._update_meta()
-        return self.Renderer(self, filepath, raw)
+        return self.Renderer(self, filepath, raw, media_type, offset)
 
     def _update_meta(self):
         if self._changes_reload:
