@@ -29,12 +29,14 @@ instantied with one argument:
     configuration   an Aspen configuration object
 
 
-Instances of each Renderer subclass are callables that take three arguments and
-return a function (confused yet?). The three arguments are:
+Instances of each Renderer subclass are callables that take five arguments and
+return a function (confused yet?). The five arguments are:
 
     factory         the Factory creating this object
     filepath        the filesystem path of the resource in question
     raw             the bytestring of the page of the resource in question
+    media_type      the media type of the page
+    offset          the line number at which the page starts
 
 
 Each Renderer instance is a callable that takes a context dictionary and
@@ -87,7 +89,7 @@ from __future__ import unicode_literals
 class Renderer(object):
 
     def __init__(self, factory, filepath, raw, media_type, offset):
-        """Takes a Factory and two bytestrings.
+        """Takes a Factory, three bytestrings, and an int.
         """
         self._filepath = filepath
         self._factory = factory
@@ -124,6 +126,8 @@ class Renderer(object):
             self.compiled   the result of self.compile (generally a template in
                              compiled object form)
             self.meta       the result of Factory.compile_meta
+            self.media_type the media type of the page
+            self.offset     the line number at which the page starts
 
         """
         return self.raw  # pass-through
@@ -139,7 +143,7 @@ class Factory(object):
         self.meta = self.compile_meta(configuration)
 
     def __call__(self, filepath, raw, media_type, offset):
-        """Given two bytestrings, return a callable.
+        """Given three bytestrings and an int, return a callable.
         """
         self._update_meta()
         return self.Renderer(self, filepath, raw, media_type, offset)
