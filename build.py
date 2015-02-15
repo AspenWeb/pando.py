@@ -156,23 +156,30 @@ def pylint():
         'aspen', '|', 'tee', 'pylint.out', shell=True, ignore_status=True)
 
 
-def analyse():
-    pylint()
-    dev()
+def test_cov():
     aspen()
+    dev()
     run(_virt('py.test'),
         '--junitxml=testresults.xml',
         '--cov-report', 'term',
         '--cov-report', 'xml',
+        '--cov-report', 'html',
         '--cov', 'aspen',
         'tests/',
         ignore_status=False)
+
+
+def analyse():
+    aspen()
+    dev()
+    pylint()
+    test_cov()
     print('done!')
 
 
 def clean_test():
     clean_env()
-    shell('rm', '-f', '.coverage', 'coverage.xml', 'testresults.xml', 'pylint.out')
+    shell('rm', '-rf', '.coverage', 'coverage.xml', 'testresults.xml', 'htmlcov', 'pylint.out')
 
 # Build
 # =====
