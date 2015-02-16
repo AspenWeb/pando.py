@@ -20,7 +20,7 @@ To get help on fabricate functions:
 
 """
 
-from __future__ import with_statement
+from __future__ import with_statement, print_function, unicode_literals
 
 # fabricate version number
 __version__ = '1.26'
@@ -48,6 +48,12 @@ except ImportError:
         def __getattr__(self, name):
             raise NotImplementedError("multiprocessing module not available, can't do parallel builds")
     multiprocessing = MultiprocessingModule()
+
+PY3 = sys.version_info[0] == 3
+if PY3:
+    string_types = str
+else:
+    string_types = basestring
 
 # so you can do "from fabricate import *" to simplify your build script
 __all__ = ['setup', 'run', 'autoclean', 'main', 'shell', 'fabricate_version',
@@ -103,7 +109,7 @@ except ImportError:
 
 def printerr(message):
     """ Print given message to stderr with a line feed. """
-    print >>sys.stderr, message
+    print(message, file=sys.stderr)
 
 class PathError(Exception):
     pass
@@ -118,10 +124,10 @@ def args_to_list(args):
     for arg in args:
         if arg is None:
             continue
-        if hasattr(arg, '__iter__'):
+        if isinstance(arg, (list, tuple)):
             arglist.extend(args_to_list(arg))
         else:
-            if not isinstance(arg, basestring):
+            if not isinstance(arg, string_types):
                 arg = str(arg)
             arglist.append(arg)
     return arglist
@@ -180,7 +186,7 @@ def _shell(args, input=None, silent=True, shell=False, ignore_status=False, **kw
     try:
         proc = subprocess.Popen(command, stdin=stdin, stdout=stdout,
                                 stderr=subprocess.STDOUT, shell=shell, **kwargs)
-    except OSError, e:
+    except OSError as e:
         # Work around the problem that Windows Popen doesn't say what file it couldn't find
         if platform.system() == 'Windows' and e.errno == 2 and e.filename is None:
             e.filename = arglist[0]
@@ -205,6 +211,8 @@ def md5_hasher(filename):
         Windows so symlinks without a hashable target fall back to
         a hash of the filename if the symlink target is a directory, 
         or None if the symlink is broken"""
+    if not isinstance(filename, bytes):
+        filename = filename.encode('utf-8')
     try:
         f = open(filename, 'rb')
         try:
@@ -334,7 +342,7 @@ class AtimesRunner(Runner):
                     os.close(handle)
                     raise
                 try:
-                    f.write('x')    # need a byte in the file for access test
+                    f.write(b'x')    # need a byte in the file for access test
                 finally:
                     f.close()
                 atimes = min(atimes, AtimesRunner.file_has_atimes(filename))
@@ -383,7 +391,7 @@ class AtimesRunner(Runner):
         """ Call os.utime but ignore permission errors """
         try:
             os.utime(filename, (atime, mtime))
-        except OSError, e:
+        except OSError as e:
             # ignore permission errors -- we can't build with files
             # that we can't access anyway
             if e.errno != 1:
@@ -395,7 +403,7 @@ class AtimesRunner(Runner):
             and return a new dict of filetimes with the ages adjusted. """
         adjusted = {}
         now = time.time()
-        for filename, entry in filetimes.iteritems():
+        for filename, entry in filetimes.items():
             if now-entry[0] < FAT_atime_resolution or now-entry[1] < FAT_mtime_resolution:
                 entry = entry[0] - FAT_atime_resolution, entry[1] - FAT_mtime_resolution
                 self._utime(filename, entry[0], entry[1])
@@ -512,7 +520,7 @@ class StraceRunner(Runner):
                 proc = subprocess.Popen(['strace', '-e', 'trace=' + system_call], stderr=subprocess.PIPE)
                 stdout, stderr = proc.communicate()
                 proc.wait()
-                if 'invalid system call' not in stderr:
+                if b'invalid system call' not in stderr:
                    valid_system_calls.append(system_call)
         except OSError:
             return None
@@ -546,7 +554,7 @@ class StraceRunner(Runner):
             shell('strace', '-fo', outname, '-e',
                   'trace=' + self.strace_system_calls,
                   args, **shell_keywords)
-        except ExecutionError, e:
+        except ExecutionError as e:
             # if strace failed to run, re-throw the exception
             # we can tell this happend if the file is empty
             outfile.seek(0, os.SEEK_END)
@@ -906,7 +914,7 @@ def _results_handler( builder, delay=0.01):
                     if r.results is None and r.async.ready():
                         try:
                             d, o = r.async.get()
-                        except Exception, e:
+                        except Exception as e:
                             r.results = e
                             _groups.set_ok(id, False)
                             message, data, status = e
@@ -1050,7 +1058,7 @@ class Builder(object):
     def echo(self, message):
         """ Print message, but only if builder is not in quiet mode. """
         if not self.quiet:
-            print message
+            print(message)
 
     def echo_command(self, command, echo=None):
         """ Show a command being executed. Also passed run's "echo" arg
@@ -1072,7 +1080,7 @@ class Builder(object):
     def echo_debug(self, message):
         """ Print message, but only if builder is in debug mode. """
         if self.debug:
-            print 'DEBUG:', message
+            print('DEBUG: ' + message)
 
     def _run(self, *args, **kwargs):
         after = kwargs.pop('after', None)
@@ -1100,7 +1108,7 @@ class Builder(object):
         if self.parallel_ok:
             arglist.insert(0, self.runner)
             if after is not None:
-                if not hasattr(after, '__iter__'):
+                if not isinstance(after, (list, tuple)):
                     after = [after]
                 # This command is registered to False group firstly,
                 # but the actual group of this command should 
@@ -1174,14 +1182,14 @@ class Builder(object):
 
             This function is for compatiblity with memoize.py and is
             deprecated. Use run() instead. """
-        if isinstance(command, basestring):
+        if isinstance(command, string_types):
             args = shlex.split(command)
         else:
             args = args_to_list(command)
         try:
             self.run(args, **kwargs)
             return 0
-        except ExecutionError, exc:
+        except ExecutionError as exc:
             message, data, status = exc
             return status
 
@@ -1246,7 +1254,7 @@ class Builder(object):
         for output in outputs:
             try:
                 os.remove(output)
-            except OSError, e:
+            except OSError as e:
                 if os.path.isdir(output):
                     # cache directories to be removed once all other outputs
                     # have been removed, as they may be content of the dir
@@ -1260,7 +1268,7 @@ class Builder(object):
         for dir in sorted(dirs, reverse=True):
             try:
                 os.rmdir(dir)
-            except OSError, e:
+            except OSError as e:
                 self.echo_delete(dir, e)                
             else:
                 self.echo_delete(dir)
@@ -1320,7 +1328,7 @@ class Builder(object):
         try:
             self.runner = self._runner_map[runner](self)
         except KeyError:
-            if isinstance(runner, basestring):
+            if isinstance(runner, string_types):
                 # For backwards compatibility, allow runner to be the
                 # name of a method in a derived class:
                 self.runner = getattr(self, runner)
@@ -1387,7 +1395,7 @@ def run(*args, **kwargs):
         as a command, returns a list of returns from Builder.run().
     """
     _set_default_builder()
-    if len(args) == 1 and hasattr(args[0], '__iter__'):
+    if len(args) == 1 and isinstance(arg, (list, tuple)):
         return [default_builder.run(*a, **kwargs) for a in args[0]]
     return default_builder.run(*args, **kwargs)
 
@@ -1545,7 +1553,7 @@ def main(globals_dict=None, build_dir=None, extra_options=None, builder=None,
                 build_dir = os.path.dirname(build_file)
     if build_dir:
         if not options.quiet and os.path.abspath(build_dir) != original_path:
-            print "Entering directory '%s'" % build_dir
+            print("Entering directory '%s'" % build_dir)
         os.chdir(build_dir)
     if _pool is None and jobs > 1:
         _pool = multiprocessing.Pool(jobs)
@@ -1574,13 +1582,13 @@ def main(globals_dict=None, build_dir=None, extra_options=None, builder=None,
                 printerr('%r command not defined!' % action)
                 sys.exit(1)
         after() # wait till the build commands are finished
-    except ExecutionError, exc:
-        message, data, status = exc
+    except ExecutionError as exc:
+        message, data, status = exc.args
         printerr('fabricate: ' + message)
     finally:
         _stop_results.set() # stop the results gatherer so I don't hang
         if not options.quiet and os.path.abspath(build_dir) != original_path:
-            print "Leaving directory '%s' back to '%s'" % (build_dir, original_path)
+            print("Leaving directory '%s' back to '%s'" % (build_dir, original_path))
         os.chdir(original_path)
     sys.exit(status)
 

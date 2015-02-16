@@ -1,3 +1,5 @@
+from __future__ import division, print_function, unicode_literals, with_statement
+
 import os
 import sys
 import os.path
@@ -60,7 +62,7 @@ def _env(envdir='env'):
 def aspen():
     _env()
     v = shell(_virt('python'), '-c', 'import aspen; print("found")', ignore_status=True)
-    if "found" in v:
+    if b"found" in v:
         return
     for dep in ASPEN_DEPS:
         run(_virt('pip'), 'install', '--no-index',
