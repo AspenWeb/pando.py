@@ -141,7 +141,7 @@ class Simplate(Resource):
         _parse_specline = self._bound_parse_specline \
                             if self.is_bound else self._unbound_parse_specline
         make_renderer, media_type = _parse_specline(page.header)
-        renderer = make_renderer(self.fs, page.content)
+        renderer = make_renderer(self.fs, page.content, media_type, page.offset)
         if media_type in self.renderers:
             raise SyntaxError("Two content pages defined for %s." % media_type)
 
