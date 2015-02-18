@@ -1,6 +1,21 @@
 Aspen-python Changelog
 ======================
 
+0.37 - Released Mon Dec 15 2014 by @pjz
+---------------------------------------
+
+* Fix some return types during error handling (#406, #398)
+
+* Make simplates a bit more separate from Aspen (#412)
+
+* Use algorithm state as request context
+
+* Make convenience aliases in request context read-only (#414)
+
+* Generate html test coverage report (Thanks Changaco!)
+
+* Python 3 fixes to build.py and fabricate.py (Thanks Changaco!)
+
 0.36 - Released Mon Dec 15 2014 by @pjz
 ---------------------------------------
 
