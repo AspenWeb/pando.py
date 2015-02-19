@@ -6,7 +6,7 @@ from os.path import dirname
 opts = {} # populate this in configure-aspen.py
 
 
-def add_stuff_to_request_context(website, request, dispatch_result):
+def add_stuff_to_request_context(website, dispatch_result):
 
     # Define some closures for generating image markup.
     # =================================================
@@ -37,9 +37,11 @@ def add_stuff_to_request_context(website, request, dispatch_result):
     # Make these available within simplates.
     # ======================================
 
-    request.context['img'] = img
-    request.context['screenshot'] = screenshot
-    request.context['translate'] = translate
-    request.context['version'] = opts['version']
-    request.context['homepage'] = False
-    request.context['show_ga'] = opts['show_ga']
+    return {
+        'img': img,
+        'screenshot': screenshot,
+        'translate': translate,
+        'version': opts['version'],
+        'homepage': False,
+        'show_ga': opts['show_ga'],
+    }
