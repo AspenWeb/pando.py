@@ -1,7 +1,7 @@
 Aspen-python Changelog
 ======================
 
-0.37 - Released Mon Dec 15 2014 by @pjz
+0.37 - Released Wed Feb 18 2015 by @pjz
 ---------------------------------------
 
 * Fix some return types during error handling (#406, #398)
