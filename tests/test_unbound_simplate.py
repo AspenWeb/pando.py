@@ -121,7 +121,7 @@ def _get_response(state):
     resource = resources.load(state['website'], state['dispatch_result'].match, 0)
     state['resource'] = resource
     state['response'] = state.get('response', Response())
-    return resource.get_response(state)
+    return resource.get_response(state, {})
 
 UNBOUND_SIMPLATE = """\
 [---]

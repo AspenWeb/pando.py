@@ -47,24 +47,20 @@ class Simplate(Resource):
         self.pages = self.compile_pages(pages)
 
 
-    def respond(self, context):
-        context.update(self.pages[0])
-        response = context.get('response')
-        if response is None:
-            response = Response(charset=self.website.charset_dynamic)
-        context['response'] = response
+    def respond(self, state):
+        state.update(self.pages[0])
+        response = state.setdefault('response', Response(charset=self.website.charset_dynamic))
+        spt_locals = {}
 
-        exec self.pages[1] in context
+        exec(self.pages[1], state, spt_locals)
 
-        # if __all__ is defined, only pass those variables to templates
-        # if __all__ is not defined, pass full context to templates
+        # if __all__ is defined, only pass those local variables to templates
+        # if __all__ is not defined, pass all locals to templates
 
-        if '__all__' in context:
-            newcontext = dict([ (k, context[k]) for k in context['__all__'] ])
-            context = newcontext
+        if '__all__' in spt_locals:
+            spt_locals = dict([ (k, spt_locals[k]) for k in spt_locals['__all__'] ])
 
-        response = self.get_response(context)
-        return response
+        return self.get_response(state, spt_locals)
 
 
     def parse_into_pages(self, raw, is_bound):
@@ -152,17 +148,17 @@ class Simplate(Resource):
         return (renderer, media_type)  # back to parent class
 
 
-    def get_response(self, context):
-        """Given a context dict, return a response object.
+    def get_response(self, state, spt_locals):
+        """Given two context dicts, return a response object.
         """
-        dispatch_result = context['dispatch_result']
+        dispatch_result = state['dispatch_result']
 
         # find an Accept header
         accept = dispatch_result.extra.get('accept', None)
         if accept is not None:      # indirect negotiation
             failure = Response(404)
         else:                       # direct negotiation
-            accept = context.get('accept_header')
+            accept = state.get('accept_header')
             msg = "The following media types are available: %s."
             msg %= ', '.join(self.available_types)
             failure = Response(406, msg.encode('US-ASCII'))
@@ -181,8 +177,8 @@ class Simplate(Resource):
                 del failure
                 render = self.renderers[media_type] # KeyError is a bug
 
-        response = context['response']
-        response.body = render(context)
+        response = state['response']
+        response.body = render(dict(state, **spt_locals))
         if 'Content-Type' not in response.headers:
             response.headers['Content-Type'] = media_type
             if media_type.startswith('text/'):
