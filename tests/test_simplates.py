@@ -46,3 +46,25 @@ def test_can_use_request_method(harness):
                              , uripath='/?foo=bloo'
                               )
     assert response.body == 'GET'
+
+
+def test_cant_implicitly_override_state(harness):
+    state = harness.simple(
+        "resource = 'foo'\n"
+        "[---] via stdlib_format\n"
+        "{resource}",
+        want='state'
+    )
+    assert state['response'].body == 'foo'
+    assert state['resource'] != 'foo'
+
+
+def test_can_explicitly_override_state(harness):
+    response = harness.simple(
+        "from aspen import Response\n"
+        "state['response'] = Response(299)\n"
+        "[---]\n"
+        "bar"
+    )
+    assert response.code == 299
+    assert response.body == 'bar'
