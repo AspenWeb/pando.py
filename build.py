@@ -59,19 +59,19 @@ def _env(envdir='env'):
     run(*args)
 
 
-def aspen():
-    _env()
-    v = shell(_virt('python'), '-c', 'import aspen; print("found")', ignore_status=True)
+def aspen(envdir='env'):
+    _env(envdir)
+    v = shell(_virt('python', envdir), '-c', 'import aspen; print("found")', ignore_status=True)
     if b"found" in v:
         return
     for dep in ASPEN_DEPS:
-        run(_virt('pip'), 'install', '--no-index',
+        run(_virt('pip', envdir), 'install', '--no-index',
             '--find-links=' + INSTALL_DIR, dep)
-    run(_virt('python'), 'setup.py', 'develop')
+    run(_virt('python', envdir), 'setup.py', 'develop')
 
 
 def dev(envdir='env'):
-    _env(envdir)
+    aspen(envdir)
     # pytest will need argparse if its running under 2.6
     if _virt_version() < (2, 7):
         TEST_DEPS.insert(0, 'argparse')
@@ -89,6 +89,7 @@ def clean():
     shell('find', '.', '-name', '*.pyc', '-delete')
     clean_env()
     clean_smoke()
+    clean_sphinx()
     clean_jenv()
     clean_test()
     clean_build()
@@ -118,18 +119,24 @@ def clean_smoke():
     shell('rm', '-rf', smoke_dir)
 
 
-def sphinx():
+def _sphinx_cmd(packages, cmd):
     dev(envdir='denv')
-    run(_virt('pip', envdir='denv'), 'install', 'sphinx')
+    for p in packages:
+        run(_virt('pip', envdir='denv'), 'install', p)
     sphinxopts = []
     builddir = 'docs/_build'
     run('mkdir', '-p', builddir)
     newenv = os.environ
-    newenv.update({'PYTHONPATH': 'env/lib/python2.7/site-packages'})
+    newenv.update({'PYTHONPATH': 'denv/lib/python2.7/site-packages'})
     args = ['-b', 'html', '-d', builddir + '/doctrees', sphinxopts,
             'docs', builddir + '/html']
-    run(_virt('sphinx-build', envdir='denv'), args, env=newenv)
+    run(_virt(cmd, envdir='denv'), args, env=newenv)
 
+def sphinx():
+    _sphinx_cmd(['sphinx'], "sphinx-build")
+
+def autosphinx():
+    _sphinx_cmd(['sphinx', 'sphinx-autobuild'], "sphinx-autobuild")
 
 def clean_sphinx():
     shell('rm', '-rf', 'docs/_build')
@@ -140,13 +147,11 @@ def clean_sphinx():
 # =======
 
 def test():
-    aspen()
     dev()
     shell(_virt('py.test'), 'tests/', ignore_status=True, silent=False)
 
 
 def testf():
-    aspen()
     dev()
     shell(_virt('py.test'), '-x', 'tests/', ignore_status=True, silent=False)
 
@@ -159,7 +164,6 @@ def pylint():
 
 
 def test_cov():
-    aspen()
     dev()
     run(_virt('py.test'),
         '--junitxml=testresults.xml',
@@ -172,7 +176,6 @@ def test_cov():
 
 
 def analyse():
-    aspen()
     dev()
     pylint()
     test_cov()
@@ -222,7 +225,7 @@ def clean_jenv():
 
 def jython_test():
     _jenv()
-    for dep in ASPEN_DEPS + TEST_DEPS:
+    for dep in TEST_DEPS:
         run(_virt('pip', 'jenv'), 'install', os.path.join('vendor', dep))
     run(_virt('jython', 'jenv'), 'setup.py', 'develop')
     run(_virt('jython', 'jenv'), _virt('py.test', 'jenv'),
