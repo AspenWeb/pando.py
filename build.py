@@ -248,6 +248,7 @@ def show_targets():
     dev - set up an environment able to run tests in env/
     docserve - run the doc server
     sphinx - build the html docs in docs/_build/html
+    autosphinx - run sphinx-autobuild on the module to auto-pickup changes
     smoke - run a smoke test
     test - run the unit tests
     analyse - run the unit tests with code coverage enabled
