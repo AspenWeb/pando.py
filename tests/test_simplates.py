@@ -4,6 +4,16 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 
+
+def test_default_media_type_works(harness):
+    harness.fs.www.mk(('index.spt', """
+[---]
+[---]
+plaintext"""))
+    response = harness.client.GET(raise_immediately=False)
+    assert "plaintext" in response.body
+
+
 def test_can_use_request_headers(harness):
     response = harness.simple( "foo = request.headers['Foo']\n"
                                "[-----] via stdlib_format\n"

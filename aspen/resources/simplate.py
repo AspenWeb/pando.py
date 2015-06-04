@@ -230,12 +230,16 @@ class Simplate(Resource):
 
         #Assign parts
         media_type, renderer = parts
+        if media_type == '':
+            # no media type specified, use the default
+            media_type = self.media_type
         if renderer == '':
+            # no renderer specified, use the default
             renderer = self.website.default_renderers_by_media_type[media_type]
 
         # Validate media type.
         if media_type_re.match(media_type) is None:
-            msg = ("Malformed media type %s in specline %s. It must match "
+            msg = ("Malformed media type '%s' in specline '%s'. It must match "
                    "%s.")
             msg %= (media_type, specline, media_type_re.pattern)
             raise SyntaxError(msg)
