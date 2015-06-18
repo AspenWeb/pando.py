@@ -88,7 +88,7 @@ def deps(envdir='env'):
 
 def dev_deps(envdir='env'):
     envdir = deps(envdir)
-    # pytest will need argparse if its running under 2.6
+    # pytest will need argparse if it's running under 2.6
     if _virt_version() < (2, 7):
         TEST_DEPS.insert(0, 'argparse')
     for dep in TEST_DEPS:
