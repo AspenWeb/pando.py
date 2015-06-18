@@ -101,5 +101,5 @@ def serve(website, host='0.0.0.0', port='8080'):
 
     port = int(os.environ.get('PORT', port))
     server = make_server(host, port, website)
-    log_dammit("Greetings, program! Welcome to port http://{0}:{1}/.".format(host, port))
+    log_dammit("Greetings, program! Now serving on http://{0}:{1}/.".format(host, port))
     server.serve_forever()
