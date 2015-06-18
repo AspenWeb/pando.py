@@ -70,9 +70,10 @@ from .backcompat import is_callable
 from aspen.http.response import Response
 from aspen import json_ as json
 from aspen.logging import log, log_dammit
+from aspen.website import Website
 
 # Shut up, PyFlakes. I know I'm addicted to you.
-Response, json, is_callable, log, log_dammit
+Response, json, is_callable, log, log_dammit, Website
 
 dist = pkg_resources.get_distribution('aspen')
 __version__ = dist.version
@@ -92,3 +93,14 @@ for entrypoint in pkg_resources.iter_entry_points(group='aspen.renderers'):
 
 RENDERERS.sort()
 
+
+def serve(website, host=None, port=None):
+    """Serve a website.
+    """
+    import os
+    from wsgiref.simple_server import make_server
+
+    port = int(os.environ.get('PORT', '8080'))
+    server = make_server('0.0.0.0', port, website)
+    log_dammit("Greetings, program! Welcome to port {0}.".format(port))
+    server.serve_forever()
