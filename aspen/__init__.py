@@ -70,10 +70,9 @@ from .backcompat import is_callable
 from aspen.http.response import Response
 from aspen import json_ as json
 from aspen.logging import log, log_dammit
-from aspen.website import Website
 
 # Shut up, PyFlakes. I know I'm addicted to you.
-Response, json, is_callable, log, log_dammit, Website
+Response, json, is_callable, log, log_dammit
 
 dist = pkg_resources.get_distribution('aspen')
 __version__ = dist.version
