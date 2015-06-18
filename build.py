@@ -32,13 +32,14 @@ TEST_DIR = './vendor/test'
 BOOTSTRAP_DIR = './vendor/bootstrap'
 
 ENV_ARGS = [
-    './vendor/virtualenv-1.11.2.py',
+    './vendor/virtualenv-13.0.3.py',
     '--prompt=[aspen]',
     '--extra-search-dir=' + BOOTSTRAP_DIR,
     ]
 
 
 def _virt(cmd, envdir='env'):
+    envdir = _env(envdir)
     if os.name == "nt":
         return os.path.join(envdir, 'Scripts', cmd + '.exe')
     else:
@@ -53,14 +54,29 @@ def _virt_version():
 
 
 def _env(envdir='env'):
-    if os.path.exists(envdir):
-        return
-    args = [main.options.python] + ENV_ARGS + [envdir]
+
+    # http://stackoverflow.com/a/1883251
+    if hasattr(sys, 'real_prefix'):
+        # We're already inside someone else's virtualenv.
+        return sys.prefix
+    elif hasattr(sys, 'base_prefix') and sys.base_prefix != sys.prefix:
+        # We're already inside someone else's pyvenv.
+        return sys.prefix
+    elif os.path.exists(envdir):
+        # We've already built our own virtualenv.
+        return envdir
+
+    args = [sys.executable] + ENV_ARGS + [envdir]
     run(*args)
+    return envdir
 
 
-def aspen(envdir='env'):
-    _env(envdir)
+def env():
+    _env()
+
+
+def deps(envdir='env'):
+    envdir = _env(envdir)
     v = shell(_virt('python', envdir), '-c', 'import aspen; print("found")', ignore_status=True)
     if b"found" in v:
         return
@@ -70,9 +86,9 @@ def aspen(envdir='env'):
     run(_virt('python', envdir), 'setup.py', 'develop')
 
 
-def dev(envdir='env'):
-    aspen(envdir)
-    # pytest will need argparse if its running under 2.6
+def dev_deps(envdir='env'):
+    envdir = deps(envdir)
+    # pytest will need argparse if it's running under 2.6
     if _virt_version() < (2, 7):
         TEST_DEPS.insert(0, 'argparse')
     for dep in TEST_DEPS:
@@ -102,14 +118,14 @@ smoke_dir = 'smoke-test'
 
 
 def docserve():
-    aspen()
+    deps()
     run(_virt('pip'), 'install', 'aspen-tornado')
     run(_virt('pip'), 'install', 'pygments')
     shell(_virt('python'), '-m', 'aspen', '-wdoc', '-pdoc/.aspen', silent=False)
 
 
 def smoke():
-    aspen()
+    deps()
     run('mkdir', smoke_dir)
     open(os.path.join(smoke_dir, "index.html"), "w").write("Greetings, program!")
     run(_virt('python'), '-m', 'aspen', '-w', smoke_dir)
@@ -120,7 +136,7 @@ def clean_smoke():
 
 
 def _sphinx_cmd(packages, cmd):
-    dev(envdir='denv')
+    envdir = deps(envdir='denv')
     for p in packages:
         run(_virt('pip', envdir='denv'), 'install', p)
     sphinxopts = []
@@ -130,7 +146,7 @@ def _sphinx_cmd(packages, cmd):
     newenv.update({'PYTHONPATH': 'denv/lib/python2.7/site-packages'})
     args = ['-b', 'html', '-d', builddir + '/doctrees', sphinxopts,
             'docs', builddir + '/html']
-    run(_virt(cmd, envdir='denv'), args, env=newenv)
+    run(_virt(cmd, envdir=envdir), args, env=newenv)
 
 def sphinx():
     _sphinx_cmd(['sphinx'], "sphinx-build")
@@ -147,24 +163,24 @@ def clean_sphinx():
 # =======
 
 def test():
-    dev()
+    dev_deps()
     shell(_virt('py.test'), 'tests/', ignore_status=True, silent=False)
 
 
 def testf():
-    dev()
+    dev_deps()
     shell(_virt('py.test'), '-x', 'tests/', ignore_status=True, silent=False)
 
 
 def pylint():
-    _env()
+    env()
     run(_virt('pip'), 'install', 'pylint')
     run(_virt('pylint'), '--rcfile=.pylintrc',
         'aspen', '|', 'tee', 'pylint.out', shell=True, ignore_status=True)
 
 
 def test_cov():
-    dev()
+    dev_deps()
     run(_virt('py.test'),
         '--junitxml=testresults.xml',
         '--cov-report', 'term',
@@ -176,7 +192,7 @@ def test_cov():
 
 
 def analyse():
-    dev()
+    dev_deps()
     pylint()
     test_cov()
     print('done!')
@@ -191,11 +207,11 @@ def clean_test():
 
 
 def build():
-    run(main.options.python, 'setup.py', 'bdist_egg')
+    run(sys.executable, 'setup.py', 'bdist_egg')
 
 
 def wheel():
-    run(main.options.python, 'setup.py', 'bdist_wheel')
+    run(sys.executable, 'setup.py', 'bdist_wheel')
 
 
 def clean_build():
@@ -261,11 +277,6 @@ def show_targets():
     """)
     sys.exit()
 
-extra_options = [
-        make_option('--python', action="store", dest="python", default="python"),
-        ]
-
-main( extra_options=extra_options
-    , default='show_targets'
+main( default='show_targets'
     , ignoreprefix="python"  # workaround for gh190
      )
