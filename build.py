@@ -32,7 +32,7 @@ TEST_DIR = './vendor/test'
 BOOTSTRAP_DIR = './vendor/bootstrap'
 
 ENV_ARGS = [
-    './vendor/virtualenv-1.11.2.py',
+    './vendor/virtualenv-13.0.3.py',
     '--prompt=[aspen]',
     '--extra-search-dir=' + BOOTSTRAP_DIR,
     ]
