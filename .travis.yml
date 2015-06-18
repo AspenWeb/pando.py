@@ -12,7 +12,7 @@ python:
 before_install:
   - pip install --upgrade pip
   - pip --version
-install: python build.py dev
+install: python build.py deps
 script: python build.py analyse
 notifications:
   email: false
