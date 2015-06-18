@@ -66,7 +66,7 @@ def _env(envdir='env'):
         # We've already built our own virtualenv.
         return envdir
 
-    args = [main.options.python] + ENV_ARGS + [envdir]
+    args = [sys.executable] + ENV_ARGS + [envdir]
     run(*args)
     return envdir
 
@@ -207,11 +207,11 @@ def clean_test():
 
 
 def build():
-    run(main.options.python, 'setup.py', 'bdist_egg')
+    run(sys.executable, 'setup.py', 'bdist_egg')
 
 
 def wheel():
-    run(main.options.python, 'setup.py', 'bdist_wheel')
+    run(sys.executable, 'setup.py', 'bdist_wheel')
 
 
 def clean_build():
