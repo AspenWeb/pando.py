@@ -188,7 +188,6 @@ class Request(str):
     resource = None
     original_resource = None
     server_software = ''
-    fs = '' # the file on the filesystem that will handle this request
 
     # NB: no __slots__ for str:
     #   http://docs.python.org/reference/datamodel.html#__slots__
