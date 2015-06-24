@@ -1,6 +1,21 @@
 Aspen-python Changelog
 ======================
 
+0.38 - Released Tue Jun 23 2015 by @pjz
+---------------------------------------
+
+* refactor aspen.__main__ into aspen.serve()
+
+* alias 'website' as 'application' in aspen.wsgi to better support some WSGI servers
+
+* finish removing request.fs since we now have state['dispatch_result'].match
+
+* update dependencies
+
+* Add an autosphinx target to help sphinx migration
+
+* prevent simplate locals from implictly leaking into `state` (#427) (Thanks Changaco!)
+
 0.37 - Released Wed Feb 18 2015 by @pjz
 ---------------------------------------
 
