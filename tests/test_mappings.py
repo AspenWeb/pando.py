@@ -220,3 +220,11 @@ def test_headers_reject_CR_injection():
 def test_headers_reject_LF_injection():
     with raises(CRLFInjection):
         BaseHeaders(b'')[b'foo'] = b'\nbar'
+
+def test_headers_reject_CR_injection_from_add():
+    with raises(CRLFInjection):
+        BaseHeaders(b'').add(b'foo', b'\rbar')
+
+def test_headers_reject_LF_injection_from_add():
+    with raises(CRLFInjection):
+        BaseHeaders(b'').add(b'foo', b'\nbar')
