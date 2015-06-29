@@ -13,7 +13,6 @@ import errno
 import mimetypes
 import os
 import sys
-import traceback
 import pkg_resources
 from collections import defaultdict
 
