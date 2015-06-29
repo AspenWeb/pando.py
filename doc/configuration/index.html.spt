@@ -10,7 +10,7 @@ like <code>ASPEN_NAME</code> and a keyword argument to `aspen.website.Website`.
 Here is an example configuration:</p>
 
 <table>
-    <tr><td><b><u>name</u></b></td>         <td><b><u>default</u></b></td> </tr>
+    <tr><td><b><u>name</u></b></td>         <td><b><u>example value</u></b></td> </tr>
     <tr><td>base_url</td>                   <td>http://www.example.com</td> </tr>
     <tr><td>changes_reload</td>             <td>yes</td> </tr>
     <tr><td>charset_dynamic</td>            <td>ISO-8859-1</td> </tr>
