@@ -7,12 +7,9 @@ from __future__ import unicode_literals
 from pytest import raises
 
 from aspen import Response
-
+from aspen.exceptions import CRLFInjection
 from aspen.http.mapping import Mapping, CaseInsensitiveMapping
-
 from aspen.http.baseheaders import BaseHeaders
-from aspen.http.request import Querystring
-
 
 
 def test_mapping_subscript_assignment_clobbers():
@@ -215,3 +212,11 @@ def test_case_insensitive_mapping_ones_is_case_insensitive():
 def test_headers_can_be_raw_when_non_ascii():
     headers = BaseHeaders(b'Foo: bëar\r\nOh: Yeah!')
     assert headers.raw == b'Foo: bëar\r\nOh: Yeah!'
+
+def test_headers_reject_CR_injection():
+    with raises(CRLFInjection):
+        BaseHeaders(b'')[b'foo'] = b'\rbar'
+
+def test_headers_reject_LF_injection():
+    with raises(CRLFInjection):
+        BaseHeaders(b'')[b'foo'] = b'\nbar'
