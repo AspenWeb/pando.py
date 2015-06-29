@@ -121,7 +121,7 @@ def docserve():
     deps()
     run(_virt('pip'), 'install', 'aspen-tornado')
     run(_virt('pip'), 'install', 'pygments')
-    shell(_virt('python'), '-m', 'aspen', '-wdoc', '-pdoc/.aspen', silent=False)
+    shell(_virt('python'), '-m', 'aspen_io', silent=False)
 
 
 def smoke():
