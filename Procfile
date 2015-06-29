@@ -1,1 +1,1 @@
-web: uwsgi -w aspen.wsgi --callable website --http :$PORT --workers 4
+web: uwsgi -w aspen_io --callable website --http :$PORT --workers 4
