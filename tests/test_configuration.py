@@ -81,10 +81,6 @@ def test_configurable_sees_root_option(harness):
     actual = c.www_root
     assert actual == expected
 
-def assert_body(harness, uripath, expected_body):
-    actual = harness.simple(filepath=None, uripath=uripath, want='response.body')
-    assert actual == expected_body
-
 def test_user_can_set_renderer_default(harness):
     SIMPLATE = """
 name="program"
@@ -93,7 +89,8 @@ Greetings, {name}!
     """
     harness.client.website.renderer_default="stdlib_format"
     harness.fs.www.mk(('index.html.spt', SIMPLATE),)
-    assert_body(harness, '/', 'Greetings, program!\n')
+    actual = harness.simple(filepath=None, uripath='/', want='response.body')
+    assert actual == 'Greetings, program!\n'
 
 def test_configuration_ignores_blank_indexfilenames():
     w = Website(['--indices', 'index.html,, ,default.html'])
