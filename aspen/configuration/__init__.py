@@ -63,15 +63,6 @@ class Configurable(object):
     """Mixin object for aggregating configuration from several sources.
     """
 
-    @classmethod
-    def from_argv(cls, argv):
-        """return a Configurable based on the passed-in arguments list
-        """
-        configurable = cls()
-        configurable.configure(argv)
-        return configurable
-
-
     def _set(self, name, hydrated, flat, context, name_in_context):
         """Set value at self.name, calling value if it's callable.
         """
