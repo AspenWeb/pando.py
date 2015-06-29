@@ -57,7 +57,7 @@ class AspenHTTPProvider:
 ## make a generator of containers that aspen will like
 
 def inbound_responder(*args, **kw):
-    """ This should be used in your configure-aspen.py like so:
+    """ This should be used in your startup script like so:
 
     import aspen.auth.httpdigest as digestauth
 

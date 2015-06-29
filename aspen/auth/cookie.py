@@ -27,7 +27,7 @@ TIMEOUT = 2 * HOUR
 
 # Public config knobs
 # ===================
-# Feel free to set these in, e.g., configure-aspen.py
+# Feel free to modify for your application.
 
 NAME = "auth"
 DOMAIN = None
