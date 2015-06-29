@@ -6,9 +6,9 @@ from aspen.configuration import parse
 from aspen.website import Website
 
 distribution_root = os.path.dirname(__file__)
-www_root = os.path.join(distribution_root, 'doc')
-project_root = os.path.join(www_root, '.aspen')
-website = Website(['--www_root', www_root, '--project_root', project_root])
+website = Website( www_root=os.path.join(distribution_root, 'doc')
+                 , project_root=os.path.join(distribution_root, 'doc', '.aspen')
+                  )
 opts = {}
 
 def add_stuff_to_request_context(website, dispatch_result):
