@@ -1,2 +1,2 @@
-request.redirect('/core-algorithms/')
+website.redirect('/core-algorithms/')
 [---]

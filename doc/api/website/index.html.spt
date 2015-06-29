@@ -65,4 +65,21 @@ interpreted as the number of minutes of downtime you expect, and the
 Retry-After header is set accordingly. You can access the header as a
 datetime.datetime object at website.retry_after.</p>
 
+
+<h3>Methods</h3>
+
+<p>Here are the methods on the Website object:</p>
+
+<pre>def redirect(self, location, code=None, permanent=False, base_url=None, response=None):
+    """Raise a redirect Response.
+
+    If code is None then it will be set to 301 (Moved Permanently) if
+    permanent is True and 302 (Found) if it is False. If url doesn't start
+    with base_url (defaulting to self.base_url), then we prefix it with
+    base_url before redirecting. This is a protection against open
+    redirects. If you provide your own response we will set .code and
+    .headers['Location'] on it.
+
+    """
+</pre>
 {% end %}
