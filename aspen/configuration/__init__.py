@@ -134,7 +134,7 @@ class Configurable(object):
         # =================================================
 
         msgs = ["Reading configuration from defaults, environment, and "
-                "command line."] # can't actually log until configured
+                "kwargs."] # can't actually log until configured
 
         for name, (default, func) in sorted(KNOBS.items()):
 
@@ -204,7 +204,7 @@ class Configurable(object):
                 cwd = safe_getcwd("Could not get a current working "
                                   "directory. You can specify "
                                   "ASPEN_PROJECT_ROOT in the environment, "
-                                  "or --project_root on the command line.")
+                                  "or project_root in kwargs.")
                 self.project_root = os.path.join(cwd, self.project_root)
 
             self.project_root = os.path.realpath(self.project_root)
@@ -222,7 +222,7 @@ class Configurable(object):
             self.www_root = safe_getcwd("Could not get a current working "
                                          "directory. You can specify "
                                          "ASPEN_WWW_ROOT in the environment, "
-                                         "or --www_root on the command line.")
+                                         "or www_root in kwargs.")
 
         self.www_root = os.path.realpath(self.www_root)
 
