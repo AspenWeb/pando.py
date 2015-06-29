@@ -71,13 +71,6 @@ def test_configuration_scripts_really_doesnt_do_anything_special():
     expected = 'Cheese is lovely.'
     assert actual == expected
 
-def test_configuration_scripts_arent_confused_by_io_errors(harness):
-    CONFIG = "open('this file should not exist')\n"
-    harness.fs.project.mk(('configure-aspen.py', CONFIG),)
-    c = Configurable()
-    actual = raises(IOError, c.configure, ['-p', harness.fs.project.resolve('.')]).value
-    assert actual.strerror == 'No such file or directory'
-
 def test_www_root_defaults_to_cwd():
     c = Configurable()
     c.configure([])
@@ -122,20 +115,17 @@ def assert_body(harness, uripath, expected_body):
     actual = harness.simple(filepath=None, uripath=uripath, want='response.body')
     assert actual == expected_body
 
-def test_configuration_script_can_set_renderer_default(harness):
-    CONFIG = """
-website.renderer_default="stdlib_format"
-    """
+def test_user_can_set_renderer_default(harness):
     SIMPLATE = """
 name="program"
 [----]
 Greetings, {name}!
     """
-    harness.fs.project.mk(('configure-aspen.py', CONFIG),)
+    harness.client.website.renderer_default="stdlib_format"
     harness.fs.www.mk(('index.html.spt', SIMPLATE),)
     assert_body(harness, '/', 'Greetings, program!\n')
 
-def test_configuration_script_ignores_blank_indexfilenames():
+def test_configuration_ignores_blank_indexfilenames():
     w = Website(['--indices', 'index.html,, ,default.html'])
     assert w.indices[0] == 'index.html'
     assert w.indices[1] == 'default.html'
