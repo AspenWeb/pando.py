@@ -17,5 +17,5 @@ from __future__ import unicode_literals
 
 from aspen.website import Website
 
-website = Website([])
+website = Website()
 application = website  # a number of WSGI servers look for this name by default
