@@ -13,6 +13,7 @@ arguments to Website:</p>
 
 <table>
     <tr><td><b><u>attribute</u></b></td><td><b><u>default</u></b></td> </tr>
+    <tr><td>base_url</td><td>''</td> </tr>
     <tr><td>changes_reload</td><td>False</td> </tr>
     <tr><td>charset_dynamic</td><td>UTF-8</td> </tr>
     <tr><td>charset_static</td><td>None</td> </tr>

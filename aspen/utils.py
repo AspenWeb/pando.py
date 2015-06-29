@@ -386,7 +386,7 @@ def typecheck(*checks):
             raise TypeError(msg)
 
 
-# Hostname canonicalization
+# Base URL Canonicalization
 # =========================
 
 def _extract_scheme(request):
@@ -395,16 +395,16 @@ def _extract_scheme(request):
 def _extract_host(request):
     return request.headers['Host']  # will 400 if missing
 
-def Canonizer(expected, permanent_redirect=False, extract_scheme=_extract_scheme,
+def BaseURLCanonicalizer(expected, permanent_redirect=False, extract_scheme=_extract_scheme,
         extract_host=_extract_host):
-    """Takes a netloc such as http://localhost:8080 (no path part).
+    """Takes a base_url such as http://localhost:8080 (no path part).
     """
 
     def noop(request):
         pass
 
-    def canonize(request):
-        """Enforce a certain network location.
+    def func(request):
+        """Enforce a certain base URL.
         """
 
         scheme = extract_scheme(request)
@@ -424,7 +424,7 @@ def Canonizer(expected, permanent_redirect=False, extract_scheme=_extract_scheme
                 uri += '/'
             request.redirect(uri, permanent=permanent_redirect)
 
-    return expected and canonize or noop
+    return expected and func or noop
 
 
 if __name__ == '__main__':
