@@ -27,10 +27,9 @@ class Website(Configurable):
 
     """
 
-    def __init__(self, argv=None, server_algorithm=None):
+    def __init__(self, argv=None):
         """Takes an argv list, without the initial executable name.
         """
-        self.server_algorithm = server_algorithm
         self.algorithm = Algorithm.from_dotted_name('aspen.algorithms.website')
         self.configure(argv)
 
