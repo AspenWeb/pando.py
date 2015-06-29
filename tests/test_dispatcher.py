@@ -57,6 +57,7 @@ def test_dispatcher_returns_a_result(harness):
                                 , startdir              = harness.fs.www.root
                                 , directory_default     = ''
                                 , favicon_default       = ''
+                                , redirect              = harness.client.website.redirect
                                  )
     assert result.status == dispatcher.DispatchStatus.okay
     assert result.match == os.path.join(harness.fs.www.root, 'index.html')
@@ -73,6 +74,7 @@ def test_dispatcher_returns_a_result_for_favicon(harness):
                                 , startdir              = harness.fs.www.root
                                 , directory_default     = ''
                                 , favicon_default       = tracer
+                                , redirect              = harness.client.website.redirect
                                  )
     assert result.match is tracer
 
@@ -95,6 +97,7 @@ def test_dispatcher_returns_a_result_for_autoindex(harness):
                                 , startdir              = harness.fs.www.root
                                 , directory_default     = tracer
                                 , favicon_default       = ''
+                                , redirect              = harness.client.website.redirect
                                  )
     assert result.match is tracer
 
@@ -356,23 +359,23 @@ def test_dispatcher_passes_through_virtual_dir_with_trailing_slash(harness):
 def test_dispatcher_redirects_dir_without_trailing_slash(harness):
     harness.fs.www.mk('foo',)
     response = assert_raises_302(harness, '/foo')
-    expected = '/foo/'
-    actual = response.headers['Location']
-    assert actual == expected
+    assert response.headers['Location'] == '/foo/'
+
+def test_dispatcher_honors_base_url_on_trailing_slash_redirect(harness):
+    harness.fs.www.mk('foo',)
+    harness.client.website.base_url = 'http://localhost'
+    response = assert_raises_302(harness, '/foo')
+    assert response.headers['Location'] == 'http://localhost/foo/'
 
 def test_dispatcher_redirects_virtual_dir_without_trailing_slash(harness):
     harness.fs.www.mk('%foo',)
     response = assert_raises_302(harness, '/foo')
-    expected = '/foo/'
-    actual =  response.headers['Location']
-    assert actual == expected
+    assert response.headers['Location'] == '/foo/'
 
 def test_trailing_on_virtual_paths_missing(harness):
     harness.fs.www.mk('%foo/%bar/%baz',)
     response = assert_raises_302(harness, '/foo/bar/baz')
-    expected = '/foo/bar/baz/'
-    actual = response.headers['Location']
-    assert actual == expected
+    assert response.headers['Location'] == '/foo/bar/baz/'
 
 def test_trailing_on_virtual_paths(harness):
     harness.fs.www.mk(('%foo/%bar/%baz/index.html', "Greetings program!"),)

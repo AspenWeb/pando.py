@@ -331,22 +331,6 @@ class Request(str):
         val = self.headers.get('X-Requested-With', '')
         return val.lower() == 'xmlhttprequest'
 
-    @staticmethod
-    def redirect(location, code=None, permanent=False):
-        """Given a string, an int, and a boolean, raise a Response.
-
-        If code is None then it will be set to 301 (Moved Permanently) if
-        permanent is True and 302 (Found) if it is False.
-
-        XXX Some day port this:
-
-            http://cherrypy.org/browser/trunk/cherrypy/_cperror.py#L154
-
-        """
-        if code is None:
-            code = permanent is True and 301 or 302
-        raise Response(code, headers={'Location': location})
-
 
 # Request -> Line
 # ---------------

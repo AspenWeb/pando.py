@@ -1,2 +1,2 @@
-request.redirect("/api/request/", permanent=True)
+website.redirect("/api/request/")
 [----------------------------------------]

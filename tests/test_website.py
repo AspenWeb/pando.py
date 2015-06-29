@@ -6,7 +6,9 @@ from __future__ import unicode_literals
 import os
 import StringIO
 
+from pytest import raises
 from aspen.website import Website
+from aspen.http.response import Response
 
 
 simple_error_spt = """
@@ -46,7 +48,7 @@ def test_redirect_has_only_location(harness):
     harness.fs.www.mk(('index.html.spt', """
 from aspen import Response
 [---]
-request.redirect('http://elsewhere', code=304)
+website.redirect('http://elsewhere', code=304)
 [---]"""))
     actual = harness.client.GET(raise_immediately=False)
     assert actual.code == 304
@@ -334,3 +336,71 @@ def test_call_wraps_wsgi_middleware(client):
         respond[1] = True
     client.website(build_environ('/middleware'), start_response_should_200)
     assert respond[1]
+
+
+# redirect
+
+def test_redirect_redirects(website):
+    assert raises(Response, website.redirect, '/').value.code == 302
+
+def test_redirect_code_is_settable(website):
+    assert raises(Response, website.redirect, '/', code=8675309).value.code == 8675309
+
+def test_redirect_permanent_is_301(website):
+    assert raises(Response, website.redirect, '/', permanent=True).value.code == 301
+
+def test_redirect_without_website_base_url_is_fine(website):
+    assert raises(Response, website.redirect, '/').value.headers['Location'] == '/'
+
+def test_redirect_honors_website_base_url(website):
+    website.base_url = 'foo'
+    assert raises(Response, website.redirect, '/').value.headers['Location'] == 'foo/'
+
+def test_redirect_can_override_base_url_per_call(website):
+    website.base_url = 'foo'
+    assert raises(Response, website.redirect, '/', base_url='b').value.headers['Location'] == 'b/'
+
+def test_redirect_can_use_given_response(website):
+    response = Response(65, 'Greetings, program!', {'Location': 'A Town'})
+    response = raises(Response, website.redirect, '/flah', response=response).value
+    assert response.code == 302                     # gets clobbered
+    assert response.headers['Location'] == '/flah'  # gets clobbered
+    assert response.body == 'Greetings, program!'   # not clobbered
+
+
+# canonicalize_base_url
+
+def test_canonicalize_base_url_canonicalizes_base_url(harness):
+    harness.fs.www.mk(('index.html', 'Greetings, program!'))
+    harness.client.hydrate_website(base_url='http://example.com')
+    response = harness.client.GxT()
+    assert response.code == 302
+    assert response.headers['Location'] == 'http://example.com/'
+
+def test_canonicalize_base_url_includes_path_and_qs_for_GET(harness):
+    harness.fs.www.mk(('index.html', 'Greetings, program!'))
+    harness.client.hydrate_website(base_url='http://example.com')
+    response = harness.client.GxT('/foo/bar?baz=buz')
+    assert response.code == 302
+    assert response.headers['Location'] == 'http://example.com/foo/bar?baz=buz'
+
+def test_canonicalize_base_url_redirects_to_homepage_for_POST(harness):
+    harness.fs.www.mk(('index.html', 'Greetings, program!'))
+    harness.client.hydrate_website(base_url='http://example.com')
+    response = harness.client.PxST('/foo/bar?baz=buz')
+    assert response.code == 302
+    assert response.headers['Location'] == 'http://example.com/'
+
+def test_canonicalize_base_url_allows_good_base_url(harness):
+    harness.fs.www.mk(('index.html', 'Greetings, program!'))
+    harness.client.hydrate_website(base_url='http://localhost')
+    response = harness.client.GET()
+    assert response.code == 200
+    assert response.body == 'Greetings, program!'
+
+def test_canonicalize_base_url_is_noop_without_base_url(harness):
+    harness.fs.www.mk(('index.html', 'Greetings, program!'))
+    harness.client.hydrate_website()
+    response = harness.client.GET()
+    assert response.code == 200
+    assert response.body == 'Greetings, program!'

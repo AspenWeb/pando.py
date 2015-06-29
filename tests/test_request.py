@@ -219,21 +219,3 @@ def test_goad_passes_body_through():
 def test_can_make_franken_headers_from_non_ascii_values():
     actual = make_franken_headers({b'HTTP_FOO_BAR': b'\xdead\xbeef'})
     assert actual == b'FOO-BAR: \xdead\xbeef'
-
-
-def test_request_redirect_works_on_instance():
-    request = Request()
-    actual = raises(Response, request.redirect, '/').value.code
-    assert actual == 302
-
-def test_request_redirect_works_on_class():
-    actual = raises(Response, Request.redirect, '/').value.code
-    assert actual == 302
-
-def test_request_redirect_code_is_settable():
-    actual = raises(Response, Request.redirect, '/', code=8675309).value.code
-    assert actual == 8675309
-
-def test_request_redirect_permanent_convenience():
-    actual = raises(Response, Request.redirect, '/', permanent=True).value.code
-    assert actual == 301
