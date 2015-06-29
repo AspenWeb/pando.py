@@ -25,50 +25,37 @@ from aspen.typecasting import defaults as default_typecasters
 import aspen.body_parsers
 
 
-# Defaults
-# ========
-# The from_unicode callable converts from unicode to whatever format is
-# required by the variable, raising ValueError appropriately. Note that
-# name is supposed to match the options in our optparser. I like it wet.
+default_indices = lambda: ['index.html', 'index.json', 'index',
+                           'index.html.spt', 'index.json.spt', 'index.spt']
 
-class DEFAULT(object):
-    def __repr__(self):
-        return "<DEFAULT>"
-DEFAULT = DEFAULT()
-
+    # 'name':               (default,               from_unicode)
 KNOBS = \
-    { 'project_root':       (None, parse.identity)
-    , 'logging_threshold':  (0, int)
-    , 'www_root':           (None, parse.identity)
-
-
-    # Extended Options
-    # 'name':               (default, from_unicode)
-    , 'changes_reload':     (False, parse.yes_no)
-    , 'charset_dynamic':    ('UTF-8', parse.charset)
-    , 'charset_static':     (None, parse.charset)
-    , 'indices':            ( lambda: ['index.html', 'index.json', 'index'] +
-                                      ['index.html.spt', 'index.json.spt', 'index.spt']
-                            , parse.list_
-                             )
-    , 'list_directories':   (False, parse.yes_no)
-    , 'media_type_default': ('text/plain', parse.media_type)
-    , 'media_type_json':    ('application/json', parse.media_type)
-    , 'renderer_default':   ('stdlib_percent', parse.renderer)
-    , 'show_tracebacks':    (False, parse.yes_no)
+    { 'changes_reload':     (False,                 parse.yes_no)
+    , 'charset_dynamic':    ('UTF-8',               parse.charset)
+    , 'charset_static':     (None,                  parse.charset)
+    , 'indices':            (default_indices,       parse.list_)
+    , 'list_directories':   (False,                 parse.yes_no)
+    , 'logging_threshold':  (0,                     int)
+    , 'media_type_default': ('text/plain',          parse.media_type)
+    , 'media_type_json':    ('application/json',    parse.media_type)
+    , 'project_root':       (None,                  parse.identity)
+    , 'renderer_default':   ('stdlib_percent',      parse.renderer)
+    , 'show_tracebacks':    (False,                 parse.yes_no)
+    , 'www_root':           (None,                  parse.identity)
      }
 
 
-# Configurable
-# ============
-# Designed as a singleton.
-
 class Configurable(object):
     """Mixin object for aggregating configuration from several sources.
+
+    This is implemented in such a way that we get helpful log output: we
+    iterate over settings first, not over contexts first (defaults,
+    environment, kwargs).
+
     """
 
     def _set(self, name, hydrated, flat, context, name_in_context):
-        """Set value at self.name, calling value if it's callable.
+        """Set value at self.name, calling hydrated if it's callable.
         """
         if aspen.is_callable(hydrated):
             hydrated = hydrated()  # Call it if we can.
@@ -153,8 +140,8 @@ class Configurable(object):
                                      ))
 
             # set from kwargs
-            value = kwargs.get(name, DEFAULT)
-            if value is not DEFAULT:
+            value = kwargs.get(name)
+            if value is not None:
                 msgs.append(self.set( name
                                     , value
                                     , func
