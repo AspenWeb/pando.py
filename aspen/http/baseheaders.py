@@ -9,9 +9,20 @@ from __future__ import unicode_literals
 
 
 from aspen.backcompat import CookieError, SimpleCookie
-
 from aspen.http.mapping import CaseInsensitiveMapping
 from aspen.utils import typecheck
+
+
+def _check_for_CRLF(value):
+    """CRLF injection allows an attacker to insert arbitrary headers.
+
+    http://www.acunetix.com/websitesecurity/crlf-injection/
+    https://github.com/gratipay/security-qf35us/issues/1
+
+    """
+    if b'\r' in value or b'\n' in value:
+        from aspen.exceptions import CRLFInjection
+        raise CRLFInjection()
 
 
 class BaseHeaders(CaseInsensitiveMapping):
@@ -54,15 +65,12 @@ class BaseHeaders(CaseInsensitiveMapping):
 
 
     def __setitem__(self, name, value):
-        """Extend to protect against CRLF injection:
-
-        http://www.acunetix.com/websitesecurity/crlf-injection/
-
-        """
-        if b'\n' in value:
-            from aspen.exceptions import CRLFInjection
-            raise CRLFInjection()
+        _check_for_CRLF(value)
         super(BaseHeaders, self).__setitem__(name, value)
+
+    def add(self, name, value):
+        _check_for_CRLF(value)
+        super(BaseHeaders, self).add(name, value)
 
 
     def raw(self):
