@@ -212,7 +212,6 @@ def test_get_response_406_gives_list_of_acceptable_types(harness):
     assert actual == expected
 
 
-OVERRIDE_SIMPLATE = """\
 from aspen.renderers import Renderer, Factory
 
 class Glubber(Renderer):
@@ -222,14 +221,12 @@ class Glubber(Renderer):
 class GlubberFactory(Factory):
     Renderer = Glubber
 
-website.renderer_factories['glubber'] = GlubberFactory(website)
-website.default_renderers_by_media_type['text/plain'] = 'glubber'
-
-"""
-
+def install_glubber(harness):
+    harness.client.website.renderer_factories['glubber'] = GlubberFactory(harness.client.website)
+    harness.client.website.default_renderers_by_media_type['text/plain'] = 'glubber'
 
 def test_can_override_default_renderers_by_mimetype(harness):
-    harness.fs.project.mk(('configure-aspen.py', OVERRIDE_SIMPLATE),)
+    install_glubber(harness)
     harness.fs.www.mk(('index.spt', UNBOUND_SIMPLATE),)
     state = _get_state(harness, filepath='index.spt', contents=UNBOUND_SIMPLATE)
     state['request'].headers['Accept'] = 'text/plain'
@@ -237,7 +234,7 @@ def test_can_override_default_renderers_by_mimetype(harness):
     assert actual == "glubber"
 
 def test_can_override_default_renderer_entirely(harness):
-    harness.fs.project.mk(('configure-aspen.py', OVERRIDE_SIMPLATE))
+    install_glubber(harness)
     state = _get_state(harness, filepath='index.spt', contents=UNBOUND_SIMPLATE)
     state['request'].headers['Accept'] = 'text/plain'
     actual = _get_response(state).body
