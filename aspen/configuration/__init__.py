@@ -19,7 +19,7 @@ from collections import defaultdict
 import aspen
 import aspen.logging
 from aspen.configuration import parse
-from aspen.configuration.exceptions import ConfigurationError
+from aspen.exceptions import ConfigurationError
 from aspen.utils import ascii_dammit
 from aspen.typecasting import defaults as default_typecasters
 import aspen.body_parsers
