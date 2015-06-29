@@ -8,7 +8,8 @@ import sys
 
 from pytest import raises, mark
 
-from aspen.configuration import Configurable, ConfigurationError, parse, DEFAULT
+from aspen.configuration import Configurable, parse
+from aspen.exceptions import ConfigurationError
 from aspen.website import Website
 
 
