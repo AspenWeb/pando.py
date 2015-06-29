@@ -8,45 +8,42 @@ import sys
 
 from pytest import raises, mark
 
-from aspen.configuration import Configurable, ConfigurationError, parse
-from aspen.configuration.options import OptionParser, DEFAULT
+from aspen.configuration import Configurable, ConfigurationError, parse, DEFAULT
 from aspen.website import Website
 
 
-def test_everything_defaults_to_empty_string():
-    o = OptionParser()
-    opts, args = o.parse_args([])
-    actual = ( opts.logging_threshold
-             , opts.project_root
-             , opts.www_root
+def test_defaults_to_defaults(harness):
+    c = Configurable()
+    c.configure()
+    actual = ( c.logging_threshold
+             , c.project_root
+             , c.www_root
 
-             , opts.changes_reload
-             , opts.charset_dynamic
-             , opts.charset_static
-             , opts.indices
-             , opts.media_type_default
-             , opts.media_type_json
-             , opts.renderer_default
-             , opts.show_tracebacks
+             , c.changes_reload
+             , c.charset_dynamic
+             , c.charset_static
+             , c.indices
+             , c.list_directories
+             , c.media_type_default
+             , c.media_type_json
+             , c.renderer_default
+             , c.show_tracebacks
               )
-    expected = ( DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT
-               , DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT
+    expected = ( 0, None, os.getcwd(), False, 'UTF-8', None
+               , ['index.html', 'index.json', 'index', 'index.html.spt', 'index.json.spt', 'index.spt']
+               , False, 'text/plain', 'application/json', 'stdlib_percent', False
                 )
     assert actual == expected
 
 def test_logging_threshold_goes_to_one():
-    o = OptionParser()
-    opts, args = o.parse_args(['-l1'])
-    actual = opts.logging_threshold
-    expected = '1'
-    assert actual == expected
+    c = Configurable()
+    c.configure(logging_threshold='1')
+    assert c.logging_threshold == 1
 
 def test_logging_threshold_goes_to_eleven():
-    o = OptionParser()
-    opts, args = o.parse_args(['--logging_threshold=11'])
-    actual = opts.logging_threshold
-    expected = '11'
-    assert actual == expected
+    c = Configurable()
+    c.configure(logging_threshold='11')
+    assert c.logging_threshold == 11
 
 def test_www_root_defaults_to_cwd():
     c = Configurable()
