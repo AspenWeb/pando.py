@@ -72,8 +72,7 @@ in it, then that real file will be preferred over the virtual one.
 and are then unquoted (per <a
 href="http://docs.python.org/library/urllib.html#urllib.unquote">urllib.unquote</a>).
 You can also typecast path parts to arbitrary objects, by registering
-typecasters in the <code>website.typecasters</code> dictionary in your <a
-href="/configure-aspen.py/"><code>configure-aspen.py</code></a>. A typecaster
+typecasters in the <code>website.typecasters</code> dictionary. A typecaster
 is a function that takes two positional arguments, the path part as a
 <code>unicode</code> and the <code>state</code> dictionary from the current <a
 href="http://aspen.io/core-algorithms/">algorithm run</a>, and returns an

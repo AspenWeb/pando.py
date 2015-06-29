@@ -6,10 +6,8 @@ doc_next = ""
 
 <p>Aspen creates an instance of <code>aspen.website.Website</code> when it
 starts up. It holds all of the global configuration for your application. It is
-placed in the namespace of your <a
-    href="/configure-aspen.py/">configuration scripts</a> and <a
-    href="/simplates/">simplates</a>, where it is available from the first page
-onwards.</p>
+placed in the namespace of your <a href="/simplates/">simplates</a>, where it
+is available from the first page onwards.</p>
 
 <p>The following attributes are defined when aspen starts up based on
 configuration in the environment (<code>ASPEN_NAME</code>) and on the command
@@ -20,7 +18,6 @@ line (<code>--name</code>):</p>
     <tr><td>changes_reload</td><td>False</td> </tr>
     <tr><td>charset_dynamic</td><td>UTF-8</td> </tr>
     <tr><td>charset_static</td><td>None</td> </tr>
-    <tr><td>configuration_scripts&nbsp;</td><td>[]</td> </tr>
     <tr><td>indices</td><td>['index', 'index.html', 'index.json',
         'index.html.spt', 'index.json.spt']</td> </tr>
     <tr><td>list_directories</td><td>False</td> </tr>
@@ -38,9 +35,7 @@ line (<code>--name</code>):</p>
 <h3>Computations</h3>
 
 <p>The following computations are performed after environment and command line
-configuration is processed, and before your <a
-    href="/configure-aspen.py/">configuration
-    scripts</a> run.</p>
+configuration is processed.</p>
 
 <ul>
 
@@ -51,10 +46,10 @@ configuration is processed, and before your <a
 
     <li>If <b>project_root</b> is set, then the directory it points to is used
     to resolve <code>{&#37; extends %}</code> and {&#37; include %} <a
-        href="/simplates/template/">templates</a> tags; any <a
-        href="/mime.types/">mime.types</a> file in there will be loaded; any
-    configure-aspen.py script in there will be executed; and it will be placed
-    at the front of sys.path, so you can import Python modules from there</li>
+    href="/simplates/template/">templates</a> tags; any <a
+    href="/mime.types/">mime.types</a> file in there will be loaded; and it will be
+    placed at the front of sys.path, so you can import Python modules from
+    there</li>
 
     <li>Two dictionaries associated with resolving renderers are instantiated 
     and populated: <b>renderer_factories</b> and

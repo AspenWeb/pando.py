@@ -425,7 +425,6 @@ homepage = True
             <li><a href="/deployment/">Deployment</a></li>
             <li>Configuration Files
             <ul>
-                <li><a href="/configure-aspen.py/"><code>configure-aspen.py</code></a></li>
                 <li><a href="/mime.types/"><code>mime.types</code></a></li>
                 <li><a href="/project_root/"><code>project_root</code></a></li>
             </ul>
