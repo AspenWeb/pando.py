@@ -20,7 +20,7 @@ import aspen
 import aspen.logging
 from aspen.configuration import parse
 from aspen.exceptions import ConfigurationError
-from aspen.utils import ascii_dammit, BaseURLCanonicalizer
+from aspen.utils import ascii_dammit
 from aspen.typecasting import defaults as default_typecasters
 import aspen.body_parsers
 
@@ -30,7 +30,7 @@ default_indices = lambda: ['index.html', 'index.json', 'index',
 
     # 'name':               (default,               from_unicode)
 KNOBS = \
-    { 'base_url':           (None,                  parse.identity)
+    { 'base_url':           ('',                    parse.identity)
     , 'changes_reload':     (False,                 parse.yes_no)
     , 'charset_dynamic':    ('UTF-8',               parse.charset)
     , 'charset_static':     (None,                  parse.charset)
@@ -220,9 +220,6 @@ class Configurable(object):
             "multipart/form-data": aspen.body_parsers.formdata,
             self.media_type_json: aspen.body_parsers.jsondata
             }
-
-        # install a base URL canonicalizer
-        self.canonicalize_base_url = BaseURLCanonicalizer(self.base_url)
 
         # load renderers
         self.renderer_factories = {}
