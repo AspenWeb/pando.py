@@ -50,7 +50,7 @@ def test_logging_threshold_goes_to_eleven():
 
 def test_www_root_defaults_to_cwd():
     c = Configurable()
-    c.configure([])
+    c.configure()
     expected = os.path.realpath(os.getcwd())
     actual = c.www_root
     assert actual == expected
@@ -62,7 +62,7 @@ def test_ConfigurationError_raised_if_no_cwd(harness):
     os.chdir(FSFIX)
     os.rmdir(FSFIX)
     c = Configurable()
-    raises(ConfigurationError, c.configure, [])
+    raises(ConfigurationError, c.configure)
 
 @mark.skipif(sys.platform == 'win32',
              reason="Windows file locking makes this fail")
@@ -71,12 +71,12 @@ def test_ConfigurationError_NOT_raised_if_no_cwd_but_do_have__www_root(harness):
     os.chdir(harness.fs.project.resolve(''))
     os.rmdir(os.getcwd())
     c = Configurable()
-    c.configure(['--www_root', foo])
+    c.configure(www_root=foo)
     assert c.www_root == foo
 
 def test_configurable_sees_root_option(harness):
     c = Configurable()
-    c.configure(['--www_root', harness.fs.project.resolve('')])
+    c.configure(www_root=harness.fs.project.resolve(''))
     expected = harness.fs.project.root
     actual = c.www_root
     assert actual == expected
@@ -93,7 +93,7 @@ Greetings, {name}!
     assert actual == 'Greetings, program!\n'
 
 def test_configuration_ignores_blank_indexfilenames():
-    w = Website(['--indices', 'index.html,, ,default.html'])
+    w = Website(indices='index.html,, ,default.html')
     assert w.indices[0] == 'index.html'
     assert w.indices[1] == 'default.html'
     assert len(w.indices) == 2, "Too many indexfile entries"

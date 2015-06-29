@@ -58,12 +58,13 @@ class Client(object):
         self._website = None
 
 
-    def hydrate_website(self, argv=None):
-        if (self._website is None) or (argv is not None):
-            argv = [ '--www_root', self.www_root
-                   , '--project_root', self.project_root
-                    ] + ([] if argv is None else argv)
-            self._website = Website(argv)
+    def hydrate_website(self, **kwargs):
+        if (self._website is None) or kwargs:
+            _kwargs = { 'www_root': self.www_root
+                      , 'project_root': self.project_root
+                       }
+            _kwargs.update(kwargs)
+            self._website = Website(**_kwargs)
         return self._website
 
     website = property(hydrate_website)
