@@ -1,6 +1,12 @@
 Aspen-python Changelog
 ======================
 
+0.40 - Released Mon Jun 29 2015 by @whit537
+-------------------------------------------
+
+* fix a regression in aspen.wsgi introduced in 0.39 (#460)
+
+
 0.39 - Released Mon Jun 29 2015 by @whit537
 -------------------------------------------
 
