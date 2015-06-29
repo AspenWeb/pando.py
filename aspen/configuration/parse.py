@@ -5,7 +5,7 @@ aspen.configuration.parse
 Define parser/validators for configuration system
 
 Each of these is guaranteed to be passed a unicode object as read from the
-environment or the command line.
+environment or the kwargs.
 
 """
 from __future__ import absolute_import

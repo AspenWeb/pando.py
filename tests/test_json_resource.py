@@ -33,10 +33,10 @@ def test_json_content_type_is_configurable_for_static_json(harness):
                             ).headers['Content-Type']
     assert actual == expected
 
-def test_json_content_type_is_configurable_from_the_command_line(harness):
+def test_json_content_type_is_configurable_from_kwargs(harness):
     actual = harness.simple( '{"Greetings": "program!"}'
                            , filepath="foo.json"
-                           , argv=['--media_type_json=floober/blah']
+                           , website_configuration={'media_type_json': 'floober/blah'}
                             ).headers['Content-Type']
     assert actual == 'floober/blah'
 

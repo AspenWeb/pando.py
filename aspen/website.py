@@ -21,24 +21,21 @@ THE_PAST = to_rfc822(datetime.datetime(2006, 11, 17, tzinfo=utc))
 class Website(Configurable):
     """Represent a website.
 
-    This object holds configuration information, and also knows how to start
-    and stop a server, *and* how to handle HTTP requests (per WSGI). It is
-    available to user-developers inside of their simplates and hooks.
+    This object holds configuration information, and how to handle HTTP
+    requests (per WSGI). It is available to user-developers inside of their
+    simplates and algorithm functions.
 
     """
 
-    def __init__(self, argv=None, server_algorithm=None):
-        """Takes an argv list, without the initial executable name.
+    def __init__(self, **kwargs):
+        """Takes configuration in kwargs.
         """
-        self.server_algorithm = server_algorithm
         self.algorithm = Algorithm.from_dotted_name('aspen.algorithms.website')
-        self.configure(argv)
+        self.configure(**kwargs)
 
 
     def __call__(self, environ, start_response):
-        # back-compatibility for network engines
         return self.wsgi_app(environ, start_response)
-
 
     def wsgi_app(self, environ, start_response):
         """WSGI interface.
@@ -47,7 +44,7 @@ class Website(Configurable):
         to use WSGI middleware::
 
             website = Website()
-            website.wsgi = WSGIMiddleware(website.wsgi)
+            website.wsgi_app = WSGIMiddleware(website.wsgi_app)
 
         """
         wsgi = self.respond(environ)['response']
@@ -69,8 +66,8 @@ class Website(Configurable):
 
     def find_ours(self, filename):
         """Given a filename, return the filepath to aspen's internal version
-	   of that filename.  No existence checking is done, this just abstracts
-	   away the __file__ reference nastiness.
+        of that filename.  No existence checking is done, this just abstracts
+        away the __file__ reference nastiness.
         """
         return os.path.join(os.path.dirname(__file__), 'www', filename)
 
