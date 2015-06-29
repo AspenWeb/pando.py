@@ -47,12 +47,6 @@ def OptionParser():
 
     basic = optparse.OptionGroup(optparser, "Basic Options")
 
-    basic.add_option( "-f", "--configuration_scripts"
-                    , help=("comma-separated list of paths to configuration "
-                            "files in Python syntax to exec in addition to "
-                            "$ASPEN_PROJECT_ROOT/configure-aspen.py")
-                    , default=DEFAULT
-                     )
     basic.add_option( "-l", "--logging_threshold"
                     , help=("a small integer; 1 will suppress most of aspen's "
                             "internal logging, 2 will suppress all it [0]")

@@ -34,8 +34,7 @@ import aspen.body_parsers
 # name is supposed to match the options in our optparser. I like it wet.
 
 KNOBS = \
-    { 'configuration_scripts': (lambda: [], parse.list_)
-    , 'project_root':       (None, parse.identity)
+    { 'project_root':       (None, parse.identity)
     , 'logging_threshold':  (0, int)
     , 'www_root':           (None, parse.identity)
 

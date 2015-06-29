@@ -18,7 +18,6 @@ line (<code>--name</code>):</p>
     <tr><td>changes_reload</td><td>False</td> </tr>
     <tr><td>charset_dynamic</td><td>UTF-8</td> </tr>
     <tr><td>charset_static</td><td>None</td> </tr>
-    <tr><td>configuration_scripts&nbsp;</td><td>[]</td> </tr>
     <tr><td>indices</td><td>['index', 'index.html', 'index.json',
         'index.html.spt', 'index.json.spt']</td> </tr>
     <tr><td>list_directories</td><td>False</td> </tr>
