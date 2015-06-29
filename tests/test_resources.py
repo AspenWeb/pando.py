@@ -28,7 +28,7 @@ def test_load_resource_loads_resource(harness):
 def test_charset_static_barely_working(harness):
     response = harness.simple( 'Greetings, program!'
                              , 'index.html'
-                             , argv=['--charset_static', 'OOG']
+                             , website_configuration={'charset_static': 'OOG'}
                               )
     expected = 'text/html; charset=OOG'
     actual = response.headers['Content-Type']
@@ -37,7 +37,7 @@ def test_charset_static_barely_working(harness):
 def test_charset_dynamic_barely_working(harness):
     response = harness.simple( '[---]\nGreetings, program!'
                              , 'index.html.spt'
-                             , argv=['--charset_dynamic', 'CHEESECODE']
+                             , website_configuration={'charset_dynamic': 'CHEESECODE'}
                               )
     expected = 'text/html; charset=CHEESECODE'
     actual = response.headers['Content-Type']

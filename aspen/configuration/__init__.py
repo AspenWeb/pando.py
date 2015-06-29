@@ -20,7 +20,6 @@ import aspen
 import aspen.logging
 from aspen.configuration import parse
 from aspen.configuration.exceptions import ConfigurationError
-from aspen.configuration.options import OptionParser, DEFAULT
 from aspen.utils import ascii_dammit
 from aspen.typecasting import defaults as default_typecasters
 import aspen.body_parsers
@@ -31,6 +30,11 @@ import aspen.body_parsers
 # The from_unicode callable converts from unicode to whatever format is
 # required by the variable, raising ValueError appropriately. Note that
 # name is supposed to match the options in our optparser. I like it wet.
+
+class DEFAULT(object):
+    def __repr__(self):
+        return "<DEFAULT>"
+DEFAULT = DEFAULT()
 
 KNOBS = \
     { 'project_root':       (None, parse.identity)
@@ -107,11 +111,8 @@ class Configurable(object):
         args = (name, hydrated, value, context, name_in_context)
         return self._set(*args)
 
-    def configure(self, argv):
-        """Takes an argv list, and gives it straight to optparser.parse_args.
-
-        The argv list should not include the executable name.
-
+    def configure(self, **kwargs):
+        """Takes a dictionary of strings/unicodes to strings/unicodes.
         """
 
         # Do some base-line configuration.
@@ -128,14 +129,9 @@ class Configurable(object):
 
         self.typecasters = default_typecasters
 
-        # Parse argv.
-        # ===========
 
-        opts, args = OptionParser().parse_args(argv)
-
-
-        # Configure from defaults, environment, and command line.
-        # =======================================================
+        # Configure from defaults, environment, and kwargs.
+        # =================================================
 
         msgs = ["Reading configuration from defaults, environment, and "
                 "command line."] # can't actually log until configured
@@ -156,20 +152,19 @@ class Configurable(object):
                                     , envvar
                                      ))
 
-            # set from the command line
-            value = getattr(opts, name)
+            # set from kwargs
+            value = kwargs.get(name, DEFAULT)
             if value is not DEFAULT:
                 msgs.append(self.set( name
                                     , value
                                     , func
-                                    , "command line option"
-                                    , "--"+name
+                                    , "kwargs"
+                                    , name
                                      ))
 
 
         # Set some attributes.
         # ====================
-
 
         def safe_getcwd(errorstr):
             try:
@@ -185,7 +180,6 @@ class Configurable(object):
                 if err.errno != errno.ENOENT:
                     raise
                 raise ConfigurationError(errorstr)
-
 
 
         # LOGGING_THRESHOLD
