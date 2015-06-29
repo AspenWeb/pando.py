@@ -1,6 +1,27 @@
 Aspen-python Changelog
 ======================
 
+0.39 - Released Mon Jun 29 2015 by @whit537
+-------------------------------------------
+
+* fix two security bugs related to CRLF injection
+  https://github.com/gratipay/security-qf35us/issues/1
+
+* remove argv-based configuration; Website now takes kwargs instead (#455)
+
+* add a base_url configuration setting and use it in a new algorithm
+  function, redirect_to_base_url (#457)
+
+* improve the redirect API: it's now at website.redirect instead of
+  request.redirect; it honors the new website.base_url; and it takes an 
+  optional response object (#458)
+
+* improve the quickstart API (#445, #449)
+
+* remove the request.fs attribute altogether (#451); now use
+  dispatch_result.fs
+
+
 0.38 - Released Tue Jun 23 2015 by @pjz
 ---------------------------------------
 
