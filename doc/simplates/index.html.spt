@@ -90,8 +90,7 @@ the start of the content page:</p>
 Greetings, {&#123; program }}!</pre>
 
 <p>You can set the default renderer for a given media type (presuming it is
-installed) in <a href="/configure-aspen.py/">configure-aspen.py</a> like so:
-</p>
+installed) like so:</p>
 
 <pre>website.default_renderers_by_media_type['text/html'] = 'pystache'</pre>
 
@@ -99,7 +98,7 @@ installed) in <a href="/configure-aspen.py/">configure-aspen.py</a> like so:
 
 <pre>website.default_renderers_by_media_type.default_factory = lambda: 'pystache'</pre>
 
-<p>If this is being done in configure-aspen.py, it can also be phrased as:</p>
+<p>This can also be phrased as:</p>
 
 <pre>website.renderer_default = 'pystache'</pre>
 

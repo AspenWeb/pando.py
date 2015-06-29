@@ -48,8 +48,7 @@ browser:</p>
 
 You get a <code>text/plain</code> response, because the <code>.smpl</code>
 extension is unknown to Aspen, and <code>text/plain</code> is Aspen&rsquo;s
-default (you can change this default in <code><a
-        href="/configure-aspen.py/">configure-aspen.py</a></code>).</p>
+default.</p>
 
 <p>Now put the following line in a file named <code>mime.types</code> in your
 site&rsquo;s <code><a href="/project_root/">project_root</a></code> directory
