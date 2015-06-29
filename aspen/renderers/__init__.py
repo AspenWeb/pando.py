@@ -57,8 +57,8 @@ Here's how to implement and register your own renderer:
     website.renderer_factories['excited-about-cheese'] = CheeseFactory(website)
 
 
-You could put that in configure-aspen.py in your --project_root, for example.
-Now you can use it in a negotiated or rendered resource:
+Put that in your startup script. Now you can use it in a negotiated or rendered
+resource:
 
     ^L #!excited-about-cheese
     I like cheese!
