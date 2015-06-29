@@ -21,8 +21,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from aspen import serve, Website
+from aspen import serve, website
 
 if __name__ == '__main__':
-    website = Website()
-    serve(website)
+    serve(website.Website())
