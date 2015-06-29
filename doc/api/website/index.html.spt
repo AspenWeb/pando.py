@@ -7,11 +7,9 @@ doc_next = ""
 <p>Aspen creates an instance of <code>aspen.website.Website</code> when it
 starts up. It holds all of the global configuration for your application. It is
 placed in the namespace of your <a href="/simplates/">simplates</a>, where it
-is available from the first page onwards.</p>
-
-<p>The following attributes are defined when aspen starts up based on
-configuration in the environment (<code>ASPEN_NAME</code>) and on the command
-line (<code>--name</code>):</p>
+is available from the first page onwards. The following attributes are defined
+based on configuration in the environment (<code>ASPEN_NAME</code>) and keyword
+arguments to Website:</p>
 
 <table>
     <tr><td><b><u>attribute</u></b></td><td><b><u>default</u></b></td> </tr>
@@ -34,8 +32,8 @@ line (<code>--name</code>):</p>
 
 <h3>Computations</h3>
 
-<p>The following computations are performed after environment and command line
-configuration is processed.</p>
+<p>The following computations are performed after environment and keyword
+argument configuration is processed.</p>
 
 <ul>
 

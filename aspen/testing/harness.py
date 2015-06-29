@@ -55,13 +55,13 @@ class Harness(object):
     # ==========
 
     def simple(self, contents='Greetings, program!', filepath='index.html.spt', uripath=None,
-            argv=None, **kw):
+            website_configuration=None, **kw):
         """A helper to create a file and hit it through our machinery.
         """
         if filepath is not None:
             self.fs.www.mk((filepath, contents))
-        if argv is not None:
-            self.client.hydrate_website(argv)
+        if website_configuration is not None:
+            self.client.hydrate_website(**website_configuration)
 
         if uripath is None:
             if filepath is None:

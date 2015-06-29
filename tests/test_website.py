@@ -20,7 +20,7 @@ simple_error_spt = """
 # =====
 
 def test_basic():
-    website = Website([])
+    website = Website()
     expected = os.getcwd()
     actual = website.www_root
     assert actual == expected

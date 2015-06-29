@@ -102,8 +102,9 @@ installed) like so:</p>
 
 <pre>website.renderer_default = 'pystache'</pre>
 
-<p>You can also set the default renderer globally using the --renderer_default
-command line switch or the ASPEN_RENDERER_DEFAULT environment variable.</p>
+<p>You can also set the default renderer globally using the renderer_default
+keyword argument to Website, or the ASPEN_RENDERER_DEFAULT environment
+variable.</p>
 
 
 <h4>Bound Simplates</h4>
