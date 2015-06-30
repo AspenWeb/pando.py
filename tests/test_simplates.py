@@ -78,3 +78,14 @@ def test_can_explicitly_override_state(harness):
     )
     assert response.code == 299
     assert response.body == 'bar'
+
+
+def test_but_python_sections_exhibit_module_scoping_behavior(harness):
+    response = harness.simple("""
+bar = 'baz'
+def foo():
+    return bar
+foo = foo()
+[---] text/html via stdlib_format
+{foo}""")
+    assert response.body == 'baz'
