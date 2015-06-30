@@ -48,19 +48,15 @@ class Simplate(Resource):
 
 
     def respond(self, state):
-        state.update(self.pages[0])
-        response = state.setdefault('response', Response(charset=self.website.charset_dynamic))
-        spt_locals = {}
+        state.setdefault('response', Response(charset=self.website.charset_dynamic))
+        spt_context = dict(state, **self.pages[0])  # copy the state dict to avoid accidentally
+        exec(self.pages[1], spt_context)            #  mutating it
 
-        exec(self.pages[1], state, spt_locals)
+        if '__all__' in spt_context:
+            # templates will only see variables named in __all__
+            spt_context = dict([ (k, spt_context[k]) for k in spt_context['__all__'] ])
 
-        # if __all__ is defined, only pass those local variables to templates
-        # if __all__ is not defined, pass all locals to templates
-
-        if '__all__' in spt_locals:
-            spt_locals = dict([ (k, spt_locals[k]) for k in spt_locals['__all__'] ])
-
-        return self.get_response(state, spt_locals)
+        return self.get_response(state, spt_context)
 
 
     def parse_into_pages(self, raw, is_bound):
@@ -148,7 +144,7 @@ class Simplate(Resource):
         return (renderer, media_type)  # back to parent class
 
 
-    def get_response(self, state, spt_locals):
+    def get_response(self, state, spt_context):
         """Given two context dicts, return a response object.
         """
         dispatch_result = state['dispatch_result']
@@ -170,7 +166,9 @@ class Simplate(Resource):
                 media_type = mimeparse.best_match(self.available_types, accept)
             except:
                 # exception means don't override the defaults
-                log("Problem with mimeparse.best_match(%r, %r): %r " % (self.available_types, accept, sys.exc_info()))
+                log( "Problem with mimeparse.best_match(%r, %r): %r "
+                   % (self.available_types, accept, sys.exc_info())
+                    )
             else:
                 if media_type == '':    # breakdown in negotiations
                     raise failure
@@ -178,7 +176,7 @@ class Simplate(Resource):
                 render = self.renderers[media_type] # KeyError is a bug
 
         response = state['response']
-        response.body = render(dict(state, **spt_locals))
+        response.body = render(spt_context)
         if 'Content-Type' not in response.headers:
             response.headers['Content-Type'] = media_type
             if media_type.startswith('text/'):
