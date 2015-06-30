@@ -22,11 +22,6 @@ Aspen-python Changelog
   request.redirect; it honors the new website.base_url; and it takes an 
   optional response object (#458)
 
-* improve the quickstart API (#445, #449)
-
-* remove the request.fs attribute altogether (#451); now use
-  dispatch_result.fs
-
 
 0.38 - Released Tue Jun 23 2015 by @pjz
 ---------------------------------------
