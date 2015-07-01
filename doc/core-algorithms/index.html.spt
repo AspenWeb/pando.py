@@ -18,7 +18,10 @@ for line in open(srcfile):
 <p>Aspen's request-processing algorithm is implemented
 with a module called <a
 href="http://algorithm-py.readthedocs.org/"><code>algorithm</code></a>. If you
-want to modify Aspen's behavior you should read up on the <a
+want to modify
+<a href="https://github.com/gratipay/aspen-python/blob/0.40/aspen/website.py">
+Aspen's behavior</a>
+you should read up on the <a
 href="http://algorithm-py.readthedocs.org/"><code>algorithm</code></a> module
 and refer to the algorithm definitions below and in the Aspen source code.</p>
 
