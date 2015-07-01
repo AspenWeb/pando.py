@@ -15,6 +15,9 @@ Aspen-python Changelog
 
 * remove argv-based configuration; Website now takes kwargs instead (#455)
 
+* remove exec-based configuration, i.e., configure-aspen.py (#373); use kwargs
+  to Website or environment variables instead
+
 * add a base_url configuration setting and use it in a new algorithm
   function, redirect_to_base_url (#457)
 
