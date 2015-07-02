@@ -80,7 +80,7 @@ def test_can_explicitly_override_state(harness):
     assert response.body == 'bar'
 
 
-def test_but_python_sections_exhibit_module_scoping_behavior(harness):
+def test_python_sections_exhibit_module_scoping_behavior(harness):
     response = harness.simple("""
 bar = 'baz'
 def foo():
@@ -89,3 +89,45 @@ foo = foo()
 [---] text/html via stdlib_format
 {foo}""")
     assert response.body == 'baz'
+
+
+def test_can_influence_render_context_from_algorithm_functions(harness):
+
+    from aspen.renderers import stdlib_format as base
+
+
+    # Approximate Jinja2's support for calling functions inside a template.
+
+    class CallingStdlibFormat(base.Renderer):
+        def render_content(self, context):
+            context['_'] = context['_']()
+            return base.Renderer.render_content(self, context)
+
+    class CallingStdlibFormatFactory(base.Factory):
+        Renderer = CallingStdlibFormat
+
+
+    # Approximate Gratipay's i18n wiring.
+
+    class HTMLRenderer(CallingStdlibFormat):
+        def render_content(self, context):
+            context['escape'] = lambda s: 'bar'
+            return CallingStdlibFormat.render_content(self, context)
+
+    class Factory(CallingStdlibFormatFactory):
+        Renderer = HTMLRenderer
+
+    def get_text(s, state):
+        return state['escape'](s)
+
+    def setup(state):
+        state['escape'] = lambda s: s
+        state['_'] = lambda: get_text('foo', state)
+
+    harness.client.website.renderer_factories['htmlescaped'] = Factory(harness.client.website)
+    harness.client.website.algorithm.insert_before('dispatch_request_to_filesystem', setup)
+    response = harness.simple("""\
+foo = _()
+[---] text/html via htmlescaped
+{foo}{_}""")
+    assert response.body == 'foobar'
