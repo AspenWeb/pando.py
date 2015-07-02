@@ -9,6 +9,7 @@ import StringIO
 from pytest import raises
 from aspen.website import Website
 from aspen.http.response import Response
+from aspen.exceptions import BadLocation
 
 
 simple_error_spt = """
@@ -361,7 +362,16 @@ def test_redirect_can_override_base_url_per_call(website):
     assert raises(Response, website.redirect, '/', base_url='b').value.headers['Location'] == 'b/'
 
 def test_redirect_declines_to_construct_bad_urls(website):
-    assert raises(BadLocation, website.redirect, '../foo', base_url='http://www.example.com')
+    raised = raises(BadLocation, website.redirect, '../foo', base_url='http://www.example.com')
+    assert raised.value.body == 'Bad redirect location: http://www.example.com../foo'
+
+def test_redirect_will_construct_a_good_absolute_url(website):
+    response = raises(Response, website.redirect, '/foo', base_url='http://www.example.com').value
+    assert response.headers['Location'] == 'http://www.example.com/foo'
+
+def test_redirect_will_allow_a_relative_url(website):
+    response = raises(Response, website.redirect, '../foo', base_url='').value
+    assert response.headers['Location'] == '../foo'
 
 def test_redirect_can_use_given_response(website):
     response = Response(65, 'Greetings, program!', {'Location': 'A Town'})
