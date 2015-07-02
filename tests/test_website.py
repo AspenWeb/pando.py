@@ -360,6 +360,9 @@ def test_redirect_can_override_base_url_per_call(website):
     website.base_url = 'foo'
     assert raises(Response, website.redirect, '/', base_url='b').value.headers['Location'] == 'b/'
 
+def test_redirect_declines_to_construct_bad_urls(website):
+    assert raises(BadLocation, website.redirect, '../foo', base_url='http://www.example.com')
+
 def test_redirect_can_use_given_response(website):
     response = Response(65, 'Greetings, program!', {'Location': 'A Town'})
     response = raises(Response, website.redirect, '/flah', response=response).value
