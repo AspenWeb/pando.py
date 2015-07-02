@@ -1,6 +1,12 @@
 Aspen-python Changelog
 ======================
 
+0.41 - Released Thu Jul 2 2015 by @whit537
+------------------------------------------
+
+* fix a regression in simplate scoping introduced in 0.38 (#463)
+
+
 0.40 - Released Mon Jun 29 2015 by @whit537
 -------------------------------------------
 
