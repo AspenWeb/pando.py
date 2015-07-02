@@ -365,13 +365,23 @@ def test_redirect_declines_to_construct_bad_urls(website):
     raised = raises(BadLocation, website.redirect, '../foo', base_url='http://www.example.com')
     assert raised.value.body == 'Bad redirect location: http://www.example.com../foo'
 
+def test_redirect_declines_to_construct_more_bad_urls(website):
+    raised = raises(BadLocation, website.redirect, 'http://www.example.org/foo',
+                                                                 base_url='http://www.example.com')
+    assert raised.value.body == 'Bad redirect location: '\
+                                                 'http://www.example.comhttp://www.example.org/foo'
+
 def test_redirect_will_construct_a_good_absolute_url(website):
     response = raises(Response, website.redirect, '/foo', base_url='http://www.example.com').value
     assert response.headers['Location'] == 'http://www.example.com/foo'
 
-def test_redirect_will_allow_a_relative_url(website):
+def test_redirect_will_allow_a_relative_path(website):
     response = raises(Response, website.redirect, '../foo', base_url='').value
     assert response.headers['Location'] == '../foo'
+
+def test_redirect_will_allow_an_absolute_url(website):
+    response = raises(Response, website.redirect, 'http://www.example.org/foo', base_url='').value
+    assert response.headers['Location'] == 'http://www.example.org/foo'
 
 def test_redirect_can_use_given_response(website):
     response = Response(65, 'Greetings, program!', {'Location': 'A Town'})
