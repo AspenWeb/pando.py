@@ -4,8 +4,12 @@ aspen.algorithms.website
 
 These functions comprise the request processing functionality of Aspen.
 
-Per the algorithm.py module, the functions defined in this present module are
-executed in the order they're defined here, with dependencies injected as
+The order of functions in this module defines Aspen algorithm for request
+processing. The actual parsing is done by Algorithm.from_dotted_name():
+
+http://algorithm-py.readthedocs.org/en/1.0.0/#algorithm.Algorithm.from_dotted_name
+
+Dependencies are injected as
 specified in each function definition. Each function should return None, or a
 dictionary that will be used to update the algorithm state in the calling
 routine.
