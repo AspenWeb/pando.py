@@ -14,6 +14,7 @@ from algorithm import Algorithm
 from aspen.configuration import Configurable
 from aspen.http.response import Response
 from aspen.utils import to_rfc822, utc
+from aspen.exceptions import BadLocation
 
 # 2006-11-17 was the first release of aspen - v0.3
 THE_PAST = to_rfc822(datetime.datetime(2006, 11, 17, tzinfo=utc))
@@ -68,7 +69,9 @@ class Website(Configurable):
         permanent is True and 302 (Found) if it is False. If url doesn't start
         with base_url (defaulting to self.base_url), then we prefix it with
         base_url before redirecting. This is a protection against open
-        redirects. If you provide your own response we will set .code and
+        redirects. If you wish to use a relative path or full URL as location,
+        then base_url must be the empty string; if it's not, we raise
+        BadLocation. If you provide your own response we will set .code and
         .headers['Location'] on it.
 
         """
@@ -76,7 +79,10 @@ class Website(Configurable):
         response.code = code if code else (301 if permanent else 302)
         base_url = base_url if base_url is not None else self.base_url
         if not location.startswith(base_url):
-            location = base_url + location
+            newloc = base_url + location
+            if not location.startswith('/'):
+                raise BadLocation(newloc)
+            location = newloc
         response.headers['Location'] = location
         raise response
 
