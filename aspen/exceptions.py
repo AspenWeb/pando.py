@@ -62,3 +62,12 @@ class UnknownBodyType(Response):
     """
     def __init__(self, ctype):
         Response.__init__(self, code=415, body="Unknown body Content-Type: %s" % ctype)
+
+
+class BadLocation(Response):
+    """
+    A 500 Response raised if the user tries to redirect with base_url and a
+    relative path.
+    """
+    def __init__(self, msg):
+        Response.__init__(self, code=500, body="Bad redirect location: %s" % msg)
