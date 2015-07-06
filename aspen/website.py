@@ -69,9 +69,10 @@ class Website(Configurable):
         permanent is True and 302 (Found) if it is False. If url doesn't start
         with base_url (defaulting to self.base_url), then we prefix it with
         base_url before redirecting. This is a protection against open
-        redirects. If base_url is not '' and location is not an absolute path,
-        we raise BadLocation.  If you provide your own response we will set
-        .code and .headers['Location'] on it.
+        redirects. If you wish to use a relative path or full URL as location,
+        then base_url must be the empty string; if it's not, we raise
+        BadLocation. If you provide your own response we will set .code and
+        .headers['Location'] on it.
 
         """
         response = response if response else Response()
