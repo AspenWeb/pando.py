@@ -170,11 +170,9 @@ class Simplate(Resource):
         response = state['response']
         response.body = render(spt_context)
         if 'Content-Type' not in response.headers:
+            if media_type.startswith('text/') and response.charset is not None:
+                media_type += '; charset=' + response.charset
             response.headers['Content-Type'] = media_type
-            if media_type.startswith('text/'):
-                charset = response.charset
-                if charset is not None:
-                    response.headers['Content-Type'] += '; charset=' + charset
 
         return response
 
