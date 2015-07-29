@@ -3,7 +3,6 @@ from __future__ import division, print_function, unicode_literals, with_statemen
 import os
 import sys
 import os.path
-from optparse import make_option
 from fabricate import main, run, shell, autoclean
 
 # Core Executables
@@ -46,9 +45,8 @@ def _virt(cmd, envdir='env'):
         return os.path.join(envdir, 'bin', cmd)
 
 
-def _virt_version():
-    _env()
-    v = shell(_virt('python'), '-c',
+def _virt_version(envdir):
+    v = shell(_virt('python', envdir), '-c',
               'import sys; print(sys.version_info[:2])')
     return eval(v)
 
@@ -72,10 +70,16 @@ def _env(envdir='env'):
 
 
 def env():
+    """set up a base virtual environment"""
     _env()
 
 
-def deps(envdir='env'):
+def deps():
+    """set up an environment able to run aspen"""
+    _deps()
+
+
+def _deps(envdir='env'):
     envdir = _env(envdir)
     v = shell(_virt('python', envdir), '-c', 'import aspen; print("found")', ignore_status=True)
     if b"found" in v:
@@ -84,16 +88,22 @@ def deps(envdir='env'):
         run(_virt('pip', envdir), 'install', '--no-index',
             '--find-links=' + INSTALL_DIR, dep)
     run(_virt('python', envdir), 'setup.py', 'develop')
+    return envdir
 
 
-def dev_deps(envdir='env'):
-    envdir = deps(envdir)
+def _dev_deps(envdir='env'):
+    envdir = _deps(envdir)
     # pytest will need argparse if it's running under 2.6
-    if _virt_version() < (2, 7):
+    if _virt_version(envdir) < (2, 7):
         TEST_DEPS.insert(0, 'argparse')
     for dep in TEST_DEPS:
         run(_virt('pip', envdir), 'install', '--no-index',
             '--find-links=' + TEST_DIR, dep)
+    return envdir
+
+def dev():
+    """set up an environment able to run tests in env/"""
+    _dev_deps()
 
 
 def clean_env():
@@ -118,17 +128,17 @@ smoke_dir = 'smoke-test'
 
 
 def docserve():
-    deps()
-    run(_virt('pip'), 'install', 'aspen-tornado')
-    run(_virt('pip'), 'install', 'pygments')
-    shell(_virt('python'), '-m', 'aspen_io', silent=False)
+    envdir = _deps()
+    run(_virt('pip', envdir), 'install', 'aspen-tornado')
+    run(_virt('pip', envdir), 'install', 'pygments')
+    shell(_virt('python', envdir), '-m', 'aspen_io', silent=False)
 
 
 def smoke():
     deps()
     run('mkdir', smoke_dir)
     open(os.path.join(smoke_dir, "index.html"), "w").write("Greetings, program!")
-    run(_virt('python'), '-m', 'aspen', '-w', smoke_dir)
+    run(_virt('python', _deps()), '-m', 'aspen', '-w', smoke_dir)
 
 
 def clean_smoke():
@@ -136,7 +146,7 @@ def clean_smoke():
 
 
 def _sphinx_cmd(packages, cmd):
-    envdir = deps(envdir='denv')
+    envdir = _deps(envdir='denv')
     for p in packages:
         run(_virt('pip', envdir='denv'), 'install', p)
     sphinxopts = []
@@ -163,25 +173,26 @@ def clean_sphinx():
 # =======
 
 def test():
-    dev_deps()
-    shell(_virt('py.test'), 'tests/', ignore_status=True, silent=False)
+    """run all tests"""
+    shell(_virt('py.test', _dev_deps()), 'tests/', ignore_status=True, silent=False)
 
 
 def testf():
-    dev_deps()
-    shell(_virt('py.test'), '-x', 'tests/', ignore_status=True, silent=False)
+    """run tests, stopping at the first failure"""
+    shell(_virt('py.test', _dev_deps()), '-x', 'tests/', ignore_status=True, silent=False)
 
 
 def pylint():
-    env()
-    run(_virt('pip'), 'install', 'pylint')
-    run(_virt('pylint'), '--rcfile=.pylintrc',
+    """run lint"""
+    envdir = _env()
+    run(_virt('pip', envdir), 'install', 'pylint')
+    run(_virt('pylint', envdir), '--rcfile=.pylintrc',
         'aspen', '|', 'tee', 'pylint.out', shell=True, ignore_status=True)
 
 
 def test_cov():
-    dev_deps()
-    run(_virt('py.test'),
+    """run code coverage"""
+    run(_virt('py.test', _dev_deps()),
         '--junitxml=testresults.xml',
         '--cov-report', 'term',
         '--cov-report', 'xml',
@@ -192,7 +203,7 @@ def test_cov():
 
 
 def analyse():
-    dev_deps()
+    """run lint and coverage"""
     pylint()
     test_cov()
     print('done!')
