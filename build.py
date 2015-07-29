@@ -107,10 +107,12 @@ def dev():
 
 
 def clean_env():
+    """clean env artifacts"""
     shell('rm', '-rf', 'env')
 
 
 def clean():
+    """clean all artifacts"""
     autoclean()
     shell('find', '.', '-name', '*.pyc', '-delete')
     clean_env()
@@ -128,6 +130,7 @@ smoke_dir = 'smoke-test'
 
 
 def docserve():
+    """run the aspen website"""
     envdir = _deps()
     run(_virt('pip', envdir), 'install', 'aspen-tornado')
     run(_virt('pip', envdir), 'install', 'pygments')
@@ -135,13 +138,14 @@ def docserve():
 
 
 def smoke():
-    deps()
+    """run a simple aspen smoke test"""
     run('mkdir', smoke_dir)
     open(os.path.join(smoke_dir, "index.html"), "w").write("Greetings, program!")
     run(_virt('python', _deps()), '-m', 'aspen', '-w', smoke_dir)
 
 
 def clean_smoke():
+    """remove smoke test artifacts"""
     shell('rm', '-rf', smoke_dir)
 
 
@@ -159,12 +163,15 @@ def _sphinx_cmd(packages, cmd):
     run(_virt(cmd, envdir=envdir), args, env=newenv)
 
 def sphinx():
+    """build sphinx documents"""
     _sphinx_cmd(['sphinx'], "sphinx-build")
 
 def autosphinx():
+    """run sphinx-autobuild"""
     _sphinx_cmd(['sphinx', 'sphinx-autobuild'], "sphinx-autobuild")
 
 def clean_sphinx():
+    """clean sphinx artifacts"""
     shell('rm', '-rf', 'docs/_build')
     shell('rm', '-rf', 'denv')
 
@@ -210,6 +217,7 @@ def analyse():
 
 
 def clean_test():
+    """clean test artifacts"""
     clean_env()
     shell('rm', '-rf', '.coverage', 'coverage.xml', 'testresults.xml', 'htmlcov', 'pylint.out')
 
@@ -218,14 +226,17 @@ def clean_test():
 
 
 def build():
+    """build an egg"""
     run(sys.executable, 'setup.py', 'bdist_egg')
 
 
 def wheel():
+    """build a wheel"""
     run(sys.executable, 'setup.py', 'bdist_wheel')
 
 
 def clean_build():
+    """clean build artifacts"""
     run('python', 'setup.py', 'clean', '-a')
     run('rm', '-rf', 'dist')
 
@@ -247,10 +258,12 @@ def _jenv():
     run(*args, env=jenv)
 
 def clean_jenv():
+    """clean up the jython environment"""
     shell('find', '.', '-name', '*.class', '-delete')
     shell('rm', '-rf', 'jenv', 'vendor/jython-installer.jar', 'jython_home')
 
 def jython_test():
+    """install jython and run tests with coverage (requires java)"""
     _jenv()
     for dep in TEST_DEPS:
         run(_virt('pip', 'jenv'), 'install', os.path.join('vendor', dep))
@@ -263,30 +276,41 @@ def jython_test():
             ignore_status=True)
 
 def clean_jtest():
+    """clean jython test results"""
     shell('find', '.', '-name', '*.class', '-delete')
     shell('rm', '-rf', 'jython-testresults.xml')
 
+
 def show_targets():
-    print("""Valid targets:
+    """show the list of valid targets (this list)"""
+    print("Valid targets:\n")
+    # organize these however
+    targets = ['show_targets', None,
+               'env', 'deps', 'smoke', 'dev', 'testf', 'test', 'pylint', 'test_cov', 'analyse', None,
+               'build', 'wheel', None,
+               'docserve', 'sphinx', 'autosphinx', None,
+               'clean', 'clean_env', 'clean_smoke', 'clean_test', 'clean_build', 'clean_sphinx', None,
+               'jython_test', None,
+               'clean_jenv', 'clean_jtest', None,
+               ]
+    #docs = '\n'.join(["  %s - %s" % (t, LOCALS[t].__doc__) for t in targets])
+    #print(docs)
 
-    show_targets (default) - this
-    build - build an aspen egg
-    aspen - set up a test aspen environment in env/
-    dev - set up an environment able to run tests in env/
-    docserve - run the doc server
-    sphinx - build the html docs in docs/_build/html
-    autosphinx - run sphinx-autobuild on the module to auto-pickup changes
-    smoke - run a smoke test
-    test - run the unit tests
-    analyse - run the unit tests with code coverage enabled
-    pylint - run pylint on the source
-    clean - remove all build artifacts
-    clean_{env,jenv,sphinx,smoke,test,jtest} - clean some build artifacts
+    for t in targets:
+        if t is not None:
+            print("  %s - %s" % (t, LOCALS[t].__doc__))
+        else:
+            print("")
 
-    jython_test - install jython and run unit tests with code coverage.
-                  (requires java)
-    """)
+    if len(targets) < (len(LOCALS) - len(NON_TARGETS)):
+        missed = set(LOCALS.keys()).difference(NON_TARGETS, targets)
+        print("Unordered targets: " + ', '.join(sorted(missed)))
     sys.exit()
+
+
+LOCALS = dict(locals())
+NON_TARGETS = [ 'main', 'autoclean', 'run', 'shell' ]
+NON_TARGETS += list(x for x in LOCALS if x.startswith('_') or not callable(LOCALS[x] ))
 
 main( default='show_targets'
     , ignoreprefix="python"  # workaround for gh190
