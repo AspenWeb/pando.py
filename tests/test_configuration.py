@@ -81,6 +81,7 @@ def test_configurable_sees_root_option(harness):
 
 def test_user_can_set_renderer_default(harness):
     SIMPLATE = """
+[----]
 name="program"
 [----]
 Greetings, {name}!

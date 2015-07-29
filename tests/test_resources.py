@@ -35,7 +35,7 @@ def test_charset_static_barely_working(harness):
     assert actual == expected
 
 def test_charset_dynamic_barely_working(harness):
-    response = harness.simple( '[---]\nGreetings, program!'
+    response = harness.simple( '[---]\n[---]\nGreetings, program!'
                              , 'index.html.spt'
                              , website_configuration={'charset_dynamic': 'CHEESECODE'}
                               )
@@ -44,13 +44,13 @@ def test_charset_dynamic_barely_working(harness):
     assert actual == expected
 
 def test_resource_pages_work(harness):
-    actual = harness.simple("foo = 'bar'\n[--------]\nGreetings, %(foo)s!").body
+    actual = harness.simple("[---]\nfoo = 'bar'\n[--------]\nGreetings, %(foo)s!").body
     assert actual == "Greetings, bar!"
 
 def test_resource_dunder_all_limits_vars(harness):
     actual = raises( KeyError
                             , harness.simple
-                            , "foo = 'bar'\n"
+                            , "[---]\nfoo = 'bar'\n"
                               "__all__ = []\n"
                               "[---------]\n"
                               "Greetings, %(foo)s!"
@@ -60,6 +60,7 @@ def test_resource_dunder_all_limits_vars(harness):
 
 def test_path_part_params_are_available(harness):
     response = harness.simple("""
+        [---]
         if 'b' in request.path.parts[0].params:
             a = request.path.parts[0].params['a']
         [---]
@@ -99,6 +100,7 @@ def test_raise_response_works(harness):
     response = raises( Response
                             , harness.simple
                             , "from aspen import Response\n"
+                              "[---------]\n"
                               "raise Response(404)\n"
                               "[---------]\n"
                              ).value
@@ -108,9 +110,9 @@ def test_raise_response_works(harness):
 def test_exception_location_preserved_for_response_raised_in_page_2(harness):
     # https://github.com/gittip/aspen-python/issues/153
     expected_path = os.path.join(os.path.basename(harness.fs.www.root), 'index.html.spt')
-    expected = (expected_path, 1)
+    expected = (expected_path, 2)
     try:
-        harness.simple('from aspen import Response; raise Response(404)\n[---]\n')
+        harness.simple('[---]\nfrom aspen import Response; raise Response(404)\n[---]\n')
     except Response, response:
         actual = response.whence_raised()
     assert actual == expected
@@ -130,7 +132,7 @@ def test_unknown_mimetype_yields_default_mimetype(harness):
     assert response.headers['Content-Type'] == 'text/plain'
 
 def test_templating_without_script_works(harness):
-    response = harness.simple('[-----] via stdlib_format\n{request.path.raw}')
+    response = harness.simple('[-----]\n[-----] via stdlib_format\n{request.path.raw}')
     assert response.body == '/'
 
 

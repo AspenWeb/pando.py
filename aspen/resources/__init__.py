@@ -125,16 +125,14 @@ def load(website, fspath, mtime):
     if is_spt:
         guess_with = guess_with[:-4]
     fs_media_type = mimetypes.guess_type(guess_with, strict=False)[0]
-    is_bound = fs_media_type is not None  # bound to a media type via file ext
-    media_type = fs_media_type if is_bound else website.media_type_default
-
+    media_type = fs_media_type if fs_media_type else website.media_type_default
 
     # Compute and instantiate a class.
     # ================================
     # An instantiated resource is compiled as far as we can take it.
 
     Class = Simplate if is_spt else StaticResource
-    resource = Class(website, fspath, raw, media_type, is_bound, mtime)
+    resource = Class(website, fspath, raw, media_type, mtime)
     return resource
 
 
