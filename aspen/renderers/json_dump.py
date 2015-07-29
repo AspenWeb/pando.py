@@ -7,10 +7,10 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from aspen import renderers
-from aspen import json
+from . import Renderer, Factory
+from .. import json
 
-class Renderer(renderers.Renderer):
+class Renderer(Renderer):
     def compile(self, filepath, raw):
         return raw
 
@@ -22,6 +22,6 @@ class Renderer(renderers.Renderer):
         return json.dumps(eval(self.compiled, globals(), context))
 
 
-class Factory(renderers.Factory):
+class Factory(Factory):
     Renderer = Renderer
 

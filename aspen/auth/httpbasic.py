@@ -24,7 +24,7 @@ from __future__ import unicode_literals
 
 import base64
 
-from aspen import Response
+from .. import Response
 
 
 def inbound_responder(*args, **kwargs):

@@ -10,9 +10,9 @@ from __future__ import unicode_literals
 from Cookie import SimpleCookie
 from StringIO import StringIO
 
-from aspen import Response
-from aspen.utils import typecheck
-from aspen.website import Website
+from .. import Response
+from ..utils import typecheck
+from ..website import Website
 
 BOUNDARY = b'BoUnDaRyStRiNg'
 MULTIPART_CONTENT = b'multipart/form-data; boundary=%s' % BOUNDARY

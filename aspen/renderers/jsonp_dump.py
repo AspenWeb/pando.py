@@ -7,8 +7,8 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from aspen import renderers
-from aspen.renderers.json_dump import Renderer as JsonRenderer
+from . import Factory
+from .json_dump import Renderer as JsonRenderer
 
 import re
 
@@ -41,5 +41,5 @@ class Renderer(JsonRenderer):
         return "/**/ " + callback + "(" + json + ");"
 
 
-class Factory(renderers.Factory):
+class Factory(Factory):
     Renderer = Renderer

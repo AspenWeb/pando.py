@@ -8,9 +8,9 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 
-from aspen.backcompat import CookieError, SimpleCookie
-from aspen.http.mapping import CaseInsensitiveMapping
-from aspen.utils import typecheck
+from ..backcompat import CookieError, SimpleCookie
+from .mapping import CaseInsensitiveMapping
+from ..utils import typecheck
 
 
 def _check_for_CRLF(value):

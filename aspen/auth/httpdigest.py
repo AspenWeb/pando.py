@@ -10,7 +10,7 @@ aspen.auth.httpdigest
 
 import random, time, re
 
-from aspen.backcompat import md5
+from ..backcompat import md5
 
 class MalformedAuthenticationHeader(Exception): pass
 
@@ -24,7 +24,7 @@ class AspenHTTPProvider:
         self.request = request
 
     def _response(self, *args):
-        from aspen import Response
+        from .. import Response
         r = Response(*args)
         r.request = self.request
         return r

@@ -12,7 +12,7 @@ from __future__ import unicode_literals
 import mimetypes
 import os
 
-from aspen import Response
+from . import Response
 from .backcompat import namedtuple
 
 
