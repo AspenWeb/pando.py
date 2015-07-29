@@ -124,7 +124,7 @@ class Simplate(Resource):
     def compile_page(self, page):
         """Given a bytestring, return a (renderer, media type) pair.
         """
-        make_renderer, media_type = self._unbound_parse_specline(page.header)
+        make_renderer, media_type = self._parse_specline(page.header)
         renderer = make_renderer(self.fs, page.content, media_type, page.offset)
         if media_type in self.renderers:
             raise SyntaxError("Two content pages defined for %s." % media_type)
@@ -179,7 +179,7 @@ class Simplate(Resource):
         return response
 
 
-    def _unbound_parse_specline(self, specline):
+    def _parse_specline(self, specline):
         """Given a bytestring, return a two-tuple.
 
         The incoming string is expected to be of the form:
