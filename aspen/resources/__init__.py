@@ -25,10 +25,10 @@ import stat
 import sys
 import traceback
 
-from aspen.backcompat import StringIO
-from aspen.exceptions import LoadError
-from aspen.resources.simplate import Simplate
-from aspen.resources.static_resource import StaticResource
+from ..backcompat import StringIO
+from ..exceptions import LoadError
+from .simplate import Simplate
+from .static_resource import StaticResource
 
 
 # Cache helpers

@@ -12,9 +12,9 @@ import os
 import re
 import sys
 
-from aspen.utils import ascii_dammit
-from aspen.http import status_strings
-from aspen.http.baseheaders import BaseHeaders as Headers
+from ..utils import ascii_dammit
+from . import status_strings
+from .baseheaders import BaseHeaders as Headers
 
 
 class CloseWrapper(object):

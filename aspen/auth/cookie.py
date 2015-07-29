@@ -11,9 +11,9 @@ from __future__ import unicode_literals
 
 import datetime
 
-from aspen import auth
-from aspen.utils import to_rfc822, utcnow
-from aspen.website import THE_PAST
+from .. import auth
+from ..utils import to_rfc822, utcnow
+from ..website import THE_PAST
 
 
 MINUTE = datetime.timedelta(seconds=60)
