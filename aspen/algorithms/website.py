@@ -39,13 +39,14 @@ from __future__ import unicode_literals
 
 import traceback
 
-import aspen
-from aspen import dispatcher, resources, body_parsers
-from aspen.http.request import Request
-from aspen.http.response import Response
-from aspen import typecasting
 from first import first as _first
-from aspen.dispatcher import DispatchResult, DispatchStatus
+
+from .. import log as _log
+from .. import log_dammit as _log_dammit
+from .. import dispatcher, resources, body_parsers, typecasting
+from ..http.request import Request
+from ..http.response import Response
+from ..dispatcher import DispatchResult, DispatchStatus
 
 
 def parse_environ_into_request(environ):
@@ -127,9 +128,9 @@ def get_response_for_exception(website, exception):
 def log_traceback_for_5xx(response, traceback=None):
     if response.code >= 500:
         if traceback:
-            aspen.log_dammit(traceback)
+            _log_dammit(traceback)
         else:
-            aspen.log_dammit(response.body)
+            _log_dammit(response.body)
     return {'traceback': None}
 
 
@@ -167,7 +168,7 @@ def delegate_error_to_simplate(website, state, response, request=None, resource=
 
 def log_traceback_for_exception(website, exception):
     tb = traceback.format_exc()
-    aspen.log_dammit(tb)
+    _log_dammit(tb)
     response = Response(500)
     if website.show_tracebacks:
         response.body = tb
@@ -213,4 +214,4 @@ def log_result_of_request(website, request=None, dispatch_result=None, response=
     # Log it.
     # =======
 
-    aspen.log("%-36s %s" % (response, msg))
+    _log("%-36s %s" % (response, msg))
