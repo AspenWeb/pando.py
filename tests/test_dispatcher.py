@@ -185,7 +185,7 @@ def test_indirect_negotiation_can_passthrough_static(harness):
     assert_fs(harness, 'foo.html', 'foo.html')
 
 def test_indirect_negotiation_can_passthrough_renderered(harness):
-    harness.fs.www.mk(('foo.html.spt', "Greetings, program!"),)
+    harness.fs.www.mk(('foo.html.spt', NEGOTIATED_SIMPLATE),)
     assert_fs(harness, 'foo.html', 'foo.html.spt')
 
 def test_indirect_negotiation_can_passthrough_negotiated(harness):
@@ -274,11 +274,11 @@ def test_virtual_path_directory(harness):
     assert_fs(harness, '/foo/', '%first/index.html')
 
 def test_virtual_path_file(harness):
-    harness.fs.www.mk(('foo/%bar.html.spt', "Greetings, program!"),)
+    harness.fs.www.mk(('foo/%bar.html.spt', NEGOTIATED_SIMPLATE),)
     assert_fs(harness, '/foo/blah.html', 'foo/%bar.html.spt')
 
 def test_virtual_path_file_only_last_part(harness):
-    harness.fs.www.mk(('foo/%bar.html.spt', "Greetings, program!"),)
+    harness.fs.www.mk(('foo/%bar.html.spt', NEGOTIATED_SIMPLATE),)
     assert_fs(harness, '/foo/blah/baz.html', 'foo/%bar.html.spt')
 
 def test_virtual_path_file_only_last_part____no_really(harness):
@@ -286,20 +286,20 @@ def test_virtual_path_file_only_last_part____no_really(harness):
     assert_raises_404(harness, '/foo/blah.html/')
 
 def test_virtual_path_file_key_val_set(harness):
-    harness.fs.www.mk(('foo/%bar.html.spt', "Greetings, program!"),)
+    harness.fs.www.mk(('foo/%bar.html.spt', NEGOTIATED_SIMPLATE),)
     assert_virtvals(harness, '/foo/blah.html', {'bar': [u'blah']})
 
 def test_virtual_path_file_key_val_not_cast(harness):
-    harness.fs.www.mk(('foo/%bar.html.spt', "Greetings, program!"),)
+    harness.fs.www.mk(('foo/%bar.html.spt', NEGOTIATED_SIMPLATE),)
     assert_virtvals(harness, '/foo/537.html', {'bar': [u'537']})
 
 def test_virtual_path_file_key_val_cast(harness):
-    harness.fs.www.mk(('foo/%bar.int.html.spt', "Greetings, program!"),)
+    harness.fs.www.mk(('foo/%bar.int.html.spt', NEGOTIATED_SIMPLATE),)
     assert_virtvals(harness, '/foo/537.html', {'bar': [537]})
 
 def test_virtual_path_file_not_dir(harness):
     harness.fs.www.mk( ('%foo/bar.html', "Greetings from bar!")
-          , ('%baz.html.spt', "Greetings from baz!")
+          , ('%baz.html.spt', NEGOTIATED_SIMPLATE)
            )
     assert_fs(harness, '/bal.html', '%baz.html.spt')
 
@@ -317,7 +317,7 @@ class User:
 def test_virtual_path_file_key_val_cast_custom(harness):
     harness.client.website.typecasters['user'] = User.toUser
     harness.fs.www.mk(( 'user/%user.user.html.spt'
-                      , "\nusername=request.path['user']\n[-----]\nGreetings, %(username)s!"
+                      , "[-----]\nusername=request.path['user']\n[-----]\nGreetings, %(username)s!"
                        ),)
     actual = harness.simple(filepath=None, uripath='/user/chad.html', want='request.line.uri.path',
             run_through='apply_typecasters_to_path')
@@ -402,7 +402,7 @@ def test_path_part_params_static_file(harness):
     assert_fs(harness, '/foo/bar.html;a=1;b=;a=2;b=3', '/foo/bar.html')
 
 def test_path_part_params_simplate(harness):
-    harness.fs.www.mk(('/foo/bar.html.spt', "Greetings program!"),)
+    harness.fs.www.mk(('/foo/bar.html.spt', NEGOTIATED_SIMPLATE),)
     assert_fs(harness, '/foo/bar.html;a=1;b=;a=2;b=3', '/foo/bar.html.spt')
 
 def test_path_part_params_negotiated_simplate(harness):
@@ -432,6 +432,7 @@ def test_virtual_path_docs_2(harness):
     assert_body(harness, '/python/', 'Greetings, python!')
 
 NAME_LIKES_CHEESE_SPT = """
+[-----]
 name = request.path['name'].title()
 cheese = request.path['cheese']
 [---------]
@@ -450,6 +451,7 @@ def test_virtual_path_docs_4(harness):
     assert_raises_404(harness, '/chad/cheddar.txt/')
 
 PARTY_LIKE_YEAR_SPT = """\
+[-----]
 year = request.path['year']
 [----------]
 Tonight we're going to party like it's %(year)s!"""
@@ -471,24 +473,24 @@ def test_virtual_path_docs_6(harness):
 # These surfaced when porting mongs from Aspen 0.8.
 
 def test_virtual_path_parts_can_be_empty(harness):
-    harness.fs.www.mk(('foo/%bar/index.html.spt', "Greetings, program!"),)
+    harness.fs.www.mk(('foo/%bar/index.html.spt', NEGOTIATED_SIMPLATE),)
     assert_virtvals(harness, '/foo//' , {u'bar': [u'']})
 
 def test_file_matches_in_face_of_dir(harness):
-    harness.fs.www.mk( ('%page/index.html.spt', 'Nothing to see here.')
-          , ('%value.txt.spt', "Greetings, program!")
+    harness.fs.www.mk( ('%page/index.html.spt', NEGOTIATED_SIMPLATE)
+          , ('%value.txt.spt', NEGOTIATED_SIMPLATE)
            )
     assert_virtvals(harness, '/baz.txt', {'value': [u'baz']})
 
 def test_file_matches_extension(harness):
-    harness.fs.www.mk( ('%value.json.spt', '[-----]\n{"Greetings,": "program!"}')
-          , ('%value.txt.spt', "Greetings, program!")
+    harness.fs.www.mk( ('%value.json.spt', '[-----]\n[-----]\n{"Greetings,": "program!"}')
+          , ('%value.txt.spt', NEGOTIATED_SIMPLATE)
            )
     assert_fs(harness, '/baz.json', "%value.json.spt")
 
 def test_file_matches_other_extension(harness):
-    harness.fs.www.mk( ('%value.json.spt', '[-----]\n{"Greetings,": "program!"}')
-          , ('%value.txt.spt', "Greetings, program!")
+    harness.fs.www.mk( ('%value.json.spt', '[-----]\n[-----]\n{"Greetings,": "program!"}')
+          , ('%value.txt.spt', NEGOTIATED_SIMPLATE)
            )
     assert_fs(harness, '/baz.txt', "%value.txt.spt")
 

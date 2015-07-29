@@ -12,7 +12,7 @@ import sys
 
 import mimeparse
 from .. import Response, log
-from .pagination import split_and_escape, Page, parse_specline
+from .pagination import split_and_escape, parse_specline
 from .resource import Resource
 
 
@@ -31,6 +31,8 @@ ORDINALS = StringDefaultingList([ 'zero' , 'one' , 'two', 'three', 'four'
                                 , 'five', 'six', 'seven', 'eight', 'nine'
                                  ])
 
+MIN_PAGES=3
+MAX_PAGES=None
 
 class Simplate(Resource):
     """A simplate is a dynamic resource with multiple syntaxes in one file.
@@ -41,9 +43,7 @@ class Simplate(Resource):
 
         self.renderers = {}         # mapping of media type to render function
         self.available_types = []   # ordered sequence of media types
-        self.min_pages, self.max_pages = (1, 4) if self.is_bound else (3, None)
-
-        pages = self.parse_into_pages(self.raw, self.is_bound)
+        pages = self.parse_into_pages(self.raw)
         self.pages = self.compile_pages(pages)
 
 
@@ -59,7 +59,7 @@ class Simplate(Resource):
         return self.get_response(state, spt_context)
 
 
-    def parse_into_pages(self, raw, is_bound):
+    def parse_into_pages(self, raw):
         """Given a bytestring and a boolean, return a list of pages.
         """
 
@@ -67,32 +67,26 @@ class Simplate(Resource):
         npages = len(pages)
 
         # Check for too few pages.
-        if npages < self.min_pages:
+        if npages < MIN_PAGES:
             type_name = self.__class__.__name__[:-len('resource')]
             msg = "%s resources must have at least %s pages; %s has %s."
             msg %= ( type_name
-                   , ORDINALS[self.min_pages]
+                   , ORDINALS[MIN_PAGES]
                    , self.fs
                    , ORDINALS[npages]
                     )
             raise SyntaxError(msg)
 
         # Check for too many pages. This is user error.
-        if self.max_pages is not None and npages > self.max_pages:
+        if MAX_PAGES is not None and npages > MAX_PAGES:
             type_name = self.__class__.__name__[:-len('resource')]
             msg = "%s resources must have at most %s pages; %s has %s."
             msg %= ( type_name
-                   , ORDINALS[self.max_pages]
+                   , ORDINALS[MAX_PAGES]
                    , self.fs
                    , ORDINALS[npages]
                     )
             raise SyntaxError(msg)
-
-        # Pad front with empty pages for bound simplates.
-        if is_bound:
-            num_extra_pages = 3 - len(pages)
-            # Note that range(x) returns an empty list if x < 1
-            pages[0:0] = (Page('') for _ in range(num_extra_pages))
 
         return pages
 
@@ -130,9 +124,7 @@ class Simplate(Resource):
     def compile_page(self, page):
         """Given a bytestring, return a (renderer, media type) pair.
         """
-        _parse_specline = self._bound_parse_specline \
-                            if self.is_bound else self._unbound_parse_specline
-        make_renderer, media_type = _parse_specline(page.header)
+        make_renderer, media_type = self._unbound_parse_specline(page.header)
         renderer = make_renderer(self.fs, page.content, media_type, page.offset)
         if media_type in self.renderers:
             raise SyntaxError("Two content pages defined for %s." % media_type)
@@ -187,28 +179,6 @@ class Simplate(Resource):
         return response
 
 
-    def _bound_parse_specline(self, specline):
-        """Parse specline for bound simplate.
-
-        Bound simplates have a simpler specline than unbound simplates. They
-        don't have a media type, and the renderer is optional.
-
-        """
-        #parse into parts.
-        parts = parse_specline(specline)
-
-        #Assign parts, discard media type
-        renderer = parts[1]
-        media_type = self.media_type
-        if not renderer:
-            renderer = self.website.default_renderers_by_media_type[media_type]
-
-        #Hydrate and validate renderer
-        make_renderer = self._get_renderer_factory(media_type, renderer)
-
-        return (make_renderer, media_type)
-
-
     def _unbound_parse_specline(self, specline):
         """Given a bytestring, return a two-tuple.
 
@@ -224,10 +194,8 @@ class Simplate(Resource):
 
         """
         # Parse into parts
-        parts = parse_specline(specline)
+        media_type, renderer = parse_specline(specline)
 
-        #Assign parts
-        media_type, renderer = parts
         if media_type == '':
             # no media type specified, use the default
             media_type = self.media_type

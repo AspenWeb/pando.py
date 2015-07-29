@@ -40,7 +40,7 @@ Greetings, program!
     assert actual == expected
 
 def test_fatal_error_response_is_returned(harness):
-    harness.fs.www.mk(('index.html.spt', "raise heck\n[---]\n"))
+    harness.fs.www.mk(('index.html.spt', "[---]\nraise heck\n[---]\n"))
     expected = 500
     actual = harness.client.GET(raise_immediately=False).code
     assert actual == expected
@@ -276,12 +276,13 @@ def test_autoindex_response_is_returned(harness):
 
 def test_resources_can_import_from_project_root(harness):
     harness.fs.project.mk(('foo.py', 'bar = "baz"'))
-    harness.fs.www.mk(('index.html.spt', "from foo import bar\n[---]\nGreetings, %(bar)s!"))
+    harness.fs.www.mk(('index.html.spt', "from foo import bar\n[---]\n[---]\nGreetings, %(bar)s!"))
     assert harness.client.GET(raise_immediately=False).body == "Greetings, baz!"
 
 def test_non_500_response_exceptions_dont_get_folded_to_500(harness):
     harness.fs.www.mk(('index.html.spt', '''
 from aspen import Response
+[---]
 raise Response(400)
 [---]
 '''))
@@ -291,6 +292,7 @@ raise Response(400)
 def test_errors_show_tracebacks(harness):
     harness.fs.www.mk(('index.html.spt', '''
 from aspen import Response
+[---]
 website.show_tracebacks = 1
 raise Response(400,1,2,3,4,5,6,7,8,9)
 [---]
