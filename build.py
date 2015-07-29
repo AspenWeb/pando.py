@@ -3,7 +3,6 @@ from __future__ import division, print_function, unicode_literals, with_statemen
 import os
 import sys
 import os.path
-from optparse import make_option
 from fabricate import main, run, shell, autoclean
 
 # Core Executables
@@ -25,6 +24,7 @@ TEST_DEPS = [
     'py>=1.4.20',
     'pytest>=2.5.2',
     'pytest-cov>=1.6',
+    'pytest-cache>=1.0',
     ]
 
 INSTALL_DIR = './vendor/install'
@@ -59,10 +59,10 @@ def _env(envdir='env'):
     if hasattr(sys, 'real_prefix'):
         # We're already inside someone else's virtualenv.
         return sys.prefix
-    elif hasattr(sys, 'base_prefix') and sys.base_prefix != sys.prefix:
+    if hasattr(sys, 'base_prefix') and sys.base_prefix != sys.prefix:
         # We're already inside someone else's pyvenv.
         return sys.prefix
-    elif os.path.exists(envdir):
+    if os.path.exists(envdir):
         # We've already built our own virtualenv.
         return envdir
 
@@ -74,26 +74,30 @@ def _env(envdir='env'):
 def env():
     _env()
 
+def deps():
+    _deps()
 
-def deps(envdir='env'):
+def _deps(envdir='env'):
     envdir = _env(envdir)
     v = shell(_virt('python', envdir), '-c', 'import aspen; print("found")', ignore_status=True)
     if b"found" in v:
-        return
+        return envdir
     for dep in ASPEN_DEPS:
         run(_virt('pip', envdir), 'install', '--no-index',
             '--find-links=' + INSTALL_DIR, dep)
     run(_virt('python', envdir), 'setup.py', 'develop')
+    return envdir
 
 
-def dev_deps(envdir='env'):
-    envdir = deps(envdir)
+def _dev_deps(envdir='env'):
+    envdir = _deps(envdir)
     # pytest will need argparse if it's running under 2.6
     if _virt_version() < (2, 7):
         TEST_DEPS.insert(0, 'argparse')
     for dep in TEST_DEPS:
         run(_virt('pip', envdir), 'install', '--no-index',
             '--find-links=' + TEST_DIR, dep)
+    return envdir
 
 
 def clean_env():
@@ -136,7 +140,7 @@ def clean_smoke():
 
 
 def _sphinx_cmd(packages, cmd):
-    envdir = deps(envdir='denv')
+    envdir = _deps(envdir='denv')
     for p in packages:
         run(_virt('pip', envdir='denv'), 'install', p)
     sphinxopts = []
@@ -163,25 +167,22 @@ def clean_sphinx():
 # =======
 
 def test():
-    dev_deps()
-    shell(_virt('py.test'), 'tests/', ignore_status=True, silent=False)
+    shell(_virt('py.test', _dev_deps()), 'tests/', ignore_status=True, silent=False)
 
 
 def testf():
-    dev_deps()
-    shell(_virt('py.test'), '-x', 'tests/', ignore_status=True, silent=False)
+    shell(_virt('py.test', _dev_deps()), '--ff', '-x', 'tests/', ignore_status=True, silent=False)
 
 
 def pylint():
-    env()
-    run(_virt('pip'), 'install', 'pylint')
-    run(_virt('pylint'), '--rcfile=.pylintrc',
+    envdir = _env()
+    run(_virt('pip', envdir), 'install', 'pylint')
+    run(_virt('pylint', envdir), '--rcfile=.pylintrc',
         'aspen', '|', 'tee', 'pylint.out', shell=True, ignore_status=True)
 
 
 def test_cov():
-    dev_deps()
-    run(_virt('py.test'),
+    run(_virt('py.test', _dev_deps()),
         '--junitxml=testresults.xml',
         '--cov-report', 'term',
         '--cov-report', 'xml',
@@ -192,7 +193,6 @@ def test_cov():
 
 
 def analyse():
-    dev_deps()
     pylint()
     test_cov()
     print('done!')
