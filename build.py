@@ -83,7 +83,7 @@ def _deps(envdir='env'):
     envdir = _env(envdir)
     v = shell(_virt('python', envdir), '-c', 'import aspen; print("found")', ignore_status=True)
     if b"found" in v:
-        return
+        return envdir
     for dep in ASPEN_DEPS:
         run(_virt('pip', envdir), 'install', '--no-index',
             '--find-links=' + INSTALL_DIR, dep)
