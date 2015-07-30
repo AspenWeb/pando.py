@@ -3,7 +3,6 @@ from __future__ import division, print_function, unicode_literals, with_statemen
 import os
 import sys
 import os.path
-from optparse import make_option
 from fabricate import main, run, shell, autoclean
 
 # Core Executables
@@ -46,9 +45,8 @@ def _virt(cmd, envdir='env'):
         return os.path.join(envdir, 'bin', cmd)
 
 
-def _virt_version():
-    _env()
-    v = shell(_virt('python'), '-c',
+def _virt_version(envdir):
+    v = shell(_virt('python', envdir), '-c',
               'import sys; print(sys.version_info[:2])')
     return eval(v)
 
@@ -72,10 +70,16 @@ def _env(envdir='env'):
 
 
 def env():
+    """set up a base virtual environment"""
     _env()
 
 
-def deps(envdir='env'):
+def deps():
+    """set up an environment able to run aspen"""
+    _deps()
+
+
+def _deps(envdir='env'):
     envdir = _env(envdir)
     v = shell(_virt('python', envdir), '-c', 'import aspen; print("found")', ignore_status=True)
     if b"found" in v:
@@ -84,23 +88,31 @@ def deps(envdir='env'):
         run(_virt('pip', envdir), 'install', '--no-index',
             '--find-links=' + INSTALL_DIR, dep)
     run(_virt('python', envdir), 'setup.py', 'develop')
+    return envdir
 
 
-def dev_deps(envdir='env'):
-    envdir = deps(envdir)
+def _dev_deps(envdir='env'):
+    envdir = _deps(envdir)
     # pytest will need argparse if it's running under 2.6
-    if _virt_version() < (2, 7):
+    if _virt_version(envdir) < (2, 7):
         TEST_DEPS.insert(0, 'argparse')
     for dep in TEST_DEPS:
         run(_virt('pip', envdir), 'install', '--no-index',
             '--find-links=' + TEST_DIR, dep)
+    return envdir
+
+def dev():
+    """set up an environment able to run tests in env/"""
+    _dev_deps()
 
 
 def clean_env():
+    """clean env artifacts"""
     shell('rm', '-rf', 'env')
 
 
 def clean():
+    """clean all artifacts"""
     autoclean()
     shell('find', '.', '-name', '*.pyc', '-delete')
     clean_env()
@@ -118,25 +130,27 @@ smoke_dir = 'smoke-test'
 
 
 def docserve():
-    deps()
-    run(_virt('pip'), 'install', 'aspen-tornado')
-    run(_virt('pip'), 'install', 'pygments')
-    shell(_virt('python'), '-m', 'aspen_io', silent=False)
+    """run the aspen website"""
+    envdir = _deps()
+    run(_virt('pip', envdir), 'install', 'aspen-tornado')
+    run(_virt('pip', envdir), 'install', 'pygments')
+    shell(_virt('python', envdir), '-m', 'aspen_io', silent=False)
 
 
 def smoke():
-    deps()
+    """run a simple aspen smoke test"""
     run('mkdir', smoke_dir)
     open(os.path.join(smoke_dir, "index.html"), "w").write("Greetings, program!")
-    run(_virt('python'), '-m', 'aspen', '-w', smoke_dir)
+    run(_virt('python', _deps()), '-m', 'aspen', '-w', smoke_dir)
 
 
 def clean_smoke():
+    """remove smoke test artifacts"""
     shell('rm', '-rf', smoke_dir)
 
 
 def _sphinx_cmd(packages, cmd):
-    envdir = deps(envdir='denv')
+    envdir = _deps(envdir='denv')
     for p in packages:
         run(_virt('pip', envdir='denv'), 'install', p)
     sphinxopts = []
@@ -149,12 +163,15 @@ def _sphinx_cmd(packages, cmd):
     run(_virt(cmd, envdir=envdir), args, env=newenv)
 
 def sphinx():
+    """build sphinx documents"""
     _sphinx_cmd(['sphinx'], "sphinx-build")
 
 def autosphinx():
+    """run sphinx-autobuild"""
     _sphinx_cmd(['sphinx', 'sphinx-autobuild'], "sphinx-autobuild")
 
 def clean_sphinx():
+    """clean sphinx artifacts"""
     shell('rm', '-rf', 'docs/_build')
     shell('rm', '-rf', 'denv')
 
@@ -163,25 +180,26 @@ def clean_sphinx():
 # =======
 
 def test():
-    dev_deps()
-    shell(_virt('py.test'), 'tests/', ignore_status=True, silent=False)
+    """run all tests"""
+    shell(_virt('py.test', _dev_deps()), 'tests/', ignore_status=True, silent=False)
 
 
 def testf():
-    dev_deps()
-    shell(_virt('py.test'), '-x', 'tests/', ignore_status=True, silent=False)
+    """run tests, stopping at the first failure"""
+    shell(_virt('py.test', _dev_deps()), '-x', 'tests/', ignore_status=True, silent=False)
 
 
 def pylint():
-    env()
-    run(_virt('pip'), 'install', 'pylint')
-    run(_virt('pylint'), '--rcfile=.pylintrc',
+    """run lint"""
+    envdir = _env()
+    run(_virt('pip', envdir), 'install', 'pylint')
+    run(_virt('pylint', envdir), '--rcfile=.pylintrc',
         'aspen', '|', 'tee', 'pylint.out', shell=True, ignore_status=True)
 
 
 def test_cov():
-    dev_deps()
-    run(_virt('py.test'),
+    """run code coverage"""
+    run(_virt('py.test', _dev_deps()),
         '--junitxml=testresults.xml',
         '--cov-report', 'term',
         '--cov-report', 'xml',
@@ -192,13 +210,14 @@ def test_cov():
 
 
 def analyse():
-    dev_deps()
+    """run lint and coverage"""
     pylint()
     test_cov()
     print('done!')
 
 
 def clean_test():
+    """clean test artifacts"""
     clean_env()
     shell('rm', '-rf', '.coverage', 'coverage.xml', 'testresults.xml', 'htmlcov', 'pylint.out')
 
@@ -207,14 +226,17 @@ def clean_test():
 
 
 def build():
+    """build an egg"""
     run(sys.executable, 'setup.py', 'bdist_egg')
 
 
 def wheel():
+    """build a wheel"""
     run(sys.executable, 'setup.py', 'bdist_wheel')
 
 
 def clean_build():
+    """clean build artifacts"""
     run('python', 'setup.py', 'clean', '-a')
     run('rm', '-rf', 'dist')
 
@@ -236,10 +258,12 @@ def _jenv():
     run(*args, env=jenv)
 
 def clean_jenv():
+    """clean up the jython environment"""
     shell('find', '.', '-name', '*.class', '-delete')
     shell('rm', '-rf', 'jenv', 'vendor/jython-installer.jar', 'jython_home')
 
 def jython_test():
+    """install jython and run tests with coverage (requires java)"""
     _jenv()
     for dep in TEST_DEPS:
         run(_virt('pip', 'jenv'), 'install', os.path.join('vendor', dep))
@@ -252,30 +276,41 @@ def jython_test():
             ignore_status=True)
 
 def clean_jtest():
+    """clean jython test results"""
     shell('find', '.', '-name', '*.class', '-delete')
     shell('rm', '-rf', 'jython-testresults.xml')
 
+
 def show_targets():
-    print("""Valid targets:
+    """show the list of valid targets (this list)"""
+    print("Valid targets:\n")
+    # organize these however
+    targets = ['show_targets', None,
+               'env', 'deps', 'smoke', 'dev', 'testf', 'test', 'pylint', 'test_cov', 'analyse', None,
+               'build', 'wheel', None,
+               'docserve', 'sphinx', 'autosphinx', None,
+               'clean', 'clean_env', 'clean_smoke', 'clean_test', 'clean_build', 'clean_sphinx', None,
+               'jython_test', None,
+               'clean_jenv', 'clean_jtest', None,
+               ]
+    #docs = '\n'.join(["  %s - %s" % (t, LOCALS[t].__doc__) for t in targets])
+    #print(docs)
 
-    show_targets (default) - this
-    build - build an aspen egg
-    aspen - set up a test aspen environment in env/
-    dev - set up an environment able to run tests in env/
-    docserve - run the doc server
-    sphinx - build the html docs in docs/_build/html
-    autosphinx - run sphinx-autobuild on the module to auto-pickup changes
-    smoke - run a smoke test
-    test - run the unit tests
-    analyse - run the unit tests with code coverage enabled
-    pylint - run pylint on the source
-    clean - remove all build artifacts
-    clean_{env,jenv,sphinx,smoke,test,jtest} - clean some build artifacts
+    for t in targets:
+        if t is not None:
+            print("  %s - %s" % (t, LOCALS[t].__doc__))
+        else:
+            print("")
 
-    jython_test - install jython and run unit tests with code coverage.
-                  (requires java)
-    """)
+    if len(targets) < (len(LOCALS) - len(NON_TARGETS)):
+        missed = set(LOCALS.keys()).difference(NON_TARGETS, targets)
+        print("Unordered targets: " + ', '.join(sorted(missed)))
     sys.exit()
+
+
+LOCALS = dict(locals())
+NON_TARGETS = [ 'main', 'autoclean', 'run', 'shell' ]
+NON_TARGETS += list(x for x in LOCALS if x.startswith('_') or not callable(LOCALS[x] ))
 
 main( default='show_targets'
     , ignoreprefix="python"  # workaround for gh190
