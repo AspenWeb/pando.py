@@ -7,10 +7,10 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from aspen import renderers
+from . import Renderer, Factory
 from string import Template
 
-class Renderer(renderers.Renderer):
+class Renderer(Renderer):
     def compile(self, filepath, raw):
         return Template(raw)
 
@@ -18,5 +18,5 @@ class Renderer(renderers.Renderer):
         return self.compiled.substitute(context)
 
 
-class Factory(renderers.Factory):
+class Factory(Factory):
     Renderer = Renderer

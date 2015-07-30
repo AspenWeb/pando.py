@@ -11,9 +11,9 @@ import re
 import sys
 
 import mimeparse
-from aspen import Response, log
-from aspen.resources.pagination import split_and_escape, Page, parse_specline
-from aspen.resources.resource import Resource
+from .. import Response, log
+from .pagination import split_and_escape, Page, parse_specline
+from .resource import Resource
 
 
 renderer_re = re.compile(r'[a-z0-9.-_]+$')

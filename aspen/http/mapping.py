@@ -29,7 +29,7 @@ class Mapping(dict):
         try:
             return dict.__getitem__(self, name)[-1]
         except KeyError:
-            from aspen import Response
+            from .. import Response
             raise Response(400, "Missing key: %s" % repr(name))
 
     def __setitem__(self, name, value):
@@ -65,7 +65,7 @@ class Mapping(dict):
         try:
             return dict.__getitem__(self, name)
         except KeyError:
-            from aspen import Response
+            from .. import Response
             raise Response(400)
 
     def get(self, name, default=None):

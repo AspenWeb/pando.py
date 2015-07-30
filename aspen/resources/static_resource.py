@@ -8,8 +8,8 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 
-from aspen import Response
-from aspen.resources.resource import Resource
+from .. import Response
+from .resource import Resource
 
 
 class StaticResource(Resource):

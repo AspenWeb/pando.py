@@ -17,11 +17,11 @@ import pkg_resources
 from collections import defaultdict
 
 import aspen
-import aspen.logging
-from aspen.configuration import parse
-from aspen.exceptions import ConfigurationError
-from aspen.utils import ascii_dammit
-from aspen.typecasting import defaults as default_typecasters
+from . import parse
+from .. import logging
+from ..exceptions import ConfigurationError
+from ..utils import ascii_dammit
+from ..typecasting import defaults as default_typecasters
 import aspen.body_parsers
 
 
@@ -175,8 +175,8 @@ class Configurable(object):
         # This is initially set to -1 and not 0 so that we can tell if the user
         # changed it programmatically directly before we got here. I do this in
         # the testing module, that's really what this is about.
-        if aspen.logging.LOGGING_THRESHOLD == -1:
-            aspen.logging.LOGGING_THRESHOLD = self.logging_threshold
+        if logging.LOGGING_THRESHOLD == -1:
+            logging.LOGGING_THRESHOLD = self.logging_threshold
         # Now that we know the user's desires, we can log appropriately.
         aspen.log_dammit(os.linesep.join(msgs))
 
