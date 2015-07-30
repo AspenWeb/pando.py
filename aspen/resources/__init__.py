@@ -132,7 +132,7 @@ def load(website, fspath, mtime):
     # An instantiated resource is compiled as far as we can take it.
 
     Class = Simplate if is_spt else StaticResource
-    resource = Class(website, fspath, raw, media_type, mtime)
+    resource = Class(website, fspath, raw, media_type)
     return resource
 
 

@@ -19,7 +19,6 @@ def get(harness):
                  , fs = ''
                  , raw = '[---]\n[---] text/plain via stdlib_template\n'
                  , media_type = ''
-                 , mtime = 0
                   )
         kw.update(_kw)
         return Simplate(**kw)
@@ -31,8 +30,7 @@ def test_unbound_simplate_is_instantiable(harness):
     fs = ''
     raw = '[---]\n[---] text/plain via stdlib_template\n'
     media_type = ''
-    mtime = 0
-    actual = Simplate(website, fs, raw, media_type, mtime).__class__
+    actual = Simplate(website, fs, raw, media_type).__class__
     assert actual is Simplate
 
 
