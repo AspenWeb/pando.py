@@ -15,7 +15,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from aspen.website import Website
+from .website import Website
 
 website = Website()
 application = website  # a number of WSGI servers look for this name by default

@@ -11,8 +11,8 @@ import os
 import sys
 from collections import namedtuple
 
-from aspen import resources
-from aspen.testing.client import Client
+from .. import resources
+from .client import Client
 from filesystem_tree import FilesystemTree
 
 

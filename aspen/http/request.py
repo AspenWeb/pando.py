@@ -43,10 +43,10 @@ import urllib
 import urlparse
 from cStringIO import StringIO
 
-from aspen import Response
-from aspen.http.baseheaders import BaseHeaders
-from aspen.http.mapping import Mapping
-from aspen.utils import ascii_dammit
+from .. import Response
+from .baseheaders import BaseHeaders
+from .mapping import Mapping
+from ..utils import ascii_dammit
 
 
 # WSGI Do Our Best

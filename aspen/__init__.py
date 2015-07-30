@@ -67,9 +67,9 @@ import pkg_resources
 from .backcompat import is_callable
 
 # imports of convenience
-from aspen.http.response import Response
-from aspen import json_ as json
-from aspen.logging import log, log_dammit
+from .http.response import Response
+from . import json_ as json
+from .logging import log, log_dammit
 
 # Shut up, PyFlakes. I know I'm addicted to you.
 Response, json, is_callable, log, log_dammit

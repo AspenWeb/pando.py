@@ -13,9 +13,9 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import aspen
-from aspen.utils import typecheck
-from aspen.http.response import charset_re
+from .. import RENDERERS
+from ..utils import typecheck
+from ..http.response import charset_re
 
 
 def identity(value):
@@ -65,7 +65,7 @@ def list_(value):
 
 def renderer(value):
     typecheck(value, unicode)
-    if value not in aspen.RENDERERS:
-        msg = "not one of {%s}" % (','.join(aspen.RENDERERS))
+    if value not in RENDERERS:
+        msg = "not one of {%s}" % (','.join(RENDERERS))
         raise ValueError(msg)
     return value.encode('US-ASCII')

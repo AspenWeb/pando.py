@@ -11,10 +11,10 @@ import datetime
 import os
 
 from algorithm import Algorithm
-from aspen.configuration import Configurable
-from aspen.http.response import Response
-from aspen.utils import to_rfc822, utc
-from aspen.exceptions import BadLocation
+from .configuration import Configurable
+from .http.response import Response
+from .utils import to_rfc822, utc
+from .exceptions import BadLocation
 
 # 2006-11-17 was the first release of aspen - v0.3
 THE_PAST = to_rfc822(datetime.datetime(2006, 11, 17, tzinfo=utc))

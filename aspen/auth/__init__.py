@@ -11,8 +11,8 @@ Currently:
     * httpdigest - HTTP DIGEST Auth
 
 """
-from aspen import Response
-from aspen.utils import typecheck
+from .. import Response
+from ..utils import typecheck
 
 
 class BaseUser(object):
