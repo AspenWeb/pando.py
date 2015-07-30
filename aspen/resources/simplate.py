@@ -218,15 +218,15 @@ class Simplate(Resource):
     def _get_renderer_factory(self, media_type, renderer):
         """Given two bytestrings, return a renderer factory or None.
         """
+        factories = self.website.renderer_factories
         if renderer_re.match(renderer) is None:
-            possible =', '.join(sorted(self.website.renderer_factories.keys()))
+            possible =', '.join(sorted(factories.keys()))
             msg = ("Malformed renderer %s. It must match %s. Possible "
                    "renderers (might need third-party libs): %s.")
             raise SyntaxError(msg % (renderer, renderer_re.pattern, possible))
 
         renderer = renderer.decode('US-ASCII')
 
-        factories = self.website.renderer_factories
         make_renderer = factories.get(renderer, None)
         if isinstance(make_renderer, ImportError):
             raise make_renderer

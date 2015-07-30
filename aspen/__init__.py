@@ -70,27 +70,15 @@ from .backcompat import is_callable
 from .http.response import Response
 from . import json_ as json
 from .logging import log, log_dammit
+from .renderers import BUILTIN_RENDERERS, RENDERERS
 
 # Shut up, PyFlakes. I know I'm addicted to you.
-Response, json, is_callable, log, log_dammit
+Response, json, is_callable, log, log_dammit, BUILTIN_RENDERERS, RENDERERS
 
 dist = pkg_resources.get_distribution('aspen')
 __version__ = dist.version
 WINDOWS = sys.platform[:3] == 'win'
 
-BUILTIN_RENDERERS = [ 'stdlib_format'
-                    , 'stdlib_percent'
-                    , 'stdlib_template'
-                    , 'json_dump'
-                    , 'jsonp_dump'
-                     ]
-
-RENDERERS = BUILTIN_RENDERERS[:]
-
-for entrypoint in pkg_resources.iter_entry_points(group='aspen.renderers'):
-    RENDERERS.append(entrypoint.name)
-
-RENDERERS.sort()
 
 
 def serve(website, host='0.0.0.0', port='8080'):

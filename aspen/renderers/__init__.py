@@ -81,6 +81,49 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import sys
+import pkg_resources
+
+from .. import log_dammit
+
+# Built-in renderers
+BUILTIN_RENDERERS = [ 'stdlib_format'
+                    , 'stdlib_percent'
+                    , 'stdlib_template'
+                    , 'json_dump'
+                    , 'jsonp_dump'
+                     ]
+
+RENDERERS = BUILTIN_RENDERERS[:]
+
+for entrypoint in pkg_resources.iter_entry_points(group='aspen.renderers'):
+    RENDERERS.append(entrypoint.name)
+
+RENDERERS.sort()
+
+def factories(configuration):
+    """return a dict of render factory names to the factories themselves"""
+    renderer_factories = {}
+    # import the built-in renderers
+    for name in BUILTIN_RENDERERS:
+        # Pre-populate renderers so we can report on ImportErrors early
+        try:
+            capture = {}
+            python_syntax = 'from aspen.renderers.%s import Factory'
+            exec python_syntax % name in capture
+            make_renderer = capture['Factory'](configuration)
+        except ImportError, err:
+            make_renderer = err
+            err.info = sys.exc_info()
+        renderer_factories[name] = make_renderer
+
+    # import renderers provided by other packages
+    for entrypoint in pkg_resources.iter_entry_points(group='aspen.renderers'):
+        render_module = entrypoint.load()
+        renderer_factories[entrypoint.name] = render_module.Factory(configuration)
+        log_dammit("Found plugin for renderer '%s'" % entrypoint.name)
+    return renderer_factories
+
 
 # abstract bases
 # ==============
