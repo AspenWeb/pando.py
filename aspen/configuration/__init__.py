@@ -22,7 +22,7 @@ from ..exceptions import ConfigurationError
 from ..utils import ascii_dammit
 from ..typecasting import defaults as default_typecasters
 import aspen.body_parsers
-from ..renderers import factories
+from ..simplates.renderers import factories
 
 default_indices = lambda: ['index.html', 'index.json', 'index',
                            'index.html.spt', 'index.json.spt', 'index.spt']

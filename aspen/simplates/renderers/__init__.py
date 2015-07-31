@@ -1,6 +1,6 @@
 """
-aspen.renderers
-+++++++++++++++
+aspen.simplates.renderers
++++++++++++++++++++++++++
 
 This module implements pluggable content rendering.
                                                                               #
@@ -45,7 +45,7 @@ render_content method.
 
 Here's how to implement and register your own renderer:
 
-    from aspen.renderers import Renderer, Factory
+    from aspen.simplates.renderers import Renderer, Factory
 
     class Cheese(Renderer):
         def render_content(self, context):
@@ -84,7 +84,7 @@ from __future__ import unicode_literals
 import sys
 import pkg_resources
 
-from .. import log_dammit
+from ... import log_dammit
 
 # Built-in renderers
 BUILTIN_RENDERERS = [ 'stdlib_format'
@@ -109,7 +109,7 @@ def factories(configuration):
         # Pre-populate renderers so we can report on ImportErrors early
         try:
             capture = {}
-            python_syntax = 'from aspen.renderers.%s import Factory'
+            python_syntax = 'from aspen.simplates.renderers.%s import Factory'
             exec python_syntax % name in capture
             make_renderer = capture['Factory'](configuration)
         except ImportError, err:
