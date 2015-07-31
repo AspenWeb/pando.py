@@ -1,6 +1,6 @@
 """
-aspen.renderers.stdlib_percent
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+aspen.simplates.renderers.stdlib_percent
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 """
 from __future__ import absolute_import
 from __future__ import division

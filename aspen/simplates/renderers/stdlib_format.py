@@ -1,6 +1,6 @@
 """
-aspen.renderers.stdlib_template
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+aspen.simplates.renderers.stdlib_format
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 """
 from __future__ import absolute_import
 from __future__ import division
@@ -8,14 +8,14 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from . import Renderer, Factory
-from string import Template
+
 
 class Renderer(Renderer):
     def compile(self, filepath, raw):
-        return Template(raw)
+        return raw
 
     def render_content(self, context):
-        return self.compiled.substitute(context)
+        return self.compiled.format(**context)
 
 
 class Factory(Factory):

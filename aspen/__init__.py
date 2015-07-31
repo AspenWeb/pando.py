@@ -70,7 +70,7 @@ from .backcompat import is_callable
 from .http.response import Response
 from . import json_ as json
 from .logging import log, log_dammit
-from .renderers import BUILTIN_RENDERERS, RENDERERS
+from .simplates.renderers import BUILTIN_RENDERERS, RENDERERS
 
 # Shut up, PyFlakes. I know I'm addicted to you.
 Response, json, is_callable, log, log_dammit, BUILTIN_RENDERERS, RENDERERS

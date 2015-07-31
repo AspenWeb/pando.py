@@ -6,10 +6,10 @@ from __future__ import unicode_literals
 from pytest import raises, yield_fixture
 
 from aspen import resources, Response
-from aspen.simplates.pagination import Page
 from aspen.simplates import Simplate
-from aspen.renderers.stdlib_template import Factory as TemplateFactory
-from aspen.renderers.stdlib_percent import Factory as PercentFactory
+from aspen.simplates.pagination import Page
+from aspen.simplates.renderers.stdlib_template import Factory as TemplateFactory
+from aspen.simplates.renderers.stdlib_percent import Factory as PercentFactory
 
 
 @yield_fixture
@@ -208,7 +208,7 @@ def test_get_response_406_gives_list_of_acceptable_types(harness):
     assert actual == expected
 
 
-from aspen.renderers import Renderer, Factory
+from aspen.simplates.renderers import Renderer, Factory
 
 class Glubber(Renderer):
     def render_content(self, context):

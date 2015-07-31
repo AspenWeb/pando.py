@@ -1,6 +1,6 @@
 """
-aspen.renderers.jsonp_dump
-~~~~~~~~~~~~~~~~~~~~~~~~~
+aspen.simplates.renderers.jsonp_dump
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 """
 from __future__ import absolute_import
 from __future__ import division
