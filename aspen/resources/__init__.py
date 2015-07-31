@@ -27,7 +27,7 @@ import traceback
 
 from ..backcompat import StringIO
 from ..exceptions import LoadError
-from .simplate import Simplate
+from ..simplates import Simplate
 from .static_resource import StaticResource
 
 

@@ -6,7 +6,7 @@ from __future__ import unicode_literals
 import os
 
 from aspen import Response
-from aspen.resources.pagination import split
+from aspen.simplates.pagination import split
 from pytest import raises
 
 
