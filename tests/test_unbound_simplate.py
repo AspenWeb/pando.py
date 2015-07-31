@@ -6,8 +6,8 @@ from __future__ import unicode_literals
 from pytest import raises, yield_fixture
 
 from aspen import resources, Response
-from aspen.resources.pagination import Page
-from aspen.resources.simplate import Simplate
+from aspen.simplates.pagination import Page
+from aspen.simplates import Simplate
 from aspen.renderers.stdlib_template import Factory as TemplateFactory
 from aspen.renderers.stdlib_percent import Factory as PercentFactory
 

@@ -13,7 +13,7 @@ import sys
 import mimeparse
 from .. import Response, log
 from .pagination import split_and_escape, parse_specline
-from .resource import Resource
+from ..resources.resource import Resource
 
 
 renderer_re = re.compile(r'[a-z0-9.-_]+$')
