@@ -17,30 +17,27 @@ from .pagination import split_and_escape, parse_specline
 renderer_re = re.compile(r'[a-z0-9.-_]+$')
 media_type_re = re.compile(r'[A-Za-z0-9.+*-]+/[A-Za-z0-9.+*-]+$')
 
-
-class StringDefaultingList(list):
-    def __getitem__(self, key):
-        try:
-            return list.__getitem__(self, key)
-        except KeyError:
-            return str(key)
-
-ORDINALS = StringDefaultingList([ 'zero' , 'one' , 'two', 'three', 'four'
-                                , 'five', 'six', 'seven', 'eight', 'nine'
-                                 ])
-
 MIN_PAGES=3
 MAX_PAGES=None
+
+
+def _ordinal(n):
+    ords = [ 'zero' , 'one' , 'two', 'three', 'four'
+           , 'five', 'six', 'seven', 'eight', 'nine' ]
+    if 0 <= n < len(ords):
+        return ords[n]
+    return str(n)
+
 
 class Simplate(object):
     """A simplate is a dynamic resource with multiple syntaxes in one file.
     """
 
-    def __init__(self, website, fs, raw, media_type):
+    def __init__(self, website, fs, raw, default_media_type):
         self.website = website
         self.fs = fs
         self.raw = raw
-        self.media_type = media_type
+        self.default_media_type = default_media_type
 
         self.renderers = {}         # mapping of media type to render function
         self.available_types = []   # ordered sequence of media types
@@ -72,9 +69,9 @@ class Simplate(object):
             type_name = self.__class__.__name__[:-len('resource')]
             msg = "%s resources must have at least %s pages; %s has %s."
             msg %= ( type_name
-                   , ORDINALS[MIN_PAGES]
+                   , _ordinal(MIN_PAGES)
                    , self.fs
-                   , ORDINALS[npages]
+                   , _ordinal(npages)
                     )
             raise SyntaxError(msg)
 
@@ -83,9 +80,9 @@ class Simplate(object):
             type_name = self.__class__.__name__[:-len('resource')]
             msg = "%s resources must have at most %s pages; %s has %s."
             msg %= ( type_name
-                   , ORDINALS[MAX_PAGES]
+                   , _ordinal[MAX_PAGES]
                    , self.fs
-                   , ORDINALS[npages]
+                   , _ordinal[npages]
                     )
             raise SyntaxError(msg)
 
@@ -197,7 +194,7 @@ class Simplate(object):
 
         if media_type == '':
             # no media type specified, use the default
-            media_type = self.media_type
+            media_type = self.default_media_type
         if renderer == '':
             # no renderer specified, use the default
             renderer = self.website.default_renderers_by_media_type[media_type]

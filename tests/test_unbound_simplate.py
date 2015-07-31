@@ -18,7 +18,7 @@ def get(harness):
         kw = dict( website = harness.client.website
                  , fs = ''
                  , raw = '[---]\n[---] text/plain via stdlib_template\n'
-                 , media_type = ''
+                 , default_media_type = ''
                   )
         kw.update(_kw)
         return Simplate(**kw)
