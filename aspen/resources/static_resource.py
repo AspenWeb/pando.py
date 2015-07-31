@@ -12,9 +12,8 @@ from .. import Response
 
 class StaticResource():
 
-    def __init__(self, website, fs, raw, media_type):
+    def __init__(self, website, raw, media_type):
         self.website = website
-        self.fs = fs
         self.raw = raw
         self.media_type = media_type
         if media_type == 'application/json':
