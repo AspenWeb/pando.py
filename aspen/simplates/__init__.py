@@ -13,8 +13,6 @@ import sys
 import mimeparse
 from .. import Response, log
 from .pagination import split_and_escape, parse_specline
-from ..resources.resource import Resource
-
 
 renderer_re = re.compile(r'[a-z0-9.-_]+$')
 media_type_re = re.compile(r'[A-Za-z0-9.+*-]+/[A-Za-z0-9.+*-]+$')
@@ -34,12 +32,15 @@ ORDINALS = StringDefaultingList([ 'zero' , 'one' , 'two', 'three', 'four'
 MIN_PAGES=3
 MAX_PAGES=None
 
-class Simplate(Resource):
+class Simplate(object):
     """A simplate is a dynamic resource with multiple syntaxes in one file.
     """
 
-    def __init__(self, *a, **kw):
-        Resource.__init__(self, *a, **kw)
+    def __init__(self, website, fs, raw, media_type):
+        self.website = website
+        self.fs = fs
+        self.raw = raw
+        self.media_type = media_type
 
         self.renderers = {}         # mapping of media type to render function
         self.available_types = []   # ordered sequence of media types
