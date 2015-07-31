@@ -9,14 +9,15 @@ from __future__ import unicode_literals
 
 
 from .. import Response
-from .resource import Resource
 
+class StaticResource():
 
-class StaticResource(Resource):
-
-    def __init__(self, *a, **kw):
-        Resource.__init__(self, *a, **kw)
-        if self.media_type == 'application/json':
+    def __init__(self, website, fs, raw, media_type):
+        self.website = website
+        self.fs = fs
+        self.raw = raw
+        self.media_type = media_type
+        if media_type == 'application/json':
             self.media_type = self.website.media_type_json
 
     def respond(self, context):
