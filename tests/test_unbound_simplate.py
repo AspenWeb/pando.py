@@ -17,8 +17,7 @@ def get(harness):
     def get(**_kw):
         website = harness.client.website
         defaults = SimplateDefaults(website.default_renderers_by_media_type,
-                                    website.renderer_factories,
-                                    website.charset_dynamic)
+                                    website.renderer_factories)
         kw = dict( defaults = defaults
                  , website = website
                  , fs = ''
@@ -33,8 +32,7 @@ def get(harness):
 def test_unbound_simplate_is_instantiable(harness):
     website = harness.client.website
     defaults = SimplateDefaults(website.default_renderers_by_media_type,
-                                website.renderer_factories,
-                                website.charset_dynamic)
+                                website.renderer_factories)
     fs = ''
     raw = '[---]\n[---] text/plain via stdlib_template\n'
     media_type = ''

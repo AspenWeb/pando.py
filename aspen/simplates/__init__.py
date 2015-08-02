@@ -30,15 +30,13 @@ def _ordinal(n):
 
 
 class SimplateDefaults(object):
-    def __init__(self, renderers_by_media_type, renderer_factories, charset):
+    def __init__(self, renderers_by_media_type, renderer_factories):
         """
         renderers_by_media_type - dict[str(media_type_name)] -> str(renderer_name)
         renderer_factories - dict[str(renderer_name)] -> func(renderer_factory)
-        charset -> str(charset name)
         """
         self.renderers_by_media_type = renderers_by_media_type
         self.renderer_factories = renderer_factories
-        self.charset = charset
 
 
 class Simplate(object):
@@ -59,9 +57,12 @@ class Simplate(object):
 
 
     def respond(self, state):
-        state.setdefault('response', Response(charset=self.defaults.charset))
-        spt_context = dict(state, **self.pages[0])  # copy the state dict to avoid accidentally
-        exec(self.pages[1], spt_context)            #  mutating it
+        # copy the state dict to avoid accidentally mutating it
+        spt_context = dict(state)
+        # override it with values from the first page
+        spt_context.update(self.pages[0])
+        # use this as the context to execute the second page in
+        exec(self.pages[1], spt_context)
 
         if '__all__' in spt_context:
             # templates will only see variables named in __all__
@@ -178,8 +179,9 @@ class Simplate(object):
                 del failure
                 render = self.renderers[media_type] # KeyError is a bug
 
+        body = render(spt_context)
         response = state['response']
-        response.body = render(spt_context)
+        response.body = body
         if 'Content-Type' not in response.headers:
             if media_type.startswith('text/') and response.charset is not None:
                 media_type += '; charset=' + response.charset

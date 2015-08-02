@@ -134,8 +134,7 @@ def load(website, fspath, mtime):
     if is_spt:
         # Simplate
         defaults = SimplateDefaults(website.default_renderers_by_media_type,
-                                    website.renderer_factories,
-                                    website.charset_dynamic)
+                                    website.renderer_factories)
         return Simplate(defaults, website, fspath, raw, media_type)
     else:
         # static resource
