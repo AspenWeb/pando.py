@@ -109,8 +109,9 @@ def extract_accept_from_request(request):
     return {'accept_header': request.headers.get('accept')}
 
 
-def get_response_for_resource(state, resource=None):
+def get_response_for_resource(state, website, resource=None):
     if resource is not None:
+        state.setdefault('response', Response(charset=website.charset_dynamic))
         return {'response': resource.respond(state)}
 
 
