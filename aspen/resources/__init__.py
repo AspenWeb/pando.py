@@ -27,7 +27,7 @@ import traceback
 
 from ..backcompat import StringIO
 from ..exceptions import LoadError
-from ..simplates import Simplate
+from ..simplates import SimplateDefaults, Simplate
 from .static_resource import StaticResource
 
 
@@ -133,7 +133,10 @@ def load(website, fspath, mtime):
 
     if is_spt:
         # Simplate
-        return Simplate(website, fspath, raw, media_type)
+        defaults = SimplateDefaults(website.default_renderers_by_media_type,
+                                    website.renderer_factories,
+                                    website.charset_dynamic)
+        return Simplate(defaults, website, fspath, raw, media_type)
     else:
         # static resource
         return StaticResource(website, raw, media_type)

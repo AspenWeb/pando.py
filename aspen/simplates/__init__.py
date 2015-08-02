@@ -29,11 +29,24 @@ def _ordinal(n):
     return str(n)
 
 
+class SimplateDefaults(object):
+    def __init__(self, renderers_by_media_type, renderer_factories, charset):
+        """
+        renderers_by_media_type - dict[str(media_type_name)] -> str(renderer_name)
+        renderer_factories - dict[str(renderer_name)] -> func(renderer_factory)
+        charset -> str(charset name)
+        """
+        self.renderers_by_media_type = renderers_by_media_type
+        self.renderer_factories = renderer_factories
+        self.charset = charset
+
+
 class Simplate(object):
     """A simplate is a dynamic resource with multiple syntaxes in one file.
     """
 
-    def __init__(self, website, fs, raw, default_media_type):
+    def __init__(self, defaults, website, fs, raw, default_media_type):
+        self.defaults = defaults
         self.website = website
         self.fs = fs
         self.raw = raw
@@ -46,7 +59,7 @@ class Simplate(object):
 
 
     def respond(self, state):
-        state.setdefault('response', Response(charset=self.website.charset_dynamic))
+        state.setdefault('response', Response(charset=self.defaults.charset))
         spt_context = dict(state, **self.pages[0])  # copy the state dict to avoid accidentally
         exec(self.pages[1], spt_context)            #  mutating it
 
@@ -197,7 +210,7 @@ class Simplate(object):
             media_type = self.default_media_type
         if renderer == '':
             # no renderer specified, use the default
-            renderer = self.website.default_renderers_by_media_type[media_type]
+            renderer = self.defaults.renderers_by_media_type[media_type]
 
         # Validate media type.
         if media_type_re.match(media_type) is None:
@@ -216,7 +229,7 @@ class Simplate(object):
     def _get_renderer_factory(self, media_type, renderer):
         """Given two bytestrings, return a renderer factory or None.
         """
-        factories = self.website.renderer_factories
+        factories = self.defaults.renderer_factories
         if renderer_re.match(renderer) is None:
             possible =', '.join(sorted(factories.keys()))
             msg = ("Malformed renderer %s. It must match %s. Possible "
