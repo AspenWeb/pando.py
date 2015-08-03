@@ -99,6 +99,18 @@ def decode_raw(raw):
 
 
 class SimplateWrapper(Simplate):
+    """Wrap the Simplate class so it's a bit easier to use.
+
+       Most defaults are in website, so make SimplateDefaults from that.
+
+       Make .website available as it has been historically.
+
+       Figure out which accept header to use.
+
+       Append a charset to text Content-Types if one is known.
+
+
+    """
 
     def __init__(self, website, fs, raw, default_media_type):
         self.website = website
