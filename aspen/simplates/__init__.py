@@ -90,14 +90,7 @@ class Simplate(object):
                 render = self.renderers[media_type] # KeyError is a bug
 
         body = render(spt_context)
-        response = state['response']
-        response.body = body
-        if 'Content-Type' not in response.headers:
-            if media_type.startswith('text/') and response.charset is not None:
-                media_type += '; charset=' + response.charset
-            response.headers['Content-Type'] = media_type
-
-        return response
+        return media_type, body
 
 
     def parse_into_pages(self, raw):
