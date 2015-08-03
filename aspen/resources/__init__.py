@@ -105,7 +105,14 @@ class SimplateWrapper(Simplate):
         if accept is None:
             accept = state.get('accept_header')
         try:
-            return super(SimplateWrapper, self).respond(accept, state)
+            content_type, body = super(SimplateWrapper, self).respond(accept, state)
+            response = state['response']
+            response.body = body
+            if 'Content-Type' not in response.headers:
+                if content_type.startswith('text/') and response.charset is not None:
+                    content_type += '; charset=' + response.charset
+                response.headers['Content-Type'] = content_type
+            return response
         except SimplateException as e:
             # find an Accept header
             if dispatch_accept is not None:  # indirect negotiation
