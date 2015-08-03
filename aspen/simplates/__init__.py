@@ -62,7 +62,7 @@ class Simplate(object):
         self.pages = self.compile_pages(pages)
 
 
-    def respond(self, state):
+    def respond(self, accept, state):
         # copy the state dict to avoid accidentally mutating it
         spt_context = dict(state)
         # override it with values from the first page
@@ -73,17 +73,6 @@ class Simplate(object):
         if '__all__' in spt_context:
             # templates will only see variables named in __all__
             spt_context = dict([ (k, spt_context[k]) for k in spt_context['__all__'] ])
-
-        return self.get_response(state, spt_context)
-
-
-    def get_response(self, state, spt_context):
-        """Given two context dicts, return a response object.
-        """
-
-        accept = state['dispatch_result'].extra.get('accept')
-        if accept is None:
-            accept = state.get('accept_header')
 
         # negotiate or punt
         render, media_type = self.pages[2]  # default to first content page

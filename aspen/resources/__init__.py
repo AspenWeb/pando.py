@@ -101,39 +101,19 @@ def decode_raw(raw):
 class SimplateWrapper(Simplate):
 
     def respond(self, state):
+        accept = dispatch_accept = state['dispatch_result'].extra.get('accept')
+        if accept is None:
+            accept = state.get('accept_header')
         try:
-            return super(SimplateWrapper, self).respond(state)
+            return super(SimplateWrapper, self).respond(accept, state)
         except SimplateException as e:
             # find an Accept header
-            dispatch_result = state['dispatch_result']
-            accept = dispatch_result.extra.get('accept', None)
-            if accept is not None:      # indirect negotiation
+            if dispatch_accept is not None:  # indirect negotiation
                 raise Response(404)
-            else:                       # direct negotiation
-                accept = state.get('accept_header')
+            else:                            # direct negotiation
                 msg = "The following media types are available: %s."
                 msg %= ', '.join(e.available_types)
                 raise Response(406, msg.encode('US-ASCII'))
-
-
-    def get_response(self, state, context):
-        """raise if not a valid or 406; return those
-        """
-        try:
-            return super(SimplateWrapper, self).get_response(state, context)
-        except SimplateException as e:
-            # find an Accept header
-            dispatch_result = state['dispatch_result']
-            accept = dispatch_result.extra.get('accept', None)
-            if accept is not None:      # indirect negotiation
-                raise Response(404)
-            else:                       # direct negotiation
-                accept = state.get('accept_header')
-                msg = "The following media types are available: %s."
-                msg %= ', '.join(e.available_types)
-                raise Response(406, msg.encode('US-ASCII'))
-
-
 
 
 # Core loaders

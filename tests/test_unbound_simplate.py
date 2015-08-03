@@ -119,11 +119,12 @@ def _get_state(harness, *a, **kw):
     kw['want'] = 'state'
     return harness.simple(*a, **kw)
 
+
 def _get_response(state):
     resource = resources.load(state['website'], state['dispatch_result'].match, 0)
     state['resource'] = resource
     state['response'] = state.get('response', Response())
-    return resource.get_response(state, {})
+    return resource.respond(state)
 
 UNBOUND_SIMPLATE = """\
 [---]
