@@ -100,8 +100,12 @@ def decode_raw(raw):
 
 class SimplateWrapper(Simplate):
 
-    def __init__(self, defaults, website, fs, raw, default_media_type):
+    def __init__(self, website, fs, raw, default_media_type):
         self.website = website
+        initial_context = { 'website': website }
+        defaults = SimplateDefaults(website.default_renderers_by_media_type,
+                                    website.renderer_factories,
+                                    initial_context)
         super(SimplateWrapper, self).__init__(defaults, fs, raw, default_media_type)
 
     def respond(self, state):
@@ -162,15 +166,10 @@ def load(website, fspath, mtime):
     # An instantiated resource is compiled as far as we can take it.
 
     if is_spt:
-        # Simplate
-        initial_context = { 'website': website }
-        defaults = SimplateDefaults(website.default_renderers_by_media_type,
-                                    website.renderer_factories,
-                                    initial_context)
-        return SimplateWrapper(defaults, website, fspath, raw, media_type)
+        Class = SimplateWrapper
     else:
-        # static resource
-        return StaticResource(website, raw, media_type)
+        Class = StaticResource
+    return Class(website, fspath, raw, media_type)
 
 
 def get(website, fspath):

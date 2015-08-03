@@ -7,7 +7,6 @@ from pytest import raises, yield_fixture
 
 from aspen import resources, Response
 from aspen.resources import SimplateWrapper
-from aspen.simplates import SimplateDefaults
 from aspen.simplates.pagination import Page
 from aspen.simplates.renderers.stdlib_template import Factory as TemplateFactory
 from aspen.simplates.renderers.stdlib_percent import Factory as PercentFactory
@@ -16,12 +15,7 @@ from aspen.simplates.renderers.stdlib_percent import Factory as PercentFactory
 @yield_fixture
 def get(harness):
     def get(**_kw):
-        website = harness.client.website
-        defaults = SimplateDefaults(website.default_renderers_by_media_type,
-                                    website.renderer_factories,
-                                    {'website':website})
-        kw = dict( defaults = defaults
-                 , website = website
+        kw = dict( website = harness.client.website
                  , fs = ''
                  , raw = '[---]\n[---] text/plain via stdlib_template\n'
                  , default_media_type = ''
@@ -33,13 +27,10 @@ def get(harness):
 
 def test_unbound_simplate_is_instantiable(harness):
     website = harness.client.website
-    defaults = SimplateDefaults(website.default_renderers_by_media_type,
-                                website.renderer_factories,
-                                {'website':website})
     fs = ''
     raw = '[---]\n[---] text/plain via stdlib_template\n'
     media_type = ''
-    actual = SimplateWrapper(defaults, website, fs, raw, media_type).__class__
+    actual = SimplateWrapper(website, fs, raw, media_type).__class__
     assert actual is SimplateWrapper
 
 
