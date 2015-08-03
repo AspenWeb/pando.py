@@ -25,11 +25,11 @@ import stat
 import sys
 import traceback
 
+from .. import Response
 from ..backcompat import StringIO
 from ..exceptions import LoadError
-from ..simplates import SimplateDefaults, Simplate
+from ..simplates import SimplateDefaults, Simplate, SimplateException
 from .static_resource import StaticResource
-
 
 # Cache helpers
 # =============
@@ -97,6 +97,45 @@ def decode_raw(raw):
     return fulltext.decode(encoding or b'ascii')
 
 
+
+class SimplateWrapper(Simplate):
+
+    def respond(self, state):
+        try:
+            return super(SimplateWrapper, self).respond(state)
+        except SimplateException as e:
+            # find an Accept header
+            dispatch_result = state['dispatch_result']
+            accept = dispatch_result.extra.get('accept', None)
+            if accept is not None:      # indirect negotiation
+                raise Response(404)
+            else:                       # direct negotiation
+                accept = state.get('accept_header')
+                msg = "The following media types are available: %s."
+                msg %= ', '.join(e.available_types)
+                raise Response(406, msg.encode('US-ASCII'))
+
+
+    def get_response(self, state, context):
+        """raise if not a valid or 406; return those
+        """
+        try:
+            return super(SimplateWrapper, self).get_response(state, context)
+        except SimplateException as e:
+            # find an Accept header
+            dispatch_result = state['dispatch_result']
+            accept = dispatch_result.extra.get('accept', None)
+            if accept is not None:      # indirect negotiation
+                raise Response(404)
+            else:                       # direct negotiation
+                accept = state.get('accept_header')
+                msg = "The following media types are available: %s."
+                msg %= ', '.join(e.available_types)
+                raise Response(406, msg.encode('US-ASCII'))
+
+
+
+
 # Core loaders
 # ============
 
@@ -135,7 +174,7 @@ def load(website, fspath, mtime):
         # Simplate
         defaults = SimplateDefaults(website.default_renderers_by_media_type,
                                     website.renderer_factories)
-        return Simplate(defaults, website, fspath, raw, media_type)
+        return SimplateWrapper(defaults, website, fspath, raw, media_type)
     else:
         # static resource
         return StaticResource(website, raw, media_type)

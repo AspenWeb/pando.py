@@ -11,7 +11,8 @@ import re
 import sys
 
 import mimeparse
-from .. import Response, log
+
+from .. import log
 from .pagination import split_and_escape, parse_specline
 
 renderer_re = re.compile(r'[a-z0-9.-_]+$')
@@ -27,6 +28,11 @@ def _ordinal(n):
     if 0 <= n < len(ords):
         return ords[n]
     return str(n)
+
+
+class SimplateException(Exception):
+    def __init__(self, available_types):
+        self.available_types = available_types
 
 
 class SimplateDefaults(object):
@@ -69,6 +75,40 @@ class Simplate(object):
             spt_context = dict([ (k, spt_context[k]) for k in spt_context['__all__'] ])
 
         return self.get_response(state, spt_context)
+
+
+    def get_response(self, state, spt_context):
+        """Given two context dicts, return a response object.
+        """
+
+        accept = state['dispatch_result'].extra.get('accept')
+        if accept is None:
+            accept = state.get('accept_header')
+
+        # negotiate or punt
+        render, media_type = self.pages[2]  # default to first content page
+        if accept is not None:
+            try:
+                media_type = mimeparse.best_match(self.available_types, accept)
+            except:
+                # exception means don't override the defaults
+                log( "Problem with mimeparse.best_match(%r, %r): %r "
+                   % (self.available_types, accept, sys.exc_info())
+                    )
+            else:
+                if media_type == '':    # breakdown in negotiations
+                    raise SimplateException(self.available_types)
+                render = self.renderers[media_type] # KeyError is a bug
+
+        body = render(spt_context)
+        response = state['response']
+        response.body = body
+        if 'Content-Type' not in response.headers:
+            if media_type.startswith('text/') and response.charset is not None:
+                media_type += '; charset=' + response.charset
+            response.headers['Content-Type'] = media_type
+
+        return response
 
 
     def parse_into_pages(self, raw):
@@ -146,49 +186,6 @@ class Simplate(object):
         self.available_types.append(media_type)
 
         return (renderer, media_type)  # back to parent class
-
-
-    def get_response(self, state, spt_context):
-        """Given two context dicts, return a response object.
-        """
-        dispatch_result = state['dispatch_result']
-
-        # find an Accept header
-        accept = dispatch_result.extra.get('accept', None)
-        if accept is not None:      # indirect negotiation
-            failure = Response(404)
-        else:                       # direct negotiation
-            accept = state.get('accept_header')
-            msg = "The following media types are available: %s."
-            msg %= ', '.join(self.available_types)
-            failure = Response(406, msg.encode('US-ASCII'))
-
-        # negotiate or punt
-        render, media_type = self.pages[2]  # default to first content page
-        if accept is not None:
-            try:
-                media_type = mimeparse.best_match(self.available_types, accept)
-            except:
-                # exception means don't override the defaults
-                log( "Problem with mimeparse.best_match(%r, %r): %r "
-                   % (self.available_types, accept, sys.exc_info())
-                    )
-            else:
-                if media_type == '':    # breakdown in negotiations
-                    raise failure
-                del failure
-                render = self.renderers[media_type] # KeyError is a bug
-
-        body = render(spt_context)
-        response = state['response']
-        response.body = body
-        if 'Content-Type' not in response.headers:
-            if media_type.startswith('text/') and response.charset is not None:
-                media_type += '; charset=' + response.charset
-            response.headers['Content-Type'] = media_type
-
-        return response
-
 
     def _parse_specline(self, specline):
         """Given a bytestring, return a two-tuple.
