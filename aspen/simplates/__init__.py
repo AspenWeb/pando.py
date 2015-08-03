@@ -36,22 +36,30 @@ class SimplateException(Exception):
 
 
 class SimplateDefaults(object):
-    def __init__(self, renderers_by_media_type, renderer_factories):
+    def __init__(self, renderers_by_media_type, renderer_factories, initial_context):
         """
         renderers_by_media_type - dict[str(media_type_name)] -> str(renderer_name)
         renderer_factories - dict[str(renderer_name)] -> func(renderer_factory)
         """
         self.renderers_by_media_type = renderers_by_media_type
         self.renderer_factories = renderer_factories
+        self.initial_context = initial_context
 
 
 class Simplate(object):
     """A simplate is a dynamic resource with multiple syntaxes in one file.
     """
 
-    def __init__(self, defaults, website, fs, raw, default_media_type):
+    def __init__(self, defaults, fs, raw, default_media_type):
+        """Instantiate a simplate.
+
+        defaults - a SimplateDefaults object
+        fs - path to this simplate
+        raw - raw content of this simplate
+        default_media_type - the default content_type of this simplate
+        """
+
         self.defaults = defaults
-        self.website = website
         self.fs = fs
         self.raw = raw
         self.default_media_type = default_media_type
@@ -128,10 +136,12 @@ class Simplate(object):
     def compile_pages(self, pages):
         """Given a list of pages, replace the pages with objects.
 
-        All dynamic resources compile the first two pages the same way. It's
-        the third and following pages that differ, so we require subclasses to
-        supply a method for that: compile_page.
-
+        Page 0 is the 'run once' page - it is executed and the resulting
+            context stored in self.pages[0]
+        Page 1 is the 'run every' page - it is compiled for easier execution
+            later, and stored in self.pages[1]
+        Subsequent pages are templates, so each one's content_type and
+            respective renderer are stored as a tuple in self.pages[n]
         """
 
         # Exec the first page and compile the second.
@@ -141,7 +151,7 @@ class Simplate(object):
 
         context = dict()
         context['__file__'] = self.fs
-        context['website'] = self.website
+        context.update(self.defaults.initial_context)
 
         one = compile(one.padded_content, self.fs, 'exec')
         exec one in context    # mutate context
