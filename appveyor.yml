@@ -9,11 +9,7 @@ environment:
       PYTHON_ARCH: "64"
 
 install:
-  - ECHO "Filesystem root:"
-  - ps: "ls \"C:/\""
-
-  - ECHO "Installed SDKs:"
-  - ps: "ls \"C:/Program Files/Microsoft SDKs/Windows\""
+  - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
 
   # Check that we have the expected version and architecture for Python
   - "python --version"
@@ -21,10 +17,12 @@ install:
 
   # Install the build dependencies of the project.
   - "python setup.py -q install"
-  - "pip install --use-mirrors simplejson coverage"
 
 build: false  # Not a C# project, build stuff at the test step instead.
 
 test_script:
+
+  - "SET ASPEN_DEBUG=1"
+
   # Build the compiled extension and run the project tests
   - "python build.py analyse"
