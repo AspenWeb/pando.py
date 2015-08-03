@@ -174,7 +174,7 @@ def dispatch_abstract(listnodes, is_leaf, traverse, find_index, noext_matched,
                     and node_ext:
                 # node has an extension
                 debug(lambda: "...found indirect spt")
-                # indirect match
+                # indirect match - foo.spt is answering to foo.html
                 noext_matched(node)
                 found_n = node_noext + ".spt"
 
