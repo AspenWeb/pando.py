@@ -6,7 +6,8 @@ from __future__ import unicode_literals
 from pytest import raises, yield_fixture
 
 from aspen import resources, Response
-from aspen.simplates import Simplate, SimplateDefaults
+from aspen.resources import SimplateWrapper
+from aspen.simplates import SimplateDefaults
 from aspen.simplates.pagination import Page
 from aspen.simplates.renderers.stdlib_template import Factory as TemplateFactory
 from aspen.simplates.renderers.stdlib_percent import Factory as PercentFactory
@@ -17,7 +18,8 @@ def get(harness):
     def get(**_kw):
         website = harness.client.website
         defaults = SimplateDefaults(website.default_renderers_by_media_type,
-                                    website.renderer_factories)
+                                    website.renderer_factories,
+                                    {'website':website})
         kw = dict( defaults = defaults
                  , website = website
                  , fs = ''
@@ -25,19 +27,20 @@ def get(harness):
                  , default_media_type = ''
                   )
         kw.update(_kw)
-        return Simplate(**kw)
+        return SimplateWrapper(**kw)
     yield get
 
 
 def test_unbound_simplate_is_instantiable(harness):
     website = harness.client.website
     defaults = SimplateDefaults(website.default_renderers_by_media_type,
-                                website.renderer_factories)
+                                website.renderer_factories,
+                                {'website':website})
     fs = ''
     raw = '[---]\n[---] text/plain via stdlib_template\n'
     media_type = ''
-    actual = Simplate(defaults, website, fs, raw, media_type).__class__
-    assert actual is Simplate
+    actual = SimplateWrapper(defaults, website, fs, raw, media_type).__class__
+    assert actual is SimplateWrapper
 
 
 # compile_page

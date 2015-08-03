@@ -100,6 +100,10 @@ def decode_raw(raw):
 
 class SimplateWrapper(Simplate):
 
+    def __init__(self, defaults, website, fs, raw, default_media_type):
+        self.website = website
+        super(SimplateWrapper, self).__init__(defaults, fs, raw, default_media_type)
+
     def respond(self, state):
         accept = dispatch_accept = state['dispatch_result'].extra.get('accept')
         if accept is None:
@@ -159,8 +163,10 @@ def load(website, fspath, mtime):
 
     if is_spt:
         # Simplate
+        initial_context = { 'website': website }
         defaults = SimplateDefaults(website.default_renderers_by_media_type,
-                                    website.renderer_factories)
+                                    website.renderer_factories,
+                                    initial_context)
         return SimplateWrapper(defaults, website, fspath, raw, media_type)
     else:
         # static resource
