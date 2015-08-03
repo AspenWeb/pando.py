@@ -38,12 +38,15 @@ class SimplateException(Exception):
 class SimplateDefaults(object):
     def __init__(self, renderers_by_media_type, renderer_factories, initial_context):
         """
-        renderers_by_media_type - dict[str(media_type_name)] -> str(renderer_name)
-        renderer_factories - dict[str(renderer_name)] -> func(renderer_factory)
+        Things that are usually the same across all simplates:
+
+        renderers_by_media_type - dict[media_type_name] -> renderer_name
+        renderer_factories - dict[renderer_name] -> renderer_factory
+        initial_context - initial context passed into the 'run-once' page
         """
-        self.renderers_by_media_type = renderers_by_media_type
-        self.renderer_factories = renderer_factories
-        self.initial_context = initial_context
+        self.renderers_by_media_type = renderers_by_media_type # type: Dict[str, str]
+        self.renderer_factories = renderer_factories           # type: Dict[str, Callable]
+        self.initial_context = initial_context                 # type: Dict[str, object]
 
 
 class Simplate(object):
@@ -59,10 +62,10 @@ class Simplate(object):
         default_media_type - the default content_type of this simplate
         """
 
-        self.defaults = defaults
-        self.fs = fs
+        self.defaults = defaults                      # type: SimplateDefaults
+        self.fs = fs                                  # type: str
         self.raw = raw
-        self.default_media_type = default_media_type
+        self.default_media_type = default_media_type  # type: str
 
         self.renderers = {}         # mapping of media type to render function
         self.available_types = []   # ordered sequence of media types
@@ -71,6 +74,15 @@ class Simplate(object):
 
 
     def respond(self, accept, state):
+        """
+        get the response to a request for this page
+
+        accept - an HTTP Accept: header asking for this page
+        state - a dict of execution context values you wish to supply
+                * Note that these are overriden by values that are carried
+                over from the execution of the zeroth page
+        """
+
         # copy the state dict to avoid accidentally mutating it
         spt_context = dict(state)
         # override it with values from the first page
@@ -102,7 +114,7 @@ class Simplate(object):
 
 
     def parse_into_pages(self, raw):
-        """Given a bytestring and a boolean, return a list of pages.
+        """Given a bytestring that is the entire simplate, return a list of pages.
         """
 
         pages = list(split_and_escape(raw))
@@ -166,7 +178,7 @@ class Simplate(object):
 
 
     def compile_page(self, page):
-        """Given a bytestring, return a (renderer, media type) pair.
+        """Given a Page, return a (renderer, media type) pair.
         """
         make_renderer, media_type = self._parse_specline(page.header)
         renderer = make_renderer(self.fs, page.content, media_type, page.offset)
@@ -186,8 +198,15 @@ class Simplate(object):
 
             media_type via renderer
 
-        The renderer is optional. It will be computed based on media type if
-        absent. The return two-tuple contains a render function and a media
+        Both are optional.
+
+        The media_type will default to the default_media_type supplied to
+        this simplate at instantiation time.  (Possibly determined by a
+        file extension or other metadata)
+
+        The renderer will be computed based on media type if absent.
+
+        The return two-tuple contains a render function and a media
         type (as unicode). SyntaxError is raised if there aren't one or two
         parts or if either of the parts is malformed. If only one part is
         passed in it's interpreted as a media type.
