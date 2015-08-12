@@ -47,7 +47,7 @@ from .. import dispatcher, resources, body_parsers, typecasting
 from ..http.request import Request
 from ..http.response import Response
 from ..dispatcher import DispatchResult, DispatchStatus
-from ..simplates import SimplateException
+
 
 def parse_environ_into_request(environ):
     return {'request': Request.from_wsgi(environ)}
