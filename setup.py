@@ -14,18 +14,15 @@ classifiers = [ 'Development Status :: 4 - Beta'
               , 'Intended Audience :: Developers'
               , 'License :: OSI Approved :: MIT License'
               , 'Natural Language :: English'
-              , 'Operating System :: MacOS :: MacOS X'
-              , 'Operating System :: Microsoft :: Windows'
-              , 'Operating System :: POSIX'
+              , 'Operating System :: OS Independent'
               , 'Programming Language :: Python :: 2.6'
               , 'Programming Language :: Python :: 2.7'
               , 'Programming Language :: Python :: Implementation :: CPython'
-              , 'Programming Language :: Python :: Implementation :: Jython'
               , 'Topic :: Internet :: WWW/HTTP :: WSGI :: Application'
                ]
 
-setup( author = 'Chad Whitacre'
-     , author_email = 'chad@zetaweb.com'
+setup( author = 'Gratipay, LLC'
+     , author_email = 'support@gratipay.com'
      , classifiers = classifiers
      , description = ('Aspen is a Python web framework. '
                       'Simplates are the main attraction.')
