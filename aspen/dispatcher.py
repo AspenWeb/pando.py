@@ -11,6 +11,7 @@ from __future__ import unicode_literals
 
 import mimetypes
 import os
+import posixpath
 
 from . import Response
 from .backcompat import namedtuple
@@ -120,7 +121,7 @@ def dispatch_abstract(listnodes, is_leaf, traverse, find_index, noext_matched,
         wild_nonleaf_ns = [ n for n in maybe_wild_nodes if not is_leaf_node(n) ]
 
         # store all the fallback possibilities
-        remaining = reduce(traverse, nodepath[depth:])
+        remaining = reduce(posixpath.join, nodepath[depth:])
         for n in wild_leaf_ns:
             wildwildvals = wildvals.copy()
             k, v = strip_matching_ext(n[1:-4], remaining)
@@ -332,7 +333,7 @@ def dispatch(indices, media_type_default, pathparts, uripath, querystring, start
             raise Response(404)
 
     if result.status == DispatchStatus.okay:
-        if result.match.endswith('/'):
+        if result.match.endswith(os.path.sep):
             if directory_default:                                                 # autoindex
                 result = DispatchResult( result.status
                                        , directory_default

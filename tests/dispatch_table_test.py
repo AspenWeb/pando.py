@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 import os.path
+import posixpath
 import pytest
 from aspen.testing.harness import Harness
 
@@ -98,6 +99,8 @@ def test_all_table_entries(harness, files, request_uri, expected):
                               , raise_immediately=False
                                )
         path = format_result(**state)
+        if os.sep != posixpath.sep:
+            path = path.replace(os.sep, posixpath.sep)
         path = path[len(harness.fs.www.root)+1:]
         if path:
             result += " " + path
