@@ -7,7 +7,7 @@ from pytest import raises
 
 import aspen.utils # this happens to install the 'repr' error strategy
 from aspen.utils import ascii_dammit, unicode_dammit, to_age, to_rfc822, utcnow
-from datetime import datetime
+from datetime import datetime, timedelta
 
 GARBAGE = b"\xef\xf9"
 
@@ -42,14 +42,20 @@ def test_ascii_dammit_works():
     assert actual == r"comet: \xe2\x98\x84"
 
 def test_to_age_barely_works():
-    actual = to_age(utcnow())
+    now = utcnow()
+    actual = to_age(now, dt_now=now)
+    assert actual == "in just a moment"
+
+    wait = timedelta(seconds=0.5)
+    actual = to_age(now - wait, dt_now=now)
     assert actual == "just a moment ago"
 
 def test_to_age_fails():
     raises(ValueError, to_age, datetime.utcnow())
 
 def test_to_age_formatting_works():
-    actual = to_age(utcnow(), fmt_past="Cheese, for %(age)s!")
+    now = utcnow()
+    actual = to_age(now, fmt_future="Cheese, for %(age)s!", dt_now=now)
     assert actual == "Cheese, for just a moment!"
 
 def test_to_rfc822():

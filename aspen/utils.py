@@ -96,7 +96,7 @@ def utcnow():
     return datetime.datetime.now(tz=utc)
 
 
-def to_age(dt, fmt_past=None, fmt_future=None):
+def to_age(dt, fmt_past=None, fmt_future=None, dt_now=None):
     """Given a timezone-aware datetime object, return an age string.
 
         range                                       denomination    example
@@ -115,6 +115,8 @@ def to_age(dt, fmt_past=None, fmt_future=None):
     Times in the future are indicated by "in {age}" and times already passed
     are indicated by "{age} ago". You can pass in custom format strings as
     fmt_past and fmt_future.
+
+    You may also pass in a specific value for 'now', that dt is in relation to.
 
     """
     if dt.tzinfo is None:
@@ -136,7 +138,7 @@ def to_age(dt, fmt_past=None, fmt_future=None):
     # Get the raw age in seconds.
     # ===========================
 
-    now = datetime.datetime.now(dt.tzinfo)
+    now = dt_now or datetime.datetime.now(dt.tzinfo)
     age = total_seconds(abs(now - dt))
 
 
