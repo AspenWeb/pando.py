@@ -4,6 +4,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import re
+import os
 import sys
 from StringIO import StringIO
 
@@ -78,7 +79,7 @@ def test_lror_logs_result_of_request(harness):
                     , response=response
                      )
     assert actual == [
-        '200 OK                               /                        ./index.html.spt'
+        '200 OK                               /                        .%sindex.html.spt' % os.sep
     ]
 
 def test_lror_logs_result_of_request_and_dispatch_result_are_none(harness):
@@ -98,5 +99,5 @@ def test_lror_logs_result_of_request_when_response_is_none(harness):
                     , dispatch_result=dispatch_result
                      )
     assert actual == [
-        '(no response available)              /                        ./index.html.spt'
+        '(no response available)              /                        .%sindex.html.spt' % os.sep
     ]
