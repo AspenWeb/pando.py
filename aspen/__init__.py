@@ -8,7 +8,7 @@ Installation
 
     $ pip install aspen
 
-We `test <https://travis-ci.org/gittip/aspen-python>`_ against Python 2.6 and 2.7.
+We `test <https://travis-ci.org/gittip/aspen-python>`_ against Python 2.7.
 
 :py:mod:`aspen` is in `MIT-licensed`_.
 
