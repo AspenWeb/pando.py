@@ -1,8 +1,11 @@
+# -*- coding: utf-8 -*-
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from aspen.simplates import _decode
+from pytest import raises
 
 
 def test_default_media_type_works(harness):
@@ -84,3 +87,96 @@ foo = foo()
 [---] text/html via stdlib_format
 {foo}""")
     assert response.body == 'baz'
+
+
+# _decode
+
+def test_decode_can_take_encoding_from_first_line():
+    actual = _decode(b"""\
+    # -*- coding: utf8 -*-
+    text = u'א'
+    """)
+    expected = """\
+    # encoding set to utf8
+    text = u'א'
+    """
+    assert actual == expected
+
+def test_decode_can_take_encoding_from_second_line():
+    actual = _decode(b"""\
+    #!/blah/blah
+    # -*- coding: utf8 -*-
+    text = u'א'
+    """)
+    expected = """\
+    #!/blah/blah
+    # encoding set to utf8
+    text = u'א'
+    """
+    assert actual == expected
+
+def test_decode_prefers_first_line_to_second():
+    actual = _decode(b"""\
+    # -*- coding: utf8 -*-
+    # -*- coding: ascii -*-
+    text = u'א'
+    """)
+    expected = """\
+    # encoding set to utf8
+    # encoding NOT set to ascii
+    text = u'א'
+    """
+    assert actual == expected
+
+def test_decode_ignores_third_line():
+    actual = _decode(b"""\
+    # -*- coding: utf8 -*-
+    # -*- coding: ascii -*-
+    # -*- coding: cornnuts -*-
+    text = u'א'
+    """)
+    expected = """\
+    # encoding set to utf8
+    # encoding NOT set to ascii
+    # -*- coding: cornnuts -*-
+    text = u'א'
+    """
+    assert actual == expected
+
+def test_decode_can_take_encoding_from_various_line_formats():
+    formats = [ b'-*- coding: utf8 -*-'
+              , b'-*- encoding: utf8 -*-'
+              , b'coding: utf8'
+              , b'  coding: utf8'
+              , b'\tencoding: utf8'
+              , b'\t flubcoding=utf8'
+               ]
+    for fmt in formats:
+        def test():
+            actual = _decode(b"""\
+            # {0}
+            text = u'א'
+            """.format(fmt))
+            expected = """\
+            # encoding set to utf8
+            text = u'א'
+            """
+            assert actual == expected
+        yield test
+
+def test_decode_cant_take_encoding_from_bad_line_formats():
+    formats = [ b'-*- coding : utf8 -*-'
+              , b'foo = 0 -*- encoding: utf8 -*-'
+              , b'  coding : utf8'
+              , b'encoding : utf8'
+              , b'  flubcoding =utf8'
+              , b'coding: '
+               ]
+    for fmt in formats:
+        def test():
+            raw = b"""\
+            # {0}
+            text = u'א'
+            """.format(fmt)
+            raises(UnicodeDecodeError, _decode, raw)
+        yield test

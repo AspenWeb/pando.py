@@ -13,6 +13,7 @@ import sys
 import mimeparse
 
 from .. import log
+from ..backcompat import StringIO
 from .pagination import split_and_escape, parse_specline
 
 renderer_re = re.compile(r'[a-z0-9.-_]+$')
@@ -28,6 +29,52 @@ def _ordinal(n):
     if 0 <= n < len(ords):
         return ords[n]
     return str(n)
+
+
+def _decode(raw):
+    """As per PEP 263, decode raw data according to the encoding specified in
+       the first couple lines of the data, or in ASCII.  Non-ASCII data without
+       an encoding specified will cause UnicodeDecodeError to be raised.
+    """
+
+    decl_re = re.compile(r'^[ \t\f]*#.*coding[:=][ \t]*([-\w.]+)')
+
+    def get_declaration(line):
+        match = decl_re.match(line)
+        if match:
+            return match.group(1)
+        return None
+
+    encoding = None
+    fulltext = b''
+    sio = StringIO(raw)
+    for line in (sio.readline(), sio.readline()):
+        potential = get_declaration(line)
+        if potential is not None:
+            if encoding is None:
+
+                # If both lines match, use the first. This matches Python's
+                # observed behavior.
+
+                encoding = potential
+                munged = b'# encoding set to {0}\n'.format(encoding)
+
+            else:
+
+                # But always munge any encoding line. We can't simply remove
+                # the line, because we want to preserve the line numbering.
+                # However, later on when we ask Python to exec a unicode
+                # object, we'll get a SyntaxError if we have a well-formed
+                # `coding: # ` line in it.
+
+                munged = b'# encoding NOT set to {0}\n'.format(potential)
+
+            line = line.split(b'#')[0] + munged
+
+        fulltext += line
+    fulltext += sio.read()
+    sio.close()
+    return fulltext.decode(encoding or b'ascii')
 
 
 class SimplateException(Exception):
@@ -58,18 +105,20 @@ class Simplate(object):
 
         defaults - a SimplateDefaults object
         fs - path to this simplate
-        raw - raw content of this simplate
+        raw - raw content of this simplate as bytes
+        decoded - content of this simplate as unicode
         default_media_type - the default content_type of this simplate
         """
 
         self.defaults = defaults                      # type: SimplateDefaults
         self.fs = fs                                  # type: str
-        self.raw = raw
+        self.raw = raw                                # type: str
+        self.decoded = _decode(raw)                   # type: unicode
         self.default_media_type = default_media_type  # type: str
 
         self.renderers = {}         # mapping of media type to render function
         self.available_types = []   # ordered sequence of media types
-        pages = self.parse_into_pages(self.raw)
+        pages = self.parse_into_pages(self.decoded)
         self.pages = self.compile_pages(pages)
 
 
@@ -113,11 +162,11 @@ class Simplate(object):
         return media_type, body
 
 
-    def parse_into_pages(self, raw):
+    def parse_into_pages(self, decoded):
         """Given a bytestring that is the entire simplate, return a list of pages.
         """
 
-        pages = list(split_and_escape(raw))
+        pages = list(split_and_escape(decoded))
         npages = len(pages)
 
         # Check for too few pages.

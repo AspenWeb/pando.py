@@ -14,12 +14,10 @@ from __future__ import unicode_literals
 
 import mimetypes
 import os
-import re
 import stat
 import sys
 import traceback
 
-from .backcompat import StringIO
 from .exceptions import LoadError
 from .http.resource import Dynamic, Static
 
@@ -102,8 +100,6 @@ def load(website, fspath, mtime):
 
     with open(fspath, 'rb') as fh:
         raw = fh.read()
-    if is_spt:
-        raw = decode_raw(raw)
 
     # Compute a media type.
     # =====================
@@ -121,49 +117,3 @@ def load(website, fspath, mtime):
 
     Class = Dynamic if is_spt else Static
     return Class(website, fspath, raw, media_type)
-
-
-def decode_raw(raw):
-    """As per PEP 263, decode raw data according to the encoding specified in
-       the first couple lines of the data, or in ASCII.  Non-ASCII data without
-       an encoding specified will cause UnicodeDecodeError to be raised.
-    """
-
-    decl_re = re.compile(r'^[ \t\f]*#.*coding[:=][ \t]*([-\w.]+)')
-
-    def get_declaration(line):
-        match = decl_re.match(line)
-        if match:
-            return match.group(1)
-        return None
-
-    encoding = None
-    fulltext = b''
-    sio = StringIO(raw)
-    for line in (sio.readline(), sio.readline()):
-        potential = get_declaration(line)
-        if potential is not None:
-            if encoding is None:
-
-                # If both lines match, use the first. This matches Python's
-                # observed behavior.
-
-                encoding = potential
-                munged = b'# encoding set to {0}\n'.format(encoding)
-
-            else:
-
-                # But always munge any encoding line. We can't simply remove
-                # the line, because we want to preserve the line numbering.
-                # However, later on when we ask Python to exec a unicode
-                # object, we'll get a SyntaxError if we have a well-formed
-                # `coding: # ` line in it.
-
-                munged = b'# encoding NOT set to {0}\n'.format(potential)
-
-            line = line.split(b'#')[0] + munged
-
-        fulltext += line
-    fulltext += sio.read()
-    sio.close()
-    return fulltext.decode(encoding or b'ascii')
