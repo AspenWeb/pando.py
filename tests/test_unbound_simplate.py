@@ -6,10 +6,10 @@ from __future__ import unicode_literals
 from pytest import raises, yield_fixture
 
 from aspen import resources, Response
-from aspen.resources.pagination import Page
-from aspen.resources.simplate import Simplate
-from aspen.renderers.stdlib_template import Factory as TemplateFactory
-from aspen.renderers.stdlib_percent import Factory as PercentFactory
+from aspen.resources import SimplateWrapper
+from aspen.simplates.pagination import Page
+from aspen.simplates.renderers.stdlib_template import Factory as TemplateFactory
+from aspen.simplates.renderers.stdlib_percent import Factory as PercentFactory
 
 
 @yield_fixture
@@ -18,12 +18,10 @@ def get(harness):
         kw = dict( website = harness.client.website
                  , fs = ''
                  , raw = '[---]\n[---] text/plain via stdlib_template\n'
-                 , media_type = ''
-                 , is_bound=False
-                 , mtime = 0
+                 , default_media_type = ''
                   )
         kw.update(_kw)
-        return Simplate(**kw)
+        return SimplateWrapper(**kw)
     yield get
 
 
@@ -32,10 +30,8 @@ def test_unbound_simplate_is_instantiable(harness):
     fs = ''
     raw = '[---]\n[---] text/plain via stdlib_template\n'
     media_type = ''
-    is_bound= False
-    mtime = 0
-    actual = Simplate(website, fs, raw, media_type, is_bound, mtime).__class__
-    assert actual is Simplate
+    actual = SimplateWrapper(website, fs, raw, media_type).__class__
+    assert actual is SimplateWrapper
 
 
 # compile_page
@@ -57,44 +53,44 @@ def test_compile_page_compiles_page(get):
 # _parse_specline
 
 def test_parse_specline_parses_specline(get):
-    factory, media_type = get()._unbound_parse_specline('media/type via stdlib_template')
+    factory, media_type = get()._parse_specline('media/type via stdlib_template')
     actual = (factory.__class__, media_type)
     assert actual == (TemplateFactory, 'media/type')
 
 def test_parse_specline_doesnt_require_renderer(get):
-    factory, media_type = get()._unbound_parse_specline('media/type')
+    factory, media_type = get()._parse_specline('media/type')
     actual = (factory.__class__, media_type)
     assert actual == (PercentFactory, 'media/type')
 
 def test_parse_specline_requires_media_type(get):
-    raises(SyntaxError, get()._unbound_parse_specline, 'via stdlib_template')
+    raises(SyntaxError, get()._parse_specline, 'via stdlib_template')
 
 def test_parse_specline_raises_SyntaxError_if_renderer_is_malformed(get):
-    raises(SyntaxError, get()._unbound_parse_specline, 'stdlib_template media/type')
+    raises(SyntaxError, get()._parse_specline, 'stdlib_template media/type')
 
 def test_parse_specline_raises_SyntaxError_if_media_type_is_malformed(get):
-    raises(SyntaxError, get()._unbound_parse_specline, 'media-type via stdlib_template')
+    raises(SyntaxError, get()._parse_specline, 'media-type via stdlib_template')
 
 def test_parse_specline_cant_mistake_malformed_media_type_for_renderer(get):
-    raises(SyntaxError, get()._unbound_parse_specline, 'media-type')
+    raises(SyntaxError, get()._parse_specline, 'media-type')
 
 def test_parse_specline_cant_mistake_malformed_renderer_for_media_type(get):
-    raises(SyntaxError, get()._unbound_parse_specline, 'stdlib_template')
+    raises(SyntaxError, get()._parse_specline, 'stdlib_template')
 
 def test_parse_specline_enforces_order(get):
-    raises(SyntaxError, get()._unbound_parse_specline, 'stdlib_template via media/type')
+    raises(SyntaxError, get()._parse_specline, 'stdlib_template via media/type')
 
 def test_parse_specline_obeys_default_by_media_type(get):
     resource = get()
     resource.website.default_renderers_by_media_type['media/type'] = 'glubber'
-    err = raises(ValueError, resource._unbound_parse_specline, 'media/type').value
+    err = raises(ValueError, resource._parse_specline, 'media/type').value
     msg = err.args[0]
     assert msg.startswith("Unknown renderer for media/type: glubber."), msg
 
 def test_parse_specline_obeys_default_by_media_type_default(get):
     resource = get()
     resource.website.default_renderers_by_media_type.default_factory = lambda: 'glubber'
-    err = raises(ValueError, resource._unbound_parse_specline, 'media/type').value
+    err = raises(ValueError, resource._parse_specline, 'media/type').value
     msg = err.args[0]
     assert msg.startswith("Unknown renderer for media/type: glubber.")
 
@@ -117,11 +113,12 @@ def _get_state(harness, *a, **kw):
     kw['want'] = 'state'
     return harness.simple(*a, **kw)
 
+
 def _get_response(state):
     resource = resources.load(state['website'], state['dispatch_result'].match, 0)
     state['resource'] = resource
     state['response'] = state.get('response', Response())
-    return resource.get_response(state, {})
+    return resource.respond(state)
 
 UNBOUND_SIMPLATE = """\
 [---]
@@ -212,7 +209,7 @@ def test_get_response_406_gives_list_of_acceptable_types(harness):
     assert actual == expected
 
 
-from aspen.renderers import Renderer, Factory
+from aspen.simplates.renderers import Renderer, Factory
 
 class Glubber(Renderer):
     def render_content(self, context):

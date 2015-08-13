@@ -13,7 +13,6 @@ import errno
 import mimetypes
 import os
 import sys
-import pkg_resources
 from collections import defaultdict
 
 import aspen
@@ -23,7 +22,7 @@ from ..exceptions import ConfigurationError
 from ..utils import ascii_dammit
 from ..typecasting import defaults as default_typecasters
 import aspen.body_parsers
-
+from ..simplates.renderers import factories
 
 default_indices = lambda: ['index.html', 'index.json', 'index',
                            'index.html.spt', 'index.json.spt', 'index.spt']
@@ -222,23 +221,7 @@ class Configurable(object):
             }
 
         # load renderers
-        self.renderer_factories = {}
-        for name in aspen.BUILTIN_RENDERERS:
-            # Pre-populate renderers so we can report on ImportErrors early
-            try:
-                capture = {}
-                python_syntax = 'from aspen.renderers.%s import Factory'
-                exec python_syntax % name in capture
-                make_renderer = capture['Factory'](self)
-            except ImportError, err:
-                make_renderer = err
-                err.info = sys.exc_info()
-            self.renderer_factories[name] = make_renderer
-
-        for entrypoint in pkg_resources.iter_entry_points(group='aspen.renderers'):
-            render_module = entrypoint.load()
-            self.renderer_factories[entrypoint.name] = render_module.Factory(self)
-            aspen.log_dammit("Found plugin for renderer '%s'" % entrypoint.name)
+        self.renderer_factories = factories(self)
 
         self.default_renderers_by_media_type = defaultdict(lambda: self.renderer_default)
         self.default_renderers_by_media_type[self.media_type_json] = 'json_dump'
@@ -259,12 +242,10 @@ class Configurable(object):
         aspen.log_dammit("Renderers (*ed are unavailable, CAPS is default):")
         width = max(map(len, self.renderer_factories))
         for name, factory in self.renderer_factories.items():
-            star = " "
+            star, error = " ", ""
             if isinstance(factory, ImportError):
                 star = "*"
                 error = "ImportError: " + factory.args[0]
-            else:
-                error = ""
             if name == self.renderer_default:
                 name = name.upper()
             name = name.ljust(width + 2)

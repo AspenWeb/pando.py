@@ -25,11 +25,11 @@ import stat
 import sys
 import traceback
 
+from .. import Response
 from ..backcompat import StringIO
 from ..exceptions import LoadError
-from .simplate import Simplate
+from ..simplates import SimplateDefaults, Simplate, SimplateException
 from .static_resource import StaticResource
-
 
 # Cache helpers
 # =============
@@ -97,6 +97,52 @@ def decode_raw(raw):
     return fulltext.decode(encoding or b'ascii')
 
 
+
+class SimplateWrapper(Simplate):
+    """Wrap the Simplate class so it's a bit easier to use.
+
+       Most defaults are in website, so make SimplateDefaults from that.
+
+       Make .website available as it has been historically.
+
+       Figure out which accept header to use.
+
+       Append a charset to text Content-Types if one is known.
+
+
+    """
+
+    def __init__(self, website, fs, raw, default_media_type):
+        self.website = website
+        initial_context = { 'website': website }
+        defaults = SimplateDefaults(website.default_renderers_by_media_type,
+                                    website.renderer_factories,
+                                    initial_context)
+        super(SimplateWrapper, self).__init__(defaults, fs, raw, default_media_type)
+
+    def respond(self, state):
+        accept = dispatch_accept = state['dispatch_result'].extra.get('accept')
+        if accept is None:
+            accept = state.get('accept_header')
+        try:
+            content_type, body = super(SimplateWrapper, self).respond(accept, state)
+            response = state['response']
+            response.body = body
+            if 'Content-Type' not in response.headers:
+                if content_type.startswith('text/') and response.charset is not None:
+                    content_type += '; charset=' + response.charset
+                response.headers['Content-Type'] = content_type
+            return response
+        except SimplateException as e:
+            # find an Accept header
+            if dispatch_accept is not None:  # indirect negotiation
+                raise Response(404)
+            else:                            # direct negotiation
+                msg = "The following media types are available: %s."
+                msg %= ', '.join(e.available_types)
+                raise Response(406, msg.encode('US-ASCII'))
+
+
 # Core loaders
 # ============
 
@@ -125,17 +171,15 @@ def load(website, fspath, mtime):
     if is_spt:
         guess_with = guess_with[:-4]
     fs_media_type = mimetypes.guess_type(guess_with, strict=False)[0]
-    is_bound = fs_media_type is not None  # bound to a media type via file ext
-    media_type = fs_media_type if is_bound else website.media_type_default
-
+    media_type = fs_media_type if fs_media_type else website.media_type_default
 
     # Compute and instantiate a class.
     # ================================
     # An instantiated resource is compiled as far as we can take it.
 
-    Class = Simplate if is_spt else StaticResource
-    resource = Class(website, fspath, raw, media_type, is_bound, mtime)
-    return resource
+    Class = SimplateWrapper if is_spt else StaticResource
+
+    return Class(website, fspath, raw, media_type)
 
 
 def get(website, fspath):

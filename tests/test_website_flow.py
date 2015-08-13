@@ -9,7 +9,7 @@ from aspen.http.response import Response
 
 
 def test_website_can_respond(harness):
-    harness.fs.www.mk(('index.html.spt', 'Greetings, program!'))
+    harness.fs.www.mk(('index.html.spt', '[---]\n[---]\nGreetings, program!'))
     assert harness.client.GET().body == 'Greetings, program!'
 
 
@@ -19,7 +19,7 @@ def test_404_comes_out_404(harness):
 
 
 def test_user_can_influence_request_context_via_algorithm_state(harness):
-    harness.fs.www.mk(('index.html.spt', '%(foo)s'))
+    harness.fs.www.mk(('index.html.spt', '[---]\n[---]\n%(foo)s'))
     def add_foo_to_context(request):
         return {'foo': 'bar'}
     harness.client.website.algorithm.insert_after('parse_environ_into_request', add_foo_to_context)
