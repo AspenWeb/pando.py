@@ -116,17 +116,14 @@ def clean():
     autoclean()
     shell('find', '.', '-name', '*.pyc', '-delete')
     clean_env()
-    clean_smoke()
     clean_sphinx()
     clean_jenv()
     clean_test()
     clean_build()
 
 
-# Doc / Smoke
-# ===========
-
-smoke_dir = 'smoke-test'
+# Docs
+# ====
 
 
 def docserve():
@@ -135,18 +132,6 @@ def docserve():
     run(_virt('pip', envdir), 'install', 'aspen-tornado')
     run(_virt('pip', envdir), 'install', 'pygments')
     shell(_virt('python', envdir), '-m', 'aspen_io', silent=False)
-
-
-def smoke():
-    """run a simple aspen smoke test"""
-    run('mkdir', smoke_dir)
-    open(os.path.join(smoke_dir, "index.html"), "w").write("Greetings, program!")
-    run(_virt('python', _deps()), '-m', 'aspen', '-w', smoke_dir)
-
-
-def clean_smoke():
-    """remove smoke test artifacts"""
-    shell('rm', '-rf', smoke_dir)
 
 
 def _sphinx_cmd(packages, cmd):
