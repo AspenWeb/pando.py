@@ -34,7 +34,7 @@ setup( author = 'Gratipay, LLC'
      , version = version
      , zip_safe = False
      , package_data = {'aspen': ['www/*', 'configuration/mime.types']}
-     , install_requires = [ 'mimeparse==0.1.3'
+     , install_requires = [ 'python-mimeparse==0.1.4'
                           , 'first==2.0.1'
                           , 'algorithm>=1.0.0'
                           , 'filesystem_tree>=1.0.0'
