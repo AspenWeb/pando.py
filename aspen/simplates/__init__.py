@@ -73,26 +73,26 @@ class Simplate(object):
         self.pages = self.compile_pages(pages)
 
 
-    def respond(self, accept, state):
+    def respond(self, accept, context):
         """
         get the response to a request for this page
 
         accept - an HTTP Accept: header asking for this page
-        state - a dict of execution context values you wish to supply
-                * Note that these are overriden by values that are carried
-                over from the execution of the zeroth page
+        context - a dict of execution context values you wish to supply
+                  * Note that these are overriden by values that are carried
+                  over from the execution of the zeroth page
         """
 
         # copy the state dict to avoid accidentally mutating it
-        spt_context = dict(state)
+        context = dict(context)
         # override it with values from the first page
-        spt_context.update(self.pages[0])
+        context.update(self.pages[0])
         # use this as the context to execute the second page in
-        exec(self.pages[1], spt_context)
+        exec(self.pages[1], context)
 
-        if '__all__' in spt_context:
+        if '__all__' in context:
             # templates will only see variables named in __all__
-            spt_context = dict([ (k, spt_context[k]) for k in spt_context['__all__'] ])
+            context = dict([ (k, context[k]) for k in context['__all__'] ])
 
         # negotiate or punt
         render, media_type = self.pages[2]  # default to first content page
@@ -109,7 +109,7 @@ class Simplate(object):
                     raise SimplateException(self.available_types)
                 render = self.renderers[media_type] # KeyError is a bug
 
-        body = render(spt_context)
+        body = render(context)
         return media_type, body
 
 
