@@ -17,7 +17,7 @@ def get(harness):
     def get(**_kw):
         kw = dict( website = harness.client.website
                  , fs = ''
-                 , raw = '[---]\n[---] text/plain via stdlib_template\n'
+                 , raw = b'[---]\n[---] text/plain via stdlib_template\n'
                  , default_media_type = ''
                   )
         kw.update(_kw)
@@ -28,7 +28,7 @@ def get(harness):
 def test_dynamic_resource_is_instantiable(harness):
     website = harness.client.website
     fs = ''
-    raw = '[---]\n[---] text/plain via stdlib_template\n'
+    raw = b'[---]\n[---] text/plain via stdlib_template\n'
     media_type = ''
     actual = Dynamic(website, fs, raw, media_type).__class__
     assert actual is Dynamic
