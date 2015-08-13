@@ -11,7 +11,7 @@ from fabricate import main, run, shell, autoclean
 # without a network connection. They're kept in our repo in ./vendor.
 
 ASPEN_DEPS = [
-    'mimeparse>=0.1.3',
+    'python-mimeparse>=0.1.4',
     'first>=2.0.1',
     'algorithm>=1.0.0',
     'filesystem_tree>=1.0.1',
