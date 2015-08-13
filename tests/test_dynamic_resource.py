@@ -157,6 +157,12 @@ def test_respond_doesnt_reset_content_type_when_not_negotiating(harness):
     actual = _respond(state).headers['Content-Type']
     assert actual == "never/mind"
 
+def test_respond_is_happy_not_to_negotiate_with_defaults(harness):
+    harness.fs.www.mk(('index.spt', '''[---]\n[---]\nGreetings, program!\n'''))
+    state = _get_state(harness, filepath='index.spt', contents=SIMPLATE)
+    actual = _respond(state).body
+    assert actual == "Greetings, program!\n"
+
 def test_respond_negotiates(harness):
     harness.fs.www.mk(('index.spt', SIMPLATE))
     state = _get_state(harness, filepath='index.spt', contents=SIMPLATE)
