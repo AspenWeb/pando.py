@@ -123,6 +123,34 @@ class Simplate(object):
         self.pages = self.compile_pages(pages)
 
 
+    def best_match(self, accept, default=None):
+        """
+        get the media type provided by this simplate that best matches
+        the supplied Accept: header, or the default type (that of the
+        first template page) if no accept header is provided (is None),
+        or raise SimplateException if no matches are available
+        to a valid Accept: header.
+
+        This is what the simplate will call internally to determine
+        which template to use.
+        """
+        _, media_type = self.pages[2]  # default to first content page
+        if accept is None:
+            # No accept header provided, use the default
+            return media_type
+        try:
+            media_type = mimeparse.best_match(self.available_types, accept)
+        except:
+            # exception means don't override the defaults
+            log( "Problem with mimeparse.best_match(%r, %r): %r "
+                % (self.available_types, accept, sys.exc_info())
+                )
+        else:
+            if media_type == '':    # breakdown in negotiations
+                raise SimplateException(self.available_types)
+        return media_type
+
+
     def respond(self, accept, context):
         """
         get the response to a request for this page
@@ -144,22 +172,13 @@ class Simplate(object):
             # templates will only see variables named in __all__
             context = dict([ (k, context[k]) for k in context['__all__'] ])
 
-        # negotiate or punt
-        render, media_type = self.pages[2]  # default to first content page
-        if accept is not None:
-            try:
-                media_type = mimeparse.best_match(self.available_types, accept)
-            except:
-                # exception means don't override the defaults
-                log( "Problem with mimeparse.best_match(%r, %r): %r "
-                   % (self.available_types, accept, sys.exc_info())
-                    )
-            else:
-                if media_type == '':    # breakdown in negotiations
-                    raise SimplateException(self.available_types)
-                render = self.renderers[media_type] # KeyError is a bug
-
+        # find matching media type
+        media_type = self.best_match(accept)
+        # load that renderer
+        render = self.renderers[media_type]
+        # render it
         body = render(context)
+
         return media_type, body
 
 
