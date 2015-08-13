@@ -136,9 +136,9 @@ class Simplate(object):
             type_name = self.__class__.__name__[:-len('resource')]
             msg = "%s resources must have at most %s pages; %s has %s."
             msg %= ( type_name
-                   , _ordinal[MAX_PAGES]
+                   , _ordinal(MAX_PAGES)
                    , self.fs
-                   , _ordinal[npages]
+                   , _ordinal(npages)
                     )
             raise SyntaxError(msg)
 
