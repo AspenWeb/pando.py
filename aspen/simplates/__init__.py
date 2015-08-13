@@ -1,0 +1,266 @@
+"""
+aspen.resources.dynamic_resource
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+"""
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
+import re
+import sys
+
+import mimeparse
+
+from .. import log
+from .pagination import split_and_escape, parse_specline
+
+renderer_re = re.compile(r'[a-z0-9.-_]+$')
+media_type_re = re.compile(r'[A-Za-z0-9.+*-]+/[A-Za-z0-9.+*-]+$')
+
+MIN_PAGES=3
+MAX_PAGES=None
+
+
+def _ordinal(n):
+    ords = [ 'zero' , 'one' , 'two', 'three', 'four'
+           , 'five', 'six', 'seven', 'eight', 'nine' ]
+    if 0 <= n < len(ords):
+        return ords[n]
+    return str(n)
+
+
+class SimplateException(Exception):
+    def __init__(self, available_types):
+        self.available_types = available_types
+
+
+class SimplateDefaults(object):
+    def __init__(self, renderers_by_media_type, renderer_factories, initial_context):
+        """
+        Things that are usually the same across all simplates:
+
+        renderers_by_media_type - dict[media_type_name] -> renderer_name
+        renderer_factories - dict[renderer_name] -> renderer_factory
+        initial_context - initial context passed into the 'run-once' page
+        """
+        self.renderers_by_media_type = renderers_by_media_type # type: Dict[str, str]
+        self.renderer_factories = renderer_factories           # type: Dict[str, Callable]
+        self.initial_context = initial_context                 # type: Dict[str, object]
+
+
+class Simplate(object):
+    """A simplate is a dynamic resource with multiple syntaxes in one file.
+    """
+
+    def __init__(self, defaults, fs, raw, default_media_type):
+        """Instantiate a simplate.
+
+        defaults - a SimplateDefaults object
+        fs - path to this simplate
+        raw - raw content of this simplate
+        default_media_type - the default content_type of this simplate
+        """
+
+        self.defaults = defaults                      # type: SimplateDefaults
+        self.fs = fs                                  # type: str
+        self.raw = raw
+        self.default_media_type = default_media_type  # type: str
+
+        self.renderers = {}         # mapping of media type to render function
+        self.available_types = []   # ordered sequence of media types
+        pages = self.parse_into_pages(self.raw)
+        self.pages = self.compile_pages(pages)
+
+
+    def respond(self, accept, context):
+        """
+        get the response to a request for this page
+
+        accept - an HTTP Accept: header asking for this page
+        context - a dict of execution context values you wish to supply
+                  * Note that these are overriden by values that are carried
+                  over from the execution of the zeroth page
+        """
+
+        # copy the state dict to avoid accidentally mutating it
+        context = dict(context)
+        # override it with values from the first page
+        context.update(self.pages[0])
+        # use this as the context to execute the second page in
+        exec(self.pages[1], context)
+
+        if '__all__' in context:
+            # templates will only see variables named in __all__
+            context = dict([ (k, context[k]) for k in context['__all__'] ])
+
+        # negotiate or punt
+        render, media_type = self.pages[2]  # default to first content page
+        if accept is not None:
+            try:
+                media_type = mimeparse.best_match(self.available_types, accept)
+            except:
+                # exception means don't override the defaults
+                log( "Problem with mimeparse.best_match(%r, %r): %r "
+                   % (self.available_types, accept, sys.exc_info())
+                    )
+            else:
+                if media_type == '':    # breakdown in negotiations
+                    raise SimplateException(self.available_types)
+                render = self.renderers[media_type] # KeyError is a bug
+
+        body = render(context)
+        return media_type, body
+
+
+    def parse_into_pages(self, raw):
+        """Given a bytestring that is the entire simplate, return a list of pages.
+        """
+
+        pages = list(split_and_escape(raw))
+        npages = len(pages)
+
+        # Check for too few pages.
+        if npages < MIN_PAGES:
+            type_name = self.__class__.__name__[:-len('resource')]
+            msg = "%s resources must have at least %s pages; %s has %s."
+            msg %= ( type_name
+                   , _ordinal(MIN_PAGES)
+                   , self.fs
+                   , _ordinal(npages)
+                    )
+            raise SyntaxError(msg)
+
+        # Check for too many pages. This is user error.
+        if MAX_PAGES is not None and npages > MAX_PAGES:
+            type_name = self.__class__.__name__[:-len('resource')]
+            msg = "%s resources must have at most %s pages; %s has %s."
+            msg %= ( type_name
+                   , _ordinal(MAX_PAGES)
+                   , self.fs
+                   , _ordinal(npages)
+                    )
+            raise SyntaxError(msg)
+
+        return pages
+
+
+    def compile_pages(self, pages):
+        """Given a list of pages, replace the pages with objects.
+
+        Page 0 is the 'run once' page - it is executed and the resulting
+            context stored in self.pages[0]
+        Page 1 is the 'run every' page - it is compiled for easier execution
+            later, and stored in self.pages[1]
+        Subsequent pages are templates, so each one's content_type and
+            respective renderer are stored as a tuple in self.pages[n]
+        """
+
+        # Exec the first page and compile the second.
+        # ===========================================
+
+        one, two = pages[:2]
+
+        context = dict()
+        context['__file__'] = self.fs
+        context.update(self.defaults.initial_context)
+
+        one = compile(one.padded_content, self.fs, 'exec')
+        exec one in context    # mutate context
+        one = context          # store it
+
+        two = compile(two.padded_content, self.fs, 'exec')
+
+        pages[:2] = (one, two)
+        pages[2:] = (self.compile_page(page) for page in pages[2:])
+
+        return pages
+
+
+    def compile_page(self, page):
+        """Given a Page, return a (renderer, media type) pair.
+        """
+        make_renderer, media_type = self._parse_specline(page.header)
+        renderer = make_renderer(self.fs, page.content, media_type, page.offset)
+        if media_type in self.renderers:
+            raise SyntaxError("Two content pages defined for %s." % media_type)
+
+        # update internal data structures
+        self.renderers[media_type] = renderer
+        self.available_types.append(media_type)
+
+        return (renderer, media_type)  # back to parent class
+
+    def _parse_specline(self, specline):
+        """Given a bytestring, return a two-tuple.
+
+        The incoming string is expected to be of the form:
+
+            media_type via renderer
+
+        Both are optional.
+
+        The media_type will default to the default_media_type supplied to
+        this simplate at instantiation time.  (Possibly determined by a
+        file extension or other metadata)
+
+        The renderer will be computed based on media type if absent.
+
+        The return two-tuple contains a render function and a media
+        type (as unicode). SyntaxError is raised if there aren't one or two
+        parts or if either of the parts is malformed. If only one part is
+        passed in it's interpreted as a media type.
+
+        """
+        # Parse into parts
+        media_type, renderer = parse_specline(specline)
+
+        if media_type == '':
+            # no media type specified, use the default
+            media_type = self.default_media_type
+        if renderer == '':
+            # no renderer specified, use the default
+            renderer = self.defaults.renderers_by_media_type[media_type]
+
+        # Validate media type.
+        if media_type_re.match(media_type) is None:
+            msg = ("Malformed media type '%s' in specline '%s'. It must match "
+                   "%s.")
+            msg %= (media_type, specline, media_type_re.pattern)
+            raise SyntaxError(msg)
+
+        # Hydrate and validate renderer.
+        make_renderer = self._get_renderer_factory(media_type, renderer)
+
+        # Return.
+        return (make_renderer, media_type)
+
+
+    def _get_renderer_factory(self, media_type, renderer):
+        """Given two bytestrings, return a renderer factory or None.
+        """
+        factories = self.defaults.renderer_factories
+        if renderer_re.match(renderer) is None:
+            possible =', '.join(sorted(factories.keys()))
+            msg = ("Malformed renderer %s. It must match %s. Possible "
+                   "renderers (might need third-party libs): %s.")
+            raise SyntaxError(msg % (renderer, renderer_re.pattern, possible))
+
+        renderer = renderer.decode('US-ASCII')
+
+        make_renderer = factories.get(renderer, None)
+        if isinstance(make_renderer, ImportError):
+            raise make_renderer
+        elif make_renderer is None:
+            possible = []
+            legend = ''
+            for k, v in sorted(factories.iteritems()):
+                if isinstance(v, ImportError):
+                    k = '*' + k
+                    legend = " (starred are missing third-party libraries)"
+                possible.append(k)
+            possible = ', '.join(possible)
+            raise ValueError("Unknown renderer for %s: %s. Possible "
+                             "renderers%s: %s."
+                             % (media_type, renderer, legend, possible))
+        return make_renderer
