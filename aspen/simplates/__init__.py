@@ -36,6 +36,7 @@ def _decode(raw):
        the first couple lines of the data, or in ASCII.  Non-ASCII data without
        an encoding specified will cause UnicodeDecodeError to be raised.
     """
+    assert type(raw) is (bytes if sys.version_info[0] == 3 else str)  # sanity check
 
     decl_re = re.compile(r'^[ \t\f]*#.*coding[:=][ \t]*([-\w.]+)')
 
