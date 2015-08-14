@@ -53,10 +53,23 @@ def strip_matching_ext(a, b):
 
 
 class DispatchStatus(object):
+    """
+    okay - found a matching leaf node
+    missing - no matching file found
+    non_leaf - found a matching node, but it's a non-leaf node
+    """
     okay, missing, non_leaf = range(3)
 
 
 DispatchResult = namedtuple('DispatchResult', 'status match wildcards detail extra constrain_path')
+"""
+    status - A DispatchStatus object encoding the overall result
+    match - the matching path (if status != 'missing')
+    wildcards - a dict of whose keys are wildcard path parts, and values are as supplied by the path
+    detail - a human readable message describing the result
+    extra - extra information associated with this result
+    constrain_path - whether the resultant path is below the supplied startnode
+"""
 
 
 def dispatch_abstract(listnodes, is_leaf, traverse, find_index, noext_matched,
