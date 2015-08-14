@@ -11,11 +11,11 @@ try:
     from pygments.lexers import PythonTracebackLexer
     from pygments.formatters import HtmlFormatter
     from StringIO import StringIO
-    pygmentize = True
+    pygmentizable = True
 except ImportError:
     from aspen.logging import log
     log("Failed to import pygments. Tracebacks won't be highlighted.")
-    pygmentize = False
+    pygmentizable = False
 
 [----------------------------------------]
 style = ''
@@ -23,7 +23,7 @@ msg = status_strings.get(response.code, 'Sorry')
 msg = msg[0].upper() + msg[1:].lower()
 if website.show_tracebacks:
     err_ascii = response.body
-    if pygmentize:
+    if pygmentizable and website.colorize_tracebacks:
         # Pygments does HTML escaping
         sio = StringIO()
         formatter = HtmlFormatter()
