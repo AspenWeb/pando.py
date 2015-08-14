@@ -22,6 +22,7 @@ Here is an example configuration:</p>
     <tr><td>media_type_json</td>            <td>application/json</td> </tr>
     <tr><td>project_root</td>               <td>/usr/local/mysite</td> </tr>
     <tr><td>show_tracebacks</td>            <td>True</td> </tr>
+    <tr><td>colorize_tracebacks</td>        <td>True</td> </tr>
     <tr><td>www_root</td>                   <td>/usr/local/mysite/www</td> </tr>
     <tr><td>unavailable</td>                <td>0</td> </tr>
 </table>
