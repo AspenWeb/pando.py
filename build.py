@@ -271,10 +271,10 @@ def show_targets():
     print("Valid targets:\n")
     # organize these however
     targets = ['show_targets', None,
-               'env', 'deps', 'smoke', 'dev', 'testf', 'test', 'pylint', 'test_cov', 'analyse', None,
+               'env', 'deps', 'dev', 'testf', 'test', 'pylint', 'test_cov', 'analyse', None,
                'build', 'wheel', None,
                'docserve', 'sphinx', 'autosphinx', None,
-               'clean', 'clean_env', 'clean_smoke', 'clean_test', 'clean_build', 'clean_sphinx', None,
+               'clean', 'clean_env', 'clean_test', 'clean_build', 'clean_sphinx', None,
                'jython_test', None,
                'clean_jenv', 'clean_jtest', None,
                ]
