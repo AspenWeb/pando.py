@@ -23,6 +23,9 @@ class DidntRaiseResponse(Exception): pass
 
 
 class FileUpload(object):
+    """Model a file upload for testing. Takes data and a filename.
+    """
+
     def __init__(self, data, filename):
         self.data = data
         self.filename = filename
@@ -33,10 +36,10 @@ def encode_multipart(boundary, data):
     """
     Encodes multipart POST data from a dictionary of form values.
 
-    Borrowed from Django
     The key will be used as the form data name; the value will be transmitted
-    as content. If the value is a file, the contents of the file will be sent
-    as an application/octet-stream; otherwise, str(value) will be sent.
+    as content. Use the FileUpload class to simulate file uploads (note that
+    they still come out as FieldStorage instances inside of simplates).
+
     """
     lines = []
 
