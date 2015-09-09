@@ -10,6 +10,7 @@ from __future__ import unicode_literals
 from Cookie import SimpleCookie
 from StringIO import StringIO
 
+import mimetypes
 from .. import Response
 from ..utils import typecheck
 from ..website import Website
@@ -19,6 +20,13 @@ MULTIPART_CONTENT = b'multipart/form-data; boundary=%s' % BOUNDARY
 
 
 class DidntRaiseResponse(Exception): pass
+
+
+class FileUpload(object):
+    def __init__(self, data, filename):
+        self.data = data
+        self.filename = filename
+        self.content_type = mimetypes.guess_type(filename)[0]
 
 
 def encode_multipart(boundary, data):
@@ -33,12 +41,23 @@ def encode_multipart(boundary, data):
     lines = []
 
     for (key, value) in data.items():
-        lines.extend([
-            b'--' + boundary,
-            b'Content-Disposition: form-data; name="%s"' % str(key),
-            b'',
-            str(value)
-        ])
+        if isinstance(value, FileUpload):
+            file_upload = value
+            lines.extend([
+                b'--' + boundary,
+                b'Content-Disposition: form-data; name="{}"; filename="{}"'
+                 .format(str(key), str(file_upload.filename)),
+                b'Content-Type: {}'.format(file_upload.content_type),
+                b'',
+                str(file_upload.data)
+            ])
+        else:
+            lines.extend([
+                b'--' + boundary,
+                b'Content-Disposition: form-data; name="%s"' % str(key),
+                b'',
+                str(value)
+            ])
 
     lines.extend([
         b'--' + boundary + b'--',
