@@ -10,6 +10,7 @@ from __future__ import unicode_literals
 from Cookie import SimpleCookie
 from StringIO import StringIO
 
+import mimetypes
 from .. import Response
 from ..utils import typecheck
 from ..website import Website
@@ -21,24 +22,45 @@ MULTIPART_CONTENT = b'multipart/form-data; boundary=%s' % BOUNDARY
 class DidntRaiseResponse(Exception): pass
 
 
+class FileUpload(object):
+    """Model a file upload for testing. Takes data and a filename.
+    """
+
+    def __init__(self, data, filename, content_type=None):
+        self.data = data
+        self.filename = filename
+        self.content_type = content_type or mimetypes.guess_type(filename)[0]
+
+
 def encode_multipart(boundary, data):
     """
     Encodes multipart POST data from a dictionary of form values.
 
-    Borrowed from Django
     The key will be used as the form data name; the value will be transmitted
-    as content. If the value is a file, the contents of the file will be sent
-    as an application/octet-stream; otherwise, str(value) will be sent.
+    as content. Use the FileUpload class to simulate file uploads (note that
+    they still come out as FieldStorage instances inside of simplates).
+
     """
     lines = []
 
     for (key, value) in data.items():
-        lines.extend([
-            b'--' + boundary,
-            b'Content-Disposition: form-data; name="%s"' % str(key),
-            b'',
-            str(value)
-        ])
+        if isinstance(value, FileUpload):
+            file_upload = value
+            lines.extend([
+                b'--' + boundary,
+                b'Content-Disposition: form-data; name="{}"; filename="{}"'
+                 .format(str(key), str(file_upload.filename)),
+                b'Content-Type: {}'.format(file_upload.content_type),
+                b'',
+                str(file_upload.data)
+            ])
+        else:
+            lines.extend([
+                b'--' + boundary,
+                b'Content-Disposition: form-data; name="%s"' % str(key),
+                b'',
+                str(value)
+            ])
 
     lines.extend([
         b'--' + boundary + b'--',
