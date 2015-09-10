@@ -14,13 +14,13 @@ And we test against 32- and 64-bit Python 2.7 on Windows: |appveyor|
 ``aspen`` is MIT-licensed.
 
 
-.. _GitHub: https://github.com/gratipay/aspen-python
+.. _GitHub: https://github.com/gratipay/aspen.py
 .. _PyPI: https://pypi.python.org/pypi/aspen
-.. |travis| image:: https://img.shields.io/travis/gratipay/aspen-python/master.svg
-   :target: https://travis-ci.org/gratipay/aspen-python
+.. |travis| image:: https://img.shields.io/travis/gratipay/aspen.py/master.svg
+   :target: https://travis-ci.org/gratipay/aspen.py
    :alt: Linux build status
-.. |appveyor| image:: https://img.shields.io/appveyor/ci/gratipay/aspen-python/master.svg
-   :target: https://ci.appveyor.com/project/gratipay/aspen-python
+.. |appveyor| image:: https://img.shields.io/appveyor/ci/gratipay/aspen-py/master.svg
+   :target: https://ci.appveyor.com/project/gratipay/aspen-py
    :alt: Windows build status
 
 
