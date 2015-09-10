@@ -26,10 +26,10 @@ class FileUpload(object):
     """Model a file upload for testing. Takes data and a filename.
     """
 
-    def __init__(self, data, filename):
+    def __init__(self, data, filename, content_type=None):
         self.data = data
         self.filename = filename
-        self.content_type = mimetypes.guess_type(filename)[0]
+        self.content_type = content_type or mimetypes.guess_type(filename)[0]
 
 
 def encode_multipart(boundary, data):
