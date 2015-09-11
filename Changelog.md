@@ -1,5 +1,27 @@
-Aspen-python Changelog
-======================
+Aspen.py Changelog
+==================
+
+0.42 - Released Thu Sept 10 2015 by @whit537
+--------------------------------------------
+
+* the repo is now named `aspen.py` instead of `aspen-python` (#485)
+
+* extend the test client to support file uploads (#508)
+
+* speclines are no longer required in simplates (#296)
+
+* upgrade mimeparse, ahead of porting to Python 3 (#500)
+
+* add a website.colorize_tracebacks option (#501)
+
+* drop support for Python 2.6 (#497)
+
+* refactor simplates internally ahead of splitting them out (#481)
+
+* port to Windows (#482)
+
+* protect against URL redirection attacks (#471)
+
 
 0.41 - Released Thu Jul 2 2015 by @whit537
 ------------------------------------------
