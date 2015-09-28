@@ -4,6 +4,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from aspen.exceptions import LoadError
 from aspen.simplates import _decode
 from pytest import raises
 
@@ -17,7 +18,6 @@ plaintext"""))
     assert "plaintext" in response.body
 
 SIMPLATE="""
-[---]
 foo = %s
 [---] via stdlib_format
 {foo}"""
@@ -88,6 +88,11 @@ foo = foo()
 {foo}""")
     assert response.body == 'baz'
 
+
+def test_two_pages_with_no_headers_fails(harness):
+    with raises(LoadError) as err:
+        harness.simple(b'[---]')
+    assert 'SyntaxError' in str(err.value)
 
 # _decode
 

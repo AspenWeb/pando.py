@@ -14,12 +14,12 @@ import mimeparse
 
 from .. import log
 from ..backcompat import StringIO
-from .pagination import split_and_escape, parse_specline
+from .pagination import split_and_escape, parse_specline, Page
 
 renderer_re = re.compile(r'[a-z0-9.-_]+$')
 media_type_re = re.compile(r'[A-Za-z0-9.+*-]+/[A-Za-z0-9.+*-]+$')
 
-MIN_PAGES=3
+MIN_PAGES=2
 MAX_PAGES=None
 
 
@@ -188,6 +188,20 @@ class Simplate(object):
 
         pages = list(split_and_escape(decoded))
         npages = len(pages)
+
+        # DWIM: if there's under three pages, the last one *must* be
+        # explicitly marked a template page, otherwise it might be python
+        # leaving us not knowing what to do.
+        if npages < 3:
+            if not pages[-1].header:
+                type_name = self.__class__.__name__[:-len('resource')]
+                msg = "%s resources must have at least one explicit template page; %s has none."
+                msg %= ( type_name
+                       , self.fs
+                        )
+                raise SyntaxError(msg)
+            # add a blank leading page
+            pages = [ Page(b'') ] + pages
 
         # Check for too few pages.
         if npages < MIN_PAGES:
