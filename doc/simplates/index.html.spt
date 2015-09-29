@@ -48,17 +48,27 @@ imports and constants. The second is run once for each request.</p>
 <p>A simplate is a file that contains multiple sections of varying syntax,
 separated by <code>[---]</code>.</p>
 
-<p>The first section is Python syntax. It is <code>exec</code>'d once, the
-first time the resource represented by the simplate is served, and it has these
-variables as builtins:</p>
+<p>If the simplate only has one section, it's a template.</p>
+
+<p>If there's more than one section, the first section is always Python,
+and the last section is always a template.</p>
+
+<p>If there's more than two sections, the second section is Python
+<em>unless it has a specline</em>, which makes it a template.</p>
+
+<p>The first Python section is the 'once' section. It is
+<code>exec</code>'d once, the first time the resource represented by the
+simplate is served, and it has these variables as builtins:</p>
 
 <pre>__file__   the absolute path to the simplate file (symlinks preserved)
 
 <a href="/api/website/">website</a>    an instance of a Website object that gives you access to
            configuration</pre>
 
-<p>The second section is Python syntax, and is <code>exec</code>'d once per
-request. Its context cascades from the first section, and adds:</p>
+
+<p>The second Python section is the 'every' section. It is
+<code>exec</code>'d once per request. Its context cascades from the
+'once' section (if it exists), and adds:</p>
 
 <pre>request    a request object
 
