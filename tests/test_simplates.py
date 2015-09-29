@@ -4,7 +4,6 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from aspen.exceptions import LoadError
 from aspen.simplates import _decode
 from pytest import raises
 
@@ -89,10 +88,33 @@ foo = foo()
     assert response.body == 'baz'
 
 
-def test_two_pages_with_no_headers_fails(harness):
-    with raises(LoadError) as err:
-        harness.simple(b'[---]')
-    assert 'SyntaxError' in str(err.value)
+def test_one_page_works(harness):
+    response = harness.simple("Template")
+    assert response.body == 'Template'
+
+
+def test_two_pages_works(harness):
+    response = harness.simple(SIMPLATE % "'Template'")
+    assert response.body == 'Template'
+
+
+def test_three_pages_one_python_works(harness):
+    response = harness.simple("""
+foo = 'Template'
+[---] text/plain via stdlib_format
+{foo}
+[---] text/xml
+<foo>{foo}</foo>""")
+    assert response.body.strip() == 'Template'
+
+
+def test_three_pages_two_python_works(harness):
+    response = harness.simple("""[---]
+python_code = True
+[---]
+Template""")
+    assert response.body == 'Template'
+
 
 # _decode
 
