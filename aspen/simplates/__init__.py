@@ -189,41 +189,19 @@ class Simplate(object):
         pages = list(split_and_escape(decoded))
         npages = len(pages)
 
-        # DWIM: if there's under three pages, the last one *must* be
-        # explicitly marked a template page, otherwise it might be python
-        # leaving us not knowing what to do.
-        if npages < 3:
-            if not pages[-1].header:
-                type_name = self.__class__.__name__[:-len('resource')]
-                msg = "%s resources must have at least one explicit template page; %s has none."
-                msg %= ( type_name
-                       , self.fs
-                        )
-                raise SyntaxError(msg)
-            # add a blank leading page
-            pages = [ Page(b'') ] + pages
+        # DWIM:
+        # if there's one page, it's a template
+        # if there's more than one page, the first page is always python and the last is always a template
+        # if there's more than two pages, the second page is python _unless it has a header_, which makes it a template
 
-        # Check for too few pages.
-        if npages < MIN_PAGES:
-            type_name = self.__class__.__name__[:-len('resource')]
-            msg = "%s resources must have at least %s pages; %s has %s."
-            msg %= ( type_name
-                   , _ordinal(MIN_PAGES)
-                   , self.fs
-                   , _ordinal(npages)
-                    )
-            raise SyntaxError(msg)
+        blank = [ Page(b'') ]
 
-        # Check for too many pages. This is user error.
-        if MAX_PAGES is not None and npages > MAX_PAGES:
-            type_name = self.__class__.__name__[:-len('resource')]
-            msg = "%s resources must have at most %s pages; %s has %s."
-            msg %= ( type_name
-                   , _ordinal(MAX_PAGES)
-                   , self.fs
-                   , _ordinal(npages)
-                    )
-            raise SyntaxError(msg)
+        if npages == 1:
+            pages = blank + blank + pages
+        elif npages == 2:
+            pages = blank + pages
+        elif pages[1].header: # it's got a header, so it's a template
+            pages = blank + pages
 
         return pages
 
