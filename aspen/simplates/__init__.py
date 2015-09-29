@@ -184,16 +184,15 @@ class Simplate(object):
 
     def parse_into_pages(self, decoded):
         """Given a bytestring that is the entire simplate, return a list of pages.
+
+        If there's one page, it's a template.
+        If there's more than one page, the first page is always python and the last is always a template.
+        If there's more than two pages, the second page is python _unless it has a specline_, which makes it a template
+
         """
 
         pages = list(split_and_escape(decoded))
         npages = len(pages)
-
-        # DWIM:
-        # if there's one page, it's a template
-        # if there's more than one page, the first page is always python and the last is always a template
-        # if there's more than two pages, the second page is python _unless it has a header_, which makes it a template
-
         blank = [ Page(b'') ]
 
         if npages == 1:
