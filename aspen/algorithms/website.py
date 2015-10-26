@@ -180,10 +180,6 @@ def log_result_of_request(website, request=None, dispatch_result=None, response=
     """Log access. With our own format (not Apache's).
     """
 
-    if website.logging_threshold > 0: # short-circuit
-        return
-
-
     # What was the URL path translated to?
     # ====================================
 
