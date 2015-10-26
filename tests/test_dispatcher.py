@@ -299,7 +299,7 @@ def test_virtual_path_file_key_val_cast(harness):
 
 def test_virtual_path_file_key_val_percent(harness):
     harness.fs.www.mk(('foo/%bar.spt', NEGOTIATED_SIMPLATE),)
-    assert_virtvals(harness, '/foo/%bar', {'bar': [u'%bar']})
+    assert_virtvals(harness, '/foo/%25blah', {'bar': [u'%blah']})
 
 def test_virtual_path_file_not_dir(harness):
     harness.fs.www.mk( ('%foo/bar.html', "Greetings from bar!")
