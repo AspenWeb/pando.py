@@ -21,13 +21,6 @@ try:
 except ImportError:
     from StringIO import StringIO
 
-try:                # Python >= 2.6
-    from collections import Callable
-    def is_callable(obj):
-        return isinstance(obj, Callable)
-except ImportError: # Python < 2.6
-    from operator import isCallable as is_callable
-
 try:                # 2
     from Cookie import CookieError, SimpleCookie
 except ImportError: # 3
