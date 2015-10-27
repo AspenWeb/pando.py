@@ -60,6 +60,11 @@ def parse_body_into_request(request, website):
                                                             )
 
 
+def request_available():
+    """No-op placeholder for easy hookage"""
+    pass
+
+
 def raise_200_for_OPTIONS(request):
     """A hook to return 200 to an 'OPTIONS *' request"""
     if request.line.method == "OPTIONS" and request.line.uri == "*":
@@ -105,6 +110,11 @@ def get_resource_for_request(website, dispatch_result):
     return {'resource': resources.get(website, dispatch_result.match)}
 
 
+def resource_available():
+    """No-op placeholder for easy hookage"""
+    pass
+
+
 def extract_accept_from_request(request):
     return {'accept_header': request.headers.get('accept')}
 
@@ -124,6 +134,11 @@ def get_response_for_exception(website, exception):
         if website.show_tracebacks:
             response.body = tb
     return {'response': response, 'traceback': tb, 'exception': None}
+
+
+def response_available():
+    """No-op placeholder for easy hookage"""
+    pass
 
 
 def log_traceback_for_5xx(response, traceback=None):
