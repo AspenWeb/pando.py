@@ -16,11 +16,6 @@ try:
 except ImportError:
     from md5 import new as md5
 
-try:
-    from cStringIO import StringIO
-except ImportError:
-    from StringIO import StringIO
-
 try:                # 2
     from Cookie import CookieError, SimpleCookie
 except ImportError: # 3
