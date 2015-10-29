@@ -12,8 +12,7 @@ import sys
 
 import mimeparse
 
-from .. import log
-from ..backcompat import StringIO
+from .. import log, six
 from .pagination import split_and_escape, parse_specline, Page
 
 renderer_re = re.compile(r'[a-z0-9.-_]+$')
@@ -48,8 +47,8 @@ def _decode(raw):
 
     encoding = None
     fulltext = b''
-    sio = StringIO(raw)
-    for line in (sio.readline(), sio.readline()):
+    bio = six.BytesIO(raw)
+    for line in (bio.readline(), bio.readline()):
         potential = get_declaration(line)
         if potential is not None:
             if encoding is None:
@@ -73,8 +72,8 @@ def _decode(raw):
             line = line.split(b'#')[0] + munged
 
         fulltext += line
-    fulltext += sio.read()
-    sio.close()
+    fulltext += bio.read()
+    bio.close()
     return fulltext.decode(encoding or b'ascii')
 
 
