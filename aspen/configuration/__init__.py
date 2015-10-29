@@ -150,6 +150,8 @@ class Configurable(object):
                                     , name
                                      ))
 
+        # log appropriately
+        aspen.log_dammit(os.linesep.join(msgs))
 
         # Set some attributes.
         # ====================
@@ -168,17 +170,6 @@ class Configurable(object):
                 if err.errno != errno.ENOENT:
                     raise
                 raise ConfigurationError(errorstr)
-
-
-        # LOGGING_THRESHOLD
-        # -----------------
-        # This is initially set to -1 and not 0 so that we can tell if the user
-        # changed it programmatically directly before we got here. I do this in
-        # the testing module, that's really what this is about.
-        if logging.LOGGING_THRESHOLD == -1:
-            logging.LOGGING_THRESHOLD = self.logging_threshold
-        # Now that we know the user's desires, we can log appropriately.
-        aspen.log_dammit(os.linesep.join(msgs))
 
         # project root
         if self.project_root is None:
