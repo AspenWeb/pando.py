@@ -16,11 +16,6 @@ try:
 except ImportError:
     from md5 import new as md5
 
-try:                # 2
-    from Cookie import CookieError, SimpleCookie
-except ImportError: # 3
-    from http.cookies import CookieError, SimpleCookie
-
 try:                # 3
     from html import escape as html_escape
 except ImportError: # 2

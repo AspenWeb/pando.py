@@ -8,7 +8,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 
-from ..backcompat import CookieError, SimpleCookie
+from .. import six
 from .mapping import CaseInsensitiveMapping
 from ..utils import typecheck
 
@@ -57,10 +57,10 @@ class BaseHeaders(CaseInsensitiveMapping):
         # Cookie
         # ======
 
-        self.cookie = SimpleCookie()
+        self.cookie = six.moves.http_cookies.SimpleCookie()
         try:
             self.cookie.load(self.get('Cookie', b''))
-        except CookieError:
+        except six.moves.http_cookies.CookieError:
             pass  # XXX really?
 
 
