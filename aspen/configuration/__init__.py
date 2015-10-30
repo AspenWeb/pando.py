@@ -17,7 +17,7 @@ from collections import defaultdict
 
 import aspen
 from . import parse
-from .. import logging
+from .. import logging, six
 from ..exceptions import ConfigurationError
 from ..utils import ascii_dammit
 from ..typecasting import defaults as default_typecasters
@@ -62,7 +62,7 @@ class Configurable(object):
             hydrated = hydrated()  # Call it if we can.
         setattr(self, name, hydrated)
         if name_in_context:
-            assert isinstance(flat, unicode) # sanity check
+            assert isinstance(flat, six.text_type) # sanity check
             name_in_context = " %s=%s" % (name_in_context, flat)
         out = "  %-22s %-30s %-24s"
         return out % (name, hydrated, context + name_in_context)
@@ -71,7 +71,7 @@ class Configurable(object):
         error = None
         try:
             value = raw
-            if isinstance(value, str):
+            if isinstance(value, six.binary_type):
                 value = raw.decode('US-ASCII')
             hydrated = from_unicode(value)
         except UnicodeDecodeError as error:

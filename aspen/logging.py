@@ -42,9 +42,9 @@ LOCK = threading.Lock()
 def stringify(o):
     """Given an object, return a str, never raising ever.
     """
-    if isinstance(o, str):
+    if isinstance(o, six.binary_type):
         o = o
-    elif isinstance(o, unicode):
+    elif isinstance(o, six.text_type):
         o = o.encode('UTF-8', 'backslashreplace')
     else:
         o = pprint.pformat(o)

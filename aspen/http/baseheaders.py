@@ -33,10 +33,10 @@ class BaseHeaders(CaseInsensitiveMapping):
     """
 
     def __init__(self, d):
-        """Takes headers as a dict or str.
+        """Takes headers as a dict or bytes.
         """
-        typecheck(d, (dict, str))
-        if isinstance(d, str):
+        typecheck(d, (dict, six.binary_type))
+        if isinstance(d, six.binary_type):
             from aspen.exceptions import MalformedHeader
 
             def genheaders():

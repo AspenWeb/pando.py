@@ -8,6 +8,8 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 
+from .. import six
+
 
 NO_DEFAULT = object()
 
@@ -100,7 +102,7 @@ class CaseInsensitiveMapping(Mapping):
             items = d.iteritems if hasattr(d, 'iteritems') else d
             for k, v in items():
                 self[k] = v
-        for k, v in kw.iteritems():
+        for k, v in six.iteritems(kw):
             self[k] = v
 
     def __contains__(self, name):

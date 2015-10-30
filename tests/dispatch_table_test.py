@@ -35,7 +35,7 @@ def find_cols(defline, header_char='='):
                 colends.append(len(defline))
                 break
 
-    return zip(colstarts,colends)
+    return tuple(zip(colstarts,colends))
 
 def fields_from(dataline, cols):
     """

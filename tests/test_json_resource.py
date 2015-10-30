@@ -3,11 +3,9 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import StringIO
-
 from pytest import raises
 
-from aspen import json
+from aspen import json, six
 
 
 def test_json_basically_works(harness):
@@ -136,14 +134,14 @@ def test_json_raises_TypeError_on_unknown_types(harness):
            )
 
 def test_aspen_json_load_loads():
-    fp = StringIO.StringIO()
+    fp = six.BytesIO()
     fp.write('{"cheese": "puffs"}')
     fp.seek(0)
     actual = json.load(fp)
     assert actual == {'cheese': 'puffs'}
 
 def test_aspen_json_dump_dumps():
-    fp = StringIO.StringIO()
+    fp = six.BytesIO()
     json.dump({"cheese": "puffs"}, fp)
     fp.seek(0)
     actual = fp.read()

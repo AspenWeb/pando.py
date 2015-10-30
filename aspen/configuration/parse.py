@@ -13,13 +13,13 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from .. import RENDERERS
+from .. import RENDERERS, six
 from ..utils import typecheck
 from ..http.response import charset_re
 
 
 def identity(value):
-    typecheck(value, unicode)
+    typecheck(value, six.text_type)
     return value
 
 def media_type(media_type):
@@ -27,13 +27,13 @@ def media_type(media_type):
     return media_type.encode('US-ASCII')
 
 def charset(value):
-    typecheck(value, unicode)
+    typecheck(value, six.text_type)
     if charset_re.match(value) is None:
         raise ValueError("charset not to spec")
     return value
 
 def yes_no(s):
-    typecheck(s, unicode)
+    typecheck(s, six.text_type)
     s = s.lower()
     if s in [u'yes', u'true', u'1']:
         return True
@@ -48,7 +48,7 @@ def list_(value):
     replace it.
 
     """
-    typecheck(value, unicode)
+    typecheck(value, six.text_type)
     extend = value.startswith('+')
     if extend:
         value = value[1:]
@@ -64,7 +64,7 @@ def list_(value):
     return (extend, out)
 
 def renderer(value):
-    typecheck(value, unicode)
+    typecheck(value, six.text_type)
     if value not in RENDERERS:
         msg = "not one of {%s}" % (','.join(RENDERERS))
         raise ValueError(msg)

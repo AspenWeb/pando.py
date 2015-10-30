@@ -73,7 +73,7 @@ class Client(object):
     def __init__(self, www_root=None, project_root=None):
         self.www_root = www_root
         self.project_root = project_root
-        self.cookie = six.moves.Cookie.SimpleCookie()
+        self.cookie = six.moves.http_cookies.SimpleCookie()
         self._website = None
 
 
@@ -119,7 +119,7 @@ class Client(object):
         if content_type is MULTIPART_CONTENT:
             body = encode_multipart(BOUNDARY, data)
 
-        environ = self.build_wsgi_environ(method, path, body, str(content_type), **headers)
+        environ = self.build_wsgi_environ(method, path, body, six.binary_type(content_type), **headers)
         state = self.website.respond( environ
                                     , raise_immediately=raise_immediately
                                     , return_after=return_after
@@ -149,14 +149,18 @@ class Client(object):
         # exceptions to this: ``'CONTENT_TYPE'``, ``'CONTENT_LENGTH'`` which
         # are explicitly checked for.
 
-        typecheck(path, (str, unicode), method, unicode, content_type, str, body, str)
+        typecheck( path,            (six.binary_type, six.text_type)
+                 , method,          six.text_type
+                 , content_type,    six.binary_type
+                 , body,            six.binary_type
+                  )
         environ = {}
         environ[b'CONTENT_TYPE'] = content_type
         environ[b'HTTP_COOKIE'] = self.cookie.output(header=b'', sep=b'; ')
         environ[b'HTTP_HOST'] = b'localhost'
-        environ[b'PATH_INFO'] = path if type(path) is str else path.decode('UTF-8')
+        environ[b'PATH_INFO'] = path if type(path) is six.text_type else path.decode('UTF-8')
         environ[b'REMOTE_ADDR'] = b'0.0.0.0'
-        environ[b'REQUEST_METHOD'] = method.decode('ASCII')
+        environ[b'REQUEST_METHOD'] = method.encode('ASCII')
         environ[b'SERVER_PROTOCOL'] = b'HTTP/1.1'
         environ[b'wsgi.input'] = six.BytesIO(body)
         environ[b'HTTP_CONTENT_LENGTH'] = bytes(len(body))

@@ -113,7 +113,7 @@ def test_exception_location_preserved_for_response_raised_in_page_2(harness):
     expected = (expected_path, 2)
     try:
         harness.simple('[---]\nfrom aspen import Response; raise Response(404)\n[---]\n')
-    except Response, response:
+    except Response as response:
         actual = response.whence_raised()
     assert actual == expected
 

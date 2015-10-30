@@ -6,11 +6,10 @@ from __future__ import unicode_literals
 import re
 import os
 import sys
-from StringIO import StringIO
 
 import aspen.logging
 from algorithm import Algorithm
-from aspen import Response
+from aspen import Response, six
 from aspen.logging import log, log_dammit
 from aspen.algorithms.website import log_result_of_request
 
@@ -33,7 +32,7 @@ def capture(*a, **kw):
         __threshold__ = aspen.logging.LOGGING_THRESHOLD
         if 'threshold' in kw:
             aspen.logging.LOGGING_THRESHOLD = kw.pop('threshold')
-        sys.stdout = StringIO()
+        sys.stdout = six.BytesIO()
         func(*a, **kw)
         output = sys.stdout.getvalue()
     finally:

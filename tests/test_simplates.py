@@ -121,7 +121,7 @@ Template""")
 def test_decode_can_take_encoding_from_first_line():
     actual = _decode(b"""\
     # -*- coding: utf8 -*-
-    text = u'א'
+    text = u'\xd7\x90'
     """)
     expected = """\
     # encoding set to utf8
@@ -133,7 +133,7 @@ def test_decode_can_take_encoding_from_second_line():
     actual = _decode(b"""\
     #!/blah/blah
     # -*- coding: utf8 -*-
-    text = u'א'
+    text = u'\xd7\x90'
     """)
     expected = """\
     #!/blah/blah
@@ -146,7 +146,7 @@ def test_decode_prefers_first_line_to_second():
     actual = _decode(b"""\
     # -*- coding: utf8 -*-
     # -*- coding: ascii -*-
-    text = u'א'
+    text = u'\xd7\x90'
     """)
     expected = """\
     # encoding set to utf8
@@ -160,7 +160,7 @@ def test_decode_ignores_third_line():
     # -*- coding: utf8 -*-
     # -*- coding: ascii -*-
     # -*- coding: cornnuts -*-
-    text = u'א'
+    text = u'\xd7\x90'
     """)
     expected = """\
     # encoding set to utf8
@@ -182,7 +182,7 @@ def test_decode_can_take_encoding_from_various_line_formats():
         def test():
             actual = _decode(b"""\
             # {0}
-            text = u'א'
+            text = u'\xd7\x90'
             """.format(fmt))
             expected = """\
             # encoding set to utf8
@@ -203,7 +203,7 @@ def test_decode_cant_take_encoding_from_bad_line_formats():
         def test():
             raw = b"""\
             # {0}
-            text = u'א'
+            text = u'\xd7\x90'
             """.format(fmt)
             raises(UnicodeDecodeError, _decode, raw)
         yield test
