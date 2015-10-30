@@ -9,17 +9,17 @@ we use to model each:
 
     - request                   Request
         - line                  Line
-            - method            Method      ASCII
+            - method            Method          ASCII
             - uri               URI
                 - path          Path
                   - parts       list of PathPart
                 - querystring   Querystring
-            - version           Version     ASCII
-        - headers               Headers     str
-            - cookie            Cookie      str
-            - host              unicode     str
-            - scheme            unicode     str
-        - body                  Body        Content-Type?
+            - version           Version         ASCII
+        - headers               Headers         str (bytes)
+            - cookie            Cookie          str (bytes)
+            - host              str (unicode)   str (bytes)
+            - scheme            str (unicode)   str (bytes)
+        - body                  Body            Content-Type?
 
 
 XXX TODO
@@ -40,10 +40,8 @@ import cgi
 import re
 import sys
 import urllib
-import urlparse
-from cStringIO import StringIO
 
-from .. import Response
+from .. import Response, six
 from .baseheaders import BaseHeaders
 from .mapping import Mapping
 from ..utils import ascii_dammit
@@ -146,8 +144,6 @@ class IntWithRaw(int):
     """Generic subclass of int to store the underlying raw bytestring.
     """
 
-    __slots__ = ['raw']
-
     def __new__(cls, i):
         if i is None:
             i = 0
@@ -155,18 +151,18 @@ class IntWithRaw(int):
         obj.raw = str(i)
         return obj
 
-class UnicodeWithRaw(unicode):
-    """Generic subclass of unicode to store the underlying raw bytestring.
+class TextWithRaw(six.text_type):
+    """Generic subclass store the underlying raw bytestring.
     """
 
     __slots__ = ['raw']
 
     def __new__(cls, raw, encoding="UTF-8"):
-        obj = super(UnicodeWithRaw, cls).__new__(cls, raw.decode(encoding))
+        obj = super(TextWithRaw, cls).__new__(cls, raw.decode(encoding))
         obj.raw = raw
         return obj
 
-class PathPart(unicode):
+class PathPart(six.text_type):
     """A string with a mapping for extra data about it."""
 
     __slots__ = ['params']
@@ -206,7 +202,7 @@ class Request(str):
                 headers = b'Host: localhost'
             obj.headers = Headers(headers)
             if body is None:
-                body = StringIO('')
+                body = six.BytesIO('')
             raw_len = int(obj.headers.get('Content-length', '') or '0')
             obj.raw_body = body.read(raw_len)
             obj.context = {}
@@ -335,7 +331,7 @@ class Request(str):
 # Request -> Line
 # ---------------
 
-class Line(unicode):
+class Line(six.text_type):
     """Represent the first line of an HTTP Request message.
     """
 
@@ -372,7 +368,7 @@ SEPARATORS = ("(", ")", "<", ">", "@", ",", ";", ":", "\\", '"', "/", "[", "]",
 BYTES_ALLOWED_IN_METHOD = set(chr(i) for i in range(32, 127))
 BYTES_ALLOWED_IN_METHOD -= set(SEPARATORS)
 
-class Method(unicode):
+class Method(six.text_type):
     """Represent the HTTP method in the first line of an HTTP Request message.
 
     Spec sez ASCII subset:
@@ -434,7 +430,7 @@ class Method(unicode):
 # Request -> Line -> URI
 # ......................
 
-class URI(unicode):
+class URI(six.text_type):
     """Represent the Request-URI in the first line of an HTTP Request message.
 
     XXX spec-ify this
@@ -446,20 +442,20 @@ class URI(unicode):
 
     def __new__(cls, raw):
 
-        # split str and not unicode so we can store .raw for each subobj
-        uri = urlparse.urlsplit(raw)
+        # split bytes and not text so we can store .raw for each subobj
+        uri = six.moves.urllib.parse.urlsplit(raw)
 
         # scheme is going to be ASCII 99.99999999% of the time
-        scheme = UnicodeWithRaw(uri.scheme)
+        scheme = TextWithRaw(uri.scheme)
 
         # let's decode username and password as url-encoded UTF-8
         no_None = lambda o: o if o is not None else ""
-        parse = lambda o: UnicodeWithRaw(urllib.unquote(no_None(o)))
+        parse = lambda o: TextWithRaw(urllib.unquote(no_None(o)))
         username = parse(uri.username)
         password = parse(uri.password)
 
         # host we will decode as IDNA, which may raise UnicodeError
-        host = UnicodeWithRaw(no_None(uri.hostname), 'IDNA')
+        host = TextWithRaw(no_None(uri.hostname), 'IDNA')
 
         # port is IntWithRaw (will be 0 if absent), which is fine
         port = IntWithRaw(uri.port)
@@ -544,7 +540,7 @@ class Querystring(Mapping):
                               , strict_parsing = False
                                )
 
-        # ... but doesn't decode to unicode.
+        # ... but doesn't decode to text.
         for k, vals in as_dict.items():
             as_dict[k.decode('UTF-8')] = [v.decode('UTF-8') for v in vals]
 
@@ -561,7 +557,7 @@ versions = { 'HTTP/0.9': ((0, 9), u'HTTP/0.9')
 
 version_re = re.compile('HTTP/\d+\.\d+')
 
-class Version(unicode):
+class Version(six.text_type):
     """Represent the version in an HTTP status line. HTTP/1.1. Like that.
 
         HTTP-Version   = "HTTP" "/" 1*DIGIT "." 1*DIGIT
@@ -611,7 +607,7 @@ class Headers(BaseHeaders):
         # we prefer X-Forwarded-For if that is available.
 
         host = self.get('X-Forwarded-Host', self['Host']) # KeyError raises 400
-        self.host = UnicodeWithRaw(host, encoding='idna')
+        self.host = TextWithRaw(host, encoding='idna')
 
 
         # Scheme
@@ -619,4 +615,4 @@ class Headers(BaseHeaders):
         # http://docs.python.org/library/wsgiref.html#wsgiref.util.guess_scheme
 
         scheme = 'https' if self.get('HTTPS', False) else 'http'
-        self.scheme = UnicodeWithRaw(scheme)
+        self.scheme = TextWithRaw(scheme)

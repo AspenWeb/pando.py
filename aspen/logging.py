@@ -29,8 +29,9 @@ from __future__ import with_statement
 import os
 import pprint
 import sys
-import thread
 import threading
+
+from . import six
 
 
 LOGGING_THRESHOLD = -1
@@ -56,7 +57,7 @@ def log(*messages, **kw):
         # Be sure to use Python 2.5-compatible threading API.
         t = threading.currentThread()
         fmt = "pid-%s thread-%s (%s) %%s" % ( PID
-                                            , thread.get_ident()
+                                            , six.moves._thread.get_ident()
                                             , t.getName()
                                              )
         for message in messages:

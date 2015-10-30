@@ -84,7 +84,7 @@ from __future__ import unicode_literals
 import sys
 import pkg_resources
 
-from ... import log_dammit
+from ... import log_dammit, six
 
 # Built-in renderers
 BUILTIN_RENDERERS = [ 'stdlib_format'
@@ -110,9 +110,9 @@ def factories(configuration):
         try:
             capture = {}
             python_syntax = 'from aspen.simplates.renderers.%s import Factory'
-            exec python_syntax % name in capture
+            six.exec_(python_syntax % name, capture)
             make_renderer = capture['Factory'](configuration)
-        except ImportError, err:
+        except ImportError as err:
             make_renderer = err
             err.info = sys.exc_info()
         renderer_factories[name] = make_renderer

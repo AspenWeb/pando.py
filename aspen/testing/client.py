@@ -7,11 +7,8 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from Cookie import SimpleCookie
-from StringIO import StringIO
-
 import mimetypes
-from .. import Response
+from .. import Response, six
 from ..utils import typecheck
 from ..website import Website
 
@@ -76,7 +73,7 @@ class Client(object):
     def __init__(self, www_root=None, project_root=None):
         self.www_root = www_root
         self.project_root = project_root
-        self.cookie = SimpleCookie()
+        self.cookie = six.moves.Cookie.SimpleCookie()
         self._website = None
 
 
@@ -161,7 +158,7 @@ class Client(object):
         environ[b'REMOTE_ADDR'] = b'0.0.0.0'
         environ[b'REQUEST_METHOD'] = method.decode('ASCII')
         environ[b'SERVER_PROTOCOL'] = b'HTTP/1.1'
-        environ[b'wsgi.input'] = StringIO(body)
+        environ[b'wsgi.input'] = six.BytesIO(body)
         environ[b'HTTP_CONTENT_LENGTH'] = bytes(len(body))
         environ.update(kw)
         return environ

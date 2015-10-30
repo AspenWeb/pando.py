@@ -12,7 +12,7 @@ from __future__ import unicode_literals
 from . import Response
 
 
-class ConfigurationError(StandardError):
+class ConfigurationError(Exception):
     """This is an error in any part of our configuration.
     """
 
