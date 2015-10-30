@@ -19,11 +19,11 @@ ASPEN_DEPS = [
     ]
 
 TEST_DEPS = [
-    'coverage>=3.7.1',
-    'cov-core>=1.7',
-    'py>=1.4.20',
-    'pytest>=2.5.2',
-    'pytest-cov>=1.6',
+    'coverage==3.7.1',
+    'cov-core==1.15.0',
+    'py==1.4.30',
+    'pytest==2.8.2',
+    'pytest-cov==1.8.1',
     ]
 
 INSTALL_DIR = './vendor/install'
