@@ -41,8 +41,6 @@ import traceback
 
 from first import first as _first
 
-from .. import log as _log
-from .. import log_dammit as _log_dammit
 from .. import dispatcher, resources, body_parsers, typecasting
 from ..http.request import Request
 from ..http.response import Response
@@ -141,15 +139,6 @@ def response_available():
     pass
 
 
-def log_traceback_for_5xx(response, traceback=None):
-    if response.code >= 500:
-        if traceback:
-            _log_dammit(traceback)
-        else:
-            _log_dammit(response.body)
-    return {'traceback': None}
-
-
 def delegate_error_to_simplate(website, state, response, request=None, resource=None):
     if request is None:
         return  # early parsing must've failed
@@ -180,50 +169,3 @@ def delegate_error_to_simplate(website, state, response, request=None, resource=
                 raise
 
     return {'response': response, 'exception': None}
-
-
-def log_traceback_for_exception(website, exception):
-    tb = traceback.format_exc()
-    _log_dammit(tb)
-    response = Response(500)
-    if website.show_tracebacks:
-        response.body = tb
-    return {'response': response, 'exception': None}
-
-
-def log_result_of_request(website, request=None, dispatch_result=None, response=None):
-    """Log access. With our own format (not Apache's).
-    """
-
-    # What was the URL path translated to?
-    # ====================================
-
-    if request is None:
-        msg = "(no request available)"
-    else:
-        fspath = getattr(dispatch_result, 'match', '')
-        if fspath.startswith(website.www_root):
-            fspath = fspath[len(website.www_root):]
-            if fspath:
-                fspath = '.' + fspath
-        else:
-            fspath = '...' + fspath[-21:]
-        msg = "%-24s %s" % (request.line.uri.path.raw, fspath)
-
-
-    # Where was response raised from?
-    # ===============================
-
-    if response is None:
-        response = "(no response available)"
-    else:
-        filename, linenum = response.whence_raised()
-        if filename is not None:
-            response = "%s (%s:%d)" % (response, filename, linenum)
-        else:
-            response = str(response)
-
-    # Log it.
-    # =======
-
-    _log("%-36s %s" % (response, msg))
