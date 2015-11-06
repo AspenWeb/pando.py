@@ -26,10 +26,8 @@ setup( author = 'Gratipay, LLC'
      , classifiers = classifiers
      , description = ('Aspen is a Python web framework. '
                       'Simplates are the main attraction.')
-     , entry_points = {'console_scripts': ['fcgi_aspen = fcgi_aspen:main [fcgi]']}
      , name = 'aspen'
      , packages = find_packages(exclude=['aspen.tests', 'aspen.tests.*'])
-     , py_modules = ['fcgi_aspen']
      , url = 'http://aspen.io/'
      , version = version
      , zip_safe = False
@@ -39,7 +37,6 @@ setup( author = 'Gratipay, LLC'
                           , 'algorithm>=1.0.0'
                           , 'filesystem_tree>=1.0.0'
                            ]
-     , extras_require = {'fcgi': ['flup']}
      , tests_require = [ 'virtualenv>=1.11'
                        , 'py'
                        , 'coverage'
