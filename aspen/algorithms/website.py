@@ -69,10 +69,6 @@ def raise_200_for_OPTIONS(request):
         raise Response(200)
 
 
-def redirect_to_base_url(website, request):
-    website.canonicalize_base_url(request)
-
-
 def dispatch_request_to_filesystem(website, request):
 
     if website.list_directories:

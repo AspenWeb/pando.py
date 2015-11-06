@@ -87,41 +87,6 @@ class Website(Configurable):
         raise response
 
 
-    # Base URL Canonicalization
-    # =========================
-
-    def _extract_scheme(self, request):
-        return request.headers.get('X-Forwarded-Proto', 'http')  # Heroku
-
-    def _extract_host(self, request):
-        return request.headers['Host']  # will 400 if missing
-
-    _canonicalize_base_url_code = 302
-
-    def canonicalize_base_url(self, request):
-        """Enforces a base_url such as http://localhost:8080 (no path part).
-        """
-        if not self.base_url:
-            return
-
-        scheme = self._extract_scheme(request)
-        host = self._extract_host(request)
-
-        actual = scheme + "://" + host
-
-        if actual != self.base_url:
-            url = self.base_url
-            if request.line.method in ('GET', 'HEAD', 'OPTIONS', 'TRACE'):
-                # Redirect to a particular path for idempotent methods.
-                url += request.line.uri.path.raw
-                if request.line.uri.querystring:
-                    url += '?' + request.line.uri.querystring.raw
-            else:
-                # For non-idempotent methods, redirect to homepage.
-                url += '/'
-            self.redirect(url, code=self._canonicalize_base_url_code)
-
-
     # File Resolution
     # ===============
 
