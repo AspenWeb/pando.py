@@ -36,23 +36,6 @@ class Website(Configurable):
         self.configure(**kwargs)
 
 
-    def __call__(self, environ, start_response):
-        return self.wsgi_app(environ, start_response)
-
-    def wsgi_app(self, environ, start_response):
-        """WSGI interface.
-
-        Wrap this method (instead of the website object itself) when you want
-        to use WSGI middleware::
-
-            website = Website()
-            website.wsgi_app = WSGIMiddleware(website.wsgi_app)
-
-        """
-        wsgi = self.respond(environ)['response']
-        return wsgi(environ, start_response)
-
-
     def respond(self, environ, raise_immediately=None, return_after=None):
         """Given a WSGI environ, return a state dict.
         """

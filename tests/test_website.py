@@ -302,45 +302,6 @@ raise Response(400,1,2,3,4,5,6,7,8,9)
     assert 'Response(400,1,2,3,4,5,6,7,8,9)' in response.body
 
 
-class TestMiddleware(object):
-    """Simple WSGI middleware for testing."""
-
-    def __init__(self, app):
-        self.app = app
-
-    def __call__(self, environ, start_response):
-        if environ['PATH_INFO'] == '/middleware':
-            start_response('200 OK', [('Content-Type', 'text/plain')])
-            return ['TestMiddleware']
-        return self.app(environ, start_response)
-
-def build_environ(path):
-    """Build WSGI environ for testing."""
-    return {
-        'REQUEST_METHOD': b'GET',
-        'PATH_INFO': path,
-        'QUERY_STRING': b'',
-        'SERVER_SOFTWARE': b'build_environ/1.0',
-        'SERVER_PROTOCOL': b'HTTP/1.1',
-        'wsgi.input': StringIO.StringIO()
-    }
-
-def test_call_wraps_wsgi_middleware(client):
-    client.website.algorithm.default_short_circuit = False
-    client.website.wsgi_app = TestMiddleware(client.website.wsgi_app)
-    respond = [False, False]
-    def start_response_should_404(status, headers):
-        assert status.lower().strip() == '404 not found'
-        respond[0] = True
-    client.website(build_environ('/'), start_response_should_404)
-    assert respond[0]
-    def start_response_should_200(status, headers):
-        assert status.lower().strip() == '200 ok'
-        respond[1] = True
-    client.website(build_environ('/middleware'), start_response_should_200)
-    assert respond[1]
-
-
 # redirect
 
 def test_redirect_redirects(website):
