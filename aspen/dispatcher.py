@@ -13,8 +13,17 @@ import mimetypes
 import os
 import posixpath
 
-from . import Response
 from .backcompat import namedtuple
+
+
+class DispatchError(Exception):
+    def __init__(self, msg):
+        self.msg = msg
+        Exception.__init__(self)
+
+class NotFound(DispatchError):
+    def __init__(self):
+        DispatchError.__init__(self, "not found")
 
 
 def debug_noop(*args, **kwargs):
@@ -343,7 +352,7 @@ def dispatch(indices, media_type_default, pathparts, uripath, querystring, start
             # Don't let robots.txt be handled by anything other than an actual robots.txt file,
             # because if you don't have a robots.txt but you do have a wildcard, then you end
             # up with logspam.
-            raise Response(404)
+            raise NotFound()
 
     if result.status == DispatchStatus.okay:
         if result.match.endswith(os.path.sep):
@@ -356,7 +365,7 @@ def dispatch(indices, media_type_default, pathparts, uripath, querystring, start
                                        , False
                                         )
             else:
-                raise Response(404)
+                raise NotFound()
 
     elif result.status == DispatchStatus.non_leaf:                                # trailing slash
         location = uripath + '/'
@@ -374,16 +383,16 @@ def dispatch(indices, media_type_default, pathparts, uripath, querystring, start
                                    , False
                                     )
         else:
-            raise Response(404)
+            raise NotFound()
 
     else:
-        raise Response(500, "Unknown result status.")
+        raise DispatchError("Unknown result status.")
 
 
     # Protect against escaping the www_root.
     # ======================================
 
     if result.constrain_path and not result.match.startswith(startdir):
-        raise Response(404)
+        raise NotFound()
 
     return result
