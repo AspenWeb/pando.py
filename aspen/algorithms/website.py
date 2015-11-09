@@ -71,16 +71,21 @@ def dispatch_request_to_filesystem(website, request):
     else:
         directory_default = None
 
-    result = dispatcher.dispatch( indices               = website.indices
-                                , media_type_default    = website.media_type_default
-                                , pathparts             = request.line.uri.path.parts
-                                , uripath               = request.line.uri.path.raw
-                                , querystring           = request.line.uri.querystring.raw
-                                , startdir              = website.www_root
-                                , directory_default     = directory_default
-                                , favicon_default       = website.find_ours('favicon.ico')
-                                , redirect              = website.redirect
-                                 )
+    try:
+        result = dispatcher.dispatch( indices               = website.indices
+                                    , media_type_default    = website.media_type_default
+                                    , pathparts             = request.line.uri.path.parts
+                                    , uripath               = request.line.uri.path.raw
+                                    , querystring           = request.line.uri.querystring.raw
+                                    , startdir              = website.www_root
+                                    , directory_default     = directory_default
+                                    , favicon_default       = website.find_ours('favicon.ico')
+                                    , redirect              = website.redirect
+                                     )
+    except dispatcher.NotFound:
+        raise Response(404)
+    except dispatcher.DispatchError as err:
+        raise Response(500, body=err.msg)
 
     for k, v in result.wildcards.iteritems():
         request.line.uri.path[k] = v
