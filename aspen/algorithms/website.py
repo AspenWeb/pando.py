@@ -63,12 +63,6 @@ def request_available():
     pass
 
 
-def raise_200_for_OPTIONS(request):
-    """A hook to return 200 to an 'OPTIONS *' request"""
-    if request.line.method == "OPTIONS" and request.line.uri == "*":
-        raise Response(200)
-
-
 def dispatch_request_to_filesystem(website, request):
 
     if website.list_directories:
