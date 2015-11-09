@@ -7,17 +7,12 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import datetime
 import os
 
 from algorithm import Algorithm
 from .configuration import Configurable
 from .http.response import Response
-from .utils import to_rfc822, utc
 from .exceptions import BadLocation
-
-# 2006-11-17 was the first release of aspen - v0.3
-THE_PAST = to_rfc822(datetime.datetime(2006, 11, 17, tzinfo=utc))
 
 
 class Website(Configurable):
