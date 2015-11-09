@@ -10,20 +10,18 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from . import Response
 
-
-class FailedTypecast(Response):
+class TypecastError(Exception):
     def __init__(self, extension):
-        body = "Failure to typecast extension '{0}'".format(extension)
-        Response.__init__(self, code=404, body=body)
+        self.msg = "Failure to typecast extension '{0}'".format(extension)
+        Exception.__init__(self)
 
 """
    A typecast dict (like 'defaults' below) is a map of
    suffix -> typecasting function.  The functions must take one unicode
    argument, but may return any value.  If they raise an error, the
    typecasted key (the one without the suffix) will not be set, and
-   a FailedTypecast (a specialized 404) will be thrown.
+   a TypecastError will be thrown.
 """
 
 defaults = { 'int': lambda pathpart, state: int(pathpart)
@@ -48,5 +46,5 @@ def apply_typecasters(typecasters, path, state):
                         path.add(var, typecasters[ext](v, state))
                     path.popall(part)
                 except:
-                    raise FailedTypecast(ext)
+                    raise TypecastError(ext)
 

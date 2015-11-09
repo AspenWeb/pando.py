@@ -8,6 +8,7 @@ from pytest import raises
 
 import aspen
 from aspen import dispatcher, Response
+from aspen.typecasting import TypecastError
 
 
 # Helpers
