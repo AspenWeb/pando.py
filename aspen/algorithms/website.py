@@ -93,10 +93,13 @@ def dispatch_request_to_filesystem(website, request):
 
 
 def apply_typecasters_to_path(website, request, state):
-    typecasting.apply_typecasters( website.typecasters
-                                 , request.line.uri.path
-                                 , state
-                                  )
+    try:
+        typecasting.apply_typecasters( website.typecasters
+                                     , request.line.uri.path
+                                     , state
+                                      )
+    except typecasting.TypecastError:
+        raise Response(404)
 
 
 def get_resource_for_request(website, dispatch_result):
