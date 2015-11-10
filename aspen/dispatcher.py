@@ -297,8 +297,7 @@ def update_neg_type(media_type_default, capture_accept, filename):
     debug(lambda: "set result.extra['accept'] to %r" % media_type)
 
 
-def dispatch(indices, media_type_default, pathparts, uripath, querystring, startdir,
-        favicon_default):
+def dispatch(indices, media_type_default, pathparts, uripath, querystring, startdir):
     """Concretize dispatch_abstract.
     """
 
@@ -348,13 +347,6 @@ def dispatch(indices, media_type_default, pathparts, uripath, querystring, start
     # Handle returned states.
     # =======================
 
-    if result.status != DispatchStatus.missing:
-        if uripath == '/robots.txt' and not result.match.endswith('robots.txt'):  # robots.txt
-            # Don't let robots.txt be handled by anything other than an actual robots.txt file,
-            # because if you don't have a robots.txt but you do have a wildcard, then you end
-            # up with logspam.
-            raise NotFound()
-
     if result.status == DispatchStatus.okay:
         if result.match.endswith(os.path.sep):
             raise UnindexedDirectory()
@@ -365,17 +357,8 @@ def dispatch(indices, media_type_default, pathparts, uripath, querystring, start
             location += '?' + querystring
         raise Redirect(location)
 
-    elif result.status == DispatchStatus.missing:                                 # 404, but ...
-        if uripath == '/favicon.ico' and favicon_default:                         # favicon.ico
-            result = DispatchResult( DispatchStatus.okay
-                                   , favicon_default
-                                   , {}
-                                   , 'Favicon default.'
-                                   , {}
-                                   , False
-                                    )
-        else:
-            raise NotFound()
+    elif result.status == DispatchStatus.missing:                                 # 404
+        raise NotFound()
 
     else:
         raise DispatchError("Unknown result status.")

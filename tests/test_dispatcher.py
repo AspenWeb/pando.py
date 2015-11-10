@@ -55,31 +55,11 @@ def test_dispatcher_returns_a_result(harness):
                                 , uripath               = '/'
                                 , querystring           = ''
                                 , startdir              = harness.fs.www.root
-                                , favicon_default       = ''
                                  )
     assert result.status == dispatcher.DispatchStatus.okay
     assert result.match == os.path.join(harness.fs.www.root, 'index.html')
     assert result.wildcards == {}
     assert result.detail == 'Found.'
-
-def test_dispatcher_returns_a_result_for_favicon(harness):
-    tracer = object()
-    result = dispatcher.dispatch( indices               = []
-                                , media_type_default    = ''
-                                , pathparts             = ['favicon.ico']
-                                , uripath               = '/favicon.ico'
-                                , querystring           = ''
-                                , startdir              = harness.fs.www.root
-                                , favicon_default       = tracer
-                                 )
-    assert result.match is tracer
-
-def test_dispatcher_in_algorithm_returns_a_better_result_for_favicon(harness):
-    result = harness.simple(filepath=None, uripath='/favicon.ico', want='dispatch_result')
-    assert result.status == dispatcher.DispatchStatus.okay
-    assert result.match == harness.client.website.find_ours('favicon.ico')
-    assert result.wildcards == {}
-    assert result.detail == 'Favicon default.'
 
 def test_dispatcher_raises_for_unindexed_directory(harness):
     with raises(dispatcher.UnindexedDirectory):
@@ -89,7 +69,6 @@ def test_dispatcher_raises_for_unindexed_directory(harness):
                            , uripath               = '/'
                            , querystring           = ''
                            , startdir              = harness.fs.www.root
-                           , favicon_default       = ''
                             )
 
 
@@ -498,15 +477,6 @@ def test_file_with_no_extension_matches(harness):
            )
     assert_fs(harness, '/baz', '%value.spt')
     assert_virtvals(harness, '/baz', {'value': [u'baz']})
-
-def test_aspen_favicon_doesnt_get_clobbered_by_virtual_path(harness):
-    harness.fs.www.mk(('%value.html.spt', NEGOTIATED_SIMPLATE),)
-    actual = harness.simple(uripath='/favicon.ico', filepath=None, want='dispatch_result.match')
-    assert actual == os.path.join(os.path.dirname(aspen.__file__), 'www', 'favicon.ico')
-
-def test_robots_txt_also_shouldnt_be_redirected(harness):
-    harness.fs.www.mk(('%value.html.spt', ''),)
-    assert_raises_404(harness, '/robots.txt')
 
 def test_dont_serve_hidden_files(harness):
     harness.fs.www.mk(('.secret_data', ''),)
