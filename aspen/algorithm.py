@@ -1,6 +1,6 @@
 """
-aspen.algorithms.website
-~~~~~~~~~~~~~~~~~~~~~~~~
+aspen.algorithm
+~~~~~~~~~~~~~~~
 
 These functions comprise the request processing functionality of Aspen.
 
@@ -40,9 +40,9 @@ from __future__ import unicode_literals
 import traceback
 
 
-from .. import dispatcher, resources, body_parsers, typecasting
-from ..http.request import Request
-from ..http.response import Response
+from . import dispatcher, resources, body_parsers, typecasting
+from .http.request import Request
+from .http.response import Response
 
 
 def parse_environ_into_request(environ):

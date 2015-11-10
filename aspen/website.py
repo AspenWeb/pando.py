@@ -25,7 +25,7 @@ class Website(Configurable):
     def __init__(self, **kwargs):
         """Takes configuration in kwargs.
         """
-        self.algorithm = Algorithm.from_dotted_name('aspen.algorithms.website')
+        self.algorithm = Algorithm.from_dotted_name('aspen.algorithm')
         self.configure(**kwargs)
 
 
