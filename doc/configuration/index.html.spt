@@ -16,7 +16,6 @@ Here is an example configuration:</p>
     <tr><td>charset_dynamic</td>            <td>ISO-8859-1</td> </tr>
     <tr><td>charset_static</td>             <td>windows-1252</td> </tr>
     <tr><td>indices</td>                    <td>index.html, README</td> </tr>
-    <tr><td>list_directories</td>           <td>False</td> </tr>
     <tr><td>logging_threshold</td>          <td>1</td> </tr>
     <tr><td>media_type_default</td>         <td>text/plain</td> </tr>
     <tr><td>media_type_json</td>            <td>application/json</td> </tr>

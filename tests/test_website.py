@@ -264,16 +264,6 @@ raise Response(404)
     assert response.body == "Oh no!\n"
 
 
-def test_autoindex_response_is_404_by_default(harness):
-    harness.fs.www.mk(('README', "Greetings, program!"))
-    assert harness.client.GET(raise_immediately=False).code == 404
-
-def test_autoindex_response_is_returned(harness):
-    harness.fs.www.mk(('README', "Greetings, program!"))
-    harness.client.website.list_directories = True
-    body = harness.client.GET(raise_immediately=False).body
-    assert 'README' in body
-
 def test_resources_can_import_from_project_root(harness):
     harness.fs.project.mk(('foo.py', 'bar = "baz"'))
     harness.fs.www.mk(('index.html.spt', "from foo import bar\n[---]\n[---]\nGreetings, %(bar)s!"))

@@ -25,6 +25,9 @@ class NotFound(DispatchError):
     def __init__(self):
         DispatchError.__init__(self, "not found")
 
+class UnindexedDirectory(NotFound):
+    pass
+
 class Redirect(DispatchError):
     pass
 
@@ -161,8 +164,7 @@ def dispatch_abstract(listnodes, is_leaf, traverse, find_index, noext_matched,
             if node == '':  # dir request
                 debug(lambda: "...last node is empty")
                 path_so_far = traverse(curnode, node)
-                # return either an index file or have the path end in '/' which means 404 or
-                # autoindex as appropriate
+                # return either an index file or have the path end in '/' which means 404
                 found_n = find_index(path_so_far)
                 if found_n is None:
                     found_n = ""
@@ -297,7 +299,7 @@ def update_neg_type(media_type_default, capture_accept, filename):
 
 
 def dispatch(indices, media_type_default, pathparts, uripath, querystring, startdir,
-        directory_default, favicon_default):
+        favicon_default):
     """Concretize dispatch_abstract.
     """
 
@@ -356,16 +358,7 @@ def dispatch(indices, media_type_default, pathparts, uripath, querystring, start
 
     if result.status == DispatchStatus.okay:
         if result.match.endswith(os.path.sep):
-            if directory_default:                                                 # autoindex
-                result = DispatchResult( result.status
-                                       , directory_default
-                                       , {}
-                                       , 'Directory default.'
-                                       , {'autoindexdir': result.match}
-                                       , False
-                                        )
-            else:
-                raise NotFound()
+            raise UnindexedDirectory()
 
     elif result.status == DispatchStatus.non_leaf:                                # trailing slash
         location = uripath + '/'

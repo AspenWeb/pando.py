@@ -34,7 +34,6 @@ KNOBS = \
     , 'charset_dynamic':    ('UTF-8',               parse.charset)
     , 'charset_static':     (None,                  parse.charset)
     , 'indices':            (default_indices,       parse.list_)
-    , 'list_directories':   (False,                 parse.yes_no)
     , 'logging_threshold':  (0,                     int)
     , 'media_type_default': ('text/plain',          parse.media_type)
     , 'media_type_json':    ('application/json',    parse.media_type)

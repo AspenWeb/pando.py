@@ -8,7 +8,6 @@ from pytest import raises
 
 import aspen
 from aspen import dispatcher, Response
-from aspen.typecasting import TypecastError
 
 
 # Helpers
@@ -56,7 +55,6 @@ def test_dispatcher_returns_a_result(harness):
                                 , uripath               = '/'
                                 , querystring           = ''
                                 , startdir              = harness.fs.www.root
-                                , directory_default     = ''
                                 , favicon_default       = ''
                                  )
     assert result.status == dispatcher.DispatchStatus.okay
@@ -72,40 +70,27 @@ def test_dispatcher_returns_a_result_for_favicon(harness):
                                 , uripath               = '/favicon.ico'
                                 , querystring           = ''
                                 , startdir              = harness.fs.www.root
-                                , directory_default     = ''
                                 , favicon_default       = tracer
                                  )
     assert result.match is tracer
 
 def test_dispatcher_in_algorithm_returns_a_better_result_for_favicon(harness):
-    harness.client.website.list_directories = True
     result = harness.simple(filepath=None, uripath='/favicon.ico', want='dispatch_result')
     assert result.status == dispatcher.DispatchStatus.okay
     assert result.match == harness.client.website.find_ours('favicon.ico')
     assert result.wildcards == {}
     assert result.detail == 'Favicon default.'
 
-def test_dispatcher_returns_a_result_for_autoindex(harness):
-    harness.client.website.list_directories = True
-    tracer = object()
-    result = dispatcher.dispatch( indices               = []
-                                , media_type_default    = ''
-                                , pathparts             = ['']
-                                , uripath               = '/'
-                                , querystring           = ''
-                                , startdir              = harness.fs.www.root
-                                , directory_default     = tracer
-                                , favicon_default       = ''
-                                 )
-    assert result.match is tracer
-
-def test_dispatcher_in_algorithm_returns_a_better_result_for_autoindex(harness):
-    harness.client.website.list_directories = True
-    result = harness.simple(filepath=None, uripath='/', want='dispatch_result')
-    assert result.status == dispatcher.DispatchStatus.okay
-    assert result.match == harness.client.website.find_ours('autoindex.html.spt')
-    assert result.wildcards == {}
-    assert result.detail == 'Directory default.'
+def test_dispatcher_raises_for_unindexed_directory(harness):
+    with raises(dispatcher.UnindexedDirectory):
+        dispatcher.dispatch( indices               = []
+                           , media_type_default    = ''
+                           , pathparts             = ['']
+                           , uripath               = '/'
+                           , querystring           = ''
+                           , startdir              = harness.fs.www.root
+                           , favicon_default       = ''
+                            )
 
 
 # Indices
