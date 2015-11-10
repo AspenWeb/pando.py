@@ -9,11 +9,10 @@ from pytest import raises
 
 
 def test_default_media_type_works(harness):
-    harness.fs.www.mk(('index.spt', """
+    response = harness.simple("""
 [---]
 [---]
-plaintext"""))
-    response = harness.client.GET(raise_immediately=False)
+plaintext""", raise_immediately=False)
     assert "plaintext" in response.body
 
 SIMPLATE="""
@@ -49,10 +48,10 @@ def test_can_use_request_qs(harness):
 
 
 def test_can_use_request_method(harness):
-    response = harness.simple( SIMPLATE % "request.method"
+    response = harness.simple( SIMPLATE % "request.method.lower()"
                              , uripath='/?foo=bloo'
                               )
-    assert response.body == 'GET'
+    assert response.body == 'get'
 
 
 def test_cant_implicitly_override_state(harness):
