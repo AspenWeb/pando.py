@@ -17,7 +17,6 @@ from collections import defaultdict
 
 import aspen
 from . import parse
-from .. import logging
 from ..exceptions import ConfigurationError
 from ..utils import ascii_dammit
 from ..typecasting import defaults as default_typecasters
@@ -34,7 +33,6 @@ KNOBS = \
     , 'charset_dynamic':    ('UTF-8',               parse.charset)
     , 'charset_static':     (None,                  parse.charset)
     , 'indices':            (default_indices,       parse.list_)
-    , 'logging_threshold':  (0,                     int)
     , 'media_type_default': ('text/plain',          parse.media_type)
     , 'media_type_json':    ('application/json',    parse.media_type)
     , 'project_root':       (None,                  parse.identity)
@@ -47,11 +45,6 @@ KNOBS = \
 
 class Configurable(object):
     """Mixin object for aggregating configuration from several sources.
-
-    This is implemented in such a way that we get helpful log output: we
-    iterate over settings first, not over contexts first (defaults,
-    environment, kwargs).
-
     """
 
     def _set(self, name, hydrated, flat, context, name_in_context):
@@ -120,37 +113,20 @@ class Configurable(object):
         # Configure from defaults, environment, and kwargs.
         # =================================================
 
-        msgs = ["Reading configuration from defaults, environment, and "
-                "kwargs."] # can't actually log until configured
-
         for name, (default, func) in sorted(KNOBS.items()):
 
             # set the default value for this variable
-            msgs.append(self._set(name, default, None, "default", ''))
+            self._set(name, default, None, "default", '')
 
             # set from the environment
             envvar = 'ASPEN_' + name.upper()
             value = os.environ.get(envvar, '').strip()
-            if value:
-                msgs.append(self.set( name
-                                    , value
-                                    , func
-                                    , "environment variable"
-                                    , envvar
-                                     ))
 
             # set from kwargs
             value = kwargs.get(name)
             if value is not None:
-                msgs.append(self.set( name
-                                    , value
-                                    , func
-                                    , "kwargs"
-                                    , name
-                                     ))
+                self.set(name, value, func, "kwargs", name)
 
-        # log appropriately
-        aspen.log_dammit(os.linesep.join(msgs))
 
         # Set some attributes.
         # ====================
@@ -171,14 +147,9 @@ class Configurable(object):
                 raise ConfigurationError(errorstr)
 
         # project root
-        if self.project_root is None:
-            aspen.log_dammit("project_root not configured (no template bases, "
-                             "etc.).")
-        else:
+        if self.project_root is not None:
             # canonicalize it
             if not os.path.isabs(self.project_root):
-                aspen.log_dammit("project_root is relative to CWD: '%s'."
-                                 % self.project_root)
                 cwd = safe_getcwd("Could not get a current working "
                                   "directory. You can specify "
                                   "ASPEN_PROJECT_ROOT in the environment, "
@@ -186,7 +157,6 @@ class Configurable(object):
                 self.project_root = os.path.join(cwd, self.project_root)
 
             self.project_root = os.path.realpath(self.project_root)
-            aspen.log_dammit("project_root set to %s." % self.project_root)
 
             # mime.types
             users_mimetypes = os.path.join(self.project_root, 'mime.types')
@@ -230,21 +200,14 @@ class Configurable(object):
         self.show_renderers()
 
     def show_renderers(self):
-        aspen.log_dammit("Renderers (*ed are unavailable, CAPS is default):")
         width = max(map(len, self.renderer_factories))
         for name, factory in self.renderer_factories.items():
             star, error = " ", ""
-            if isinstance(factory, ImportError):
-                star = "*"
-                error = "ImportError: " + factory.args[0]
             if name == self.renderer_default:
                 name = name.upper()
             name = name.ljust(width + 2)
-            aspen.log_dammit(" %s%s%s" % (star, name, error))
 
         default_renderer = self.renderer_factories[self.renderer_default]
         if isinstance(default_renderer, ImportError):
-            msg = "\033[1;31mImportError loading the default renderer, %s:\033[0m"
-            aspen.log_dammit(msg % self.renderer_default)
             sys.excepthook(*default_renderer.info)
             raise default_renderer
