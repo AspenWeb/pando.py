@@ -65,12 +65,6 @@ def request_available():
 
 def dispatch_request_to_filesystem(website, request):
 
-    if website.list_directories:
-        directory_default = website.ours_or_theirs('autoindex.html.spt')
-        assert directory_default is not None  # sanity check
-    else:
-        directory_default = None
-
     try:
         result = dispatcher.dispatch( indices               = website.indices
                                     , media_type_default    = website.media_type_default
@@ -78,7 +72,6 @@ def dispatch_request_to_filesystem(website, request):
                                     , uripath               = request.line.uri.path.raw
                                     , querystring           = request.line.uri.querystring.raw
                                     , startdir              = website.www_root
-                                    , directory_default     = directory_default
                                     , favicon_default       = website.find_ours('favicon.ico')
                                      )
     except dispatcher.Redirect as err:

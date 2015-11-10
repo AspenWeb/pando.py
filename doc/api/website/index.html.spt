@@ -19,7 +19,6 @@ arguments to Website:</p>
     <tr><td>charset_static</td><td>None</td> </tr>
     <tr><td>indices</td><td>['index', 'index.html', 'index.json',
         'index.html.spt', 'index.json.spt']</td> </tr>
-    <tr><td>list_directories</td><td>False</td> </tr>
     <tr><td>logging_threshold</td><td>0 (most verbose)</td> </tr>
     <tr><td>media_type_default</td><td>text/plain</td> </tr>
     <tr><td>media_type_json</td><td>application/json</td> </tr>
