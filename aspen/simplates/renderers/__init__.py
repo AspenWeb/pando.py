@@ -84,8 +84,6 @@ from __future__ import unicode_literals
 import sys
 import pkg_resources
 
-from ... import log_dammit
-
 # Built-in renderers
 BUILTIN_RENDERERS = [ 'stdlib_format'
                     , 'stdlib_percent'
@@ -121,7 +119,6 @@ def factories(configuration):
     for entrypoint in pkg_resources.iter_entry_points(group='aspen.renderers'):
         render_module = entrypoint.load()
         renderer_factories[entrypoint.name] = render_module.Factory(configuration)
-        log_dammit("Found plugin for renderer '%s'" % entrypoint.name)
     return renderer_factories
 
 

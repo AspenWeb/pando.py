@@ -16,8 +16,7 @@ from aspen.website import Website
 def test_defaults_to_defaults(harness):
     c = Configurable()
     c.configure()
-    actual = ( c.logging_threshold
-             , c.project_root
+    actual = ( c.project_root
              , c.www_root
 
              , c.changes_reload
@@ -29,21 +28,11 @@ def test_defaults_to_defaults(harness):
              , c.renderer_default
              , c.show_tracebacks
               )
-    expected = ( 0, None, os.getcwd(), False, 'UTF-8', None
+    expected = ( None, os.getcwd(), False, 'UTF-8', None
                , ['index.html', 'index.json', 'index', 'index.html.spt', 'index.json.spt', 'index.spt']
                , 'text/plain', 'application/json', 'stdlib_percent', False
                 )
     assert actual == expected
-
-def test_logging_threshold_goes_to_one():
-    c = Configurable()
-    c.configure(logging_threshold='1')
-    assert c.logging_threshold == 1
-
-def test_logging_threshold_goes_to_eleven():
-    c = Configurable()
-    c.configure(logging_threshold='11')
-    assert c.logging_threshold == 11
 
 def test_www_root_defaults_to_cwd():
     c = Configurable()
