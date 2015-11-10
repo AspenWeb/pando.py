@@ -255,15 +255,13 @@ foo = "program"
 Greetings, %(foo)s!"""
 
 def test_indirect_negotiation_sets_media_type(harness):
-    harness.fs.www.mk(('/foo.spt', INDIRECTLY_NEGOTIATED_SIMPLATE))
-    response = harness.client.GET('/foo.html')
+    response = harness.simple(INDIRECTLY_NEGOTIATED_SIMPLATE, '/foo.spt', '/foo.html')
     expected = "<h1>Greetings, program!</h1>\n"
     actual = response.body
     assert actual == expected
 
 def test_indirect_negotiation_sets_media_type_to_secondary(harness):
-    harness.fs.www.mk(('/foo.spt', INDIRECTLY_NEGOTIATED_SIMPLATE))
-    response = harness.client.GET('/foo.txt')
+    response = harness.simple(INDIRECTLY_NEGOTIATED_SIMPLATE, '/foo.spt', '/foo.txt')
     expected = "Greetings, program!"
     actual = response.body
     assert actual == expected
@@ -284,8 +282,7 @@ Greetings, %(foo)s!"""
 
 
 def test_dynamic_resource_inside_virtual_path(harness):
-    harness.fs.www.mk(('/%foo/bar.spt', SIMPLATE_VIRTUAL_PATH ))
-    response = harness.client.GET('/program/bar.txt')
+    response = harness.simple(SIMPLATE_VIRTUAL_PATH, '/%foo/bar.spt', '/program/bar.txt')
     expected = "Greetings, program!"
     actual = response.body
     assert actual == expected
@@ -301,21 +298,18 @@ Unknown request type, %(foo)s!
 Greetings, %(foo)s!"""
 
 def test_dynamic_resource_inside_virtual_path_with_startypes_present(harness):
-    harness.fs.www.mk(('/%foo/bar.spt', SIMPLATE_STARTYPE ))
-    response = harness.client.GET('/program/bar.html')
+    response = harness.simple(SIMPLATE_STARTYPE, '/%foo/bar.spt', '/program/bar.html')
     actual = response.body
     assert '<h1>' in actual
 
 def test_dynamic_resource_inside_virtual_path_with_startype_partial_match(harness):
-    harness.fs.www.mk(('/%foo/bar.spt', SIMPLATE_STARTYPE ))
-    response = harness.client.GET('/program/bar.txt')
+    response = harness.simple(SIMPLATE_STARTYPE, '/%foo/bar.spt', '/program/bar.txt')
     expected = "Greetings, program!"
     actual = response.body
     assert actual == expected
 
 def test_dynamic_resource_inside_virtual_path_with_startype_fallback(harness):
-    harness.fs.www.mk(('/%foo/bar.spt', SIMPLATE_STARTYPE ))
-    response = harness.client.GET('/program/bar.jpg')
+    response = harness.simple(SIMPLATE_STARTYPE, '/%foo/bar.spt', '/program/bar.jpg')
     expected = "Unknown request type, program!"
     actual = response.body.strip()
     assert actual == expected
