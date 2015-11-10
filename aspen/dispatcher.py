@@ -25,11 +25,11 @@ class NotFound(DispatchError):
     def __init__(self):
         DispatchError.__init__(self, "not found")
 
-class UnindexedDirectory(NotFound):
-    pass
-
-class Redirect(DispatchError):
-    pass
+class AttemptedBreakout(NotFound): pass
+class UnindexedDirectory(NotFound): pass
+class Redirect(DispatchError): pass
+class RedirectFromIndexFilename(Redirect): pass
+class RedirectFromSlashless(Redirect): pass
 
 
 def debug_noop(*args, **kwargs):
@@ -342,7 +342,7 @@ def dispatch(indices, media_type_default, pathparts, uripath, querystring, start
             location = uripath[:-len(pathparts[-1])]
             if querystring:
                 location += '?' + querystring
-            raise Redirect(location)
+            raise RedirectFromIndexFilename(location)
 
 
     # Handle returned states.
@@ -356,7 +356,7 @@ def dispatch(indices, media_type_default, pathparts, uripath, querystring, start
         location = uripath + '/'
         if querystring:
             location += '?' + querystring
-        raise Redirect(location)
+        raise RedirectFromSlashless(location)
 
     elif result.status == DispatchStatus.missing:                                 # 404
         raise NotFound()
@@ -369,6 +369,6 @@ def dispatch(indices, media_type_default, pathparts, uripath, querystring, start
     # ======================================
 
     if result.constrain_path and not result.match.startswith(startdir):
-        raise NotFound()
+        raise AttemptedBreakout()
 
     return result
