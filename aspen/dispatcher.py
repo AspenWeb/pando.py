@@ -25,6 +25,9 @@ class NotFound(DispatchError):
     def __init__(self):
         DispatchError.__init__(self, "not found")
 
+class Redirect(DispatchError):
+    pass
+
 
 def debug_noop(*args, **kwargs):
     pass
@@ -82,7 +85,7 @@ DispatchResult = namedtuple('DispatchResult', 'status match wildcards detail ext
 
 
 def dispatch_abstract(listnodes, is_leaf, traverse, find_index, noext_matched,
-                      startnode, nodepath, redirect):
+                      startnode, nodepath):
     """Given a list of nodenames (in 'nodepath'), return a DispatchResult.
 
     We try to traverse the directed graph rooted at 'startnode' using the
@@ -100,8 +103,6 @@ def dispatch_abstract(listnodes, is_leaf, traverse, find_index, noext_matched,
 
        noext_matched(node) - is called iff node is matched with no extension
         instead of fully
-
-       redirect(location) - redirect to trailing slashes where appropriate
 
     Wildcards nodenames start with %. Non-leaf wildcards are used as keys in
     wildvals and their actual path names are used as their values. In general,
@@ -296,7 +297,7 @@ def update_neg_type(media_type_default, capture_accept, filename):
 
 
 def dispatch(indices, media_type_default, pathparts, uripath, querystring, startdir,
-        directory_default, favicon_default, redirect):
+        directory_default, favicon_default):
     """Concretize dispatch_abstract.
     """
 
@@ -321,7 +322,6 @@ def dispatch(indices, media_type_default, pathparts, uripath, querystring, start
                               , noext_matched
                               , startdir
                               , pathparts
-                              , redirect
                                )
 
     debug(lambda: "dispatch_abstract returned: " + repr(result))
@@ -341,7 +341,7 @@ def dispatch(indices, media_type_default, pathparts, uripath, querystring, start
             location = uripath[:-len(pathparts[-1])]
             if querystring:
                 location += '?' + querystring
-            redirect(location)
+            raise Redirect(location)
 
 
     # Handle returned states.
@@ -371,7 +371,7 @@ def dispatch(indices, media_type_default, pathparts, uripath, querystring, start
         location = uripath + '/'
         if querystring:
             location += '?' + querystring
-        redirect(location)
+        raise Redirect(location)
 
     elif result.status == DispatchStatus.missing:                                 # 404, but ...
         if uripath == '/favicon.ico' and favicon_default:                         # favicon.ico

@@ -80,8 +80,9 @@ def dispatch_request_to_filesystem(website, request):
                                     , startdir              = website.www_root
                                     , directory_default     = directory_default
                                     , favicon_default       = website.find_ours('favicon.ico')
-                                    , redirect              = website.redirect
                                      )
+    except dispatcher.Redirect as err:
+        website.redirect(err.msg)
     except dispatcher.NotFound:
         raise Response(404)
     except dispatcher.DispatchError as err:

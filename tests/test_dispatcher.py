@@ -58,7 +58,6 @@ def test_dispatcher_returns_a_result(harness):
                                 , startdir              = harness.fs.www.root
                                 , directory_default     = ''
                                 , favicon_default       = ''
-                                , redirect              = harness.client.website.redirect
                                  )
     assert result.status == dispatcher.DispatchStatus.okay
     assert result.match == os.path.join(harness.fs.www.root, 'index.html')
@@ -75,7 +74,6 @@ def test_dispatcher_returns_a_result_for_favicon(harness):
                                 , startdir              = harness.fs.www.root
                                 , directory_default     = ''
                                 , favicon_default       = tracer
-                                , redirect              = harness.client.website.redirect
                                  )
     assert result.match is tracer
 
@@ -98,7 +96,6 @@ def test_dispatcher_returns_a_result_for_autoindex(harness):
                                 , startdir              = harness.fs.www.root
                                 , directory_default     = tracer
                                 , favicon_default       = ''
-                                , redirect              = harness.client.website.redirect
                                  )
     assert result.match is tracer
 
