@@ -63,28 +63,3 @@ class Website(Configurable):
             location = newloc
         response.headers['Location'] = location
         raise response
-
-
-    # File Resolution
-    # ===============
-
-    def find_ours(self, filename):
-        """Given a filename, return the filepath to aspen's internal version
-        of that filename.  No existence checking is done, this just abstracts
-        away the __file__ reference nastiness.
-        """
-        return os.path.join(os.path.dirname(__file__), 'www', filename)
-
-    def ours_or_theirs(self, filename):
-        """Given a filename, return a filepath or None.
-        """
-        if self.project_root is not None:
-            theirs = os.path.join(self.project_root, filename)
-            if os.path.isfile(theirs):
-                return theirs
-
-        ours = self.find_ours(filename)
-        if os.path.isfile(ours):
-            return ours
-
-        return None

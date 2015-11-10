@@ -70,7 +70,6 @@ def dispatch_request_to_filesystem(website, request):
                                     , uripath               = request.line.uri.path.raw
                                     , querystring           = request.line.uri.querystring.raw
                                     , startdir              = website.www_root
-                                    , favicon_default       = website.find_ours('favicon.ico')
                                      )
     except dispatcher.Redirect as err:
         website.redirect(err.msg)
