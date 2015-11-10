@@ -129,35 +129,3 @@ def get_response_for_exception(website, exception):
 def response_available():
     """No-op placeholder for easy hookage"""
     pass
-
-
-def delegate_error_to_simplate(website, state, response, request=None, resource=None):
-    if request is None:
-        return  # early parsing must've failed
-    if response.code < 400:
-        return
-
-    code = str(response.code)
-    possibles = [code + ".spt", "error.spt"]
-    fspath = _first(website.ours_or_theirs(errpage) for errpage in possibles)
-
-    if fspath is not None:
-        request.original_resource = resource
-        if resource is not None and resource.default_media_type != website.media_type_default:
-            # Try to return an error that matches the type of the original resource.
-            state['accept_header'] = resource.default_media_type + ', text/plain; q=0.1'
-        resource = resources.get(website, fspath)
-        state['dispatch_result'] = DispatchResult( DispatchStatus.okay
-                                                 , fspath
-                                                 , {}
-                                                 , 'Found.'
-                                                 , {}
-                                                 , True
-                                                  )
-        try:
-            response = resource.respond(state)
-        except Response as response:
-            if response.code != 406:
-                raise
-
-    return {'response': response, 'exception': None}
