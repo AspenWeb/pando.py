@@ -7,8 +7,6 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import os
-
 from algorithm import Algorithm
 from .configuration import Configurable
 from .http.response import Response

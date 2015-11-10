@@ -6,7 +6,6 @@ from __future__ import unicode_literals
 import os
 from pytest import raises
 
-import aspen
 from aspen import dispatcher, Response
 
 
