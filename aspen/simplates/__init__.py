@@ -12,7 +12,6 @@ import sys
 
 import mimeparse
 
-from .. import log
 from ..backcompat import StringIO
 from .pagination import split_and_escape, parse_specline, Page
 
@@ -138,16 +137,9 @@ class Simplate(object):
         if accept is None:
             # No accept header provided, use the default
             return media_type
-        try:
-            media_type = mimeparse.best_match(self.available_types, accept)
-        except:
-            # exception means don't override the defaults
-            log( "Problem with mimeparse.best_match(%r, %r): %r "
-                % (self.available_types, accept, sys.exc_info())
-                )
-        else:
-            if media_type == '':    # breakdown in negotiations
-                raise SimplateException(self.available_types)
+        media_type = mimeparse.best_match(self.available_types, accept)
+        if media_type == '':    # breakdown in negotiations
+            raise SimplateException(self.available_types)
         return media_type
 
 
