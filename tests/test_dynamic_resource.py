@@ -267,9 +267,9 @@ def test_indirect_negotiation_sets_media_type_to_secondary(harness):
     assert actual == expected
 
 def test_indirect_negotiation_with_unsupported_media_type_is_404(harness):
-    harness.fs.www.mk(('/foo.spt', INDIRECTLY_NEGOTIATED_SIMPLATE))
-    response = harness.client.GxT('/foo.jpg')
-    assert response.code == 404
+    with raises(Response) as err:
+        harness.simple(INDIRECTLY_NEGOTIATED_SIMPLATE, '/foo.spt', '/foo.jpg')
+    err.value.code == 404
 
 
 SIMPLATE_VIRTUAL_PATH = """\

@@ -39,12 +39,10 @@ from __future__ import unicode_literals
 
 import traceback
 
-from first import first as _first
 
 from .. import dispatcher, resources, body_parsers, typecasting
 from ..http.request import Request
 from ..http.response import Response
-from ..dispatcher import DispatchResult, DispatchStatus
 
 
 def parse_environ_into_request(environ):
