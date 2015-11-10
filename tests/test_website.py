@@ -27,32 +27,11 @@ def test_basic():
     actual = website.www_root
     assert actual == expected
 
-def test_normal_response_is_returned(harness):
-    harness.fs.www.mk(('index.html', "Greetings, program!"))
-    expected = '\r\n'.join("""\
-HTTP/1.1
-Content-Type: text/html
-
-Greetings, program!
-""".splitlines())
-    actual = harness.client.GET()._to_http('1.1')
-    assert actual == expected
-
-def test_redirect_has_only_location(harness):
-    harness.fs.www.mk(('index.html.spt', """
-from aspen import Response
-[---]
-website.redirect('http://elsewhere', code=304)
-[---]"""))
-    actual = harness.client.GET(raise_immediately=False)
-    assert actual.code == 304
-    headers = actual.headers
-    assert headers.keys() == ['Location']
-
 def test_resources_can_import_from_project_root(harness):
     harness.fs.project.mk(('foo.py', 'bar = "baz"'))
-    harness.fs.www.mk(('index.html.spt', "from foo import bar\n[---]\n[---]\nGreetings, %(bar)s!"))
-    assert harness.client.GET(raise_immediately=False).body == "Greetings, baz!"
+    assert harness.simple( "from foo import bar\n[---]\n[---]\nGreetings, %(bar)s!"
+                         , 'index.html.spt'
+                         , raise_immediately=False).body == "Greetings, baz!"
 
 
 # redirect
