@@ -32,7 +32,7 @@ setup( author = 'Gratipay, LLC'
      , url = 'http://aspen.io/'
      , version = version
      , zip_safe = False
-     , package_data = {'aspen': ['www/*', 'configuration/mime.types']}
+     , package_data = {'aspen': ['configuration/mime.types']}
      , install_requires = ASPEN_DEPS
      , tests_require = TEST_DEPS
       )
