@@ -101,14 +101,10 @@ class Client(object):
     # HTTP Methods
     # ============
 
-    def hit(self, method, path='/', data=None, body=b'', content_type=MULTIPART_CONTENT,
-            raise_immediately=True, return_after=None, want='response', **headers):
+    def hit(self, method, path='/', raise_immediately=True, return_after=None, want='response',
+            **headers):
 
-        data = {} if data is None else data
-        if content_type is MULTIPART_CONTENT:
-            body = encode_multipart(BOUNDARY, data)
-
-        environ = self.build_wsgi_environ(method, path, body, str(content_type), **headers)
+        environ = self.build_wsgi_environ(method, path, **headers)
         state = self.website.respond( environ
                                     , raise_immediately=raise_immediately
                                     , return_after=return_after
@@ -130,7 +126,7 @@ class Client(object):
         return out
 
 
-    def build_wsgi_environ(self, method, path, body, content_type, **kw):
+    def build_wsgi_environ(self, method, path, **kw):
 
         # NOTE that in Aspen (request.py make_franken_headers) only headers
         # beginning with ``HTTP`` are included in the request - and those are
@@ -138,16 +134,16 @@ class Client(object):
         # exceptions to this: ``'CONTENT_TYPE'``, ``'CONTENT_LENGTH'`` which
         # are explicitly checked for.
 
-        typecheck(path, (str, unicode), method, unicode, content_type, str, body, str)
+        typecheck(path, (str, unicode), method, unicode)
         environ = {}
-        environ[b'CONTENT_TYPE'] = content_type
+        environ[b'CONTENT_TYPE'] = b''
         environ[b'HTTP_COOKIE'] = self.cookie.output(header=b'', sep=b'; ')
         environ[b'HTTP_HOST'] = b'localhost'
         environ[b'PATH_INFO'] = path if type(path) is str else path.decode('UTF-8')
         environ[b'REMOTE_ADDR'] = b'0.0.0.0'
         environ[b'REQUEST_METHOD'] = method.decode('ASCII')
         environ[b'SERVER_PROTOCOL'] = b'HTTP/1.1'
-        environ[b'wsgi.input'] = StringIO(body)
-        environ[b'HTTP_CONTENT_LENGTH'] = bytes(len(body))
+        environ[b'wsgi.input'] = StringIO(b'')
+        environ[b'HTTP_CONTENT_LENGTH'] = bytes(len(b''))
         environ.update(kw)
         return environ
