@@ -106,6 +106,7 @@ class Client(object):
 
         environ = self.build_wsgi_environ(method, path, **headers)
         state = self.website.respond( environ
+                                    , accept_header=None
                                     , raise_immediately=raise_immediately
                                     , return_after=return_after
                                      )
