@@ -4,7 +4,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from aspen import json
-from aspen.simplates.renderers import Factory, Renderer
+from aspen.renderers import Factory, Renderer
 
 
 def test_a_custom_renderer(harness):

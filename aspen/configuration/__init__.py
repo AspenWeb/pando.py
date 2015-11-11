@@ -21,7 +21,7 @@ from ..exceptions import ConfigurationError
 from ..utils import ascii_dammit
 from ..typecasting import defaults as default_typecasters
 import aspen.body_parsers
-from ..simplates.renderers import factories
+from ..renderers import factories
 
 default_indices = lambda: ['index.html', 'index.json', 'index',
                            'index.html.spt', 'index.json.spt', 'index.spt']
@@ -196,18 +196,3 @@ class Configurable(object):
 
         if not mimetypes.inited:
             mimetypes.init()
-
-        self.show_renderers()
-
-    def show_renderers(self):
-        width = max(map(len, self.renderer_factories))
-        for name, factory in self.renderer_factories.items():
-            star, error = " ", ""
-            if name == self.renderer_default:
-                name = name.upper()
-            name = name.ljust(width + 2)
-
-        default_renderer = self.renderer_factories[self.renderer_default]
-        if isinstance(default_renderer, ImportError):
-            sys.excepthook(*default_renderer.info)
-            raise default_renderer
