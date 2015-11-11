@@ -67,7 +67,7 @@ import pkg_resources
 # imports of convenience
 from .http.response import Response
 from . import json_ as json
-from .simplates.renderers import BUILTIN_RENDERERS, RENDERERS
+from .renderers import BUILTIN_RENDERERS, RENDERERS
 
 # Shut up, PyFlakes. I know I'm addicted to you.
 Response, json, BUILTIN_RENDERERS, RENDERERS

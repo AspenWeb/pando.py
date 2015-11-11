@@ -8,7 +8,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from . import Renderer, Factory
-from ... import json
+from .. import json
 
 class Renderer(Renderer):
     def compile(self, filepath, raw):

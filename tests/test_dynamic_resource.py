@@ -7,9 +7,9 @@ from pytest import raises, yield_fixture
 
 from aspen import resources, Response
 from aspen.http.resource import Dynamic
-from aspen.simplates.pagination import Page
-from aspen.simplates.renderers.stdlib_template import Factory as TemplateFactory
-from aspen.simplates.renderers.stdlib_percent import Factory as PercentFactory
+from aspen.pagination import Page
+from aspen.renderers.stdlib_template import Factory as TemplateFactory
+from aspen.renderers.stdlib_percent import Factory as PercentFactory
 
 
 @yield_fixture
@@ -215,7 +215,7 @@ def test_respond_406_gives_list_of_acceptable_types(harness):
     assert actual == expected
 
 
-from aspen.simplates.renderers import Renderer, Factory
+from aspen.renderers import Renderer, Factory
 
 class Glubber(Renderer):
     def render_content(self, context):

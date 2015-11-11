@@ -12,7 +12,7 @@ import sys
 
 import mimeparse
 
-from ..backcompat import StringIO
+from .backcompat import StringIO
 from .pagination import split_and_escape, parse_specline, Page
 
 renderer_re = re.compile(r'[a-z0-9.-_]+$')
