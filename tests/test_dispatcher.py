@@ -52,7 +52,6 @@ def test_dispatcher_returns_a_result(harness):
                                 , media_type_default    = ''
                                 , pathparts             = ['']
                                 , uripath               = '/'
-                                , querystring           = ''
                                 , startdir              = harness.fs.www.root
                                  )
     assert result.status == dispatcher.DispatchStatus.okay
@@ -66,7 +65,6 @@ def test_dispatcher_raises_for_unindexed_directory(harness):
                            , media_type_default    = ''
                            , pathparts             = ['']
                            , uripath               = '/'
-                           , querystring           = ''
                            , startdir              = harness.fs.www.root
                             )
 
