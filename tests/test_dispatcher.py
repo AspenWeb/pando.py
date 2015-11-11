@@ -29,7 +29,7 @@ def assert_raises_302(*args):
     return response
 
 def assert_virtvals(harness, uripath, expected_vals):
-    actual = harness.simple(filepath=None, uripath=uripath, want='request.line.uri.path')
+    actual = harness.simple(filepath=None, uripath=uripath, want='path')
     assert actual == expected_vals
 
 def assert_body(harness, uripath, expected_body):
@@ -196,11 +196,11 @@ def test_virtual_path_is_virtual(harness):
     harness.fs.www.mk(('%bar/foo.html', "Greetings, program!"),)
     assert_fs(harness, '/blah/foo.html', '%bar/foo.html')
 
-def test_virtual_path_sets_request_path(harness):
+def test_virtual_path_sets_path(harness):
     harness.fs.www.mk(('%bar/foo.spt', NEGOTIATED_SIMPLATE),)
     assert_virtvals(harness, '/blah/foo.html', {'bar': [u'blah']} )
 
-def test_virtual_path_sets_unicode_request_path(harness):
+def test_virtual_path_sets_unicode_path(harness):
     harness.fs.www.mk(('%bar/foo.html', "Greetings, program!"),)
     assert_virtvals(harness, b'/%E2%98%83/foo.html', {'bar': [u'\u2603']})
 
@@ -280,9 +280,9 @@ class User:
 def test_virtual_path_file_key_val_cast_custom(harness):
     harness.client.website.typecasters['user'] = User.toUser
     harness.fs.www.mk(( 'user/%user.user.html.spt'
-                      , "[-----]\nusername=request.path['user']\n[-----]\nGreetings, %(username)s!"
+                      , "[-----]\nusername=path['user']\n[-----]\nGreetings, %(username)s!"
                        ),)
-    actual = harness.simple(filepath=None, uripath='/user/chad.html', want='request.line.uri.path',
+    actual = harness.simple(filepath=None, uripath='/user/chad.html', want='path',
             run_through='apply_typecasters_to_path')
     assert actual['user'].username == 'chad'
 
@@ -382,7 +382,7 @@ def test_path_part_params_greedy_simplate(harness):
 
 GREETINGS_NAME_SPT = """
 [-----]
-name = request.path['name']
+name = path['name']
 [------]
 Greetings, %(name)s!"""
 
@@ -396,8 +396,8 @@ def test_virtual_path_docs_2(harness):
 
 NAME_LIKES_CHEESE_SPT = """
 [-----]
-name = request.path['name'].title()
-cheese = request.path['cheese']
+name = path['name'].title()
+cheese = path['cheese']
 [---------]
 %(name)s likes %(cheese)s cheese."""
 
@@ -415,7 +415,7 @@ def test_virtual_path_docs_4(harness):
 
 PARTY_LIKE_YEAR_SPT = """\
 [-----]
-year = request.path['year']
+year = path['year']
 [----------]
 Tonight we're going to party like it's %(year)s!"""
 

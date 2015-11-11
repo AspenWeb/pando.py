@@ -68,11 +68,11 @@ def get_table_entries():
         results += [ (files, r, expected[i]) for i, r in enumerate(requests) ]
     return results
 
-def format_result(request, dispatch_result=None, **ignored):
+def format_result(path, dispatch_result=None, **ignored):
     """
     turn a raw request result into a string compatible with the table-driven test
     """
-    wilds = request.line.uri.path
+    wilds = path
     wildtext = ",".join("%s='%s'" % (k, wilds[k]) for k in sorted(wilds))
     result = dispatch_result.match if dispatch_result else ''
     if wildtext: result += " (%s)" % wildtext

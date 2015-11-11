@@ -20,38 +20,10 @@ foo = %s
 [---] via stdlib_format
 {foo}"""
 
-def test_can_use_request_headers(harness):
-    response = harness.simple( SIMPLATE % "request.headers['Foo']"
-                             , HTTP_FOO=b'bar'
-                              )
-    assert response.body == 'bar'
-
-
-def test_can_use_request_cookie(harness):
-    response = harness.simple( SIMPLATE % "request.cookie['foo'].value"
-                             , HTTP_COOKIE=b'foo=bar'
-                              )
-    assert response.body == 'bar'
-
-
-def test_can_use_request_path(harness):
-    response = harness.simple( SIMPLATE % "request.path.raw"
+def test_can_use_path(harness):
+    response = harness.simple( SIMPLATE % "path.raw"
                               )
     assert response.body == '/'
-
-
-def test_can_use_request_qs(harness):
-    response = harness.simple( SIMPLATE % "request.qs['foo']"
-                             , uripath='/?foo=bloo'
-                              )
-    assert response.body == 'bloo'
-
-
-def test_can_use_request_method(harness):
-    response = harness.simple( SIMPLATE % "request.method.lower()"
-                             , uripath='/?foo=bloo'
-                              )
-    assert response.body == 'get'
 
 
 def test_cant_implicitly_override_state(harness):

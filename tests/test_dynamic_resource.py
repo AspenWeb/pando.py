@@ -109,7 +109,7 @@ def test_get_renderer_factory_can_raise_syntax_error(get):
 # respond
 
 def _get_state(harness, *a, **kw):
-    kw['return_after'] = 'dispatch_request_to_filesystem'
+    kw['return_after'] = 'dispatch_path_to_filesystem'
     kw['want'] = 'state'
     return harness.simple(*a, **kw)
 
@@ -173,8 +173,7 @@ def test_respond_negotiates(harness):
 def test_handles_busted_accept(harness):
     harness.fs.www.mk(('index.spt', SIMPLATE))
     state = _get_state(harness, filepath='index.spt', contents=SIMPLATE)
-    # Set an invalid Accept header so it will return default (text/plain)
-    state['request'].headers['Accept'] = 'text/html;'
+    state['accept_header'] = 'text/html;'
     actual = _respond(state).body
     assert actual == "Greetings, program!\n"
 
@@ -188,7 +187,7 @@ def test_respond_sets_content_type_when_it_negotiates(harness):
 def test_respond_doesnt_reset_content_type_when_negotiating(harness):
     harness.fs.www.mk(('index.spt', SIMPLATE))
     state = _get_state(harness, filepath='index.spt', contents=SIMPLATE)
-    state['request'].headers['Accept'] = 'text/html'
+    state['accept_header'] = 'text/html'
     response = Response()
     response.headers['Content-Type'] = 'never/mind'
     state['response'] = response
@@ -232,14 +231,14 @@ def test_can_override_default_renderers_by_mimetype(harness):
     install_glubber(harness)
     harness.fs.www.mk(('index.spt', SIMPLATE),)
     state = _get_state(harness, filepath='index.spt', contents=SIMPLATE)
-    state['request'].headers['Accept'] = 'text/plain'
+    state['accept_header'] = 'text/plain'
     actual = _respond(state).body
     assert actual == "glubber"
 
 def test_can_override_default_renderer_entirely(harness):
     install_glubber(harness)
     state = _get_state(harness, filepath='index.spt', contents=SIMPLATE)
-    state['request'].headers['Accept'] = 'text/plain'
+    state['accept_header'] = 'text/plain'
     actual = _respond(state).body
     assert actual == "glubber"
 
@@ -274,7 +273,7 @@ def test_indirect_negotiation_with_unsupported_media_type_is_404(harness):
 
 SIMPLATE_VIRTUAL_PATH = """\
 [-------]
-foo = request.path['foo']
+foo = path['foo']
 [-------] text/html
 <h1>Greetings, %(foo)s!</h1>
 [-------] text/plain
@@ -289,7 +288,7 @@ def test_dynamic_resource_inside_virtual_path(harness):
 
 SIMPLATE_STARTYPE = """\
 [-------]
-foo = request.path['foo']
+foo = path['foo']
 [-------] */*
 Unknown request type, %(foo)s!
 [-------] text/html
