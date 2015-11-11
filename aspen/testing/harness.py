@@ -77,11 +77,6 @@ class Harness(object):
 
         return self.client.GET(uripath, **kw)
 
-    def make_request(self, *a, **kw):
-        kw['return_after'] = 'dispatch_request_to_filesystem'
-        kw['want'] = 'request'
-        return self.simple(*a, **kw)
-
     def make_dispatch_result(self, *a, **kw):
         kw['return_after'] = 'dispatch_request_to_filesystem'
         kw['want'] = 'dispatch_result'
