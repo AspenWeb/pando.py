@@ -10,7 +10,7 @@ from __future__ import unicode_literals
 import sys
 
 import pytest
-from .harness import Harness
+from . import Harness
 from filesystem_tree import FilesystemTree
 
 
