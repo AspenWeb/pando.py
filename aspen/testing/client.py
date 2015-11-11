@@ -101,20 +101,6 @@ class Client(object):
     # HTTP Methods
     # ============
 
-    def GET(self, *a, **kw):    return self.hit('GET', *a, **kw)
-    def POST(self, *a, **kw):   return self.hit('POST', *a, **kw)
-
-    def GxT(self, *a, **kw):    return self.hxt('GET', *a, **kw)
-    def PxST(self, *a, **kw):   return self.hxt('POST', *a, **kw)
-
-    def hxt(self, *a, **kw):
-        try:
-            self.hit(*a, **kw)
-        except Response as response:
-            return response
-        else:
-            raise DidntRaiseResponse
-
     def hit(self, method, path='/', data=None, body=b'', content_type=MULTIPART_CONTENT,
             raise_immediately=True, return_after=None, want='response', **headers):
 
