@@ -3,7 +3,7 @@
 import os.path
 import posixpath
 import pytest
-from aspen.testing.harness import Harness
+from aspen.testing import Harness
 
 tablefile = os.path.join(os.path.dirname(__file__), 'dispatch_table_data.rst')
 
