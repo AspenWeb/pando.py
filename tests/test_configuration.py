@@ -26,11 +26,10 @@ def test_defaults_to_defaults(harness):
              , c.media_type_default
              , c.media_type_json
              , c.renderer_default
-             , c.show_tracebacks
               )
     expected = ( None, os.getcwd(), False, 'UTF-8', None
                , ['index.html', 'index.json', 'index', 'index.html.spt', 'index.json.spt', 'index.spt']
-               , 'text/plain', 'application/json', 'stdlib_percent', False
+               , 'text/plain', 'application/json', 'stdlib_percent'
                 )
     assert actual == expected
 
