@@ -297,7 +297,7 @@ def update_neg_type(media_type_default, capture_accept, filename):
     debug(lambda: "set result.extra['accept'] to %r" % media_type)
 
 
-def dispatch(indices, media_type_default, pathparts, uripath, querystring, startdir):
+def dispatch(indices, media_type_default, pathparts, uripath, startdir):
     """Concretize dispatch_abstract.
     """
 
@@ -339,8 +339,6 @@ def dispatch(indices, media_type_default, pathparts, uripath, querystring, start
                  % (pathparts[-1], indices)
                   )
             location = uripath[:-len(pathparts[-1])]
-            if querystring:
-                location += '?' + querystring
             raise RedirectFromIndexFilename(location)
 
 
@@ -353,8 +351,6 @@ def dispatch(indices, media_type_default, pathparts, uripath, querystring, start
 
     elif result.status == DispatchStatus.non_leaf:                                # trailing slash
         location = uripath + '/'
-        if querystring:
-            location += '?' + querystring
         raise RedirectFromSlashless(location)
 
     elif result.status == DispatchStatus.missing:                                 # 404

@@ -68,11 +68,14 @@ def dispatch_request_to_filesystem(website, request):
                                     , media_type_default    = website.media_type_default
                                     , pathparts             = request.line.uri.path.parts
                                     , uripath               = request.line.uri.path.raw
-                                    , querystring           = request.line.uri.querystring.raw
                                     , startdir              = website.www_root
                                      )
     except dispatcher.Redirect as err:
-        website.redirect(err.msg)
+        newloc = err.msg
+        querystring = request.line.uri.querystring.raw
+        if querystring:
+            newloc += '?' + querystring
+        website.redirect(newloc)
     except dispatcher.NotFound:
         raise Response(404)
     except dispatcher.DispatchError as err:
