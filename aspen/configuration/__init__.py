@@ -37,8 +37,6 @@ KNOBS = \
     , 'media_type_json':    ('application/json',    parse.media_type)
     , 'project_root':       (None,                  parse.identity)
     , 'renderer_default':   ('stdlib_percent',      parse.renderer)
-    , 'show_tracebacks':    (False,                 parse.yes_no)
-    , 'colorize_tracebacks':(True,                  parse.yes_no)
     , 'www_root':           (None,                  parse.identity)
      }
 
