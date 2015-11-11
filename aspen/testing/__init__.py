@@ -75,7 +75,7 @@ class Harness(object):
                         uripath = uripath[:-len(indexname)]
                         break
 
-        return self.client.GET(uripath, **kw)
+        return self.client.hit('GET', uripath, **kw)
 
     def make_dispatch_result(self, *a, **kw):
         kw['return_after'] = 'dispatch_request_to_filesystem'
