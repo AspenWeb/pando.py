@@ -136,8 +136,13 @@ class Simplate(object):
         _, media_type = self.pages[2]  # default to first content page
         if accept is None:
             # No accept header provided, use the default
-            return media_type
-        media_type = mimeparse.best_match(self.available_types, accept)
+            pass
+        else:
+            try:
+                media_type = mimeparse.best_match(self.available_types, accept)
+            except ValueError:
+                # Unparseable accept header, accept the default
+                pass
         if media_type == '':    # breakdown in negotiations
             raise SimplateException(self.available_types)
         return media_type

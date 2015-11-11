@@ -29,11 +29,12 @@ class Website(Configurable):
         self.configure(**kwargs)
 
 
-    def respond(self, environ, accept_header, raise_immediately=None, return_after=None):
+    def respond(self, path, querystring, accept_header, raise_immediately=None, return_after=None):
         """Given a WSGI environ, return a state dict.
         """
         return self.algorithm.run( website=self
-                                 , environ=environ
+                                 , path=path
+                                 , querystring=querystring
                                  , accept_header=accept_header
                                  , _raise_immediately=raise_immediately
                                  , _return_after=return_after

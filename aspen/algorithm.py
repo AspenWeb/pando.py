@@ -39,42 +39,31 @@ from __future__ import unicode_literals
 
 import traceback
 
-
-from . import dispatcher, resources, body_parsers, typecasting
-from .http.request import Request
+from . import dispatcher, resources, typecasting
+from .http.request import Path, Querystring
 from .http.response import Response
 
 
-def parse_environ_into_request(environ):
-    return {'request': Request.from_wsgi(environ)}
+def hydrate_path(path):
+    return {'path': Path(path)}
 
 
-def parse_body_into_request(request, website):
-    request._parse_body = lambda _: body_parsers.parse_body( request.raw_body
-                                                           , request.headers
-                                                           , website.body_parsers
-                                                            )
+def hydrate_querystring(querystring):
+    return {'querystring': Querystring(querystring)}
 
 
-def request_available():
-    """No-op placeholder for easy hookage"""
-    pass
-
-
-def dispatch_request_to_filesystem(website, request):
-
+def dispatch_path_to_filesystem(website, path, querystring):
     try:
         result = dispatcher.dispatch( indices               = website.indices
                                     , media_type_default    = website.media_type_default
-                                    , pathparts             = request.line.uri.path.parts
-                                    , uripath               = request.line.uri.path.raw
+                                    , pathparts             = path.parts
+                                    , uripath               = path.decoded
                                     , startdir              = website.www_root
                                      )
     except dispatcher.Redirect as err:
         newloc = err.msg
-        querystring = request.line.uri.querystring.raw
         if querystring:
-            newloc += '?' + querystring
+            newloc += '?' + querystring.decoded
         website.redirect(newloc)
     except dispatcher.NotFound:
         raise Response(404)
@@ -82,14 +71,14 @@ def dispatch_request_to_filesystem(website, request):
         raise Response(500, body=err.msg)
 
     for k, v in result.wildcards.iteritems():
-        request.line.uri.path[k] = v
+        path[k] = v
     return {'dispatch_result': result}
 
 
-def apply_typecasters_to_path(website, request, state):
+def apply_typecasters_to_path(website, path, state):
     try:
         typecasting.apply_typecasters( website.typecasters
-                                     , request.line.uri.path
+                                     , path
                                      , state
                                       )
     except typecasting.TypecastError:

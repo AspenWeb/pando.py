@@ -101,11 +101,11 @@ class Client(object):
     # HTTP Methods
     # ============
 
-    def hit(self, method, path='/', raise_immediately=True, return_after=None, want='response',
-            **headers):
+    def hit(self, method, path='/', querystring='', raise_immediately=True, return_after=None,
+            want='response', **headers):
 
-        environ = self.build_wsgi_environ(method, path, **headers)
-        state = self.website.respond( environ
+        state = self.website.respond( path
+                                    , querystring
                                     , accept_header=None
                                     , raise_immediately=raise_immediately
                                     , return_after=return_after
@@ -125,26 +125,3 @@ class Client(object):
             out = getattr(out, name)
 
         return out
-
-
-    def build_wsgi_environ(self, method, path, **kw):
-
-        # NOTE that in Aspen (request.py make_franken_headers) only headers
-        # beginning with ``HTTP`` are included in the request - and those are
-        # changed to no longer include ``HTTP``. There are currently 2
-        # exceptions to this: ``'CONTENT_TYPE'``, ``'CONTENT_LENGTH'`` which
-        # are explicitly checked for.
-
-        typecheck(path, (str, unicode), method, unicode)
-        environ = {}
-        environ[b'CONTENT_TYPE'] = b''
-        environ[b'HTTP_COOKIE'] = self.cookie.output(header=b'', sep=b'; ')
-        environ[b'HTTP_HOST'] = b'localhost'
-        environ[b'PATH_INFO'] = path if type(path) is str else path.decode('UTF-8')
-        environ[b'REMOTE_ADDR'] = b'0.0.0.0'
-        environ[b'REQUEST_METHOD'] = method.decode('ASCII')
-        environ[b'SERVER_PROTOCOL'] = b'HTTP/1.1'
-        environ[b'wsgi.input'] = StringIO(b'')
-        environ[b'HTTP_CONTENT_LENGTH'] = bytes(len(b''))
-        environ.update(kw)
-        return environ

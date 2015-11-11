@@ -171,7 +171,7 @@ JSONP_RESULT = '''/**/ foo({
 });'''
 
 def _jsonp_query(harness, querystring):
-    return harness.simple(JSONP_SIMPLATE, QUERY_STRING=querystring).body
+    return harness.simple(JSONP_SIMPLATE, querystring=querystring).body
 
 def test_jsonp_basically_works(harness):
     actual = _jsonp_query(harness, "jsonp=foo")

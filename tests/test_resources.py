@@ -61,8 +61,8 @@ def test_resource_dunder_all_limits_vars(harness):
 def test_path_part_params_are_available(harness):
     response = harness.simple("""
         [---]
-        if 'b' in request.path.parts[0].params:
-            a = request.path.parts[0].params['a']
+        if 'b' in path.parts[0].params:
+            a = path.parts[0].params['a']
         [---]
         %(a)s
     """, '/foo/index.html.spt', '/foo;a=1;b;a=3/')
@@ -132,7 +132,7 @@ def test_unknown_mimetype_yields_default_mimetype(harness):
     assert response.headers['Content-Type'] == 'text/plain'
 
 def test_templating_without_script_works(harness):
-    response = harness.simple('[-----]\n[-----] via stdlib_format\n{request.path.raw}')
+    response = harness.simple('[-----]\n[-----] via stdlib_format\n{path.raw}')
     assert response.body == '/'
 
 
