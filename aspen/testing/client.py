@@ -7,12 +7,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from Cookie import SimpleCookie
-
 from ..website import Website
-
-
-class DidntRaiseResponse(Exception): pass
 
 
 class Client(object):
@@ -22,7 +17,6 @@ class Client(object):
     def __init__(self, www_root=None, project_root=None):
         self.www_root = www_root
         self.project_root = project_root
-        self.cookie = SimpleCookie()
         self._website = None
 
 
@@ -41,7 +35,7 @@ class Client(object):
     # HTTP Methods
     # ============
 
-    def hit(self, method, path='/', querystring='', raise_immediately=True, return_after=None,
+    def _hit(self, method, path='/', querystring='', raise_immediately=True, return_after=None,
             want='response', **headers):
 
         state = self.website.respond( path
