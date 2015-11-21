@@ -38,12 +38,6 @@ class Client(object):
     website = property(hydrate_website)
 
 
-    def load_resource(self, path):
-        """Given an URL path, return a Resource instance.
-        """
-        return self.hit('GET', path=path, return_after='get_resource_for_request', want='resource')
-
-
     # HTTP Methods
     # ============
 
