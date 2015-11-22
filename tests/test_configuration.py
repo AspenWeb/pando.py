@@ -73,7 +73,7 @@ name="program"
 [----]
 Greetings, {name}!
     """
-    harness.client.website.renderer_default="stdlib_format"
+    harness.website.renderer_default="stdlib_format"
     harness.fs.www.mk(('index.html.spt', SIMPLATE),)
     actual = harness.simple(filepath=None, uripath='/', want='response.body')
     assert actual == 'Greetings, program!\n'
