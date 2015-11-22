@@ -15,7 +15,7 @@ from aspen.renderers.stdlib_percent import Factory as PercentFactory
 @yield_fixture
 def get(harness):
     def get(**_kw):
-        kw = dict( website = harness.client.website
+        kw = dict( website = harness.website
                  , fs = ''
                  , raw = b'[---]\n[---] text/plain via stdlib_template\n'
                  , default_media_type = ''
@@ -26,7 +26,7 @@ def get(harness):
 
 
 def test_dynamic_resource_is_instantiable(harness):
-    website = harness.client.website
+    website = harness.website
     fs = ''
     raw = b'[---]\n[---] text/plain via stdlib_template\n'
     media_type = ''
@@ -224,8 +224,8 @@ class GlubberFactory(Factory):
     Renderer = Glubber
 
 def install_glubber(harness):
-    harness.client.website.renderer_factories['glubber'] = GlubberFactory(harness.client.website)
-    harness.client.website.default_renderers_by_media_type['text/plain'] = 'glubber'
+    harness.website.renderer_factories['glubber'] = GlubberFactory(harness.website)
+    harness.website.default_renderers_by_media_type['text/plain'] = 'glubber'
 
 def test_can_override_default_renderers_by_mimetype(harness):
     install_glubber(harness)

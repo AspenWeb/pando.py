@@ -23,7 +23,7 @@ def test_a_custom_renderer(harness):
         def compile_meta(self, configuration):
             return 'foobar'
 
-    website = harness.client.website
+    website = harness.website
     website.renderer_factories['lorem'] = TestFactory(website)
 
     r = harness.simple("[---]\n[---] text/html via lorem\nLorem ipsum")

@@ -44,10 +44,5 @@ def harness(sys_path_scrubber):
 
 
 @pytest.yield_fixture
-def client(harness):
-    yield harness.client
-
-
-@pytest.yield_fixture
-def website(client):
-    yield client.website
+def website(harness):
+    yield harness.website

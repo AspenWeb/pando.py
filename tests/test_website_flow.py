@@ -12,5 +12,5 @@ def test_website_can_respond(harness):
 def test_user_can_influence_request_context_via_algorithm_state(harness):
     def add_foo_to_context(path):
         return {'foo': 'bar'}
-    harness.client.website.algorithm.insert_after('dispatch_path_to_filesystem', add_foo_to_context)
+    harness.website.algorithm.insert_after('dispatch_path_to_filesystem', add_foo_to_context)
     assert harness.simple('[---]\n[---]\n%(foo)s', 'index.html.spt').body == 'bar'
