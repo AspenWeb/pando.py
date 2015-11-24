@@ -5,7 +5,7 @@ from __future__ import unicode_literals
 
 import os
 
-from aspen.website import Website
+from aspen.processor import Processor
 
 
 simple_error_spt = """
@@ -15,14 +15,21 @@ simple_error_spt = """
 """
 
 
-# Tests
-# =====
-
 def test_basic():
-    website = Website()
+    processor = Processor()
     expected = os.getcwd()
-    actual = website.www_root
+    actual = processor.www_root
     assert actual == expected
+
+def test_processor_can_process(harness):
+    output = harness.simple('[---]\n[---]\nGreetings, program!', 'index.html.spt')
+    assert output.body == 'Greetings, program!'
+
+def test_user_can_influence_render_context_via_algorithm_state(harness):
+    def add_foo_to_context(path):
+        return {'foo': 'bar'}
+    harness.processor.algorithm.insert_after('dispatch_path_to_filesystem', add_foo_to_context)
+    assert harness.simple('[---]\n[---]\n%(foo)s', 'index.html.spt').body == 'bar'
 
 def test_resources_can_import_from_project_root(harness):
     harness.fs.project.mk(('foo.py', 'bar = "baz"'))

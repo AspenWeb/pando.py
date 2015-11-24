@@ -7,12 +7,12 @@ class Static(object):
     """Model a static HTTP resource.
     """
 
-    def __init__(self, website, fspath, raw, media_type):
-        self.website = website
+    def __init__(self, processor, fspath, raw, media_type):
+        self.processor = processor
         self.raw = raw
         self.media_type = media_type
         if media_type == 'application/json':
-            self.media_type = self.website.media_type_json
+            self.media_type = self.processor.media_type_json
 
     def render(self, context):
         output = context.get('output', Output())
@@ -21,7 +21,7 @@ class Static(object):
         output.body = self.raw
         output.media_type = self.media_type
         if self.media_type.startswith('text/'):
-            charset = self.website.charset_static
+            charset = self.processor.charset_static
             if charset is None:
                 pass # Let the consumer guess.
             else:
@@ -32,9 +32,9 @@ class Static(object):
 class Dynamic(Simplate):
     """Model a dynamic HTTP resource using simplates.
 
-       Most defaults are in website, so make SimplateDefaults from that.
+       Most defaults are in processor, so make SimplateDefaults from that.
 
-       Make .website available as it has been historically.
+       Make .processor available as it has been historically.
 
        Figure out which accept header to use.
 
@@ -43,11 +43,11 @@ class Dynamic(Simplate):
 
     """
 
-    def __init__(self, website, fs, raw, default_media_type):
-        self.website = website
-        initial_context = { 'website': website }
-        defaults = SimplateDefaults(website.default_renderers_by_media_type,
-                                    website.renderer_factories,
+    def __init__(self, processor, fs, raw, default_media_type):
+        self.processor = processor
+        initial_context = { 'processor': processor }
+        defaults = SimplateDefaults(processor.default_renderers_by_media_type,
+                                    processor.renderer_factories,
                                     initial_context)
         super(Dynamic, self).__init__(defaults, fs, raw, default_media_type)
 

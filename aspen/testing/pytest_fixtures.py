@@ -44,5 +44,5 @@ def harness(sys_path_scrubber):
 
 
 @pytest.yield_fixture
-def website(harness):
-    yield harness.website
+def processor(harness):
+    yield harness.processor

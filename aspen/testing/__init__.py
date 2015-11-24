@@ -12,7 +12,7 @@ import sys
 from collections import namedtuple
 
 from .. import resources
-from ..website import Website
+from ..processor import Processor
 from filesystem_tree import FilesystemTree
 
 
@@ -44,35 +44,35 @@ class Harness(object):
         self.fs = namedtuple('fs', 'www project')
         self.fs.www = FilesystemTree()
         self.fs.project = FilesystemTree()
-        self._website = None
+        self._processor = None
 
     def teardown(self):
         self.fs.www.remove()
         self.fs.project.remove()
 
-    def hydrate_website(self, **kwargs):
-        if (self._website is None) or kwargs:
+    def hydrate_processor(self, **kwargs):
+        if (self._processor is None) or kwargs:
             _kwargs = { 'www_root': self.fs.www.root
                       , 'project_root': self.fs.project.root
                        }
             _kwargs.update(kwargs)
-            self._website = Website(**_kwargs)
-        return self._website
+            self._processor = Processor(**_kwargs)
+        return self._processor
 
-    website = property(hydrate_website)
+    processor = property(hydrate_processor)
 
 
     # Simple API
     # ==========
 
     def simple(self, contents='Greetings, program!', filepath='index.html.spt', uripath=None,
-            querystring='', website_configuration=None, **kw):
+            querystring='', processor_configuration=None, **kw):
         """A helper to create a file and hit it through our machinery.
         """
         if filepath is not None:
             self.fs.www.mk((filepath, contents))
-        if website_configuration is not None:
-            self.hydrate_website(**website_configuration)
+        if processor_configuration is not None:
+            self.hydrate_processor(**processor_configuration)
 
         if uripath is None:
             if filepath is None:
@@ -81,7 +81,7 @@ class Harness(object):
                 uripath = '/' + filepath
                 if uripath.endswith('.spt'):
                     uripath = uripath[:-len('.spt')]
-                for indexname in self.website.indices:
+                for indexname in self.processor.indices:
                     if uripath.endswith(indexname):
                         uripath = uripath[:-len(indexname)]
                         break
@@ -91,12 +91,12 @@ class Harness(object):
     def _hit(self, method, path='/', querystring='', raise_immediately=True, return_after=None,
              want='output', **headers):
 
-        state = self.website.respond( path
-                                    , querystring
-                                    , accept_header=None
-                                    , raise_immediately=raise_immediately
-                                    , return_after=return_after
-                                     )
+        state = self.processor.process( path
+                                      , querystring
+                                      , accept_header=None
+                                      , raise_immediately=raise_immediately
+                                      , return_after=return_after
+                                       )
 
         attr_path = want.split('.')
         base = attr_path[0]

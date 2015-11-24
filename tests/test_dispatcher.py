@@ -87,44 +87,44 @@ def test_alternate_index_is_not_found(harness):
     assert_raises_NotFound(harness, '/')
 
 def test_alternate_index_is_found(harness):
-    harness.website.indices += ["default.html"]
+    harness.processor.indices += ["default.html"]
     harness.fs.www.mk(('default.html', "Greetings, program!"),)
     assert_fs(harness, '/', 'default.html')
 
 def test_configure_aspen_py_setting_override_works_too(harness):
-    harness.website.indices = ["default.html"]
+    harness.processor.indices = ["default.html"]
     harness.fs.www.mk(('index.html', "Greetings, program!"),)
     assert_raises_NotFound(harness, '/')
 
 def test_configure_aspen_py_setting_takes_first(harness):
-    harness.website.indices = ["index.html", "default.html"]
+    harness.processor.indices = ["index.html", "default.html"]
     harness.fs.www.mk( ('index.html', "Greetings, program!")
                      , ('default.html', "Greetings, program!")
                       )
     assert_fs(harness, '/', 'index.html')
 
 def test_configure_aspen_py_setting_takes_second_if_first_is_missing(harness):
-    harness.website.indices = ["index.html", "default.html"]
+    harness.processor.indices = ["index.html", "default.html"]
     harness.fs.www.mk(('default.html', "Greetings, program!"),)
     assert_fs(harness, '/', 'default.html')
 
 def test_configure_aspen_py_setting_strips_commas(harness):
-    harness.website.indices = ["index.html", "default.html"]
+    harness.processor.indices = ["index.html", "default.html"]
     harness.fs.www.mk(('default.html', "Greetings, program!"),)
     assert_fs(harness, '/', 'default.html')
 
 def test_redirect_indices_to_slash(harness):
-    harness.website.indices = ["index.html", "default.html"]
+    harness.processor.indices = ["index.html", "default.html"]
     harness.fs.www.mk(('index.html', "Greetings, program!"),)
     assert_raises_Redirect(harness, '/index.html')
 
 def test_redirect_second_index_to_slash(harness):
-    harness.website.indices = ["index.html", "default.html"]
+    harness.processor.indices = ["index.html", "default.html"]
     harness.fs.www.mk(('default.html', "Greetings, program!"),)
     assert_raises_Redirect(harness, '/default.html')
 
 def test_dont_redirect_second_index_if_first(harness):
-    harness.website.indices = ["index.html", "default.html"]
+    harness.processor.indices = ["index.html", "default.html"]
     harness.fs.www.mk(('default.html', "Greetings, program!"), ('index.html', "Greetings, program!"),)
     # first index redirects
     assert_raises_Redirect(harness, '/index.html')
@@ -270,7 +270,7 @@ class User:
         return cls(name)
 
 def test_virtual_path_file_key_val_cast_custom(harness):
-    harness.website.typecasters['user'] = User.toUser
+    harness.processor.typecasters['user'] = User.toUser
     harness.fs.www.mk(( 'user/%user.user.html.spt'
                       , "[-----]\nusername=path['user']\n[-----]\nGreetings, %(username)s!"
                        ),)
