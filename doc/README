@@ -1,3 +1,0 @@
-Aspen's documentation is an Aspen website. So check out this repo
-and run 'make docs' from the top level; it will start up an 
-aspen server on http://localhost:5370/
