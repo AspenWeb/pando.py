@@ -37,8 +37,6 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import traceback
-
 from . import dispatcher, resources, typecasting
 from .http.request import Path, Querystring
 from .http.response import Response
@@ -53,36 +51,22 @@ def hydrate_querystring(querystring):
 
 
 def dispatch_path_to_filesystem(website, path, querystring):
-    try:
-        result = dispatcher.dispatch( indices               = website.indices
-                                    , media_type_default    = website.media_type_default
-                                    , pathparts             = path.parts
-                                    , uripath               = path.decoded
-                                    , startdir              = website.www_root
-                                     )
-    except dispatcher.Redirect as err:
-        newloc = err.msg
-        if querystring:
-            newloc += '?' + querystring.decoded
-        website.redirect(newloc)
-    except dispatcher.NotFound:
-        raise Response(404)
-    except dispatcher.DispatchError as err:
-        raise Response(500, body=err.msg)
-
+    result = dispatcher.dispatch( indices               = website.indices
+                                , media_type_default    = website.media_type_default
+                                , pathparts             = path.parts
+                                , uripath               = path.decoded
+                                , startdir              = website.www_root
+                                 )
     for k, v in result.wildcards.iteritems():
         path[k] = v
     return {'dispatch_result': result}
 
 
 def apply_typecasters_to_path(website, path, state):
-    try:
-        typecasting.apply_typecasters( website.typecasters
-                                     , path
-                                     , state
-                                      )
-    except typecasting.TypecastError:
-        raise Response(404)
+    typecasting.apply_typecasters( website.typecasters
+                                 , path
+                                 , state
+                                  )
 
 
 def get_resource_for_request(website, dispatch_result):
@@ -98,17 +82,6 @@ def get_response_for_resource(state, website, resource=None):
     if resource is not None:
         state.setdefault('response', Response(charset=website.charset_dynamic))
         return {'response': resource.respond(state)}
-
-
-def get_response_for_exception(website, exception):
-    tb = traceback.format_exc()
-    if isinstance(exception, Response):
-        response = exception
-    else:
-        response = Response(500)
-        if website.show_tracebacks:
-            response.body = tb
-    return {'response': response, 'traceback': tb, 'exception': None}
 
 
 def response_available():
