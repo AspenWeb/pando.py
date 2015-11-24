@@ -13,9 +13,23 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import re
+
 from .. import RENDERERS
 from ..utils import typecheck
-from ..http.response import charset_re
+
+
+# Define a charset name filter.
+# =============================
+# "The character set names may be up to 40 characters taken from the
+#  printable characters of US-ASCII."
+#  (http://www.iana.org/assignments/character-sets)
+#
+# We're going to be slightly more restrictive. Instead of allowing all
+# printable characters, which include whitespace and newlines, we're going to
+# only allow punctuation that is actually in use in the current IANA list.
+
+charset_re = re.compile("^[A-Za-z0-9:_()+.-]{1,40}$")
 
 
 def identity(value):

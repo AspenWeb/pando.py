@@ -67,12 +67,11 @@ import pkg_resources
 from .backcompat import is_callable
 
 # imports of convenience
-from .http.response import Response
 from . import json_ as json
 from .renderers import BUILTIN_RENDERERS, RENDERERS
 
 # Shut up, PyFlakes. I know I'm addicted to you.
-Response, json, is_callable, BUILTIN_RENDERERS, RENDERERS
+json, is_callable, BUILTIN_RENDERERS, RENDERERS
 
 dist = pkg_resources.get_distribution('aspen')
 __version__ = dist.version
