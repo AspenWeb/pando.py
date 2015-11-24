@@ -29,7 +29,7 @@ def assert_virtvals(harness, uripath, expected_vals):
     assert actual == expected_vals
 
 def assert_body(harness, uripath, expected_body):
-    actual = harness.simple(filepath=None, uripath=uripath, want='response.body')
+    actual = harness.simple(filepath=None, uripath=uripath, want='output.body')
     assert actual == expected_body
 
 NEGOTIATED_SIMPLATE="""[-----]

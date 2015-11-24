@@ -148,7 +148,7 @@ class Simplate(object):
         return media_type
 
 
-    def respond(self, accept, context):
+    def render(self, accept, context):
         """
         get the response to a request for this page
 

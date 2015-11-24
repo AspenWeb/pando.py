@@ -15,10 +15,9 @@ class Renderer(Renderer):
         return raw
 
     def render_content(self, context):
-        if 'Content-type' not in context['response'].headers:
-            response = context['response']
-            website = context['website']
-            response.headers['Content-type'] = website.media_type_json
+        output = context['output']
+        if not output.media_type:
+            output.media_type = context['website'].media_type_json
         return json.dumps(eval(self.compiled, globals(), context))
 
 
