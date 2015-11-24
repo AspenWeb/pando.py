@@ -28,10 +28,10 @@ class Renderer(JsonRenderer):
         if callback is None:
             return json
 
-        response = context['response']
+        output = context['output']
 
         # jsonp requested; fix the content-type
-        response.headers['Content-Type'] = 'application/javascript'
+        output.media_type = 'application/javascript'
 
         # sanify/sanitize the callback by nuking invalid characters
         callback = CALLBACK_RE.sub('', callback)

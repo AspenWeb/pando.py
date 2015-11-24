@@ -39,7 +39,7 @@ from __future__ import unicode_literals
 
 from . import dispatcher, resources, typecasting
 from .http.request import Path, Querystring
-from .http.response import Response
+from .output import Output
 
 
 def hydrate_path(path):
@@ -78,10 +78,10 @@ def resource_available():
     pass
 
 
-def get_response_for_resource(state, website, resource=None):
+def render_resource(state, website, resource=None):
     if resource is not None:
-        state.setdefault('response', Response(charset=website.charset_dynamic))
-        return {'response': resource.respond(state)}
+        state.setdefault('output', Output(charset=website.charset_dynamic))
+        return {'output': resource.render(state)}
 
 
 def response_available():

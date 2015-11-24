@@ -27,17 +27,6 @@ def test_non_ascii_bytes_work_with_encoding(harness):
     """).body.strip()
     assert actual == expected
 
-def test_response_as_wsgi_does_something_sane(harness):
-    expected = u'א'.encode('utf8')
-    wsgi = harness.simple(b"""
-        # encoding=utf8
-        [------------------]
-        text = u'א'
-        [------------------]
-        %(text)s""")
-    actual = b''.join(list(wsgi({}, lambda a,b: None)))
-    assert actual == expected
-
 def test_the_exec_machinery_handles_two_encoding_lines_properly(harness):
     expected = u'א'
     actual = harness.simple(b"""\

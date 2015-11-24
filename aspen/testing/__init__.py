@@ -89,7 +89,7 @@ class Harness(object):
         return self._hit('GET', uripath, querystring, **kw)
 
     def _hit(self, method, path='/', querystring='', raise_immediately=True, return_after=None,
-             want='response', **headers):
+             want='output', **headers):
 
         state = self.website.respond( path
                                     , querystring
@@ -97,11 +97,6 @@ class Harness(object):
                                     , raise_immediately=raise_immediately
                                     , return_after=return_after
                                      )
-
-        response = state.get('response')
-        if response is not None:
-            if response.headers.cookie:
-                self.cookie.update(response.headers.cookie)
 
         attr_path = want.split('.')
         base = attr_path[0]

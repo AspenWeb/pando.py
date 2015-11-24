@@ -22,7 +22,7 @@ def test_json_basically_works(harness):
 def test_json_defaults_to_application_json_for_static_json(harness):
     actual = harness.simple( '{"Greetings": "program!"}'
                            , filepath="foo.json"
-                            ).headers['Content-Type']
+                            ).media_type
     assert actual == 'application/json'
 
 def test_json_content_type_is_configurable_for_static_json(harness):
@@ -30,32 +30,32 @@ def test_json_content_type_is_configurable_for_static_json(harness):
     expected = 'floober/blah'
     actual = harness.simple( '{"Greetings": "program!"}'
                            , filepath="foo.json"
-                            ).headers['Content-Type']
+                            ).media_type
     assert actual == expected
 
 def test_json_content_type_is_configurable_from_kwargs(harness):
     actual = harness.simple( '{"Greetings": "program!"}'
                            , filepath="foo.json"
                            , website_configuration={'media_type_json': 'floober/blah'}
-                            ).headers['Content-Type']
+                            ).media_type
     assert actual == 'floober/blah'
 
 def test_json_content_type_is_configurable_for_dynamic_json(harness):
     harness.website.media_type_json = "floober/blah"
     actual = harness.simple( "[---]\n[---] floober/blah\n{'Greetings': 'program!'}"
                            , filepath="foo.json.spt"
-                            ).headers['Content-Type']
+                            ).media_type
     assert actual == 'floober/blah'
 
 def test_json_content_type_is_per_file_configurable(harness):
     expected = 'floober/blah'
     SPT="""
 [---]
-response.headers['Content-type'] = 'floober/blah'
+output.media_type = 'floober/blah'
 [---] floober/blah
 {'Greetings': 'program!'}
 """
-    actual = harness.simple(SPT, filepath="foo.json.spt").headers['Content-Type']
+    actual = harness.simple(SPT, filepath="foo.json.spt").media_type
     assert actual == expected
 
 def test_json_handles_unicode(harness):
