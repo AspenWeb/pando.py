@@ -69,21 +69,10 @@ def apply_typecasters_to_path(website, path, state):
                                   )
 
 
-def get_resource_for_request(website, dispatch_result):
+def load_resource_from_filesystem(website, dispatch_result):
     return {'resource': resources.get(website, dispatch_result.match)}
 
 
-def resource_available():
-    """No-op placeholder for easy hookage"""
-    pass
-
-
-def render_resource(state, website, resource=None):
-    if resource is not None:
-        state.setdefault('output', Output(charset=website.charset_dynamic))
-        return {'output': resource.render(state)}
-
-
-def response_available():
-    """No-op placeholder for easy hookage"""
-    pass
+def render_resource(state, website, resource):
+    state.setdefault('output', Output(charset=website.charset_dynamic))
+    return {'output': resource.render(state)}
