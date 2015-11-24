@@ -11,8 +11,8 @@ import os
 import sys
 from collections import namedtuple
 
-from .. import resources
-from ..processor import Processor
+from . import resources
+from .processor import Processor
 from filesystem_tree import FilesystemTree
 
 
