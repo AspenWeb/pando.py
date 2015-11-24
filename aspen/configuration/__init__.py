@@ -20,7 +20,6 @@ from . import parse
 from ..exceptions import ConfigurationError
 from ..utils import ascii_dammit
 from ..typecasting import defaults as default_typecasters
-import aspen.body_parsers
 from ..renderers import factories
 
 default_indices = lambda: ['index.html', 'index.json', 'index',
@@ -171,13 +170,6 @@ class Configurable(object):
                                          "or www_root in kwargs.")
 
         self.www_root = os.path.realpath(self.www_root)
-
-        # load bodyparsers
-        self.body_parsers = {
-            "application/x-www-form-urlencoded": aspen.body_parsers.formdata,
-            "multipart/form-data": aspen.body_parsers.formdata,
-            self.media_type_json: aspen.body_parsers.jsondata
-            }
 
         # load renderers
         self.renderer_factories = factories(self)
