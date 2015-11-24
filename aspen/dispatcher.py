@@ -12,8 +12,7 @@ from __future__ import unicode_literals
 import mimetypes
 import os
 import posixpath
-
-from .backcompat import namedtuple
+from collections import namedtuple
 
 
 class DispatchError(Exception):
