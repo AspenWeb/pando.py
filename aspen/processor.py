@@ -1,6 +1,6 @@
 """
-aspen.website
-+++++++++++++
+aspen.processor
++++++++++++++++
 """
 from __future__ import absolute_import
 from __future__ import division
@@ -11,13 +11,8 @@ from algorithm import Algorithm
 from .configuration import Configurable
 
 
-class Website(Configurable):
-    """Represent a website.
-
-    This object holds configuration information, and how to handle HTTP
-    requests (per WSGI). It is available to user-developers inside of their
-    simplates and algorithm functions.
-
+class Processor(Configurable):
+    """Model a processor of simplates.
     """
 
     def __init__(self, **kwargs):
@@ -27,10 +22,10 @@ class Website(Configurable):
         self.configure(**kwargs)
 
 
-    def respond(self, path, querystring, accept_header, raise_immediately=None, return_after=None):
+    def process(self, path, querystring, accept_header, raise_immediately=None, return_after=None):
         """Given a WSGI environ, return a state dict.
         """
-        return self.algorithm.run( website=self
+        return self.algorithm.run( processor=self
                                  , path=path
                                  , querystring=querystring
                                  , accept_header=accept_header

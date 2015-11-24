@@ -18,7 +18,7 @@ def test_barely_working(harness):
 def test_charset_static_barely_working(harness):
     output = harness.simple( 'Greetings, program!'
                              , 'index.html'
-                             , website_configuration={'charset_static': 'OOG'}
+                             , processor_configuration={'charset_static': 'OOG'}
                               )
     assert output.media_type == 'text/html'
     assert output.charset == 'OOG'
@@ -26,7 +26,7 @@ def test_charset_static_barely_working(harness):
 def test_charset_dynamic_barely_working(harness):
     output = harness.simple( '[---]\n[---]\nGreetings, program!'
                              , 'index.html.spt'
-                             , website_configuration={'charset_dynamic': 'CHEESECODE'}
+                             , processor_configuration={'charset_dynamic': 'CHEESECODE'}
                               )
     assert output.media_type == 'text/html'
     assert output.charset == 'CHEESECODE'
@@ -79,9 +79,9 @@ def test_negotiated_resource_doesnt_break(harness):
         , filepath='index.spt').body
     assert actual == expected
 
-def test_website_is_in_context(harness):
+def test_processor_is_in_context(harness):
     output = harness.simple("""
-        assert website.__class__.__name__ == 'Website', website
+        assert processor.__class__.__name__ == 'Processor', processor
         [--------]
         [--------]
         It worked.""")

@@ -10,7 +10,7 @@ from pytest import raises, mark
 
 from aspen.configuration import Configurable, parse
 from aspen.exceptions import ConfigurationError
-from aspen.website import Website
+from aspen.processor import Processor
 
 
 def test_defaults_to_defaults(harness):
@@ -73,16 +73,16 @@ name="program"
 [----]
 Greetings, {name}!
     """
-    harness.website.renderer_default="stdlib_format"
+    harness.processor.renderer_default="stdlib_format"
     harness.fs.www.mk(('index.html.spt', SIMPLATE),)
     actual = harness.simple(filepath=None, uripath='/', want='output.body')
     assert actual == 'Greetings, program!\n'
 
 def test_configuration_ignores_blank_indexfilenames():
-    w = Website(indices='index.html,, ,default.html')
-    assert w.indices[0] == 'index.html'
-    assert w.indices[1] == 'default.html'
-    assert len(w.indices) == 2, "Too many indexfile entries"
+    p = Processor(indices='index.html,, ,default.html')
+    assert p.indices[0] == 'index.html'
+    assert p.indices[1] == 'default.html'
+    assert len(p.indices) == 2, "Too many indexfile entries"
 
 
 # Tests of parsing perversities
