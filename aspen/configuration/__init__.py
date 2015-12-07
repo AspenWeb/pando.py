@@ -15,7 +15,6 @@ import os
 import sys
 from collections import defaultdict
 
-import aspen
 from . import parse
 from ..exceptions import ConfigurationError
 from ..utils import ascii_dammit
@@ -47,7 +46,7 @@ class Configurable(object):
     def _set(self, name, hydrated, flat, context, name_in_context):
         """Set value at self.name, calling hydrated if it's callable.
         """
-        if aspen.is_callable(hydrated):
+        if callable(hydrated):
             hydrated = hydrated()  # Call it if we can.
         setattr(self, name, hydrated)
         if name_in_context:
