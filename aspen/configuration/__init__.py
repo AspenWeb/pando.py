@@ -15,7 +15,6 @@ import os
 import sys
 from collections import defaultdict
 
-import aspen
 from . import parse
 from ..exceptions import ConfigurationError
 from ..utils import ascii_dammit
