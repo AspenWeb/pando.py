@@ -21,6 +21,9 @@ classifiers = [ 'Development Status :: 4 - Beta'
               , 'Topic :: Internet :: WWW/HTTP :: WSGI :: Application'
                ]
 
+
+tests_require = open('tests/requirements.txt').read().splitlines()
+
 setup( author = 'Gratipay, LLC'
      , author_email = 'support@gratipay.com'
      , classifiers = classifiers
@@ -37,10 +40,5 @@ setup( author = 'Gratipay, LLC'
                           , 'algorithm>=1.0.0'
                           , 'filesystem_tree>=1.0.0'
                            ]
-     , tests_require = [ 'virtualenv>=1.11'
-                       , 'py'
-                       , 'coverage'
-                       , 'pytest'
-                       , 'pytest-cov'
-                        ]
+     , tests_require = tests_require
       )
