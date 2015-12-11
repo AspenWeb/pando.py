@@ -3,7 +3,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from aspen.configuration.parse import charset_re
+from aspen.processor.parse import charset_re
 
 
 m = lambda s: charset_re.match(s) is not None
