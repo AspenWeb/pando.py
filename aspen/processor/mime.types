@@ -1,10 +1,3 @@
 application/json            json
 image/x-icon                ico
 text/plain                  py
-
-# Add support for fonts. On OSX at least these aren't known and so they 
-# are treated as template resources. Since they contain  it screws up.
-font/truetype                   ttf
-font/opentype                   otf
-application/x-font-woff         woff
-application/vnd.ms-fontobject   eot
