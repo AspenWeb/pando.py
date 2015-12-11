@@ -48,7 +48,7 @@ class Processor(object):
     def __init__(self, **kwargs):
         """Takes configuration in kwargs.
         """
-        self.algorithm = Algorithm.from_dotted_name('aspen.algorithm')
+        self.algorithm = Algorithm.from_dotted_name('aspen.processor.algorithm')
         self.configure(**kwargs)
 
 

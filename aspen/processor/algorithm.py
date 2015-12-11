@@ -37,9 +37,9 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from . import dispatcher, resources, typecasting
-from .http.request import Path, Querystring
-from .output import Output
+from .. import dispatcher, resources, typecasting
+from ..http.request import Path, Querystring
+from ..output import Output
 
 
 def hydrate_path(path):
