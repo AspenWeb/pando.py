@@ -42,7 +42,7 @@ KNOBS = \
 
 
 class Processor(object):
-    """Model a processor of simplates.
+    """Define a processor of simplates.
     """
 
     def __init__(self, **kwargs):
@@ -53,7 +53,7 @@ class Processor(object):
 
 
     def process(self, path, querystring, accept_header, raise_immediately=None, return_after=None):
-        """Given a WSGI environ, return a state dict.
+        """Given a path, querystring, and Accept header, return a state dict.
         """
         return self.algorithm.run( processor=self
                                  , path=path
