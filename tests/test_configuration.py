@@ -8,24 +8,22 @@ import sys
 
 from pytest import raises, mark
 
-from aspen.configuration import Configurable, parse
 from aspen.exceptions import ConfigurationError
-from aspen.processor import Processor
+from aspen.processor import Processor, parse
 
 
 def test_defaults_to_defaults(harness):
-    c = Configurable()
-    c.configure()
-    actual = ( c.project_root
-             , c.www_root
+    p = Processor()
+    actual = ( p.project_root
+             , p.www_root
 
-             , c.changes_reload
-             , c.charset_dynamic
-             , c.charset_static
-             , c.indices
-             , c.media_type_default
-             , c.media_type_json
-             , c.renderer_default
+             , p.changes_reload
+             , p.charset_dynamic
+             , p.charset_static
+             , p.indices
+             , p.media_type_default
+             , p.media_type_json
+             , p.renderer_default
               )
     expected = ( None, os.getcwd(), False, 'UTF-8', None
                , ['index.html', 'index.json', 'index', 'index.html.spt', 'index.json.spt', 'index.spt']
@@ -34,10 +32,9 @@ def test_defaults_to_defaults(harness):
     assert actual == expected
 
 def test_www_root_defaults_to_cwd():
-    c = Configurable()
-    c.configure()
+    p = Processor()
     expected = os.path.realpath(os.getcwd())
-    actual = c.www_root
+    actual = p.www_root
     assert actual == expected
 
 @mark.skipif(sys.platform == 'win32',
@@ -46,8 +43,7 @@ def test_ConfigurationError_raised_if_no_cwd(harness):
     FSFIX = harness.fs.project.resolve('')
     os.chdir(FSFIX)
     os.rmdir(FSFIX)
-    c = Configurable()
-    raises(ConfigurationError, c.configure)
+    raises(ConfigurationError, Processor)
 
 @mark.skipif(sys.platform == 'win32',
              reason="Windows file locking makes this fail")
@@ -55,15 +51,13 @@ def test_ConfigurationError_NOT_raised_if_no_cwd_but_do_have__www_root(harness):
     foo = os.getcwd()
     os.chdir(harness.fs.project.resolve(''))
     os.rmdir(os.getcwd())
-    c = Configurable()
-    c.configure(www_root=foo)
-    assert c.www_root == foo
+    p = Processor(www_root=foo)
+    assert p.www_root == foo
 
-def test_configurable_sees_root_option(harness):
-    c = Configurable()
-    c.configure(www_root=harness.fs.project.resolve(''))
+def test_processor_sees_root_option(harness):
+    p = Processor(www_root=harness.fs.project.resolve(''))
     expected = harness.fs.project.root
-    actual = c.www_root
+    actual = p.www_root
     assert actual == expected
 
 def test_user_can_set_renderer_default(harness):
