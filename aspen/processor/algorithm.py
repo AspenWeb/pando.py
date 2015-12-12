@@ -37,9 +37,9 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from .. import dispatcher, resources, typecasting
+from . import dispatcher, typecasting
+from .. import resources, output
 from ..http.request import Path, Querystring
-from ..output import Output
 
 
 def hydrate_path(path):
@@ -74,5 +74,5 @@ def load_resource_from_filesystem(processor, dispatch_result):
 
 
 def render_resource(state, processor, resource):
-    state.setdefault('output', Output(charset=processor.charset_dynamic))
+    state.setdefault('output', output.Output(charset=processor.charset_dynamic))
     return {'output': resource.render(state)}

@@ -1,4 +1,4 @@
-from .. import dispatcher
+from ..processor import dispatcher
 from ..simplates import Simplate, SimplateDefaults, SimplateException
 
 
