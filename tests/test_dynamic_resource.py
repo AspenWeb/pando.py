@@ -5,10 +5,11 @@ from __future__ import unicode_literals
 
 from pytest import raises, yield_fixture
 
-from aspen import dispatcher, resources
+from aspen import resources
 from aspen.http.resource import Dynamic
 from aspen.output import Output
 from aspen.pagination import Page
+from aspen.processor import dispatcher
 from aspen.renderers.stdlib_template import Factory as TemplateFactory
 from aspen.renderers.stdlib_percent import Factory as PercentFactory
 

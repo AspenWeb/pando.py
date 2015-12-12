@@ -6,7 +6,7 @@ from __future__ import unicode_literals
 import os
 from pytest import raises
 
-from aspen import dispatcher, typecasting
+from aspen.processor import dispatcher, typecasting
 
 
 # Helpers

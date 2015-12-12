@@ -18,7 +18,7 @@ from algorithm import Algorithm
 from . import parse
 from ..exceptions import ConfigurationError
 from ..utils import ascii_dammit
-from ..typecasting import defaults as default_typecasters
+from ..processor.typecasting import defaults as default_typecasters
 from ..renderers import factories
 
 
