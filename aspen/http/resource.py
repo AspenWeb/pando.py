@@ -1,5 +1,4 @@
 from .. import dispatcher
-from ..output import Output
 from ..simplates import Simplate, SimplateDefaults, SimplateException
 
 
@@ -15,7 +14,7 @@ class Static(object):
             self.media_type = self.processor.media_type_json
 
     def render(self, context):
-        output = context.get('output', Output())
+        output = context['output']
         # XXX Perform HTTP caching here.
         assert type(self.raw) is str # sanity check
         output.body = self.raw
