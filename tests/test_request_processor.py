@@ -5,7 +5,7 @@ from __future__ import unicode_literals
 
 import os
 
-from aspen.processor import Processor
+from aspen.request_processor import RequestProcessor
 
 
 simple_error_spt = """
@@ -16,9 +16,9 @@ simple_error_spt = """
 
 
 def test_basic():
-    processor = Processor()
+    rp = RequestProcessor()
     expected = os.getcwd()
-    actual = processor.www_root
+    actual = rp.www_root
     assert actual == expected
 
 def test_processor_can_process(harness):
@@ -28,7 +28,7 @@ def test_processor_can_process(harness):
 def test_user_can_influence_render_context_via_algorithm_state(harness):
     def add_foo_to_context(path):
         return {'foo': 'bar'}
-    harness.processor.algorithm.insert_after('dispatch_path_to_filesystem', add_foo_to_context)
+    harness.request_processor.algorithm.insert_after('dispatch_path_to_filesystem', add_foo_to_context)
     assert harness.simple('[---]\n[---]\n%(foo)s', 'index.html.spt').body == 'bar'
 
 def test_resources_can_import_from_project_root(harness):

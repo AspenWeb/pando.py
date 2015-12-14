@@ -17,17 +17,17 @@ def test_barely_working(harness):
 
 def test_charset_static_barely_working(harness):
     output = harness.simple( 'Greetings, program!'
-                             , 'index.html'
-                             , processor_configuration={'charset_static': 'OOG'}
-                              )
+                           , 'index.html'
+                           , request_processor_configuration={'charset_static': 'OOG'}
+                            )
     assert output.media_type == 'text/html'
     assert output.charset == 'OOG'
 
 def test_charset_dynamic_barely_working(harness):
     output = harness.simple( '[---]\n[---]\nGreetings, program!'
-                             , 'index.html.spt'
-                             , processor_configuration={'charset_dynamic': 'CHEESECODE'}
-                              )
+                           , 'index.html.spt'
+                           , request_processor_configuration={'charset_dynamic': 'CHEESECODE'}
+                            )
     assert output.media_type == 'text/html'
     assert output.charset == 'CHEESECODE'
 
@@ -37,12 +37,12 @@ def test_resource_pages_work(harness):
 
 def test_resource_dunder_all_limits_vars(harness):
     actual = raises( KeyError
-                            , harness.simple
-                            , "[---]\nfoo = 'bar'\n"
-                              "__all__ = []\n"
-                              "[---------]\n"
-                              "Greetings, %(foo)s!"
-                             ).value
+                   , harness.simple
+                   , "[---]\nfoo = 'bar'\n"
+                     "__all__ = []\n"
+                     "[---------]\n"
+                     "Greetings, %(foo)s!"
+                    ).value
     # in production, KeyError is turned into a 500 by an outer wrapper
     assert type(actual) == KeyError
 
@@ -79,9 +79,9 @@ def test_negotiated_resource_doesnt_break(harness):
         , filepath='index.spt').body
     assert actual == expected
 
-def test_processor_is_in_context(harness):
+def test_request_processor_is_in_context(harness):
     output = harness.simple("""
-        assert processor.__class__.__name__ == 'Processor', processor
+        assert request_processor.__class__.__name__ == 'RequestProcessor', request_processor
         [--------]
         [--------]
         It worked.""")

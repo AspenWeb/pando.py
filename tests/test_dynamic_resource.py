@@ -9,7 +9,7 @@ from aspen import resources
 from aspen.http.resource import Dynamic
 from aspen.output import Output
 from aspen.pagination import Page
-from aspen.processor import dispatcher
+from aspen.request_processor import dispatcher
 from aspen.renderers.stdlib_template import Factory as TemplateFactory
 from aspen.renderers.stdlib_percent import Factory as PercentFactory
 
@@ -17,7 +17,7 @@ from aspen.renderers.stdlib_percent import Factory as PercentFactory
 @yield_fixture
 def get(harness):
     def get(**_kw):
-        kw = dict( processor = harness.processor
+        kw = dict( request_processor = harness.request_processor
                  , fs = ''
                  , raw = b'[---]\n[---] text/plain via stdlib_template\n'
                  , default_media_type = ''
@@ -28,11 +28,11 @@ def get(harness):
 
 
 def test_dynamic_resource_is_instantiable(harness):
-    processor = harness.processor
+    request_processor = harness.request_processor
     fs = ''
     raw = b'[---]\n[---] text/plain via stdlib_template\n'
     media_type = ''
-    actual = Dynamic(processor, fs, raw, media_type).__class__
+    actual = Dynamic(request_processor, fs, raw, media_type).__class__
     assert actual is Dynamic
 
 
@@ -84,21 +84,21 @@ def test_parse_specline_enforces_order(get):
 
 def test_parse_specline_obeys_default_by_media_type(get):
     resource = get()
-    resource.processor.default_renderers_by_media_type['media/type'] = 'glubber'
+    resource.request_processor.default_renderers_by_media_type['media/type'] = 'glubber'
     err = raises(ValueError, resource._parse_specline, 'media/type').value
     msg = err.args[0]
     assert msg.startswith("Unknown renderer for media/type: glubber."), msg
 
 def test_parse_specline_obeys_default_by_media_type_default(get):
     resource = get()
-    resource.processor.default_renderers_by_media_type.default_factory = lambda: 'glubber'
+    resource.request_processor.default_renderers_by_media_type.default_factory = lambda: 'glubber'
     err = raises(ValueError, resource._parse_specline, 'media/type').value
     msg = err.args[0]
     assert msg.startswith("Unknown renderer for media/type: glubber.")
 
 def test_get_renderer_factory_can_raise_syntax_error(get):
     resource = get()
-    resource.processor.default_renderers_by_media_type['media/type'] = 'glubber'
+    resource.request_processor.default_renderers_by_media_type['media/type'] = 'glubber'
     err = raises( SyntaxError
                        , resource._get_renderer_factory
                        , 'media/type'
@@ -117,7 +117,7 @@ def _get_state(harness, *a, **kw):
 
 
 def _render(state):
-    resource = resources.load(state['processor'], state['dispatch_result'].match, 0)
+    resource = resources.load(state['request_processor'], state['dispatch_result'].match, 0)
     state['resource'] = resource
     state['output'] = state.get('output', Output())
     return resource.render(state)
@@ -228,8 +228,9 @@ class GlubberFactory(Factory):
     Renderer = Glubber
 
 def install_glubber(harness):
-    harness.processor.renderer_factories['glubber'] = GlubberFactory(harness.processor)
-    harness.processor.default_renderers_by_media_type['text/plain'] = 'glubber'
+    harness.request_processor.renderer_factories['glubber'] = \
+                                                          GlubberFactory(harness.request_processor)
+    harness.request_processor.default_renderers_by_media_type['text/plain'] = 'glubber'
 
 def test_can_override_default_renderers_by_mimetype(harness):
     install_glubber(harness)

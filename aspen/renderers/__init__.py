@@ -54,7 +54,7 @@ Here's how to implement and register your own renderer:
     class CheeseFactory(Factory):
         Renderer = Cheese
 
-    processor.renderer_factories['excited-about-cheese'] = CheeseFactory(processor)
+    request_processor.renderer_factories['excited-about-cheese'] = CheeseFactory(request_processor)
 
 
 Put that in your startup script. Now you can use it in a negotiated or rendered
