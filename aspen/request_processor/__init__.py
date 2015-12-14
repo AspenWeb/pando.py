@@ -17,9 +17,20 @@ from algorithm import Algorithm
 
 from . import parse
 from .typecasting import defaults as default_typecasters
-from ..exceptions import ConfigurationError
 from ..utils import ascii_dammit
 from ..simplates.renderers import factories
+
+
+class ConfigurationError(StandardError):
+    """This is an error in any part of our configuration.
+    """
+
+    def __init__(self, msg):
+        StandardError.__init__(self)
+        self.msg = msg
+
+    def __str__(self):
+        return self.msg
 
 
 default_indices = lambda: ['index.html', 'index.json', 'index',

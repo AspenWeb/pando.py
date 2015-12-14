@@ -18,11 +18,15 @@ import stat
 import sys
 import traceback
 
-from .exceptions import LoadError
 from .http.resource import Dynamic, Static
 
 
 __cache__ = dict()  # cache, keyed to filesystem path
+
+
+class LoadError(Exception):
+    """Represent a problem loading a resource.
+    """
 
 
 class Entry:

@@ -8,8 +8,7 @@ import sys
 
 from pytest import raises, mark
 
-from aspen.exceptions import ConfigurationError
-from aspen.request_processor import RequestProcessor, parse
+from aspen.request_processor import ConfigurationError, RequestProcessor, parse
 
 
 def test_defaults_to_defaults(harness):
