@@ -16,7 +16,6 @@ from __future__ import unicode_literals
 import re
 
 from ..simplates.renderers import RENDERERS
-from ..utils import typecheck
 
 
 # Define a charset name filter.
@@ -33,7 +32,6 @@ charset_re = re.compile("^[A-Za-z0-9:_()+.-]{1,40}$")
 
 
 def identity(value):
-    typecheck(value, unicode)
     return value
 
 def media_type(media_type):
@@ -41,13 +39,11 @@ def media_type(media_type):
     return media_type.encode('US-ASCII')
 
 def charset(value):
-    typecheck(value, unicode)
     if charset_re.match(value) is None:
         raise ValueError("charset not to spec")
     return value
 
 def yes_no(s):
-    typecheck(s, unicode)
     s = s.lower()
     if s in [u'yes', u'true', u'1']:
         return True
@@ -62,7 +58,6 @@ def list_(value):
     replace it.
 
     """
-    typecheck(value, unicode)
     extend = value.startswith('+')
     if extend:
         value = value[1:]
@@ -78,7 +73,6 @@ def list_(value):
     return (extend, out)
 
 def renderer(value):
-    typecheck(value, unicode)
     if value not in RENDERERS:
         msg = "not one of {%s}" % (','.join(RENDERERS))
         raise ValueError(msg)

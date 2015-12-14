@@ -108,7 +108,7 @@ def test_parse_yes_no_1_is_False():
     assert not parse.yes_no(u'0')
 
 def test_parse_yes_no_int_is_AttributeError():
-    raises(TypeError, parse.yes_no, 1)
+    raises(AttributeError, parse.yes_no, 1)
 
 def test_parse_yes_no_other_is_ValueError():
     raises(ValueError, parse.yes_no, u'cheese')
