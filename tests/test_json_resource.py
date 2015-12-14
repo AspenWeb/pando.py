@@ -7,7 +7,7 @@ import StringIO
 
 from pytest import raises
 
-from aspen import json
+from aspen.simplates import json_
 
 
 def test_json_basically_works(harness):
@@ -139,12 +139,12 @@ def test_aspen_json_load_loads():
     fp = StringIO.StringIO()
     fp.write('{"cheese": "puffs"}')
     fp.seek(0)
-    actual = json.load(fp)
+    actual = json_.load(fp)
     assert actual == {'cheese': 'puffs'}
 
 def test_aspen_json_dump_dumps():
     fp = StringIO.StringIO()
-    json.dump({"cheese": "puffs"}, fp)
+    json_.dump({"cheese": "puffs"}, fp)
     fp.seek(0)
     actual = fp.read()
     assert actual == '''{
@@ -152,11 +152,11 @@ def test_aspen_json_dump_dumps():
 }'''
 
 def test_aspen_json_loads_loads():
-    actual = json.loads('{"cheese": "puffs"}')
+    actual = json_.loads('{"cheese": "puffs"}')
     assert actual == {'cheese': 'puffs'}
 
 def test_aspen_json_dumps_dumps():
-    actual = json.dumps({'cheese': 'puffs'})
+    actual = json_.dumps({'cheese': 'puffs'})
     assert actual == '''{
     "cheese": "puffs"
 }'''

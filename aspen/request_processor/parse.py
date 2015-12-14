@@ -15,7 +15,7 @@ from __future__ import unicode_literals
 
 import re
 
-from .. import RENDERERS
+from ..simplates.renderers import RENDERERS
 from ..utils import typecheck
 
 

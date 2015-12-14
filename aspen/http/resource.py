@@ -1,5 +1,5 @@
 from ..request_processor import dispatcher
-from ..simplates import Simplate, SimplateDefaults, SimplateException
+from ..simplates.simplate import Simplate, SimplateDefaults, SimplateException
 
 
 class Static(object):

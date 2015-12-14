@@ -4,7 +4,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from aspen.simplates import _decode
+from aspen.simplates.simplate import _decode
 from pytest import raises
 
 
