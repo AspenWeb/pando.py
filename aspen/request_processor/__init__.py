@@ -19,7 +19,7 @@ from . import parse
 from .typecasting import defaults as default_typecasters
 from ..exceptions import ConfigurationError
 from ..utils import ascii_dammit
-from ..renderers import factories
+from ..simplates.renderers import factories
 
 
 default_indices = lambda: ['index.html', 'index.json', 'index',

@@ -94,7 +94,7 @@ BUILTIN_RENDERERS = [ 'stdlib_format'
 
 RENDERERS = BUILTIN_RENDERERS[:]
 
-for entrypoint in pkg_resources.iter_entry_points(group='aspen.renderers'):
+for entrypoint in pkg_resources.iter_entry_points(group='aspen.simplates.renderers'):
     RENDERERS.append(entrypoint.name)
 
 RENDERERS.sort()
@@ -107,7 +107,7 @@ def factories(configuration):
         # Pre-populate renderers so we can report on ImportErrors early
         try:
             capture = {}
-            python_syntax = 'from aspen.renderers.%s import Factory'
+            python_syntax = 'from aspen.simplates.renderers.%s import Factory'
             exec python_syntax % name in capture
             make_renderer = capture['Factory'](configuration)
         except ImportError, err:
@@ -116,7 +116,7 @@ def factories(configuration):
         renderer_factories[name] = make_renderer
 
     # import renderers provided by other packages
-    for entrypoint in pkg_resources.iter_entry_points(group='aspen.renderers'):
+    for entrypoint in pkg_resources.iter_entry_points(group='aspen.simplates.renderers'):
         render_module = entrypoint.load()
         renderer_factories[entrypoint.name] = render_module.Factory(configuration)
     return renderer_factories

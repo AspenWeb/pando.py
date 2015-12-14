@@ -4,7 +4,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 
-from aspen.pagination import split
+from aspen.simplates.pagination import split
 from pytest import raises
 
 
