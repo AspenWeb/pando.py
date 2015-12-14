@@ -23,8 +23,8 @@ def test_a_custom_renderer(harness):
         def compile_meta(self, configuration):
             return 'foobar'
 
-    processor = harness.processor
-    processor.renderer_factories['lorem'] = TestFactory(processor)
+    request_processor = harness.request_processor
+    request_processor.renderer_factories['lorem'] = TestFactory(request_processor)
 
     r = harness.simple("[---]\n[---] text/html via lorem\nLorem ipsum")
     d = json.loads(r.body)

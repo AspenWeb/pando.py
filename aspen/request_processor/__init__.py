@@ -1,6 +1,6 @@
 """
-aspen.processor
-+++++++++++++++
+aspen.request_processor
++++++++++++++++++++++++
 """
 from __future__ import absolute_import
 from __future__ import division
@@ -16,9 +16,9 @@ from collections import defaultdict
 from algorithm import Algorithm
 
 from . import parse
+from .typecasting import defaults as default_typecasters
 from ..exceptions import ConfigurationError
 from ..utils import ascii_dammit
-from ..processor.typecasting import defaults as default_typecasters
 from ..renderers import factories
 
 
@@ -41,21 +41,24 @@ KNOBS = \
      }
 
 
-class Processor(object):
-    """Define a processor of simplates.
+class RequestProcessor(object):
+    """Define a parasitic request processor.
+
+    It depends on a host framework for real request/response objects.
+
     """
 
     def __init__(self, **kwargs):
         """Takes configuration in kwargs.
         """
-        self.algorithm = Algorithm.from_dotted_name('aspen.processor.algorithm')
+        self.algorithm = Algorithm.from_dotted_name('aspen.request_processor.algorithm')
         self.configure(**kwargs)
 
 
     def process(self, path, querystring, accept_header, raise_immediately=None, return_after=None):
         """Given a path, querystring, and Accept header, return a state dict.
         """
-        return self.algorithm.run( processor=self
+        return self.algorithm.run( request_processor=self
                                  , path=path
                                  , querystring=querystring
                                  , accept_header=accept_header

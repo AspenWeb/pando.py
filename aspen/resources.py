@@ -40,8 +40,8 @@ class Entry:
         self.quadruple = ()
 
 
-def get(processor, fspath):
-    """Given a processor and a filesystem path, return a Resource object (with caching).
+def get(request_processor, fspath):
+    """Given a RequestProcessor and a filesystem path, return a Resource object (with caching).
     """
 
     # XXX This is not thread-safe. It used to be, but then I simplified it
@@ -67,7 +67,7 @@ def get(processor, fspath):
             raise entry.exc
     else:  # cache miss
         try:
-            entry.resource = load(processor, fspath, mtime)
+            entry.resource = load(request_processor, fspath, mtime)
         except:  # capture any Exception
             entry.exc = (LoadError(traceback.format_exc()), sys.exc_info()[2])
         else:  # reset any previous Exception
@@ -86,8 +86,8 @@ def get(processor, fspath):
     return entry.resource
 
 
-def load(processor, fspath, mtime):
-    """Given a Website, an fspath, and an mtime, return a Resource object (w/o caching).
+def load(request_processor, fspath, mtime):
+    """Given a RequestProcessor, an fspath, and an mtime, return a Resource object (w/o caching).
     """
 
     is_spt = fspath.endswith('.spt')
@@ -109,11 +109,11 @@ def load(processor, fspath, mtime):
     if is_spt:
         guess_with = guess_with[:-4]
     fs_media_type = mimetypes.guess_type(guess_with, strict=False)[0]
-    media_type = fs_media_type if fs_media_type else processor.media_type_default
+    media_type = fs_media_type if fs_media_type else request_processor.media_type_default
 
     # Compute and instantiate a class.
     # ================================
     # An instantiated resource is compiled as far as we can take it.
 
     Class = Dynamic if is_spt else Static
-    return Class(processor, fspath, raw, media_type)
+    return Class(request_processor, fspath, raw, media_type)
