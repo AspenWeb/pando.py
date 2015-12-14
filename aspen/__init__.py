@@ -64,30 +64,6 @@ from __future__ import unicode_literals
 import sys
 import pkg_resources
 
-from .backcompat import is_callable
-
-# imports of convenience
-from .http.response import Response
-from . import json_ as json
-from .logging import log, log_dammit
-from .simplates.renderers import BUILTIN_RENDERERS, RENDERERS
-
-# Shut up, PyFlakes. I know I'm addicted to you.
-Response, json, is_callable, log, log_dammit, BUILTIN_RENDERERS, RENDERERS
-
 dist = pkg_resources.get_distribution('aspen')
 __version__ = dist.version
 WINDOWS = sys.platform[:3] == 'win'
-
-
-
-def serve(website, host='0.0.0.0', port='8080'):
-    """Serve a website.
-    """
-    import os
-    from wsgiref.simple_server import make_server
-
-    port = int(os.environ.get('PORT', port))
-    server = make_server(host, port, website)
-    log_dammit("Greetings, program! Now serving on http://{0}:{1}/.".format(host, port))
-    server.serve_forever()

@@ -5,8 +5,10 @@ from __future__ import unicode_literals
 
 from pytest import raises, yield_fixture
 
-from aspen import resources, Response
+from aspen import resources
 from aspen.http.resource import Dynamic
+from aspen.output import Output
+from aspen.request_processor import dispatcher
 from aspen.simplates.pagination import Page
 from aspen.simplates.renderers.stdlib_template import Factory as TemplateFactory
 from aspen.simplates.renderers.stdlib_percent import Factory as PercentFactory
@@ -15,7 +17,7 @@ from aspen.simplates.renderers.stdlib_percent import Factory as PercentFactory
 @yield_fixture
 def get(harness):
     def get(**_kw):
-        kw = dict( website = harness.client.website
+        kw = dict( request_processor = harness.request_processor
                  , fs = ''
                  , raw = b'[---]\n[---] text/plain via stdlib_template\n'
                  , default_media_type = ''
@@ -26,11 +28,11 @@ def get(harness):
 
 
 def test_dynamic_resource_is_instantiable(harness):
-    website = harness.client.website
+    request_processor = harness.request_processor
     fs = ''
     raw = b'[---]\n[---] text/plain via stdlib_template\n'
     media_type = ''
-    actual = Dynamic(website, fs, raw, media_type).__class__
+    actual = Dynamic(request_processor, fs, raw, media_type).__class__
     assert actual is Dynamic
 
 
@@ -82,21 +84,21 @@ def test_parse_specline_enforces_order(get):
 
 def test_parse_specline_obeys_default_by_media_type(get):
     resource = get()
-    resource.website.default_renderers_by_media_type['media/type'] = 'glubber'
+    resource.request_processor.default_renderers_by_media_type['media/type'] = 'glubber'
     err = raises(ValueError, resource._parse_specline, 'media/type').value
     msg = err.args[0]
     assert msg.startswith("Unknown renderer for media/type: glubber."), msg
 
 def test_parse_specline_obeys_default_by_media_type_default(get):
     resource = get()
-    resource.website.default_renderers_by_media_type.default_factory = lambda: 'glubber'
+    resource.request_processor.default_renderers_by_media_type.default_factory = lambda: 'glubber'
     err = raises(ValueError, resource._parse_specline, 'media/type').value
     msg = err.args[0]
     assert msg.startswith("Unknown renderer for media/type: glubber.")
 
 def test_get_renderer_factory_can_raise_syntax_error(get):
     resource = get()
-    resource.website.default_renderers_by_media_type['media/type'] = 'glubber'
+    resource.request_processor.default_renderers_by_media_type['media/type'] = 'glubber'
     err = raises( SyntaxError
                        , resource._get_renderer_factory
                        , 'media/type'
@@ -106,19 +108,19 @@ def test_get_renderer_factory_can_raise_syntax_error(get):
     assert msg.startswith("Malformed renderer oo*gle. It must match")
 
 
-# respond
+# render
 
 def _get_state(harness, *a, **kw):
-    kw['return_after'] = 'dispatch_request_to_filesystem'
+    kw['return_after'] = 'dispatch_path_to_filesystem'
     kw['want'] = 'state'
     return harness.simple(*a, **kw)
 
 
-def _respond(state):
-    resource = resources.load(state['website'], state['dispatch_result'].match, 0)
+def _render(state):
+    resource = resources.load(state['request_processor'], state['dispatch_result'].match, 0)
     state['resource'] = resource
-    state['response'] = state.get('response', Response())
-    return resource.respond(state)
+    state['output'] = state.get('output', Output())
+    return resource.render(state)
 
 SIMPLATE = """\
 [---]
@@ -128,90 +130,91 @@ Greetings, program!
 <h1>Greetings, program!</h1>
 """
 
-def test_respond_responds(harness):
+def test_render_renders(harness):
     harness.fs.www.mk(('index.spt', SIMPLATE))
-    response = Response()
+    output = Output()
     state = _get_state(harness, filepath='index.spt', contents=SIMPLATE)
-    state['response'] = response
-    actual = _respond(state)
-    assert actual is response
+    state['output'] = output
+    actual = _render(state)
+    assert actual is output
 
-def test_respond_is_happy_not_to_negotiate(harness):
+def test_render_is_happy_not_to_negotiate(harness):
     harness.fs.www.mk(('index.spt', SIMPLATE))
     state = _get_state(harness, filepath='index.spt', contents=SIMPLATE)
-    actual = _respond(state).body
+    actual = _render(state).body
     assert actual == "Greetings, program!\n"
 
-def test_respond_sets_content_type_when_it_doesnt_negotiate(harness):
+def test_render_sets_media_type_when_it_doesnt_negotiate(harness):
     harness.fs.www.mk(('index.spt', SIMPLATE))
     state = _get_state(harness, filepath='index.spt', contents=SIMPLATE)
-    actual = _respond(state).headers['Content-Type']
-    assert actual == "text/plain; charset=UTF-8"
+    output = _render(state)
+    assert output.media_type == "text/plain"
+    assert output.charset is None
 
-def test_respond_doesnt_reset_content_type_when_not_negotiating(harness):
+def test_render_doesnt_reset_media_type_when_not_negotiating(harness):
     harness.fs.www.mk(('index.spt', SIMPLATE))
     state = _get_state(harness, filepath='index.spt', contents=SIMPLATE)
-    response = Response()
-    response.headers['Content-Type'] = 'never/mind'
-    state['response'] = response
-    actual = _respond(state).headers['Content-Type']
+    output = Output()
+    output.media_type = 'never/mind'
+    state['output'] =output
+    actual = _render(state).media_type
     assert actual == "never/mind"
 
-def test_respond_is_happy_not_to_negotiate_with_defaults(harness):
+def test_render_is_happy_not_to_negotiate_with_defaults(harness):
     harness.fs.www.mk(('index.spt', '''[---]\n[---]\nGreetings, program!\n'''))
     state = _get_state(harness, filepath='index.spt', contents=SIMPLATE)
-    actual = _respond(state).body
+    actual = _render(state).body
     assert actual == "Greetings, program!\n"
 
-def test_respond_negotiates(harness):
+def test_render_negotiates(harness):
     harness.fs.www.mk(('index.spt', SIMPLATE))
     state = _get_state(harness, filepath='index.spt', contents=SIMPLATE)
     state['accept_header'] = 'text/html'
-    actual = _respond(state).body
+    actual = _render(state).body
     assert actual == "<h1>Greetings, program!</h1>\n"
 
 def test_handles_busted_accept(harness):
     harness.fs.www.mk(('index.spt', SIMPLATE))
     state = _get_state(harness, filepath='index.spt', contents=SIMPLATE)
-    # Set an invalid Accept header so it will return default (text/plain)
-    state['request'].headers['Accept'] = 'text/html;'
-    actual = _respond(state).body
+    state['accept_header'] = 'text/html;'
+    actual = _render(state).body
     assert actual == "Greetings, program!\n"
 
-def test_respond_sets_content_type_when_it_negotiates(harness):
+def test_render_sets_media_type_when_it_negotiates(harness):
     harness.fs.www.mk(('index.spt', SIMPLATE))
     state = _get_state(harness, filepath='index.spt', contents=SIMPLATE)
     state['accept_header'] = 'text/html'
-    actual = _respond(state).headers['Content-Type']
-    assert actual == "text/html; charset=UTF-8"
+    output = _render(state)
+    assert output.media_type == "text/html"
+    assert output.charset is None
 
-def test_respond_doesnt_reset_content_type_when_negotiating(harness):
+def test_render_doesnt_reset_media_type_when_negotiating(harness):
     harness.fs.www.mk(('index.spt', SIMPLATE))
     state = _get_state(harness, filepath='index.spt', contents=SIMPLATE)
-    state['request'].headers['Accept'] = 'text/html'
-    response = Response()
-    response.headers['Content-Type'] = 'never/mind'
-    state['response'] = response
-    actual = _respond(state).headers['Content-Type']
-    response = Response()
-    response.headers['Content-Type'] = 'never/mind'
-    state['response'] = response
-    actual = _respond(state).headers['Content-Type']
+    state['accept_header'] = 'text/html'
+    output = Output()
+    output.media_type = 'never/mind'
+    state['output'] = output
+    actual = _render(state).media_type
+    output = Output()
+    output.media_type = 'never/mind'
+    state['output'] = output
+    actual = _render(state).media_type
     assert actual == "never/mind"
 
-def test_respond_raises_406_if_need_be(harness):
+def test_render_raises_if_direct_negotiation_fails(harness):
     harness.fs.www.mk(('index.spt', SIMPLATE))
     state = _get_state(harness, filepath='index.spt', contents=SIMPLATE)
     state['accept_header'] = 'cheese/head'
-    actual = raises(Response, _respond, state).value.code
-    assert actual == 406
+    raises(dispatcher.DirectNegotiationFailure, _render, state)
 
-def test_respond_406_gives_list_of_acceptable_types(harness):
+def test_render_negotation_failures_include_available_types(harness):
     harness.fs.www.mk(('index.spt', SIMPLATE))
     state = _get_state(harness, filepath='index.spt', contents=SIMPLATE)
     state['accept_header'] = 'cheese/head'
-    actual = raises(Response, _respond, state).value.body
-    expected = "The following media types are available: text/plain, text/html."
+    actual = raises(dispatcher.DirectNegotiationFailure, _render, state).value.message
+    expected = "Couldn't satisfy cheese/head. The following media types are available: " \
+               "text/plain, text/html."
     assert actual == expected
 
 
@@ -225,22 +228,23 @@ class GlubberFactory(Factory):
     Renderer = Glubber
 
 def install_glubber(harness):
-    harness.client.website.renderer_factories['glubber'] = GlubberFactory(harness.client.website)
-    harness.client.website.default_renderers_by_media_type['text/plain'] = 'glubber'
+    harness.request_processor.renderer_factories['glubber'] = \
+                                                          GlubberFactory(harness.request_processor)
+    harness.request_processor.default_renderers_by_media_type['text/plain'] = 'glubber'
 
 def test_can_override_default_renderers_by_mimetype(harness):
     install_glubber(harness)
     harness.fs.www.mk(('index.spt', SIMPLATE),)
     state = _get_state(harness, filepath='index.spt', contents=SIMPLATE)
-    state['request'].headers['Accept'] = 'text/plain'
-    actual = _respond(state).body
+    state['accept_header'] = 'text/plain'
+    actual = _render(state).body
     assert actual == "glubber"
 
 def test_can_override_default_renderer_entirely(harness):
     install_glubber(harness)
     state = _get_state(harness, filepath='index.spt', contents=SIMPLATE)
-    state['request'].headers['Accept'] = 'text/plain'
-    actual = _respond(state).body
+    state['accept_header'] = 'text/plain'
+    actual = _render(state).body
     assert actual == "glubber"
 
 
@@ -255,28 +259,25 @@ foo = "program"
 Greetings, %(foo)s!"""
 
 def test_indirect_negotiation_sets_media_type(harness):
-    harness.fs.www.mk(('/foo.spt', INDIRECTLY_NEGOTIATED_SIMPLATE))
-    response = harness.client.GET('/foo.html')
+    response = harness.simple(INDIRECTLY_NEGOTIATED_SIMPLATE, '/foo.spt', '/foo.html')
     expected = "<h1>Greetings, program!</h1>\n"
     actual = response.body
     assert actual == expected
 
 def test_indirect_negotiation_sets_media_type_to_secondary(harness):
-    harness.fs.www.mk(('/foo.spt', INDIRECTLY_NEGOTIATED_SIMPLATE))
-    response = harness.client.GET('/foo.txt')
+    response = harness.simple(INDIRECTLY_NEGOTIATED_SIMPLATE, '/foo.spt', '/foo.txt')
     expected = "Greetings, program!"
     actual = response.body
     assert actual == expected
 
-def test_indirect_negotiation_with_unsupported_media_type_is_404(harness):
-    harness.fs.www.mk(('/foo.spt', INDIRECTLY_NEGOTIATED_SIMPLATE))
-    response = harness.client.GxT('/foo.jpg')
-    assert response.code == 404
+def test_indirect_negotiation_with_unsupported_media_type_is_an_error(harness):
+    with raises(dispatcher.IndirectNegotiationFailure):
+        harness.simple(INDIRECTLY_NEGOTIATED_SIMPLATE, '/foo.spt', '/foo.jpg')
 
 
 SIMPLATE_VIRTUAL_PATH = """\
 [-------]
-foo = request.path['foo']
+foo = path['foo']
 [-------] text/html
 <h1>Greetings, %(foo)s!</h1>
 [-------] text/plain
@@ -284,15 +285,14 @@ Greetings, %(foo)s!"""
 
 
 def test_dynamic_resource_inside_virtual_path(harness):
-    harness.fs.www.mk(('/%foo/bar.spt', SIMPLATE_VIRTUAL_PATH ))
-    response = harness.client.GET('/program/bar.txt')
+    response = harness.simple(SIMPLATE_VIRTUAL_PATH, '/%foo/bar.spt', '/program/bar.txt')
     expected = "Greetings, program!"
     actual = response.body
     assert actual == expected
 
 SIMPLATE_STARTYPE = """\
 [-------]
-foo = request.path['foo']
+foo = path['foo']
 [-------] */*
 Unknown request type, %(foo)s!
 [-------] text/html
@@ -301,21 +301,18 @@ Unknown request type, %(foo)s!
 Greetings, %(foo)s!"""
 
 def test_dynamic_resource_inside_virtual_path_with_startypes_present(harness):
-    harness.fs.www.mk(('/%foo/bar.spt', SIMPLATE_STARTYPE ))
-    response = harness.client.GET('/program/bar.html')
+    response = harness.simple(SIMPLATE_STARTYPE, '/%foo/bar.spt', '/program/bar.html')
     actual = response.body
     assert '<h1>' in actual
 
 def test_dynamic_resource_inside_virtual_path_with_startype_partial_match(harness):
-    harness.fs.www.mk(('/%foo/bar.spt', SIMPLATE_STARTYPE ))
-    response = harness.client.GET('/program/bar.txt')
+    response = harness.simple(SIMPLATE_STARTYPE, '/%foo/bar.spt', '/program/bar.txt')
     expected = "Greetings, program!"
     actual = response.body
     assert actual == expected
 
 def test_dynamic_resource_inside_virtual_path_with_startype_fallback(harness):
-    harness.fs.www.mk(('/%foo/bar.spt', SIMPLATE_STARTYPE ))
-    response = harness.client.GET('/program/bar.jpg')
+    response = harness.simple(SIMPLATE_STARTYPE, '/%foo/bar.spt', '/program/bar.jpg')
     expected = "Unknown request type, program!"
     actual = response.body.strip()
     assert actual == expected

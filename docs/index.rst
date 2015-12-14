@@ -20,26 +20,6 @@ Library Reference
    :member-order: bysource
    :special-members:
 
-.. automodule:: aspen.auth
-   :members:
-   :member-order: bysource
-   :special-members:
-
-.. automodule:: aspen.auth.cookie
-   :members:
-   :member-order: bysource
-   :special-members:
-
-.. automodule:: aspen.auth.httpbasic
-   :members:
-   :member-order: bysource
-   :special-members:
-
-.. automodule:: aspen.auth.httpdigest
-   :members:
-   :member-order: bysource
-   :special-members:
-
 .. automodule:: aspen.backcompat
    :members:
    :member-order: bysource

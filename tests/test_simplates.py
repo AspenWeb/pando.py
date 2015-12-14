@@ -4,16 +4,15 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from aspen.simplates import _decode
+from aspen.simplates.simplate import _decode
 from pytest import raises
 
 
 def test_default_media_type_works(harness):
-    harness.fs.www.mk(('index.spt', """
+    response = harness.simple("""
 [---]
 [---]
-plaintext"""))
-    response = harness.client.GET(raise_immediately=False)
+plaintext""", raise_immediately=False)
     assert "plaintext" in response.body
 
 SIMPLATE="""
@@ -21,38 +20,10 @@ foo = %s
 [---] via stdlib_format
 {foo}"""
 
-def test_can_use_request_headers(harness):
-    response = harness.simple( SIMPLATE % "request.headers['Foo']"
-                             , HTTP_FOO=b'bar'
-                              )
-    assert response.body == 'bar'
-
-
-def test_can_use_request_cookie(harness):
-    response = harness.simple( SIMPLATE % "request.cookie['foo'].value"
-                             , HTTP_COOKIE=b'foo=bar'
-                              )
-    assert response.body == 'bar'
-
-
-def test_can_use_request_path(harness):
-    response = harness.simple( SIMPLATE % "request.path.raw"
+def test_can_use_path(harness):
+    response = harness.simple( SIMPLATE % "path.raw"
                               )
     assert response.body == '/'
-
-
-def test_can_use_request_qs(harness):
-    response = harness.simple( SIMPLATE % "request.qs['foo']"
-                             , uripath='/?foo=bloo'
-                              )
-    assert response.body == 'bloo'
-
-
-def test_can_use_request_method(harness):
-    response = harness.simple( SIMPLATE % "request.method"
-                             , uripath='/?foo=bloo'
-                              )
-    assert response.body == 'GET'
 
 
 def test_cant_implicitly_override_state(harness):
@@ -62,19 +33,19 @@ def test_cant_implicitly_override_state(harness):
         "{resource}",
         want='state'
     )
-    assert state['response'].body == 'foo'
+    assert state['output'].body == 'foo'
     assert state['resource'] != 'foo'
 
 
 def test_can_explicitly_override_state(harness):
-    response = harness.simple("[---]\n"
-        "from aspen import Response\n"
-        "state['response'] = Response(299)\n"
+    output = harness.simple("[---]\n"
+        "class Output: body=media_type=charset=code=299\n"
+        "state['output'] = Output()\n"
         "[---]\n"
         "bar"
     )
-    assert response.code == 299
-    assert response.body == 'bar'
+    assert output.code == 299
+    assert output.body == 'bar'
 
 
 def test_but_python_sections_exhibit_module_scoping_behavior(harness):

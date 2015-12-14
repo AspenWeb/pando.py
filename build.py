@@ -10,22 +10,6 @@ from fabricate import main, run, shell, autoclean
 # We satisfy dependencies using local tarballs, to ensure that we can build
 # without a network connection. They're kept in our repo in ./vendor.
 
-ASPEN_DEPS = [
-    'python-mimeparse>=0.1.4',
-    'first>=2.0.1',
-    'algorithm>=1.0.0',
-    'filesystem_tree>=1.0.1',
-    'dependency_injection>=1.1.0',
-    ]
-
-TEST_DEPS = [
-    'coverage>=3.7.1',
-    'cov-core>=1.7',
-    'py>=1.4.20',
-    'pytest>=2.5.2',
-    'pytest-cov>=1.6',
-    ]
-
 INSTALL_DIR = './vendor/install'
 TEST_DIR = './vendor/test'
 BOOTSTRAP_DIR = './vendor/bootstrap'
@@ -81,25 +65,26 @@ def deps():
 
 def _deps(envdir='env'):
     envdir = _env(envdir)
-    v = shell(_virt('python', envdir), '-c', 'import aspen; print("found")', ignore_status=True)
-    if b"found" in v:
-        return envdir
-    for dep in ASPEN_DEPS:
-        run(_virt('pip', envdir), 'install', '--no-index',
-            '--find-links=' + INSTALL_DIR, dep)
-    run(_virt('python', envdir), 'setup.py', 'develop')
+    run( _virt('pip', envdir)
+       , 'install'
+       , '--no-index'
+       , '--find-links=' + INSTALL_DIR
+       , '--editable'
+       , '.'
+        )
     return envdir
 
 
 def _dev_deps(envdir='env'):
     envdir = _deps(envdir)
-    # pytest will need argparse if it's running under 2.6
-    if _virt_version(envdir) < (2, 7):
-        TEST_DEPS.insert(0, 'argparse')
-    for dep in TEST_DEPS:
-        run(_virt('pip', envdir), 'install', '--no-index',
-            '--find-links=' + TEST_DIR, dep)
+    run( _virt('pip', envdir)
+       , 'install'
+       , '--no-index'
+       , '--find-links=' + TEST_DIR
+       , '--requirement=tests/requirements.txt'
+        )
     return envdir
+
 
 def dev():
     """set up an environment able to run tests in env/"""
