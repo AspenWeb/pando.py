@@ -66,7 +66,8 @@ class RequestProcessor(object):
         self.configure(**kwargs)
 
 
-    def process(self, path, querystring, accept_header, raise_immediately=None, return_after=None):
+    def process(self, path, querystring, accept_header, raise_immediately=None, return_after=None,
+            **kw):
         """Given a path, querystring, and Accept header, return a state dict.
         """
         return self.algorithm.run( request_processor=self
@@ -75,6 +76,7 @@ class RequestProcessor(object):
                                  , accept_header=accept_header
                                  , _raise_immediately=raise_immediately
                                  , _return_after=return_after
+                                 , **kw
                                   )
 
 

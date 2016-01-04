@@ -2,59 +2,46 @@
 aspen.shims.django
 ++++++++++++++++++
 
-
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-from aspen import dispatcher, resources, Response as AspenResponse
-from aspen.renderers import Renderer, Factory
+import inspect
+import os
+
+from aspen import resources
+from aspen.request_processor import dispatcher, RequestProcessor
+from aspen.simplates.renderers import Renderer, Factory
 from django.conf import settings
 from django.http import HttpResponse
 from django.template import Template
 from django.template.context import Context
 
 
-def view(request):
+class NoProjectRoot(Exception):
+    pass
 
-    processor = settings.ASPEN_PROCESSOR
 
-    pathparts = request.path.split('/')[1:]
-    path = request.path
-    querystring = request.META['QUERY_STRING']
-    response = None
+def install(*a, **kw):
+    """Install Aspen into a Django app.
+    """
+    arp = kw.pop('_aspen_request_processor', None)
+    if arp is None:
 
-    try:
-        result = dispatcher.dispatch( indices               = website.indices
-                                    , media_type_default    = website.media_type_default
-                                    , pathparts             = pathparts
-                                    , uripath               = path
-                                    , querystring           = querystring
-                                    , startdir              = website.www_root
-                                    , directory_default     = ''
-                                    , favicon_default       = ''
-                                     )
-        context = { 'dispatch_result': result
-                  , 'accept_header': request.META.get('HTTP_ACCEPT')
-                  , 'request': request
-                  , 'user': request.user
-                   }
-        simplate = resources.get(website, result.match)
-        aspen_response = simplate.respond(context)
-    except AspenResponse as aspen_response:
-        pass
-    except SystemExit as exc:
-        response = exc.args[0]
-        assert response is not None
+        # Infer project and www roots.
+        default_project_root = None
+        parent = inspect.stack()[1]
+        if parent:
+            default_project_root = os.path.dirname(parent[1])
+        kw['project_root'] = kw.get('project_root', default_project_root)
+        if kw['project_root'] is None:
+            raise NoProjectRoot()
+        kw['www_root'] = kw.get('www_root', os.path.join(kw['project_root'], 'www'))
 
-    if response is None:
-        response = HttpResponse()
-        response.status_code = aspen_response.code
-        for k, v in aspen_response.headers.items():
-            for val in v:
-                response[k] = val
-        response.content = aspen_response.body
-
-    return response
+        # Instantiate and configure.
+        arp = RequestProcessor(*a, **kw)
+        arp.renderer_factories['django'] = DjangoRendererFactory(arp)
+        arp.default_renderers_by_media_type['text/html'] = 'django'
+    return arp
 
 
 class DjangoRenderer(Renderer):
@@ -71,8 +58,16 @@ class DjangoRendererFactory(Factory):
     Renderer = DjangoRenderer
 
 
-def install(processor=None):
-    if processor is None:
-        processor = Processor()
-    processor.renderer_factories['django'] = DjangoRendererFactory(processor)
-    processor.default_renderers_by_media_type['text/html'] = 'django'
+def view(request):
+    arp = settings.ASPEN_REQUEST_PROCESSOR
+    state = arp.process( request.path
+                       , request.META.get('QUERY_STRING', '')
+                       , request.META.get('HTTP_ACCEPT', None)
+                       , request=request
+                        )
+    output = state['output']
+    body = output.body
+    if type(body) is not type(b''):
+        assert output.charset
+        body = body.encode(output.charset)
+    return HttpResponse(content=body)
