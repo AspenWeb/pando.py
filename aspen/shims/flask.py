@@ -41,15 +41,15 @@ def install(app, *a, **kw):
     arp.renderer_factories['jinja2'] = Jinja2RendererFactory(arp)
     arp.default_renderers_by_media_type['text/html'] = 'jinja2'
 
-    # We can't use add_url_rule because it forces us to constrain methods.
+    # Bypass add_url_rule because it forces us to constrain methods.
     app.url_map.add(app.url_rule_class('/', endpoint='aspen', methods=None))
-    app.view_functions['aspen'] = FlaskAspenView(app, arp)
+    app.view_functions['aspen'] = FlaskView(app, arp)
     app._aspen_request_processor = arp
 
     return arp
 
 
-def FlaskAspenView(app, arp):
+def FlaskView(app, arp):
     def view():
         state = arp.process( request.path
                            , request.query_string
