@@ -8,8 +8,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import inspect
 import os
 
-from aspen import resources
-from aspen.request_processor import dispatcher, RequestProcessor
+from aspen.request_processor import RequestProcessor
 from aspen.simplates.renderers import Renderer, Factory
 from django.conf import settings
 from django.http import HttpResponse
