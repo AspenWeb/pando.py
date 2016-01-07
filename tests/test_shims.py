@@ -30,3 +30,28 @@ Greetings, {{program}}!
     dc = DjangoClient()
     response = dc.request(QUERY_STRING='program=django')
     assert response.content == 'Greetings, django!\n'
+
+def test_flask_shim_is_importable():
+    from aspen.shims import flask as shim
+    assert shim
+
+def test_flask_shim_basically_works(harness, DjangoClient):
+    harness.fs.project.mk(
+    ('aspen_flask_app.py', '''
+import flask
+from aspen.shims import flask as shim
+
+app = flask.Flask(__name__)
+shim.install(app)
+'''),
+    ('www/index.spt', '''
+program = request.args['program']
+[-----] text/html
+Greetings, {{program}}!
+'''))
+    sys.path.insert(0, harness.fs.project.root)
+    from aspen_flask_app import app
+    app.debug = True
+    with app.test_client() as client:
+        response = client.get('/?program=flask')
+    assert response.get_data() == 'Greetings, flask!'
