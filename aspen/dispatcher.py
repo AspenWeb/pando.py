@@ -12,9 +12,9 @@ from __future__ import unicode_literals
 import mimetypes
 import os
 import posixpath
+from collections import namedtuple
 
 from . import Response
-from .backcompat import namedtuple
 
 
 def debug_noop(*args, **kwargs):
