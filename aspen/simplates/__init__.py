@@ -226,7 +226,7 @@ class Simplate(object):
         context.update(self.defaults.initial_context)
 
         one = compile(one.padded_content, self.fs, 'exec')
-        exec one in context    # mutate context
+        exec(one, context)    # mutate context
         one = context          # store it
 
         two = compile(two.padded_content, self.fs, 'exec')
