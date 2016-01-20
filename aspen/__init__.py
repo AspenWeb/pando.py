@@ -64,8 +64,6 @@ from __future__ import unicode_literals
 import sys
 import pkg_resources
 
-from .backcompat import is_callable
-
 # imports of convenience
 from .http.response import Response
 from . import json_ as json
@@ -73,12 +71,13 @@ from .logging import log, log_dammit
 from .simplates.renderers import BUILTIN_RENDERERS, RENDERERS
 
 # Shut up, PyFlakes. I know I'm addicted to you.
-Response, json, is_callable, log, log_dammit, BUILTIN_RENDERERS, RENDERERS
+Response, json, log, log_dammit, BUILTIN_RENDERERS, RENDERERS
 
 dist = pkg_resources.get_distribution('aspen')
 __version__ = dist.version
 WINDOWS = sys.platform[:3] == 'win'
 
+is_callable = callable
 
 
 def serve(website, host='0.0.0.0', port='8080'):
