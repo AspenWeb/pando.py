@@ -10,10 +10,14 @@ from fabricate import ExecutionError, main, run, shell, autoclean
 # Core Executables
 # ================
 
+USE_PY_VENV = sys.version_info > (3, 3)
+
 ENV_ARGS = [
+    '-m', 'venv'
+] if USE_PY_VENV else [
     '-m', 'virtualenv',
     '--prompt=[pando]',
-    ]
+]
 
 
 def _virt(cmd, envdir='env'):
