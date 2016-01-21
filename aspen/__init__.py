@@ -62,7 +62,9 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import sys
+import logging.config
 import pkg_resources
+import functools
 
 from .backcompat import is_callable
 
@@ -79,6 +81,27 @@ dist = pkg_resources.get_distribution('aspen')
 __version__ = dist.version
 WINDOWS = sys.platform[:3] == 'win'
 
+_logging_cfg = {
+    'version': 1,
+    'formatters': {
+        'threadinfo': {
+            'format': "%(asctime)s pid-%(process)d thread-%(thread)d (%(threadName)s) %(levelname)s: %(message)s"
+        }
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'threadinfo',
+            'level': 'INFO',
+            'stream': 'ext://sys.stderr'
+        }
+    },
+    'root': {
+        'handlers': [ 'console' ]
+    }
+}
+
+init_logging = functools.partial(logging.config.dictConfig, _logging_cfg)
 
 
 def serve(website, host='0.0.0.0', port='8080'):

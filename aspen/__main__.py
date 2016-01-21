@@ -21,31 +21,9 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from . import serve, website
+from . import serve, website, init_logging
 
-import logging.config
-
-logging_cfg = {
-    'version': 1,
-    'formatters': {
-        'threadinfo': {
-            'format': "%(asctime)s pid-%(process)d thread-%(thread)d (%(threadName)s) %(levelname)s: %(message)s"
-        }
-    },
-    'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
-            'formatter': 'threadinfo',
-            'level': 'INFO',
-            'stream': 'ext://sys.stderr'
-        }
-    },
-    'root': {
-        'handlers': [ 'console' ]
-    }
-}
-
-logging.config.dictConfig(logging_cfg)
 
 if __name__ == '__main__':
+    init_logging()
     serve(website.Website())
