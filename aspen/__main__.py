@@ -12,18 +12,25 @@ project root, so a more likely incantation is:
 
     ASPEN_PROJECT_ROOT=/path/to/wherever python -m aspen
 
-For production deployment, you should probably deploy using
-a higher performance WSGI server like Gunicorn, uwsgi, Spawning,
-or the like.
+For production deployment, you should probably deploy using a higher
+performance WSGI server like Gunicorn, uwsgi, Spawning, or the like.
+
+Also, you'll likely want to configure logging your own way, and
+pass more configuration options to the Website() constructor.
+
 """
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from . import serve, website
-
+import os
 import logging.config
+from wsgiref.simple_server import make_server
+
+from . import  website
+from .logging import log_dammit
+
 
 logging_cfg = {
     'version': 1,
@@ -45,7 +52,13 @@ logging_cfg = {
     }
 }
 
-logging.config.dictConfig(logging_cfg)
 
 if __name__ == '__main__':
-    serve(website.Website())
+    logging.config.dictConfig(logging_cfg)
+    port = int(os.environ.get('PORT', '8080')) # get the port, defaulting to 8080
+    host = os.environ.get('ASPEN_HOST', '0.0.0.0') # get the IP to bind to, or default to all
+    project_root = os.environ.get('ASPEN_PROJECT_ROOT', None)
+    log_dammit("Greetings, program! Now serving on http://{0}:{1}/.".format(host, port))
+    website = website.Website(project_root=project_root)
+    make_server(host, port, website).serve_forever()
+
