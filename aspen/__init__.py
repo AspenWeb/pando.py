@@ -79,14 +79,3 @@ WINDOWS = sys.platform[:3] == 'win'
 
 is_callable = callable
 
-
-def serve(website, host='0.0.0.0', port='8080'):
-    """Serve a website.
-    """
-    import os
-    from wsgiref.simple_server import make_server
-
-    port = int(os.environ.get('PORT', port))
-    server = make_server(host, port, website)
-    log_dammit("Greetings, program! Now serving on http://{0}:{1}/.".format(host, port))
-    server.serve_forever()
