@@ -93,9 +93,6 @@ def _deps(envdir='env'):
 
 def _dev_deps(envdir='env'):
     envdir = _deps(envdir)
-    # pytest will need argparse if it's running under 2.6
-    if _virt_version(envdir) < (2, 7):
-        TEST_DEPS.insert(0, 'argparse')
     for dep in TEST_DEPS:
         run(_virt('pip', envdir), 'install', '--no-index',
             '--find-links=' + TEST_DIR, dep)
