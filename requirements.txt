@@ -1,3 +1,0 @@
--e .
-aspen-tornado
-uwsgi
