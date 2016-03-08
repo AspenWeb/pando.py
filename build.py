@@ -7,8 +7,6 @@ from fabricate import main, run, shell, autoclean
 
 # Core Executables
 # ================
-# We satisfy dependencies using local tarballs, to ensure that we can build
-# without a network connection. They're kept in our repo in ./vendor.
 
 ASPEN_DEPS = [
     'python-mimeparse>=0.1.4',
@@ -26,14 +24,9 @@ TEST_DEPS = [
     'pytest-cov>=1.6',
     ]
 
-INSTALL_DIR = './vendor/install'
-TEST_DIR = './vendor/test'
-BOOTSTRAP_DIR = './vendor/bootstrap'
-
 ENV_ARGS = [
-    './vendor/virtualenv-13.0.3.py',
+    '-m', 'virtualenv',
     '--prompt=[aspen]',
-    '--extra-search-dir=' + BOOTSTRAP_DIR,
     ]
 
 
@@ -85,8 +78,7 @@ def _deps(envdir='env'):
     if b"found" in v:
         return envdir
     for dep in ASPEN_DEPS:
-        run(_virt('pip', envdir), 'install', '--no-index',
-            '--find-links=' + INSTALL_DIR, dep)
+        run(_virt('pip', envdir), 'install', dep)
     run(_virt('python', envdir), 'setup.py', 'develop')
     return envdir
 
@@ -94,8 +86,7 @@ def _deps(envdir='env'):
 def _dev_deps(envdir='env'):
     envdir = _deps(envdir)
     for dep in TEST_DEPS:
-        run(_virt('pip', envdir), 'install', '--no-index',
-            '--find-links=' + TEST_DIR, dep)
+        run(_virt('pip', envdir), 'install', dep)
     return envdir
 
 def dev():
@@ -228,7 +219,7 @@ JYTHON_URL = "http://search.maven.org/remotecontent?filepath=org/python/jython-i
 
 def _jython_home():
     if not os.path.exists('jython_home'):
-        local_jython = os.path.join('vendor', 'jython-installer.jar')
+        local_jython = 'jython-installer.jar'
         run('wget', JYTHON_URL, '-qO', local_jython)
         run('java', '-jar', local_jython, '-s', '-d', 'jython_home')
 
@@ -242,13 +233,13 @@ def _jenv():
 def clean_jenv():
     """clean up the jython environment"""
     shell('find', '.', '-name', '*.class', '-delete')
-    shell('rm', '-rf', 'jenv', 'vendor/jython-installer.jar', 'jython_home')
+    shell('rm', '-rf', 'jenv', 'jython_home')
 
 def jython_test():
     """install jython and run tests with coverage (requires java)"""
     _jenv()
     for dep in TEST_DEPS:
-        run(_virt('pip', 'jenv'), 'install', os.path.join('vendor', dep))
+        run(_virt('pip', 'jenv'), 'install', dep)
     run(_virt('jython', 'jenv'), 'setup.py', 'develop')
     run(_virt('jython', 'jenv'), _virt('py.test', 'jenv'),
             '--junitxml=jython-testresults.xml', 'tests',
