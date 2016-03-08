@@ -285,6 +285,7 @@ LOCALS = dict(locals())
 NON_TARGETS = [ 'main', 'autoclean', 'run', 'shell' ]
 NON_TARGETS += list(x for x in LOCALS if x.startswith('_') or not callable(LOCALS[x] ))
 
-main( default='show_targets'
-    , ignoreprefix="python"  # workaround for gh190
-     )
+if __name__ == '__main__':
+    main( default='show_targets'
+        , ignoreprefix="python"  # workaround for gh190
+         )
