@@ -6,6 +6,8 @@ except ImportError:
 
 from setuptools import find_packages, setup
 
+from build import ASPEN_DEPS, TEST_DEPS
+
 version = open('version.txt').read()
 
 
@@ -15,7 +17,6 @@ classifiers = [ 'Development Status :: 4 - Beta'
               , 'License :: OSI Approved :: MIT License'
               , 'Natural Language :: English'
               , 'Operating System :: OS Independent'
-              , 'Programming Language :: Python :: 2.6'
               , 'Programming Language :: Python :: 2.7'
               , 'Programming Language :: Python :: Implementation :: CPython'
               , 'Topic :: Internet :: WWW/HTTP :: WSGI :: Application'
@@ -34,16 +35,7 @@ setup( author = 'Gratipay, LLC'
      , version = version
      , zip_safe = False
      , package_data = {'aspen': ['www/*', 'configuration/mime.types']}
-     , install_requires = [ 'python-mimeparse==0.1.4'
-                          , 'first==2.0.1'
-                          , 'algorithm>=1.0.0'
-                          , 'filesystem_tree>=1.0.0'
-                           ]
+     , install_requires = ASPEN_DEPS
      , extras_require = {'fcgi': ['flup']}
-     , tests_require = [ 'virtualenv>=1.11'
-                       , 'py'
-                       , 'coverage'
-                       , 'pytest'
-                       , 'pytest-cov'
-                        ]
+     , tests_require = TEST_DEPS
       )
