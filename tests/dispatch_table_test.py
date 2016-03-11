@@ -3,7 +3,8 @@
 import os.path
 import posixpath
 import pytest
-from aspen.testing.harness import Harness
+from aspen.request_processor import dispatcher
+from aspen.testing import Harness
 
 tablefile = os.path.join(os.path.dirname(__file__), 'dispatch_table_data.rst')
 
@@ -68,11 +69,11 @@ def get_table_entries():
         results += [ (files, r, expected[i]) for i, r in enumerate(requests) ]
     return results
 
-def format_result(request, dispatch_result=None, **ignored):
+def format_result(path, dispatch_result=None, **ignored):
     """
     turn a raw request result into a string compatible with the table-driven test
     """
-    wilds = request.line.uri.path
+    wilds = path
     wildtext = ",".join("%s='%s'" % (k, wilds[k]) for k in sorted(wilds))
     result = dispatch_result.match if dispatch_result else ''
     if wildtext: result += " (%s)" % wildtext
@@ -90,9 +91,14 @@ def test_all_table_entries(harness, files, request_uri, expected):
     realfiles = tuple([ f if f.endswith('/') else (f, GENERIC_SPT) for f in files ])
     harness.fs.www.mk(*realfiles)
     # make the request and get the response code and the request object (sadly we can't get both with one request)
-    response = harness.simple(uripath=request_uri, filepath=None, want='response', raise_immediately=False)
-    result = unicode(response.code)
-    if result == '200':
+    try:
+        harness.simple(uripath=request_uri, filepath=None)
+    except dispatcher.NotFound:
+        result = '404'
+    except dispatcher.Redirect as err:
+        result = '302 ' + err.message
+    else:
+        result = '200'
         state = harness.simple( uripath=request_uri
                               , filepath=None
                               , want='state'
@@ -104,8 +110,6 @@ def test_all_table_entries(harness, files, request_uri, expected):
         path = path[len(harness.fs.www.root)+1:]
         if path:
             result += " " + path
-    elif result == '302':
-        result += ' ' + response.headers['Location']
     if expected.endswith("*"):
         expected = expected[:-1]
     assert result == expected, "Requesting %r, got %r instead of %r" % (request_uri, result, expected)

@@ -7,7 +7,7 @@ import StringIO
 
 from pytest import raises
 
-from aspen import json
+from aspen.simplates import json_
 
 
 def test_json_basically_works(harness):
@@ -22,40 +22,40 @@ def test_json_basically_works(harness):
 def test_json_defaults_to_application_json_for_static_json(harness):
     actual = harness.simple( '{"Greetings": "program!"}'
                            , filepath="foo.json"
-                            ).headers['Content-Type']
+                            ).media_type
     assert actual == 'application/json'
 
 def test_json_content_type_is_configurable_for_static_json(harness):
-    harness.client.website.media_type_json = "floober/blah"
+    harness.request_processor.media_type_json = "floober/blah"
     expected = 'floober/blah'
     actual = harness.simple( '{"Greetings": "program!"}'
                            , filepath="foo.json"
-                            ).headers['Content-Type']
+                            ).media_type
     assert actual == expected
 
 def test_json_content_type_is_configurable_from_kwargs(harness):
     actual = harness.simple( '{"Greetings": "program!"}'
                            , filepath="foo.json"
-                           , website_configuration={'media_type_json': 'floober/blah'}
-                            ).headers['Content-Type']
+                           , request_processor_configuration={'media_type_json': 'floober/blah'}
+                            ).media_type
     assert actual == 'floober/blah'
 
 def test_json_content_type_is_configurable_for_dynamic_json(harness):
-    harness.client.website.media_type_json = "floober/blah"
+    harness.request_processor.media_type_json = "floober/blah"
     actual = harness.simple( "[---]\n[---] floober/blah\n{'Greetings': 'program!'}"
                            , filepath="foo.json.spt"
-                            ).headers['Content-Type']
+                            ).media_type
     assert actual == 'floober/blah'
 
 def test_json_content_type_is_per_file_configurable(harness):
     expected = 'floober/blah'
     SPT="""
 [---]
-response.headers['Content-type'] = 'floober/blah'
+output.media_type = 'floober/blah'
 [---] floober/blah
 {'Greetings': 'program!'}
 """
-    actual = harness.simple(SPT, filepath="foo.json.spt").headers['Content-Type']
+    actual = harness.simple(SPT, filepath="foo.json.spt").media_type
     assert actual == expected
 
 def test_json_handles_unicode(harness):
@@ -139,12 +139,12 @@ def test_aspen_json_load_loads():
     fp = StringIO.StringIO()
     fp.write('{"cheese": "puffs"}')
     fp.seek(0)
-    actual = json.load(fp)
+    actual = json_.load(fp)
     assert actual == {'cheese': 'puffs'}
 
 def test_aspen_json_dump_dumps():
     fp = StringIO.StringIO()
-    json.dump({"cheese": "puffs"}, fp)
+    json_.dump({"cheese": "puffs"}, fp)
     fp.seek(0)
     actual = fp.read()
     assert actual == '''{
@@ -152,11 +152,11 @@ def test_aspen_json_dump_dumps():
 }'''
 
 def test_aspen_json_loads_loads():
-    actual = json.loads('{"cheese": "puffs"}')
+    actual = json_.loads('{"cheese": "puffs"}')
     assert actual == {'cheese': 'puffs'}
 
 def test_aspen_json_dumps_dumps():
-    actual = json.dumps({'cheese': 'puffs'})
+    actual = json_.dumps({'cheese': 'puffs'})
     assert actual == '''{
     "cheese": "puffs"
 }'''
@@ -171,7 +171,7 @@ JSONP_RESULT = '''/**/ foo({
 });'''
 
 def _jsonp_query(harness, querystring):
-    return harness.simple(JSONP_SIMPLATE, QUERY_STRING=querystring).body
+    return harness.simple(JSONP_SIMPLATE, querystring=querystring).body
 
 def test_jsonp_basically_works(harness):
     actual = _jsonp_query(harness, "jsonp=foo")

@@ -64,18 +64,6 @@ from __future__ import unicode_literals
 import sys
 import pkg_resources
 
-# imports of convenience
-from .http.response import Response
-from . import json_ as json
-from .logging import log, log_dammit
-from .simplates.renderers import BUILTIN_RENDERERS, RENDERERS
-
-# Shut up, PyFlakes. I know I'm addicted to you.
-Response, json, log, log_dammit, BUILTIN_RENDERERS, RENDERERS
-
 dist = pkg_resources.get_distribution('aspen')
 __version__ = dist.version
 WINDOWS = sys.platform[:3] == 'win'
-
-is_callable = callable
-

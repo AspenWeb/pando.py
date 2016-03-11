@@ -7,10 +7,6 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from operator import itemgetter as _itemgetter
-from keyword import iskeyword as _iskeyword
-import sys as _sys
-
 try:
     from hashlib import md5
 except ImportError:

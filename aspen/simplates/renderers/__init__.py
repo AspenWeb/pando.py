@@ -54,7 +54,7 @@ Here's how to implement and register your own renderer:
     class CheeseFactory(Factory):
         Renderer = Cheese
 
-    website.renderer_factories['excited-about-cheese'] = CheeseFactory(website)
+    request_processor.renderer_factories['excited-about-cheese'] = CheeseFactory(request_processor)
 
 
 Put that in your startup script. Now you can use it in a negotiated or rendered
@@ -84,8 +84,6 @@ from __future__ import unicode_literals
 import sys
 import pkg_resources
 
-from ... import log_dammit
-
 # Built-in renderers
 BUILTIN_RENDERERS = [ 'stdlib_format'
                     , 'stdlib_percent'
@@ -96,7 +94,7 @@ BUILTIN_RENDERERS = [ 'stdlib_format'
 
 RENDERERS = BUILTIN_RENDERERS[:]
 
-for entrypoint in pkg_resources.iter_entry_points(group='aspen.renderers'):
+for entrypoint in pkg_resources.iter_entry_points(group='aspen.simplates.renderers'):
     RENDERERS.append(entrypoint.name)
 
 RENDERERS.sort()
@@ -118,10 +116,9 @@ def factories(configuration):
         renderer_factories[name] = make_renderer
 
     # import renderers provided by other packages
-    for entrypoint in pkg_resources.iter_entry_points(group='aspen.renderers'):
+    for entrypoint in pkg_resources.iter_entry_points(group='aspen.simplates.renderers'):
         render_module = entrypoint.load()
         renderer_factories[entrypoint.name] = render_module.Factory(configuration)
-        log_dammit("Found plugin for renderer '%s'" % entrypoint.name)
     return renderer_factories
 
 
