@@ -366,11 +366,11 @@ class AtimesRunner(Runner):
                 fullname = name
             else:
                 fullname = os.path.join(path, name)
-            st = os.stat(fullname)
+            st = os.lstat(fullname)
             if stat.S_ISDIR(st.st_mode):
                 if depth > 1:
                     times.update(self._file_times(fullname, depth-1))
-            elif stat.S_ISREG(st.st_mode):
+            elif stat.S_ISREG(st.st_mode) or stat.S_ISLNK:
                 times[fullname] = st.st_atime, st.st_mtime
         return times
 
