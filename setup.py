@@ -22,8 +22,7 @@ classifiers = [ 'Development Status :: 4 - Beta'
               , 'Topic :: Internet :: WWW/HTTP :: WSGI :: Application'
                ]
 
-setup( author = 'Gratipay, LLC'
-     , author_email = 'support@gratipay.com'
+setup( author = 'Chad Whitacre et al.'
      , classifiers = classifiers
      , description = ('Aspen is a Python web framework. '
                       'Simplates are the main attraction.')
