@@ -1,8 +1,7 @@
 
 
 
-UPDATE: Aspen's security program is now part of Gratipay's.
-        Please see https://hackerone.com/gratipay.
+UPDATE: Aspen's security program is now at https://hackerone.com/aspen
 
 
 
