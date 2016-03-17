@@ -23,6 +23,7 @@ classifiers = [ 'Development Status :: 4 - Beta'
                ]
 
 setup( author = 'Chad Whitacre et al.'
+     , author_email = 'team@aspen.io'
      , classifiers = classifiers
      , description = ('Aspen is a Python web framework. '
                       'Simplates are the main attraction.')
