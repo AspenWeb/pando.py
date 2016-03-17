@@ -27,3 +27,8 @@ test_script:
 
   # Build the compiled extension and run the project tests
   - "python build.py analyse"
+
+branches:
+  only:
+    # Suppress double-builds for PRs
+    - master
