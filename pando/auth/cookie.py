@@ -2,7 +2,7 @@
 pando.auth.cookie
 ~~~~~~~~~~~~~~~~~
 
-This is a cookie authentication implementation for Aspen.
+This is a cookie authentication implementation for Pando.
 """
 from __future__ import absolute_import
 from __future__ import division
@@ -84,15 +84,15 @@ def outbound(response):
 
     if DOMAIN is not None:
         # Browser default is the domain of the resource requested.
-        # Aspen default is the browser default.
+        # Pando default is the browser default.
         cookie['domain'] = DOMAIN
 
     if PATH is not None:
         # XXX What's the browser default? Probably /? Or current dir?
-        # Aspen default is "/".
+        # Pando default is "/".
         cookie['path'] = PATH
 
     if HTTPONLY is not None:
         # Browser default is to allow access from JavaScript.
-        # Aspen default is to prevent access from JavaScript.
+        # Pando default is to prevent access from JavaScript.
         cookie['httponly'] = HTTPONLY

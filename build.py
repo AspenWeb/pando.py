@@ -8,7 +8,7 @@ from fabricate import main, run, shell, autoclean
 # Core Executables
 # ================
 
-ASPEN_DEPS = [
+PANDO_DEPS = [
     'python-mimeparse>=0.1.4',
     'first>=2.0.1',
     'algorithm>=1.0.0',
@@ -26,7 +26,7 @@ TEST_DEPS = [
 
 ENV_ARGS = [
     '-m', 'virtualenv',
-    '--prompt=[aspen]',
+    '--prompt=[pando]',
     ]
 
 
@@ -68,7 +68,7 @@ def env():
 
 
 def deps():
-    """set up an environment able to run aspen"""
+    """set up an environment able to run pando"""
     _deps()
 
 
@@ -166,7 +166,7 @@ def pylint():
     envdir = _env()
     run(_virt('pip', envdir), 'install', 'pylint')
     run(_virt('pylint', envdir), '--rcfile=.pylintrc',
-        'aspen', '|', 'tee', 'pylint.out', shell=True, ignore_status=True)
+        'pando', '|', 'tee', 'pylint.out', shell=True, ignore_status=True)
 
 
 def test_cov():
@@ -176,7 +176,7 @@ def test_cov():
         '--cov-report', 'term',
         '--cov-report', 'xml',
         '--cov-report', 'html',
-        '--cov', 'aspen',
+        '--cov', 'pando',
         'tests/',
         ignore_status=False)
 
@@ -244,7 +244,7 @@ def jython_test():
             '--junitxml=jython-testresults.xml', 'tests',
             '--cov-report', 'term',
             '--cov-report', 'xml',
-            '--cov', 'aspen',
+            '--cov', 'pando',
             ignore_status=True)
 
 def clean_jtest():

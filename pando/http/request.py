@@ -51,7 +51,7 @@ from ..utils import ascii_dammit
 
 # WSGI Do Our Best
 # ================
-# Aspen is jealous. It wants to pretend that it parsed the HTTP Request itself,
+# Pando is jealous. It wants to pretend that it parsed the HTTP Request itself,
 # instead of letting some WSGI server or library do the work for it. Here are
 # routines for going from WSGI back to HTTP. Since WSGI is lossy, we end up
 # with a Dr. Frankenstein's HTTP message.

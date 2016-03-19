@@ -2,7 +2,7 @@
 pando.auth.httpbasic
 ~~~~~~~~~~~~~~~~~~~~
 
-HTTP BASIC Auth module for Aspen.
+HTTP BASIC Auth module for Pando.
 
 To use:
 
@@ -61,7 +61,7 @@ class BAWrapper(object):
 
 
 class BasicAuth(object):
-    """An HTTP BASIC AUTH handler for Aspen."""
+    """An HTTP BASIC AUTH handler for Pando."""
 
     def __init__(self, verify_password, html=None, realm='protected'):
         """Constructor for an HTTP BASIC AUTH handler.

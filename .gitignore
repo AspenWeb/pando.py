@@ -1,5 +1,5 @@
 *.egg-info/
-aspen/tests/log
+pando/tests/log
 env
 *.pyc
 distribute-*

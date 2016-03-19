@@ -2,7 +2,7 @@
 pando.auth
 ++++++++++
 
-Aspen's Auth modules.
+Pando's Auth modules.
 
 Currently:
 

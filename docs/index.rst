@@ -1,7 +1,7 @@
-Aspen
+Pando
 =====
 
-.. automodule:: aspen
+.. automodule:: pando
    :members:
    :member-order: bysource
    :special-members:
@@ -10,207 +10,207 @@ Aspen
 Library Reference
 -----------------
 
-.. automodule:: aspen.algorithms
+.. automodule:: pando.algorithms
    :members:
    :member-order: bysource
    :special-members:
 
-.. automodule:: aspen.algorithms.website
+.. automodule:: pando.algorithms.website
    :members:
    :member-order: bysource
    :special-members:
 
-.. automodule:: aspen.auth
+.. automodule:: pando.auth
    :members:
    :member-order: bysource
    :special-members:
 
-.. automodule:: aspen.auth.cookie
+.. automodule:: pando.auth.cookie
    :members:
    :member-order: bysource
    :special-members:
 
-.. automodule:: aspen.auth.httpbasic
+.. automodule:: pando.auth.httpbasic
    :members:
    :member-order: bysource
    :special-members:
 
-.. automodule:: aspen.auth.httpdigest
+.. automodule:: pando.auth.httpdigest
    :members:
    :member-order: bysource
    :special-members:
 
-.. automodule:: aspen.backcompat
+.. automodule:: pando.backcompat
    :members:
    :member-order: bysource
    :special-members:
 
-.. automodule:: aspen.configuration
+.. automodule:: pando.configuration
    :members:
    :member-order: bysource
    :special-members:
 
-.. automodule:: aspen.configuration.exceptions
+.. automodule:: pando.configuration.exceptions
    :members:
    :member-order: bysource
    :special-members:
 
-.. automodule:: aspen.configuration.options
+.. automodule:: pando.configuration.options
    :members:
    :member-order: bysource
    :special-members:
 
-.. automodule:: aspen.configuration.parse
+.. automodule:: pando.configuration.parse
    :members:
    :member-order: bysource
    :special-members:
 
-.. automodule:: aspen.context
+.. automodule:: pando.context
    :members:
    :member-order: bysource
    :special-members:
 
-.. automodule:: aspen.dispatcher
+.. automodule:: pando.dispatcher
    :members:
    :member-order: bysource
    :special-members:
 
-.. automodule:: aspen.exceptions
+.. automodule:: pando.exceptions
    :members:
    :member-order: bysource
    :special-members:
 
-.. automodule:: aspen.http
+.. automodule:: pando.http
    :members:
    :member-order: bysource
    :special-members:
 
-.. automodule:: aspen.http.baseheaders
+.. automodule:: pando.http.baseheaders
    :members:
    :member-order: bysource
    :special-members:
 
-.. automodule:: aspen.http.mapping
+.. automodule:: pando.http.mapping
    :members:
    :member-order: bysource
    :special-members:
 
-.. automodule:: aspen.http.request
+.. automodule:: pando.http.request
    :members:
    :member-order: bysource
    :special-members:
 
-.. automodule:: aspen.http.response
+.. automodule:: pando.http.response
    :members:
    :member-order: bysource
    :special-members:
 
-.. automodule:: aspen.json_
+.. automodule:: pando.json_
    :members:
    :member-order: bysource
    :special-members:
 
-.. automodule:: aspen.logging
+.. automodule:: pando.logging
    :members:
    :member-order: bysource
    :special-members:
 
-.. automodule:: aspen.renderers
+.. automodule:: pando.renderers
    :members:
    :member-order: bysource
    :special-members:
 
-.. automodule:: aspen.renderers.json_dump
+.. automodule:: pando.renderers.json_dump
    :members:
    :member-order: bysource
    :special-members:
 
-.. automodule:: aspen.renderers.stdlib_format
+.. automodule:: pando.renderers.stdlib_format
    :members:
    :member-order: bysource
    :special-members:
 
-.. automodule:: aspen.renderers.stdlib_percent
+.. automodule:: pando.renderers.stdlib_percent
    :members:
    :member-order: bysource
    :special-members:
 
-.. automodule:: aspen.renderers.stdlib_template
+.. automodule:: pando.renderers.stdlib_template
    :members:
    :member-order: bysource
    :special-members:
 
-.. automodule:: aspen.resources
+.. automodule:: pando.resources
    :members:
    :member-order: bysource
    :special-members:
 
-.. automodule:: aspen.resources.dynamic_resource
+.. automodule:: pando.resources.dynamic_resource
    :members:
    :member-order: bysource
    :special-members:
 
-.. automodule:: aspen.resources.negotiated_resource
+.. automodule:: pando.resources.negotiated_resource
    :members:
    :member-order: bysource
    :special-members:
 
-.. automodule:: aspen.resources.pagination
+.. automodule:: pando.resources.pagination
    :members:
    :member-order: bysource
    :special-members:
 
-.. automodule:: aspen.resources.rendered_resource
+.. automodule:: pando.resources.rendered_resource
    :members:
    :member-order: bysource
    :special-members:
 
-.. automodule:: aspen.resources.resource
+.. automodule:: pando.resources.resource
    :members:
    :member-order: bysource
    :special-members:
 
-.. automodule:: aspen.resources.static_resource
+.. automodule:: pando.resources.static_resource
    :members:
    :member-order: bysource
    :special-members:
 
-.. automodule:: aspen.testing
+.. automodule:: pando.testing
    :members:
    :member-order: bysource
    :special-members:
 
-.. automodule:: aspen.testing.client
+.. automodule:: pando.testing.client
    :members:
    :member-order: bysource
    :special-members:
 
-.. automodule:: aspen.testing.harness
+.. automodule:: pando.testing.harness
    :members:
    :member-order: bysource
    :special-members:
 
-.. automodule:: aspen.testing.pytest_fixtures
+.. automodule:: pando.testing.pytest_fixtures
    :members:
    :member-order: bysource
    :special-members:
 
-.. automodule:: aspen.typecasting
+.. automodule:: pando.typecasting
    :members:
    :member-order: bysource
    :special-members:
 
-.. automodule:: aspen.utils
+.. automodule:: pando.utils
    :members:
    :member-order: bysource
    :special-members:
 
-.. automodule:: aspen.website
+.. automodule:: pando.website
    :members:
    :member-order: bysource
    :special-members:
 
-.. automodule:: aspen.wsgi
+.. automodule:: pando.wsgi
    :members:
    :member-order: bysource
    :special-members:

@@ -2,7 +2,7 @@
 pando.exceptions
 ++++++++++++++++
 
-Exceptions used by Aspen
+Exceptions used by Pando
 """
 from __future__ import absolute_import
 from __future__ import division

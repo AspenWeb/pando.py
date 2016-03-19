@@ -24,7 +24,7 @@ def teardown():
 
     - reset the current working directory
     - remove FSFIX = %{tempdir}/fsfix
-    - reset Aspen's global state
+    - reset Pando's global state
     - clear out sys.path_importer_cache
 
     """
@@ -37,7 +37,7 @@ teardown() # start clean
 
 
 class Harness(object):
-    """A harness to be used in the Aspen test suite itself. Probably not useful to you.
+    """A harness to be used in the Pando test suite itself. Probably not useful to you.
     """
 
     def __init__(self):

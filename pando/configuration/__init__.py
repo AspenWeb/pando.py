@@ -130,7 +130,7 @@ class Configurable(object):
             msgs.append(self._set(name, default, None, "default", ''))
 
             # set from the environment
-            envvar = 'ASPEN_' + name.upper()
+            envvar = 'PANDO_' + name.upper()
             value = os.environ.get(envvar, '').strip()
             if value:
                 msgs.append(self.set( name
@@ -182,7 +182,7 @@ class Configurable(object):
                                  % self.project_root)
                 cwd = safe_getcwd("Could not get a current working "
                                   "directory. You can specify "
-                                  "ASPEN_PROJECT_ROOT in the environment, "
+                                  "PANDO_PROJECT_ROOT in the environment, "
                                   "or project_root in kwargs.")
                 self.project_root = os.path.join(cwd, self.project_root)
 
@@ -200,7 +200,7 @@ class Configurable(object):
         if self.www_root is None:
             self.www_root = safe_getcwd("Could not get a current working "
                                          "directory. You can specify "
-                                         "ASPEN_WWW_ROOT in the environment, "
+                                         "PANDO_WWW_ROOT in the environment, "
                                          "or www_root in kwargs.")
 
         self.www_root = os.path.realpath(self.www_root)

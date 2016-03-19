@@ -2,7 +2,7 @@
 pando.body_parsers
 ++++++++++++++++++
 
-Aspen body parsers are optional ways to enable Aspen to uniformly
+Pando body parsers are optional ways to enable Pando to uniformly
 parse POST body content according to its supplied Content-Type.
 
 A body parser has the signature:

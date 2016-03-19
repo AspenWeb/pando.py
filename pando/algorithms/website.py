@@ -2,9 +2,9 @@
 pando.algorithms.website
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-These functions comprise the request processing functionality of Aspen.
+These functions comprise the request processing functionality of Pando.
 
-The order of functions in this module defines Aspen algorithm for request
+The order of functions in this module defines Pando algorithm for request
 processing. The actual parsing is done by Algorithm.from_dotted_name():
 
 http://algorithm-py.readthedocs.org/en/1.0.0/#algorithm.Algorithm.from_dotted_name

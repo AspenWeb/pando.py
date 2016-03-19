@@ -22,9 +22,6 @@ build: false  # Not a C# project, build stuff at the test step instead.
 
 test_script:
 
-  # extra debug for the dispatcher (at least)
-  #- "SET ASPEN_DEBUG=1" 
-
   # Build the compiled extension and run the project tests
   - "python build.py analyse"
 

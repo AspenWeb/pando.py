@@ -70,7 +70,7 @@ def encode_multipart(boundary, data):
 
 
 class Client(object):
-    """This is the Aspen test client. It is probably useful to you.
+    """This is the Pando test client. It is probably useful to you.
     """
 
     def __init__(self, www_root=None, project_root=None):
@@ -146,7 +146,7 @@ class Client(object):
 
     def build_wsgi_environ(self, method, path, body, content_type, **kw):
 
-        # NOTE that in Aspen (request.py make_franken_headers) only headers
+        # NOTE that in Pando (request.py make_franken_headers) only headers
         # beginning with ``HTTP`` are included in the request - and those are
         # changed to no longer include ``HTTP``. There are currently 2
         # exceptions to this: ``'CONTENT_TYPE'``, ``'CONTENT_LENGTH'`` which

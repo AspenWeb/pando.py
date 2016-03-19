@@ -6,7 +6,7 @@ except ImportError:
 
 from setuptools import find_packages, setup
 
-from build import ASPEN_DEPS, TEST_DEPS
+from build import PANDO_DEPS, TEST_DEPS
 
 version = open('version.txt').read()
 
@@ -23,19 +23,19 @@ classifiers = [ 'Development Status :: 4 - Beta'
                ]
 
 setup( author = 'Chad Whitacre et al.'
-     , author_email = 'team@aspen.io'
+     , author_email = 'team@pando.io'
      , classifiers = classifiers
-     , description = ('Aspen is a Python web framework. '
+     , description = ('Pando is a Python web framework. '
                       'Simplates are the main attraction.')
-     , entry_points = {'console_scripts': ['fcgi_aspen = fcgi_aspen:main [fcgi]']}
+     , entry_points = {'console_scripts': ['fcgi_pando = fcgi_pando:main [fcgi]']}
      , name = 'pando'
      , packages = find_packages(exclude=['pando.tests', 'pando.tests.*'])
-     , py_modules = ['fcgi_aspen']
-     , url = 'http://aspen.io/'
+     , py_modules = ['fcgi_pando']
+     , url = 'http://pando.io/'
      , version = version
      , zip_safe = False
      , package_data = {'pando': ['www/*', 'configuration/mime.types']}
-     , install_requires = ASPEN_DEPS
+     , install_requires = PANDO_DEPS
      , extras_require = {'fcgi': ['flup']}
      , tests_require = TEST_DEPS
       )

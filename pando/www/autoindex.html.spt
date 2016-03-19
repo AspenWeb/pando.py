@@ -156,7 +156,7 @@ pando_version = pando.__version__
         </table>
         <hr />
         <div id="footer">
-            This index was brought to you by <a href="http://pando.io/"> Aspen
+            This index was brought to you by <a href="http://aspen.io/pando"> Pando
                 v%(pando_version)s</a>.
         </div>
     </body>

@@ -16,7 +16,7 @@ class MalformedAuthenticationHeader(Exception): pass
 
 ## wrapper bits
 
-class AspenHTTPProvider:
+class PandoHTTPProvider:
     """An abstraction layer between the Auth object and
     http-framework specific code."""
 
@@ -71,11 +71,11 @@ def inbound_responder(*args, **kw):
     website.algorithm.insert_after('parse_environ_into_request', auth)
     """
     kwargs = kw.copy()
-    kwargs['http_provider'] = AspenHTTPProvider
+    kwargs['http_provider'] = PandoHTTPProvider
     auth = Auth(*args, **kwargs)
     def httpdigest_inbound_responder(request):
         """generated hook function"""
-        request.auth = AspenAuthWrapper(auth, request)
+        request.auth = PandoAuthWrapper(auth, request)
         authed, response = auth.authorized(request)
         if not authed:
             #print "Response: %s" % repr(response.headers)
@@ -84,7 +84,7 @@ def inbound_responder(*args, **kw):
     return httpdigest_inbound_responder
 
 
-class AspenAuthWrapper(object):
+class PandoAuthWrapper(object):
     """Convenience class to put on a request that
        has a reference to the request its on so accessing
        auth methods doesn't require repeating the request arg.

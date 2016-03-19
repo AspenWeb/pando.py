@@ -30,8 +30,8 @@ except ImportError:
 # class or type that needs extra work to decode to JSON. For example, support
 # for the decimal.Decimal class was added in simplejson 2.1, which isn't in the
 # stdlib version as of 2.7/3.2. Support for classes from the datetime module
-# isn't in simplejson as of 2.3.2. Since Aspen takes on ownership of JSON
-# encoding, we need to give Aspen users a way to register (and unregister, I
+# isn't in simplejson as of 2.3.2. Since Pando takes on ownership of JSON
+# encoding, we need to give Pando users a way to register (and unregister, I
 # guess) new encoders. You can do this by calling dumps with the cls keyword,
 # but we call dumps for you for JSON resources, so we want a way to influence
 # decoding that doesn't depend on dumps. And this is that way:
@@ -63,7 +63,7 @@ register_encoder(datetime.time, lambda obj: obj.isoformat())
 
 # Be lazy.
 # ========
-# Allow Aspen to run without JSON support. In practice that means that Python
+# Allow Pando to run without JSON support. In practice that means that Python
 # 2.5 users won't be able to use JSON resources.
 
 if _json is not None:

@@ -26,7 +26,7 @@ each content page, like so:
 A Renderer is instantiated by a Factory, which is a class that is itself
 instantied with one argument:
 
-    configuration   an Aspen configuration object
+    configuration   an Pando configuration object
 
 
 Instances of each Renderer subclass are callables that take five arguments and
@@ -69,9 +69,9 @@ Out will come:
     I like CHEESE!!!!!!!
 
 
-If you write a new renderer for inclusion in the base Aspen distribution,
-please work with Aspen's existing reloading machinery, etc. as much as
-possible. Use the existing template shims as guidelines, and if Aspen's
+If you write a new renderer for inclusion in the base Pando distribution,
+please work with Pando's existing reloading machinery, etc. as much as
+possible. Use the existing template shims as guidelines, and if Pando's
 machinery is inadequate for some reason let's evolve the machinery so all
 renderers behave consistently for users. Thanks.
 

@@ -2,7 +2,7 @@
 pando.dispatcher
 ++++++++++++++++
 
-Implement Aspen's filesystem dispatch algorithm.
+Implement Pando's filesystem dispatch algorithm.
 """
 from __future__ import absolute_import
 from __future__ import division
@@ -28,7 +28,7 @@ def debug_stdout(func):
     except Exception:
         print("DEBUG: " + repr(r))
 
-debug = debug_stdout if 'ASPEN_DEBUG' in os.environ else debug_noop
+debug = debug_stdout if 'PANDO_DEBUG' in os.environ else debug_noop
 
 
 def splitext(name):

@@ -1,5 +1,5 @@
-Aspen.py Changelog
-==================
+Pando Changelog
+===============
 
 0.42 - Released Thu Sept 10 2015 by @whit537
 --------------------------------------------

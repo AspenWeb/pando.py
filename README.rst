@@ -1,26 +1,26 @@
-Aspen is a Python web framework. Simplates are the main attraction.
+Pando is a Python web framework. Simplates are the main attraction.
 
 Installation, Testing, and License
 ==================================
 
-``aspen`` is available on `GitHub`_ and on `PyPI`_::
+``pando`` is available on `GitHub`_ and on `PyPI`_::
 
-    $ pip install aspen
+    $ pip install pando
 
 We test against 64-bit Python 2.7 on Linux: |travis|
 
 And we test against 32- and 64-bit Python 2.7 on Windows: |appveyor|
 
-``aspen`` is MIT-licensed.
+``pando`` is MIT-licensed.
 
 
-.. _GitHub: https://github.com/AspenWeb/aspen.py
-.. _PyPI: https://pypi.python.org/pypi/aspen
-.. |travis| image:: https://img.shields.io/travis/AspenWeb/aspen.py/master.svg
-   :target: https://travis-ci.org/AspenWeb/aspen.py
+.. _GitHub: https://github.com/AspenWeb/pando.py
+.. _PyPI: https://pypi.python.org/pypi/pando
+.. |travis| image:: https://img.shields.io/travis/AspenWeb/pando.py/master.svg
+   :target: https://travis-ci.org/AspenWeb/pando.py
    :alt: Linux build status
-.. |appveyor| image:: https://img.shields.io/appveyor/ci/AspenWeb/aspen-py/master.svg
-   :target: https://ci.appveyor.com/project/AspenWeb/aspen-py
+.. |appveyor| image:: https://img.shields.io/appveyor/ci/AspenWeb/pando-py/master.svg
+   :target: https://ci.appveyor.com/project/AspenWeb/pando-py
    :alt: Windows build status
 
 

@@ -1,4 +1,4 @@
-"""This is Aspen, a dynamic Jekyll for Python.
+"""This is Pando, a Python web framework.
 
 
 Installation

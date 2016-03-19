@@ -2,7 +2,7 @@
 pando.logging
 +++++++++++++
 
-Aspen logging convenience wrappers
+Pando logging convenience wrappers
 
 """
 from __future__ import absolute_import
