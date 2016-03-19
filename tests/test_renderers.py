@@ -3,8 +3,8 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from aspen import json
-from aspen.simplates.renderers import Factory, Renderer
+from pando import json
+from pando.simplates.renderers import Factory, Renderer
 
 
 def test_a_custom_renderer(harness):

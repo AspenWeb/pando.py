@@ -28,13 +28,13 @@ setup( author = 'Chad Whitacre et al.'
      , description = ('Aspen is a Python web framework. '
                       'Simplates are the main attraction.')
      , entry_points = {'console_scripts': ['fcgi_aspen = fcgi_aspen:main [fcgi]']}
-     , name = 'aspen'
-     , packages = find_packages(exclude=['aspen.tests', 'aspen.tests.*'])
+     , name = 'pando'
+     , packages = find_packages(exclude=['pando.tests', 'pando.tests.*'])
      , py_modules = ['fcgi_aspen']
      , url = 'http://aspen.io/'
      , version = version
      , zip_safe = False
-     , package_data = {'aspen': ['www/*', 'configuration/mime.types']}
+     , package_data = {'pando': ['www/*', 'configuration/mime.types']}
      , install_requires = ASPEN_DEPS
      , extras_require = {'fcgi': ['flup']}
      , tests_require = TEST_DEPS

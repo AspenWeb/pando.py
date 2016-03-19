@@ -1,0 +1,163 @@
+"""Define a handler that generates an index for directories.
+
+Color scheme: http://colorschemedesigner.com/#0.21Tw0w0w0w0
+
+"""
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
+import os
+import stat
+from datetime import datetime
+
+import pando
+
+
+KB = 1024
+MB = KB * 1024
+GB = MB * 1024
+TB = GB * 1024
+PB = TB * 1024
+EB = PB * 1024
+
+def _get_size(stats):
+    """Given a stat struct, return a size string.
+    """
+    size = float(stats[stat.ST_SIZE])
+    if size < KB:
+        return '%d &nbsp;&nbsp;&nbsp;B' % (size)
+    elif size < MB:
+        return '%.1f kB' % (size / KB)
+    elif size < GB:
+        return '%.1f MB' % (size / MB)
+    elif size < TB:
+        return '%.1f GB' % (size / GB)
+    elif size < PB:
+        return '%.1f TB' % (size / TB) # :^)
+    elif size < EB:
+        return '%.1f PB' % (size / PB) # :^D
+    else:
+        return '%.1f EB' % (size / EB) # 8^D
+
+
+def _get_time(stats):
+    """Given a stat struct, return a date stamp string.
+    """
+    return str(datetime.fromtimestamp(stats[stat.ST_MTIME]))
+
+[----------------------------------------]
+
+# Get the directory to list.
+# ==========================
+# Support the case where we are in the directory where this file actually
+# lives!
+
+fspath = dispatch_result.extra.get('autoindexdir', os.path.dirname(__file__))
+assert os.path.isdir(fspath) # sanity check
+
+urlpath = fspath[len(website.www_root):] + os.sep
+urlpath = '/'.join(urlpath.split(os.sep))
+title = urlpath and urlpath or '/'
+
+
+# Gather dirs, files, and others under this directory.
+# ====================================================
+# We have to loop here and again below in order to guarantee sorted output.
+
+dirs = []
+files = []
+others = []
+for name in os.listdir(fspath):
+    if name.startswith('.'): # hidden files
+        continue
+
+    _fspath = os.path.join(fspath, name)
+
+    if os.path.isdir(_fspath):
+        el = dirs
+    elif os.path.isfile(_fspath):
+        el = files
+    else:
+        el = others
+
+    _urlpath = urlpath + name
+    stats = os.stat(_fspath)
+    x = (stats, _fspath, _urlpath, name)
+    el.append(x)
+
+dirs.sort()
+files.sort()
+others.sort()
+
+updir = "" if fspath == website.www_root else """
+            <tr>
+                <td class="odd"><a href="../">../</a></td>
+                <td>&nbsp;</td>
+                <td>&nbsp;</td>
+            </tr>
+"""
+
+listdir = ""
+
+for el in (dirs, files, others):
+    for stats, _fspath, _urlpath, name in el:
+        listdir += """
+            <tr>\n"""
+        if os.path.isdir(_fspath):
+            listdir += """
+                <td class="dir"><a href="%(_urlpath)s/">%(name)s/</a></td>
+                <td>&nbsp;</td>\n""" % locals()
+        elif os.path.isfile(_fspath):
+            statsize = _get_size(stats)
+            listdir += """
+                <td class="file"><a href="%(_urlpath)s">%(name)s</a></td>
+                <td class="size">%(statsize)s</td>\n""" % locals()
+        else:
+            listdir += """
+                <td class="other">%(name)s</li>
+                <td>&nbsp;</td>\n""" % locals()
+        stattime = _get_time(stats)
+        listdir += """
+        <td class="mtime">%(stattime)s</td>
+        </tr>\n""" % locals()
+
+pando_version = pando.__version__
+
+[----------------------------------------] via stdlib_percent
+<html>
+    <head>
+        <title>%(title)s</title>
+        <style>
+            body {font-family: "Trebuchet MS", sans-serif;}
+            table {font-family: monospace;}
+            .dir {font-weight: bold;}
+            .file {}
+            td {padding: 0 1em 0 0; white-space: nowrap;}
+            td.size {text-align: right;}
+            th {text-align: left; white-space: nowrap;}
+            tr:hover {background: #eef;}
+            #footer {font-size: smaller; font-style: italic;}
+        </style>
+    </head>
+    <body>
+        <h1>%(title)s</h1>
+        <table>
+            <tr>
+                <th class="name">Name</th>
+                <th>Size</th>
+                <th>Last Modified</th>
+            </tr>
+
+            %(updir)s
+
+            %(listdir)s
+        </table>
+        <hr />
+        <div id="footer">
+            This index was brought to you by <a href="http://pando.io/"> Aspen
+                v%(pando_version)s</a>.
+        </div>
+    </body>
+</html>

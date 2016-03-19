@@ -7,9 +7,9 @@ import os
 import StringIO
 
 from pytest import raises
-from aspen.website import Website
-from aspen.http.response import Response
-from aspen.exceptions import BadLocation
+from pando.website import Website
+from pando.http.response import Response
+from pando.exceptions import BadLocation
 
 
 simple_error_spt = """
@@ -47,7 +47,7 @@ def test_fatal_error_response_is_returned(harness):
 
 def test_redirect_has_only_location(harness):
     harness.fs.www.mk(('index.html.spt', """
-from aspen import Response
+from pando import Response
 [---]
 website.redirect('http://elsewhere', code=304)
 [---]"""))
@@ -59,7 +59,7 @@ website.redirect('http://elsewhere', code=304)
 def test_nice_error_response_is_returned(harness):
     harness.short_circuit = False
     harness.fs.www.mk(('index.html.spt', """
-from aspen import Response
+from pando import Response
 [---]
 raise Response(500)
 [---]"""))
@@ -67,7 +67,7 @@ raise Response(500)
 
 def test_nice_error_response_is_returned_for_404(harness):
     harness.fs.www.mk(('index.html.spt', """
-from aspen import Response
+from pando import Response
 [---]
 raise Response(404)
 [---]"""))
@@ -96,7 +96,7 @@ raise Exception("Can I haz traceback ?")
 
 def test_default_error_simplate_doesnt_expose_raised_body_by_default(harness):
     harness.fs.www.mk(('index.html.spt', """
-from aspen import Response
+from pando import Response
 [---]
 raise Response(404, "Um, yeah.")
 [---]"""))
@@ -107,7 +107,7 @@ raise Response(404, "Um, yeah.")
 def test_default_error_simplate_exposes_raised_body_for_show_tracebacks(harness):
     harness.client.website.show_tracebacks = True
     harness.fs.www.mk(('index.html.spt', """
-from aspen import Response
+from pando import Response
 [---]
 raise Response(404, "Um, yeah.")
 [---]"""))
@@ -118,7 +118,7 @@ raise Response(404, "Um, yeah.")
 def test_nice_error_response_can_come_from_user_error_spt(harness):
     harness.fs.project.mk(('error.spt', '[---]\n[---] text/plain\nTold ya.'))
     harness.fs.www.mk(('index.html.spt', """
-from aspen import Response
+from pando import Response
 [---]
 raise Response(420)
 [---]"""))
@@ -133,7 +133,7 @@ msg = "Enhance your calm." if response.code == 420 else "Ok."
 [---] text/plain
 %(msg)s"""))
     harness.fs.www.mk(('index.html.spt', """
-from aspen import Response
+from pando import Response
 [---]
 raise Response(420)
 [---]"""))
@@ -151,7 +151,7 @@ Lorem ipsum
 Error
 """))
     harness.fs.www.mk(('foo.spt',"""
-from aspen import Response
+from pando import Response
 [---]
 raise Response(404)
 [---] text/plain
@@ -162,7 +162,7 @@ raise Response(404)
 
 def test_default_error_spt_handles_text_html(harness):
     harness.fs.www.mk(('foo.html.spt',"""
-from aspen import Response
+from pando import Response
 [---]
 raise Response(404)
 [---]
@@ -173,7 +173,7 @@ raise Response(404)
 
 def test_default_error_spt_handles_application_json(harness):
     harness.fs.www.mk(('foo.json.spt',"""
-from aspen import Response
+from pando import Response
 [---]
 raise Response(404)
 [---]
@@ -191,7 +191,7 @@ raise Response(404)
 def test_default_error_spt_application_json_includes_msg_for_show_tracebacks(harness):
     harness.client.website.show_tracebacks = True
     harness.fs.www.mk(('foo.json.spt',"""
-from aspen import Response
+from pando import Response
 [---]
 raise Response(404, "Right, sooo...")
 [---]
@@ -208,7 +208,7 @@ raise Response(404, "Right, sooo...")
 
 def test_default_error_spt_falls_through_to_text_plain(harness):
     harness.fs.www.mk(('foo.xml.spt',"""
-from aspen import Response
+from pando import Response
 [---]
 raise Response(404)
 [---]
@@ -221,7 +221,7 @@ raise Response(404)
 def test_default_error_spt_fall_through_includes_msg_for_show_tracebacks(harness):
     harness.client.website.show_tracebacks = True
     harness.fs.www.mk(('foo.xml.spt',"""
-from aspen import Response
+from pando import Response
 [---]
 raise Response(404, "Try again!")
 [---]
@@ -238,7 +238,7 @@ def test_custom_error_spt_without_text_plain_results_in_406(harness):
 <h1>Oh no!</h1>
     """))
     harness.fs.www.mk(('foo.xml.spt',"""
-from aspen import Response
+from pando import Response
 [---]
 raise Response(404)
 [---]
@@ -253,7 +253,7 @@ def test_custom_error_spt_with_text_plain_works(harness):
 Oh no!
     """))
     harness.fs.www.mk(('foo.xml.spt',"""
-from aspen import Response
+from pando import Response
 [---]
 raise Response(404)
 [---]
@@ -281,7 +281,7 @@ def test_resources_can_import_from_project_root(harness):
 
 def test_non_500_response_exceptions_dont_get_folded_to_500(harness):
     harness.fs.www.mk(('index.html.spt', '''
-from aspen import Response
+from pando import Response
 [---]
 raise Response(400)
 [---]
@@ -291,7 +291,7 @@ raise Response(400)
 
 def test_errors_show_tracebacks(harness):
     harness.fs.www.mk(('index.html.spt', '''
-from aspen import Response
+from pando import Response
 [---]
 website.show_tracebacks = 1
 raise Response(400,1,2,3,4,5,6,7,8,9)

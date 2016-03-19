@@ -8,9 +8,9 @@ import sys
 
 from pytest import raises, mark
 
-from aspen.configuration import Configurable, parse
-from aspen.exceptions import ConfigurationError
-from aspen.website import Website
+from pando.configuration import Configurable, parse
+from pando.exceptions import ConfigurationError
+from pando.website import Website
 
 
 def test_defaults_to_defaults(harness):

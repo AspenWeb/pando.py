@@ -7,7 +7,7 @@ import StringIO
 
 from pytest import raises
 
-from aspen import json
+from pando import json
 
 
 def test_json_basically_works(harness):
@@ -135,14 +135,14 @@ def test_json_raises_TypeError_on_unknown_types(harness):
           , filepath='foo.json.spt'
            )
 
-def test_aspen_json_load_loads():
+def test_pando_json_load_loads():
     fp = StringIO.StringIO()
     fp.write('{"cheese": "puffs"}')
     fp.seek(0)
     actual = json.load(fp)
     assert actual == {'cheese': 'puffs'}
 
-def test_aspen_json_dump_dumps():
+def test_pando_json_dump_dumps():
     fp = StringIO.StringIO()
     json.dump({"cheese": "puffs"}, fp)
     fp.seek(0)
@@ -151,11 +151,11 @@ def test_aspen_json_dump_dumps():
     "cheese": "puffs"
 }'''
 
-def test_aspen_json_loads_loads():
+def test_pando_json_loads_loads():
     actual = json.loads('{"cheese": "puffs"}')
     assert actual == {'cheese': 'puffs'}
 
-def test_aspen_json_dumps_dumps():
+def test_pando_json_dumps_dumps():
     actual = json.dumps({'cheese': 'puffs'})
     assert actual == '''{
     "cheese": "puffs"

@@ -6,10 +6,10 @@ from __future__ import unicode_literals
 
 from pytest import raises
 
-from aspen import Response
-from aspen.exceptions import CRLFInjection
-from aspen.http.mapping import Mapping, CaseInsensitiveMapping
-from aspen.http.baseheaders import BaseHeaders
+from pando import Response
+from pando.exceptions import CRLFInjection
+from pando.http.mapping import Mapping, CaseInsensitiveMapping
+from pando.http.baseheaders import BaseHeaders
 
 
 def test_mapping_subscript_assignment_clobbers():

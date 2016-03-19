@@ -5,10 +5,10 @@ from __future__ import unicode_literals
 
 from pytest import raises
 
-from aspen import Response
-from aspen.http.request import Request
-from aspen.http.mapping import Mapping
-from aspen.http.request import Line, Method, URI, Version, Path, Querystring
+from pando import Response
+from pando.http.request import Request
+from pando.http.mapping import Mapping
+from pando.http.request import Line, Method, URI, Version, Path, Querystring
 
 
 # Line

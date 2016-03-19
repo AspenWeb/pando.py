@@ -5,8 +5,8 @@ from __future__ import unicode_literals
 
 from pytest import raises
 
-import aspen.utils # this happens to install the 'repr' error strategy
-from aspen.utils import ascii_dammit, unicode_dammit, to_age, to_rfc822, utcnow
+import pando.utils # this happens to install the 'repr' error strategy
+from pando.utils import ascii_dammit, unicode_dammit, to_age, to_rfc822, utcnow
 from datetime import datetime, timedelta
 
 GARBAGE = b"\xef\xf9"

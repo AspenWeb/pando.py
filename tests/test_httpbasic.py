@@ -5,8 +5,8 @@ from __future__ import unicode_literals
 
 from pytest import raises, yield_fixture
 
-from aspen.http.response import Response
-from aspen.auth.httpbasic import inbound_responder
+from pando.http.response import Response
+from pando.auth.httpbasic import inbound_responder
 
 import base64
 

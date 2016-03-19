@@ -5,9 +5,9 @@ from __future__ import unicode_literals
 
 from pytest import raises
 
-from aspen.http.request import Headers
-import aspen.body_parsers as parsers
-from aspen.exceptions import MalformedBody, UnknownBodyType
+from pando.http.request import Headers
+import pando.body_parsers as parsers
+from pando.exceptions import MalformedBody, UnknownBodyType
 
 
 FORMDATA = object()

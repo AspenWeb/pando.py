@@ -64,7 +64,7 @@ def test_weirdness():
 
         log("importing a thing")
         old = set(sys.path_importer_cache.keys())
-        import aspen
+        import pando
         now = set(sys.path_importer_cache.keys())
         log("diff", now - old)
 
