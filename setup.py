@@ -23,7 +23,7 @@ classifiers = [ 'Development Status :: 4 - Beta'
                ]
 
 setup( author = 'Chad Whitacre et al.'
-     , author_email = 'team@pando.io'
+     , author_email = 'team@aspen.io'
      , classifiers = classifiers
      , description = ('Pando is a Python web framework. '
                       'Simplates are the main attraction.')
@@ -31,7 +31,7 @@ setup( author = 'Chad Whitacre et al.'
      , name = 'pando'
      , packages = find_packages(exclude=['pando.tests', 'pando.tests.*'])
      , py_modules = ['fcgi_pando']
-     , url = 'http://pando.io/'
+     , url = 'http://aspen.io/'
      , version = version
      , zip_safe = False
      , package_data = {'pando': ['www/*', 'configuration/mime.types']}

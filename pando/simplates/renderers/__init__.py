@@ -6,7 +6,7 @@ This module implements pluggable content rendering.
                                                                               #
 See user docs here:
 
-    http://pando.io/simplates/rendered/
+    http://aspen.io/simplates/rendered/
 
 Negotiated and rendered resources have content pages the bytes for which are
 transformed based on context. The user may explicitly choose a renderer per

@@ -82,7 +82,7 @@ def lazy_check():
         raise ImportError("Neither simplejson nor json was found. Try "
                           "installing simplejson to use dynamic JSON "
                           "simplates. See "
-                          "http://pando.io/simplates/json/#libraries for "
+                          "http://aspen.io/simplates/json/#libraries for "
                           "more information.")
 
 
