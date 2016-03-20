@@ -4,7 +4,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from aspen.simplates import _decode
+from pando.simplates import _decode
 from pytest import raises
 
 
@@ -68,7 +68,7 @@ def test_cant_implicitly_override_state(harness):
 
 def test_can_explicitly_override_state(harness):
     response = harness.simple("[---]\n"
-        "from aspen import Response\n"
+        "from pando import Response\n"
         "state['response'] = Response(299)\n"
         "[---]\n"
         "bar"

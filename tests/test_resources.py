@@ -5,8 +5,8 @@ from __future__ import unicode_literals
 
 import os
 
-from aspen import Response
-from aspen.simplates.pagination import split
+from pando import Response
+from pando.simplates.pagination import split
 from pytest import raises
 
 
@@ -69,7 +69,7 @@ def test_path_part_params_are_available(harness):
     assert response.body == "3\n"
 
 def test_resources_dont_leak_whitespace(harness):
-    """This aims to resolve https://github.com/whit537/aspen/issues/8.
+    """This aims to resolve https://github.com/AspenWeb/pando.py/issues/8.
     """
     actual = harness.simple("""
         [--------------]
@@ -99,7 +99,7 @@ def test_raise_response_works(harness):
     expected = 404
     response = raises( Response
                             , harness.simple
-                            , "from aspen import Response\n"
+                            , "from pando import Response\n"
                               "[---------]\n"
                               "raise Response(404)\n"
                               "[---------]\n"
@@ -108,11 +108,11 @@ def test_raise_response_works(harness):
     assert actual == expected
 
 def test_exception_location_preserved_for_response_raised_in_page_2(harness):
-    # https://github.com/gittip/aspen-python/issues/153
+    # https://github.com/AspenWeb/pando.py/issues/153
     expected_path = os.path.join(os.path.basename(harness.fs.www.root), 'index.html.spt')
     expected = (expected_path, 2)
     try:
-        harness.simple('[---]\nfrom aspen import Response; raise Response(404)\n[---]\n')
+        harness.simple('[---]\nfrom pando import Response; raise Response(404)\n[---]\n')
     except Response, response:
         actual = response.whence_raised()
     assert actual == expected

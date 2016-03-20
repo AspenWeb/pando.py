@@ -4,8 +4,8 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 
-from aspen.http.request import Request
-from aspen.http.response import Response
+from pando.http.request import Request
+from pando.http.response import Response
 
 
 def test_website_can_respond(harness):

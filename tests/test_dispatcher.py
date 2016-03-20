@@ -6,8 +6,8 @@ from __future__ import unicode_literals
 import os
 from pytest import raises
 
-import aspen
-from aspen import dispatcher, Response
+import pando
+from pando import dispatcher, Response
 
 
 # Helpers
@@ -136,24 +136,24 @@ def test_alternate_index_is_found(harness):
     harness.fs.www.mk(('default.html', "Greetings, program!"),)
     assert_fs(harness, '/', 'default.html')
 
-def test_configure_aspen_py_setting_override_works_too(harness):
+def test_configure_pando_py_setting_override_works_too(harness):
     harness.client.website.indices = ["default.html"]
     harness.fs.www.mk(('index.html', "Greetings, program!"),)
     assert_raises_404(harness, '/')
 
-def test_configure_aspen_py_setting_takes_first(harness):
+def test_configure_pando_py_setting_takes_first(harness):
     harness.client.website.indices = ["index.html", "default.html"]
     harness.fs.www.mk( ('index.html', "Greetings, program!")
                      , ('default.html', "Greetings, program!")
                       )
     assert_fs(harness, '/', 'index.html')
 
-def test_configure_aspen_py_setting_takes_second_if_first_is_missing(harness):
+def test_configure_pando_py_setting_takes_second_if_first_is_missing(harness):
     harness.client.website.indices = ["index.html", "default.html"]
     harness.fs.www.mk(('default.html', "Greetings, program!"),)
     assert_fs(harness, '/', 'default.html')
 
-def test_configure_aspen_py_setting_strips_commas(harness):
+def test_configure_pando_py_setting_strips_commas(harness):
     harness.client.website.indices = ["index.html", "default.html"]
     harness.fs.www.mk(('default.html', "Greetings, program!"),)
     assert_fs(harness, '/', 'default.html')
@@ -429,7 +429,7 @@ Greetings, %(name)s!"""
 
 def test_virtual_path_docs_1(harness):
     harness.fs.www.mk(('%name/index.html.spt', GREETINGS_NAME_SPT),)
-    assert_body(harness, '/aspen/', 'Greetings, aspen!')
+    assert_body(harness, '/pando/', 'Greetings, pando!')
 
 def test_virtual_path_docs_2(harness):
     harness.fs.www.mk(('%name/index.html.spt', GREETINGS_NAME_SPT),)
@@ -516,10 +516,10 @@ def test_file_with_no_extension_matches(harness):
     assert_fs(harness, '/baz', '%value.spt')
     assert_virtvals(harness, '/baz', {'value': [u'baz']})
 
-def test_aspen_favicon_doesnt_get_clobbered_by_virtual_path(harness):
+def test_pando_favicon_doesnt_get_clobbered_by_virtual_path(harness):
     harness.fs.www.mk(('%value.html.spt', NEGOTIATED_SIMPLATE),)
     actual = harness.simple(uripath='/favicon.ico', filepath=None, want='dispatch_result.match')
-    assert actual == os.path.join(os.path.dirname(aspen.__file__), 'www', 'favicon.ico')
+    assert actual == os.path.join(os.path.dirname(pando.__file__), 'www', 'favicon.ico')
 
 def test_robots_txt_also_shouldnt_be_redirected(harness):
     harness.fs.www.mk(('%value.html.spt', ''),)

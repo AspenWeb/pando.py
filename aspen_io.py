@@ -2,8 +2,8 @@
 """
 import os
 import os.path
-from aspen.configuration import parse
-from aspen.website import Website
+from pando.configuration import parse
+from pando.website import Website
 
 distribution_root = os.path.dirname(__file__)
 website = Website( www_root=os.path.join(distribution_root, 'doc')
@@ -57,7 +57,7 @@ opts['show_ga'] = parse.yes_no(os.environ.get( 'ASPEN_IO_SHOW_GA'
                                               ).decode('US-ASCII'))
 opts['base'] = ''
 
-# this is a dirty nasty hack. We should store the version in the aspen module somewhere
+# this is a dirty nasty hack. We should store the version in the pando module somewhere
 opts['version'] = open(os.path.join(website.www_root,'..','version.txt')).read()[:-len('-dev')]
 
 # no idea why this doesn't work
@@ -68,5 +68,5 @@ website.algorithm.insert_after('dispatch_request_to_filesystem', add_stuff_to_re
 
 
 if __name__ == '__main__':
-    from aspen import serve
+    from pando import serve
     serve(website)

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Aspen documentation build configuration file, created by
+# Pando documentation build configuration file, created by
 # sphinx-quickstart on Mon Feb 24 15:00:43 2014.
 #
 # This file is execfile()d with the current directory set to its containing dir.
@@ -40,7 +40,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'Aspen'
+project = u'Pando'
 copyright = u'2014, Chad Whitacre, Paul Jimenez, and others'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -164,7 +164,7 @@ html_static_path = ['_static']
 #html_file_suffix = None
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'Aspendoc'
+htmlhelp_basename = 'Pandodoc'
 
 
 # -- Options for LaTeX output --------------------------------------------------
@@ -183,7 +183,7 @@ latex_elements = {
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'Aspen.tex', u'Aspen Documentation',
+  ('index', 'Pando.tex', u'Pando Documentation',
    u'Chad Whitacre, Paul Jimenez, and others', 'manual'),
 ]
 
@@ -213,7 +213,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'aspen', u'Aspen Documentation',
+    ('index', 'pando', u'Pando Documentation',
      [u'Chad Whitacre, Paul Jimenez, and others'], 1)
 ]
 
@@ -227,8 +227,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'Aspen', u'Aspen Documentation',
-   u'Chad Whitacre, Paul Jimenez, and others', 'Aspen', 'One line description of project.',
+  ('index', 'Pando', u'Pando Documentation',
+   u'Chad Whitacre, Paul Jimenez, and others', 'Pando', 'One line description of project.',
    'Miscellaneous'),
 ]
 

@@ -1,4 +1,4 @@
-from aspen.testing.client import FileUpload
+from pando.testing.client import FileUpload
 
 
 def test_test_client_handles_body(harness):

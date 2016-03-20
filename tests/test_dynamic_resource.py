@@ -5,11 +5,11 @@ from __future__ import unicode_literals
 
 from pytest import raises, yield_fixture
 
-from aspen import resources, Response
-from aspen.http.resource import Dynamic
-from aspen.simplates.pagination import Page
-from aspen.simplates.renderers.stdlib_template import Factory as TemplateFactory
-from aspen.simplates.renderers.stdlib_percent import Factory as PercentFactory
+from pando import resources, Response
+from pando.http.resource import Dynamic
+from pando.simplates.pagination import Page
+from pando.simplates.renderers.stdlib_template import Factory as TemplateFactory
+from pando.simplates.renderers.stdlib_percent import Factory as PercentFactory
 
 
 @yield_fixture
@@ -215,7 +215,7 @@ def test_respond_406_gives_list_of_acceptable_types(harness):
     assert actual == expected
 
 
-from aspen.simplates.renderers import Renderer, Factory
+from pando.simplates.renderers import Renderer, Factory
 
 class Glubber(Renderer):
     def render_content(self, context):

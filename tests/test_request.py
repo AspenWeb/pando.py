@@ -5,10 +5,10 @@ from __future__ import unicode_literals
 
 from pytest import raises
 
-from aspen import Response
-from aspen.http.request import make_franken_headers, kick_against_goad, Request
-from aspen.http.baseheaders import BaseHeaders
-from aspen.exceptions import MalformedHeader
+from pando import Response
+from pando.http.request import make_franken_headers, kick_against_goad, Request
+from pando.http.baseheaders import BaseHeaders
+from pando.exceptions import MalformedHeader
 
 
 def test_request_line_raw_works(harness):
