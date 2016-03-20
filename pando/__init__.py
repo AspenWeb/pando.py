@@ -23,37 +23,33 @@ Quick Start
 Given: `POSIX <http://en.wikipedia.org/wiki/POSIX#POSIX-oriented_operating_systems>`_
 and `virtualenv <http://pypi.python.org/pypi/virtualenv>`_
 
-Step 1: Make a sandbox:
+Step 1: Make a sandbox::
 
     $ virtualenv foo
     $ cd foo
-    $ . bin/activate</pre>
-    ::
+    $ . bin/activate
 
-Step 2: Install `pando from PyPI <http://pypi.python.org/pypi/pando>`_:
+Step 2: Install `pando from PyPI <http://pypi.python.org/pypi/pando>`_::
 
     (foo)$ pip install pando
     blah
     blah
     blah
-    ::
 
-Step 3: Create a website root:
+Step 3: Create a website root::
 
     (foo)$ mkdir www
-    (foo)$ cd www</pre>
-    ::
+    (foo)$ cd www
 
-Step 4: Create a web page, and start pando inside it:
+Step 4: Create a web page, and start pando inside it::
 
     (foo)$ echo Greetings, program! > index.html.spt
     (foo)$ pando
     Greetings, program! Welcome to port 8080.
-    ::
 
-Step 5: Check `localhost http://localhost:8080`_ for your new page!
+Step 5: Check `localhost <http://localhost:8080>`_ for your new page!
 
-    .. image:: greetings-program.png
+    .. image:: ../doc/quick-start/greetings-program.small.png
 
 """
 from __future__ import absolute_import
