@@ -1,20 +1,19 @@
 """This is Pando, a Python web framework.
 
+Pando's source code is on `GitHub`_, and is `MIT-licensed`_.
+
+.. _github: https://github.com/AspenWeb/pando.py
+.. _MIT-licensed: http://opensource.org/licenses/MIT
+
 
 Installation
 ------------
 
-:py:mod:`pando` is available on `GitHub`_ and on `PyPI`_::
+:py:mod:`pando` is available on `PyPI`_::
 
     $ pip install pando
 
-We `test <https://travis-ci.org/AspenWeb/pando.py>`_ against Python 2.7.
-
-:py:mod:`pando` is in `MIT-licensed`_.
-
-.. _github: https://github.com/AspenWeb/pando.py
 .. _pypi: https://pypi.python.org/pypi/pando
-.. _MIT-licensed: http://opensource.org/licenses/MIT
 
 
 Quick Start
