@@ -59,7 +59,7 @@ def outbound(response):
     user = response.request.context['user']
     if not isinstance(user, auth.User):
         raise Exception("If you define 'user' in a simplate it has to be an "
-                        "instance of an pando.auth.User.")
+                        "instance of pando.auth.User.")
 
     if NAME not in response.request.headers.cookie:
         # no cookie in the request, don't set one on response

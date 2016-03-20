@@ -26,7 +26,7 @@ each content page, like so:
 A Renderer is instantiated by a Factory, which is a class that is itself
 instantied with one argument:
 
-    configuration   an Pando configuration object
+    configuration   a Pando configuration object
 
 
 Instances of each Renderer subclass are callables that take five arguments and
