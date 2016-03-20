@@ -465,7 +465,7 @@ class URI(unicode):
         port = IntWithRaw(uri.port)
 
         # path and querystring get bytes and do their own parsing
-        path = Path(uri.path)  # further populated in gauntlet
+        path = Path(uri.path)
         querystring = Querystring(uri.query)
 
         # we require that the uri as a whole be decodable with ASCII
@@ -515,9 +515,6 @@ def extract_rfc2396_params(path):
 
 class Path(Mapping):
     """Represent the path of a resource.
-
-    This is populated by pando.gauntlet.virtual_paths.
-
     """
 
     def __init__(self, raw):
