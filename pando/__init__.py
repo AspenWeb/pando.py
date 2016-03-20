@@ -8,11 +8,11 @@ Installation
 
     $ pip install pando
 
-We `test <https://travis-ci.org/gittip/pando-python>`_ against Python 2.7.
+We `test <https://travis-ci.org/AspenWeb/pando.py>`_ against Python 2.7.
 
 :py:mod:`pando` is in `MIT-licensed`_.
 
-.. _github: https://github.com/gittip/pando-python
+.. _github: https://github.com/AspenWeb/pando.py
 .. _pypi: https://pypi.python.org/pypi/pando
 .. _MIT-licensed: http://opensource.org/licenses/MIT
 

@@ -69,7 +69,7 @@ def test_path_part_params_are_available(harness):
     assert response.body == "3\n"
 
 def test_resources_dont_leak_whitespace(harness):
-    """This aims to resolve https://github.com/whit537/pando/issues/8.
+    """This aims to resolve https://github.com/AspenWeb/pando.py/issues/8.
     """
     actual = harness.simple("""
         [--------------]
@@ -108,7 +108,7 @@ def test_raise_response_works(harness):
     assert actual == expected
 
 def test_exception_location_preserved_for_response_raised_in_page_2(harness):
-    # https://github.com/gittip/pando-python/issues/153
+    # https://github.com/AspenWeb/pando.py/issues/153
     expected_path = os.path.join(os.path.basename(harness.fs.www.root), 'index.html.spt')
     expected = (expected_path, 2)
     try:
