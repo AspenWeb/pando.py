@@ -101,7 +101,7 @@ def test_method_no_chr_5(): the501(5)
 def test_method_no_chr_6(): the501(6)
 def test_method_no_chr_7(): the501(7)
 def test_method_no_chr_8(): the501(8)
-def test_method_no_chr_9(): the501(9)
+def test_method_no_chr_9(): the501(9) # HT
 
 def test_method_no_chr_10(): the501(10)
 def test_method_no_chr_11(): the501(11)
@@ -130,7 +130,6 @@ def test_method_no_chr_31(): the501(31)
 def test_method_no_chr_32(): the501(32) # space
 def test_method_no_chr_33(): assert Method(chr(33)) == '!'
 
-# SEPARATORS
 def test_method_no_chr_40(): the501(40) # (
 def test_method_no_chr_41(): the501(41) # )
 def test_method_no_chr_60(): the501(60) # <
@@ -148,8 +147,6 @@ def test_method_no_chr_63(): the501(63) # ?
 def test_method_no_chr_61(): the501(61) # =
 def test_method_no_chr_123(): the501(123) # {
 def test_method_no_chr_125(): the501(125) # }
-def test_method_no_chr_32(): the501(32) # SP
-def test_method_no_chr_9(): the501(9) # HT
 
 
 # URI
@@ -310,9 +307,6 @@ def test_version_cant_be_junk():
 def test_version_cant_even_be_lowercase():
     assert raises(Response, Version, b"http/1.1").value.code == 400
 
-def test_version_cant_even_be_lowercase():
-    assert raises(Response, Version, b"http/1.1").value.code == 400
-
 def test_version_with_garbage_is_safe():
     r = raises(Response, Version, b"HTTP\xef/1.1").value
     assert r.code == 400, r.code
@@ -324,7 +318,7 @@ def test_version_major_is_int():
     actual = version.major
     assert actual == expected
 
-def test_version_major_is_int():
+def test_version_minor_is_int():
     version = Version("HTTP/0.9")
     expected = 9
     actual = version.minor
