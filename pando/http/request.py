@@ -36,11 +36,11 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 
+from io import StringIO
 import re
 import sys
 import urllib
 import urlparse
-from cStringIO import StringIO
 
 from aspen.http.request import Path as _Path, Querystring as _Querystring
 from aspen.utils import ascii_dammit

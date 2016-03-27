@@ -8,9 +8,8 @@ pando.auth.httpdigest
 # from http://www.autopond.com/digestauth.py
 # modified by Paul Jimenez
 
+from hashlib import md5
 import random, time, re
-
-from ..backcompat import md5
 
 class MalformedAuthenticationHeader(Exception): pass
 
