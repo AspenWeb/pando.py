@@ -45,26 +45,6 @@ Library Reference
    :member-order: bysource
    :special-members:
 
-.. automodule:: pando.configuration
-   :members:
-   :member-order: bysource
-   :special-members:
-
-.. automodule:: pando.configuration.exceptions
-   :members:
-   :member-order: bysource
-   :special-members:
-
-.. automodule:: pando.configuration.options
-   :members:
-   :member-order: bysource
-   :special-members:
-
-.. automodule:: pando.configuration.parse
-   :members:
-   :member-order: bysource
-   :special-members:
-
 .. automodule:: pando.context
    :members:
    :member-order: bysource

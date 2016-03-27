@@ -11,7 +11,10 @@ import datetime
 import os
 
 from algorithm import Algorithm
-from .configuration import Configurable
+from aspen.configuration import configure, parse
+from aspen.request_processor import KNOBS as ASPEN_KNOBS, RequestProcessor
+
+from . import body_parsers
 from .http.response import Response
 from .utils import to_rfc822, utc
 from .exceptions import BadLocation
@@ -20,7 +23,17 @@ from .exceptions import BadLocation
 THE_PAST = to_rfc822(datetime.datetime(2006, 11, 17, tzinfo=utc))
 
 
-class Website(Configurable):
+KNOBS = {
+    # 'name':               (default,               from_unicode),
+    'base_url':             ('',                    parse.identity),
+    'list_directories':     (False,                 parse.yes_no),
+    'logging_threshold':    (0,                     int),
+    'show_tracebacks':      (False,                 parse.yes_no),
+    'colorize_tracebacks':  (True,                  parse.yes_no),
+}
+
+
+class Website(object):
     """Represent a website.
 
     This object holds configuration information, and how to handle HTTP
@@ -32,8 +45,25 @@ class Website(Configurable):
     def __init__(self, **kwargs):
         """Takes configuration in kwargs.
         """
+        self.request_processor = RequestProcessor(**kwargs)
         self.algorithm = Algorithm.from_dotted_name('pando.algorithms.website')
         self.configure(**kwargs)
+
+    def configure(self, **kwargs):
+        # copy aspen's config variables, for backward compatibility
+        extra = 'typecasters renderer_factories default_renderers_by_media_type'
+        for key in list(ASPEN_KNOBS) + extra.split():
+            self.__dict__[key] = self.request_processor.__dict__[key]
+
+        # load our own config variables
+        configure(KNOBS, self.__dict__, 'PANDO_', kwargs)
+
+        # load bodyparsers
+        self.body_parsers = {
+            "application/x-www-form-urlencoded": body_parsers.formdata,
+            "multipart/form-data": body_parsers.formdata,
+            self.media_type_json: body_parsers.jsondata
+        }
 
 
     def __call__(self, environ, start_response):
