@@ -3,7 +3,7 @@ from __future__ import division, print_function, unicode_literals, with_statemen
 import os
 import sys
 import os.path
-from fabricate import main, run, shell, autoclean
+from fabricate import ExecutionError, main, run, shell, autoclean
 
 # Core Executables
 # ================
@@ -67,30 +67,28 @@ def env():
     _env()
 
 
-def deps():
-    """set up an environment able to run pando"""
-    _deps()
+def _deps(envdir):
+    run(_virt('pip', envdir), 'install', *PANDO_DEPS)
 
 
-def _deps(envdir='env'):
+def _test_deps(envdir):
+    run(_virt('pip', envdir), 'install', *TEST_DEPS)
+
+
+def _dev(envdir='env'):
     envdir = _env(envdir)
-    run( _virt('pip', envdir)
-       , 'install'
-       , '--editable'
-       , '.'
-        )
+    _deps(envdir)
+    _test_deps(envdir)
+    try:
+        shell(_virt('pip', envdir), 'show', 'pando')
+    except ExecutionError:
+        run(_virt('pip', envdir), 'install', '--no-deps', '--editable', '.')
     return envdir
 
-
-def _dev_deps(envdir='env'):
-    envdir = _deps(envdir)
-    for dep in TEST_DEPS:
-        run(_virt('pip', envdir), 'install', dep)
-    return envdir
 
 def dev():
-    """set up an environment able to run tests in env/"""
-    _dev_deps()
+    """set up an environment able to run pando and the tests"""
+    _dev()
 
 
 def clean_env():
@@ -153,12 +151,12 @@ def clean_sphinx():
 
 def test():
     """run all tests"""
-    shell(_virt('py.test', _dev_deps()), 'tests/', ignore_status=True, silent=False)
+    shell(_virt('py.test', _dev()), 'tests/', ignore_status=True, silent=False)
 
 
 def testf():
     """run tests, stopping at the first failure"""
-    shell(_virt('py.test', _dev_deps()), '-x', 'tests/', ignore_status=True, silent=False)
+    shell(_virt('py.test', _dev()), '-x', 'tests/', ignore_status=True, silent=False)
 
 
 def pylint():
@@ -171,7 +169,7 @@ def pylint():
 
 def test_cov():
     """run code coverage"""
-    run(_virt('py.test', _dev_deps()),
+    run(_virt('py.test', _dev()),
         '--junitxml=testresults.xml',
         '--cov-report', 'term',
         '--cov-report', 'xml',
@@ -237,8 +235,7 @@ def clean_jenv():
 def jython_test():
     """install jython and run tests with coverage (requires java)"""
     _jenv()
-    for dep in TEST_DEPS:
-        run(_virt('pip', 'jenv'), 'install', dep)
+    run(_virt('pip', 'jenv'), 'install', *TEST_DEPS)
     run(_virt('jython', 'jenv'), 'setup.py', 'develop')
     run(_virt('jython', 'jenv'), _virt('py.test', 'jenv'),
             '--junitxml=jython-testresults.xml', 'tests',
@@ -258,7 +255,7 @@ def show_targets():
     print("Valid targets:\n")
     # organize these however
     targets = ['show_targets', None,
-               'env', 'deps', 'dev', 'testf', 'test', 'pylint', 'test_cov', 'analyse', None,
+               'env', 'dev', 'testf', 'test', 'pylint', 'test_cov', 'analyse', None,
                'build', 'wheel', None,
                'docserve', 'sphinx', 'autosphinx', None,
                'clean', 'clean_env', 'clean_test', 'clean_build', 'clean_sphinx', None,

@@ -15,8 +15,8 @@ install:
   - "python --version"
   - "python -c \"import struct; print(struct.calcsize('P') * 8)\""
 
-  # Install the build dependencies of the project.
-  - "python setup.py -q install"
+  # Install the project and its dependencies.
+  - "python build.py dev"
 
 build: false  # Not a C# project, build stuff at the test step instead.
 
