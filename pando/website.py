@@ -100,8 +100,8 @@ class Website(object):
             website.wsgi_app = WSGIMiddleware(website.wsgi_app)
 
         """
-        wsgi = self.respond(environ)['response']
-        return wsgi(environ, start_response)
+        response = self.respond(environ)['response']
+        return response.to_wsgi(environ, start_response, self.charset_dynamic)
 
 
     def respond(self, environ, raise_immediately=None, return_after=None):
