@@ -39,18 +39,30 @@ from __future__ import unicode_literals
 
 import traceback
 
+from aspen import resources
+from aspen.http.resource import NegotiationFailure
+from aspen.request_processor.dispatcher import (
+    DispatchResult, DispatchStatus, NotFound, Redirect, UnindexedDirectory,
+)
 from first import first as _first
 
 from .. import log as _log
 from .. import log_dammit as _log_dammit
-from .. import dispatcher, resources, body_parsers, typecasting
+from .. import body_parsers
 from ..http.request import Request
 from ..http.response import Response
-from ..dispatcher import DispatchResult, DispatchStatus
 
 
 def parse_environ_into_request(environ):
     return {'request': Request.from_wsgi(environ)}
+
+
+def insert_variables_for_aspen(request, website):
+    return {
+        'path': request.path,
+        'querystring': request.qs,
+        'request_processor': website.request_processor,
+    }
 
 
 def parse_body_into_request(request, website):
@@ -75,39 +87,30 @@ def redirect_to_base_url(website, request):
     website.canonicalize_base_url(request)
 
 
-def dispatch_request_to_filesystem(website, request):
-
-    if website.list_directories:
-        directory_default = website.ours_or_theirs('autoindex.html.spt')
-        assert directory_default is not None  # sanity check
-    else:
-        directory_default = None
-
-    result = dispatcher.dispatch( indices               = website.indices
-                                , media_type_default    = website.media_type_default
-                                , pathparts             = request.line.uri.path.parts
-                                , uripath               = request.line.uri.path.raw
-                                , querystring           = request.line.uri.querystring.raw
-                                , startdir              = website.www_root
-                                , directory_default     = directory_default
-                                , favicon_default       = website.find_ours('favicon.ico')
-                                , redirect              = website.redirect
-                                 )
-
-    for k, v in result.wildcards.iteritems():
-        request.line.uri.path[k] = v
-    return {'dispatch_result': result}
+# the following function is inserted here by `Website.__init__()`:
+# aspen.request_processor.algorithm.dispatch_path_to_filesystem
 
 
-def apply_typecasters_to_path(website, request, state):
-    typecasting.apply_typecasters( website.typecasters
-                                 , request.line.uri.path
-                                 , state
-                                  )
+def handle_dispatch_exception(website, exception):
+    if isinstance(exception, Redirect):
+        raise Response(302, exception.message)
+    elif isinstance(exception, UnindexedDirectory) and website.list_directories:
+        autoindex_spt = website.ours_or_theirs('autoindex.html.spt')
+        dispatch_result = DispatchResult( DispatchStatus.okay
+                                        , autoindex_spt
+                                        , {}
+                                        , 'Directory autoindex.'
+                                        , {'autoindexdir': exception.message}
+                                        , False
+                                         )
+        return {'dispatch_result': dispatch_result, 'exception': None}
+    elif isinstance(exception, NotFound):
+        raise Response(404)
 
 
-def get_resource_for_request(website, dispatch_result):
-    return {'resource': resources.get(website, dispatch_result.match)}
+# the following functions are inserted here by `Website.__init__()`:
+# aspen.request_processor.algorithm.apply_typecasters_to_path
+# aspen.request_processor.algorithm.load_resource_from_filesystem
 
 
 def resource_available():
@@ -119,16 +122,34 @@ def extract_accept_from_request(request):
     return {'accept_header': request.headers.get('accept')}
 
 
-def get_response_for_resource(state, website, resource=None):
-    if resource is not None:
-        state.setdefault('response', Response(charset=website.charset_dynamic))
-        return {'response': resource.respond(state)}
+def create_response_object(state):
+    state.setdefault('response', Response())
+
+
+# the following function is inserted here by `Website.__init__()`:
+# aspen.request_processor.algorithm.render_resource
+
+
+def fill_response_with_output(output, response, request_processor):
+    if isinstance(output.body, unicode):
+        output.charset = request_processor.charset_dynamic
+        output.body = output.body.encode(output.charset)
+    response.body = output.body
+    if 'Content-Type' not in response.headers:
+        ct = output.media_type
+        if output.charset:
+            ct += '; charset=' + output.charset
+        response.headers['Content-Type'] = ct
 
 
 def get_response_for_exception(website, exception):
     tb = traceback.format_exc()
     if isinstance(exception, Response):
         response = exception
+    elif isinstance(exception, NotFound):
+        response = Response(404)
+    elif isinstance(exception, NegotiationFailure):
+        response = Response(406, exception.message)
     else:
         response = Response(500)
         if website.show_tracebacks:
@@ -162,10 +183,7 @@ def delegate_error_to_simplate(website, state, response, request=None, resource=
 
     if fspath is not None:
         request.original_resource = resource
-        if resource is not None and resource.default_media_type != website.media_type_default:
-            # Try to return an error that matches the type of the original resource.
-            state['accept_header'] = resource.default_media_type + ', text/plain; q=0.1'
-        resource = resources.get(website, fspath)
+        resource = resources.get(website.request_processor, fspath)
         state['dispatch_result'] = DispatchResult( DispatchStatus.okay
                                                  , fspath
                                                  , {}
@@ -173,19 +191,32 @@ def delegate_error_to_simplate(website, state, response, request=None, resource=
                                                  , {}
                                                  , True
                                                   )
-        try:
-            response = resource.respond(state)
-        except Response as response:
-            if response.code != 406:
-                raise
+        # Try to return an error that matches the type of the response the
+        # client would have received if the error didn't occur
+        wanted = getattr(state.get('output'), 'media_type', None)
+        wanted = (wanted + ',' if wanted else '') + 'text/plain;q=0.1'
+        state['accept_header'] = wanted
 
-    return {'response': response, 'exception': None}
+        try:
+            output = resource.render(state)
+        except NegotiationFailure as e:
+            response.code = 406
+            response.body = e.message
+        else:
+            fill_response_with_output(output, response, website.request_processor)
+
+    return {'exception': None}
 
 
 def log_traceback_for_exception(website, exception):
+    if isinstance(exception, Response):
+        response = exception
+        if response.code < 500:
+            return {'response': response, 'exception': None}
+    else:
+        response = Response(500)
     tb = traceback.format_exc()
     _log_dammit(tb)
-    response = Response(500)
     if website.show_tracebacks:
         response.body = tb
     return {'response': response, 'exception': None}

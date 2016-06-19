@@ -61,9 +61,9 @@ import pkg_resources
 
 # imports of convenience
 from aspen.simplates import json_ as json
+from aspen.simplates.renderers import BUILTIN_RENDERERS, RENDERERS
 from .http.response import Response
 from .logging import log, log_dammit
-from .simplates.renderers import BUILTIN_RENDERERS, RENDERERS
 
 # Shut up, PyFlakes. I know I'm addicted to you.
 Response, json, log, log_dammit, BUILTIN_RENDERERS, RENDERERS

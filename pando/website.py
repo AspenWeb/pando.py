@@ -46,7 +46,22 @@ class Website(object):
         """Takes configuration in kwargs.
         """
         self.request_processor = RequestProcessor(**kwargs)
-        self.algorithm = Algorithm.from_dotted_name('pando.algorithms.website')
+        aspen_algo = self.request_processor.algorithm
+        pando_algo = Algorithm.from_dotted_name('pando.algorithms.website')
+        pando_algo.insert_before(
+            'handle_dispatch_exception',
+            aspen_algo['dispatch_path_to_filesystem'],
+        )
+        pando_algo.insert_before(
+            'resource_available',
+            aspen_algo['apply_typecasters_to_path'],
+            aspen_algo['load_resource_from_filesystem'],
+        )
+        pando_algo.insert_before(
+            'fill_response_with_output',
+            aspen_algo['render_resource'],
+        )
+        self.algorithm = pando_algo
         self.configure(**kwargs)
 
     def configure(self, **kwargs):

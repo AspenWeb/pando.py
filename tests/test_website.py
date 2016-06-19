@@ -141,7 +141,7 @@ raise Response(420)
     assert response.code == 420
     assert response.body == 'Enhance your calm.'
 
-def test_delegate_error_to_simplate_respects_original_accept_header(harness):
+def test_delegate_error_to_simplate_ignores_original_accept_header(harness):
     harness.fs.project.mk(('error.spt', """[---]
 [---] text/fake
 Lorem ipsum
@@ -158,7 +158,7 @@ raise Response(404)
     """))
     response = harness.client.GET('/foo', raise_immediately=False, HTTP_ACCEPT=b'text/fake')
     assert response.code == 404
-    assert 'text/fake' in response.headers['Content-Type']
+    assert 'text/plain' in response.headers['Content-Type']
 
 def test_default_error_spt_handles_text_html(harness):
     harness.fs.www.mk(('foo.html.spt',"""
@@ -180,7 +180,7 @@ raise Response(404)
     """))
     response = harness.client.GET('/foo.json', raise_immediately=False)
     assert response.code == 404
-    assert response.headers['Content-Type'] == 'application/json'
+    assert response.headers['Content-Type'] == 'application/json; charset=UTF-8'
     assert response.body == '''\
 { "error_code": 404
 , "error_message_short": "Not Found"
@@ -198,7 +198,7 @@ raise Response(404, "Right, sooo...")
     """))
     response = harness.client.GET('/foo.json', raise_immediately=False)
     assert response.code == 404
-    assert response.headers['Content-Type'] == 'application/json'
+    assert response.headers['Content-Type'] == 'application/json; charset=UTF-8'
     assert response.body == '''\
 { "error_code": 404
 , "error_message_short": "Not Found"
