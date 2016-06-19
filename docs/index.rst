@@ -85,11 +85,6 @@ Library Reference
    :member-order: bysource
    :special-members:
 
-.. automodule:: pando.json_
-   :members:
-   :member-order: bysource
-   :special-members:
-
 .. automodule:: pando.logging
    :members:
    :member-order: bysource

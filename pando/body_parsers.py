@@ -14,11 +14,13 @@ Headers mapping of the supplied headers
 """
 
 import cgi
-from . import json_ as json
+
+from . import json
 from .utils import typecheck
 from .http.request import Headers
 from .http.mapping import Mapping
 from .exceptions import MalformedBody, UnknownBodyType
+
 
 def formdata(raw, headers):
     """Parse raw as form data"""

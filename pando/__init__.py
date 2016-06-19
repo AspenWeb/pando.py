@@ -60,8 +60,8 @@ import sys
 import pkg_resources
 
 # imports of convenience
+from aspen.simplates import json_ as json
 from .http.response import Response
-from . import json_ as json
 from .logging import log, log_dammit
 from .simplates.renderers import BUILTIN_RENDERERS, RENDERERS
 
