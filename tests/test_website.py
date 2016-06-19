@@ -28,6 +28,11 @@ def test_basic():
     actual = website.www_root
     assert actual == expected
 
+def test_website_is_accessible_from_first_page_of_simplates(harness):
+    harness.fs.www.mk(('index.spt', "website\n[---]\n[---]\n"))
+    response = harness.client.GET(raise_immediately=False)
+    assert response.code == 200, response.body
+
 def test_normal_response_is_returned(harness):
     harness.fs.www.mk(('index.html', "Greetings, program!"))
     expected = '\r\n'.join("""\
