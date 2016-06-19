@@ -73,6 +73,9 @@ class Website(object):
         # load our own config variables
         configure(KNOBS, self.__dict__, 'PANDO_', kwargs)
 
+        # add ourself to the initial context of simplates
+        self.request_processor.simplate_defaults.initial_context['website'] = self
+
         # load bodyparsers
         self.body_parsers = {
             "application/x-www-form-urlencoded": body_parsers.formdata,
