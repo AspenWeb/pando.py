@@ -106,22 +106,11 @@ def make_franken_headers(environ):
 
     https://www.python.org/dev/peps/pep-3333/#environ-variables
     """
-
-    also = [b'CONTENT_TYPE', b'CONTENT_LENGTH']
-
-    headers = []
-    for k, v in environ.items():
-        val = None
-        if k.startswith(b'HTTP_'):
-            k = k[len(b'HTTP_'):]
-            val = v
-        elif k in also:
-            val = v
-        if val is not None:
-            k = k.replace(b'_', b'-')
-            headers.append((k, v))
-
-    return dict(headers)
+    headers = [(k[5:], v) for k, v in environ.items() if k[:5] == b'HTTP_']
+    headers.extend(
+        (k, environ.get(k, None)) for k in (b'CONTENT_TYPE', b'CONTENT_LENGTH')
+    )
+    return dict((k.replace(b'_', b'-'), v) for k, v in headers if v is not None)
 
 
 def kick_against_goad(environ):
