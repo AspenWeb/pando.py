@@ -13,7 +13,6 @@ from __future__ import unicode_literals
 import sys
 import logging
 
-LOGGING_THRESHOLD = 0
 
 def log(*messages, **kw):
     """
@@ -25,12 +24,11 @@ def log(*messages, **kw):
 
     other kwargs are passed through to Logger.log()
     """
-    level = kw.get('level', logging.WARNING)
-    if 'level' in kw: del kw['level']
-    upframes = kw.get('upframes', 1)
-    if 'upframes' in kw: del kw['upframes']
+    level = kw.pop('level', logging.WARNING)
+    upframes = kw.pop('upframes', 1)
     callerName = sys._getframe(upframes).f_globals.get('__name__', '<unknown>')
     logging.getLogger(callerName).log(level, *messages, **kw)
+
 
 def log_dammit(*messages, **kw):
     """
