@@ -45,12 +45,7 @@ Library Reference
    :member-order: bysource
    :special-members:
 
-.. automodule:: pando.context
-   :members:
-   :member-order: bysource
-   :special-members:
-
-.. automodule:: pando.dispatcher
+.. automodule:: pando.body_parsers
    :members:
    :member-order: bysource
    :special-members:
@@ -90,66 +85,6 @@ Library Reference
    :member-order: bysource
    :special-members:
 
-.. automodule:: pando.renderers
-   :members:
-   :member-order: bysource
-   :special-members:
-
-.. automodule:: pando.renderers.json_dump
-   :members:
-   :member-order: bysource
-   :special-members:
-
-.. automodule:: pando.renderers.stdlib_format
-   :members:
-   :member-order: bysource
-   :special-members:
-
-.. automodule:: pando.renderers.stdlib_percent
-   :members:
-   :member-order: bysource
-   :special-members:
-
-.. automodule:: pando.renderers.stdlib_template
-   :members:
-   :member-order: bysource
-   :special-members:
-
-.. automodule:: pando.resources
-   :members:
-   :member-order: bysource
-   :special-members:
-
-.. automodule:: pando.resources.dynamic_resource
-   :members:
-   :member-order: bysource
-   :special-members:
-
-.. automodule:: pando.resources.negotiated_resource
-   :members:
-   :member-order: bysource
-   :special-members:
-
-.. automodule:: pando.resources.pagination
-   :members:
-   :member-order: bysource
-   :special-members:
-
-.. automodule:: pando.resources.rendered_resource
-   :members:
-   :member-order: bysource
-   :special-members:
-
-.. automodule:: pando.resources.resource
-   :members:
-   :member-order: bysource
-   :special-members:
-
-.. automodule:: pando.resources.static_resource
-   :members:
-   :member-order: bysource
-   :special-members:
-
 .. automodule:: pando.testing
    :members:
    :member-order: bysource
@@ -166,11 +101,6 @@ Library Reference
    :special-members:
 
 .. automodule:: pando.testing.pytest_fixtures
-   :members:
-   :member-order: bysource
-   :special-members:
-
-.. automodule:: pando.typecasting
    :members:
    :member-order: bysource
    :special-members:
