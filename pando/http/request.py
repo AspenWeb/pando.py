@@ -103,10 +103,10 @@ def make_franken_uri(path, qs):
 
 def make_franken_headers(environ):
     """Takes a WSGI environ, returns a dict of HTTP headers.
+
+    https://www.python.org/dev/peps/pep-3333/#environ-variables
     """
 
-    # There are a couple keys that CherryPyWSGIServer explicitly doesn't
-    # include as HTTP_ keys. I'm not sure why, but I believe we want them.
     also = [b'CONTENT_TYPE', b'CONTENT_LENGTH']
 
     headers = []
