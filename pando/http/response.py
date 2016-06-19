@@ -12,7 +12,8 @@ import os
 import re
 import sys
 
-from ..utils import ascii_dammit
+from aspen.utils import ascii_dammit
+
 from . import status_strings
 from .baseheaders import BaseHeaders as Headers
 

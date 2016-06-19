@@ -43,11 +43,11 @@ import urlparse
 from cStringIO import StringIO
 
 from aspen.http.request import Path as _Path, Querystring as _Querystring
+from aspen.utils import ascii_dammit
 
 from .. import Response
 from .baseheaders import BaseHeaders
 from .mapping import Mapping
-from ..utils import ascii_dammit
 
 
 # WSGI Do Our Best
