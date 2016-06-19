@@ -12,11 +12,6 @@ from __future__ import unicode_literals
 from . import Response
 
 
-class LoadError(Exception):
-    """Represent a problem loading a resource.
-    """
-
-
 class CRLFInjection(Response):
     """
     A 400 Response (per #249) raised if there's a suspected CRLF Injection attack in the headers
