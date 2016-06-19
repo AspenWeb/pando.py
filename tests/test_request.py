@@ -168,7 +168,7 @@ def test_goad_passes_method_through():
     environ['SERVER_PROTOCOL'] = b''
     environ['wsgi.input'] = None
 
-    expected = (b'\xdead\xbeef', b'', b'', b'', b'', None)
+    expected = (b'\xdead\xbeef', b'', b'', b'', {}, None)
     actual = kick_against_goad(environ)
     assert actual == expected
 
@@ -180,7 +180,7 @@ def test_goad_makes_franken_uri():
     environ['QUERY_STRING'] = b'foo=bar'
     environ['wsgi.input'] = b''
 
-    expected = ('', '/cheese?foo=bar', '', '', '', '')
+    expected = ('', '/cheese?foo=bar', '', '', {}, '')
     actual = kick_against_goad(environ)
     assert actual == expected
 
@@ -190,7 +190,7 @@ def test_goad_passes_version_through():
     environ['SERVER_PROTOCOL'] = b'\xdead\xbeef'
     environ['wsgi.input'] = None
 
-    expected = (b'', b'', b'', b'\xdead\xbeef', b'', None)
+    expected = (b'', b'', b'', b'\xdead\xbeef', {}, None)
     actual = kick_against_goad(environ)
     assert actual == expected
 
@@ -201,7 +201,7 @@ def test_goad_makes_franken_headers():
     environ['HTTP_FOO_BAR'] = b'baz=buz'
     environ['wsgi.input'] = b''
 
-    expected = (b'', b'', b'', b'', b'FOO-BAR: baz=buz', b'')
+    expected = (b'', b'', b'', b'', {b'FOO-BAR': b'baz=buz'}, b'')
     actual = kick_against_goad(environ)
     assert actual == expected
 
@@ -211,11 +211,11 @@ def test_goad_passes_body_through():
     environ['SERVER_PROTOCOL'] = b''
     environ['wsgi.input'] = b'\xdead\xbeef'
 
-    expected = (b'', b'', b'', b'', b'', b'\xdead\xbeef')
+    expected = (b'', b'', b'', b'', {}, b'\xdead\xbeef')
     actual = kick_against_goad(environ)
     assert actual == expected
 
 
 def test_can_make_franken_headers_from_non_ascii_values():
     actual = make_franken_headers({b'HTTP_FOO_BAR': b'\xdead\xbeef'})
-    assert actual == b'FOO-BAR: \xdead\xbeef'
+    assert actual == {b'FOO-BAR': b'\xdead\xbeef'}

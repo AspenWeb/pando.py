@@ -102,7 +102,7 @@ def make_franken_uri(path, qs):
 
 
 def make_franken_headers(environ):
-    """Takes a WSGI environ, returns a bytestring.
+    """Takes a WSGI environ, returns a dict of HTTP headers.
     """
 
     # There are a couple keys that CherryPyWSGIServer explicitly doesn't
@@ -119,9 +119,9 @@ def make_franken_headers(environ):
             val = v
         if val is not None:
             k = k.replace(b'_', b'-')
-            headers.append(b': '.join([k, v]))
+            headers.append((k, v))
 
-    return b'\r\n'.join(headers)
+    return dict(headers)
 
 
 def kick_against_goad(environ):
