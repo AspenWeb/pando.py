@@ -102,26 +102,15 @@ def make_franken_uri(path, qs):
 
 
 def make_franken_headers(environ):
-    """Takes a WSGI environ, returns a bytestring.
+    """Takes a WSGI environ, returns a dict of HTTP headers.
+
+    https://www.python.org/dev/peps/pep-3333/#environ-variables
     """
-
-    # There are a couple keys that CherryPyWSGIServer explicitly doesn't
-    # include as HTTP_ keys. I'm not sure why, but I believe we want them.
-    also = [b'CONTENT_TYPE', b'CONTENT_LENGTH']
-
-    headers = []
-    for k, v in environ.items():
-        val = None
-        if k.startswith(b'HTTP_'):
-            k = k[len(b'HTTP_'):]
-            val = v
-        elif k in also:
-            val = v
-        if val is not None:
-            k = k.replace(b'_', b'-')
-            headers.append(b': '.join([k, v]))
-
-    return b'\r\n'.join(headers)
+    headers = [(k[5:], v) for k, v in environ.items() if k[:5] == b'HTTP_']
+    headers.extend(
+        (k, environ.get(k, None)) for k in (b'CONTENT_TYPE', b'CONTENT_LENGTH')
+    )
+    return dict((k.replace(b'_', b'-'), v) for k, v in headers if v is not None)
 
 
 def kick_against_goad(environ):
