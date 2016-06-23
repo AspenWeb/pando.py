@@ -88,7 +88,7 @@ class Response(Exception):
         self.headers.cookie.load(self.headers.get('Cookie', b''))
 
     def __call__(self, environ, start_response):
-        wsgi_status = str(self)
+        wsgi_status = self._status_text()
         for morsel in self.headers.cookie.values():
             self.headers.add('Set-Cookie', morsel.OutputString())
         wsgi_headers = []
@@ -114,9 +114,12 @@ class Response(Exception):
         return CloseWrapper(self.request, body)
 
     def __repr__(self):
-        return "<Response: %s>" % str(self)
+        return "<Response: %s>" % self._status_text()
 
     def __str__(self):
+        return self._status_text()
+
+    def _status_text(self):
         return "%d %s" % (self.code, self._status())
 
     def _status(self):
