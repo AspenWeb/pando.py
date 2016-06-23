@@ -17,6 +17,14 @@ def test_response_is_a_wsgi_callable():
     actual = list(response({}, start_response).body)
     assert actual == expected
 
+def test_response_wsgi_status_is_not_based_on_str_method():
+    class CustomResponse(Response):
+        __str__ = lambda self: 'not a valid HTTP status line'
+    response = CustomResponse()
+    def start_response(status, headers):
+        assert status == '200 OK'
+    response({}, start_response)
+
 def test_response_body_can_be_bytestring():
     response = Response(body=b"Greetings, program!")
     expected = "Greetings, program!"
@@ -56,6 +64,3 @@ def test_response_headers_protect_against_crlf_injection():
     def inject():
         response.headers['Location'] = 'foo\r\nbar'
     raises(CRLFInjection, inject)
-
-
-
