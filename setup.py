@@ -35,7 +35,7 @@ setup( author = 'Chad Whitacre et al.'
      , version = version
      , zip_safe = False
      , package_data = {'pando': ['www/*', 'configuration/mime.types']}
-     , install_requires = PANDO_DEPS
+     , install_requires = [d[0] if isinstance(d, tuple) else d for d in PANDO_DEPS]
      , extras_require = {'fcgi': ['flup']}
      , tests_require = TEST_DEPS
       )
