@@ -231,7 +231,7 @@ raise Response(404, "Try again!")
     assert response.headers['Content-Type'] == 'text/plain; charset=UTF-8'
     assert response.body == "Not found, program!\nTry again!\n"
 
-def test_custom_error_spt_without_text_plain_results_in_406(harness):
+def test_custom_error_spt_without_text_plain_doesnt_result_in_406(harness):
     harness.fs.project.mk(('error.spt', """
 [---]
 [---] text/html
@@ -244,7 +244,8 @@ raise Response(404)
 [---]
     """))
     response = harness.client.GET('/foo.xml', raise_immediately=False)
-    assert response.code == 406
+    assert response.code == 404
+    assert response.body == "<h1>Oh no!</h1>\n"
 
 def test_custom_error_spt_with_text_plain_works(harness):
     harness.fs.project.mk(('error.spt', """

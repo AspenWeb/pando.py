@@ -194,16 +194,11 @@ def delegate_error_to_simplate(website, state, response, request=None, resource=
         # Try to return an error that matches the type of the response the
         # client would have received if the error didn't occur
         wanted = getattr(state.get('output'), 'media_type', None)
-        wanted = (wanted + ',' if wanted else '') + 'text/plain;q=0.1'
+        wanted = (wanted + ',' if wanted else '') + 'text/plain;q=0.2,*/*;q=0.1'
         state['accept_header'] = wanted
 
-        try:
-            output = resource.render(state)
-        except NegotiationFailure as e:
-            response.code = 406
-            response.body = e.message
-        else:
-            fill_response_with_output(output, response, website.request_processor)
+        output = resource.render(state)
+        fill_response_with_output(output, response, website.request_processor)
 
     return {'exception': None}
 
