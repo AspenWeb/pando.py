@@ -95,17 +95,29 @@ class Client(object):
     def load_resource(self, path):
         """Given an URL path, return a Resource instance.
         """
-        return self.hit('GET', path=path, return_after='get_resource_for_request', want='resource')
+        return self.GET(path=path, return_after='get_resource_for_request', want='resource')
 
 
-    # HTTP Methods
+    # HTTP Methods (RFC 2616)
     # ============
 
-    def GET(self, *a, **kw):    return self.hit('GET', *a, **kw)
-    def POST(self, *a, **kw):   return self.hit('POST', *a, **kw)
+    def GET(self, *a, **kw):      return self.hit('GET', *a, **kw)
+    def POST(self, *a, **kw):     return self.hit('POST', *a, **kw)
+    def OPTIONS(self, *a, **kw):  return self.hit('OPTIONS', *a, **kw)
+    def HEAD(self, *a, **kw):     return self.hit('HEAD', *a, **kw)
+    def PUT(self, *a, **kw):      return self.hit('PUT', *a, **kw)
+    def DELETE(self, *a, **kw):   return self.hit('DELETE', *a, **kw)
+    def TRACE(self, *a, **kw):    return self.hit('TRACE', *a, **kw)
+    def CONNECT(self, *a, **kw):  return self.hit('CONNECT', *a, **kw)
 
-    def GxT(self, *a, **kw):    return self.hxt('GET', *a, **kw)
-    def PxST(self, *a, **kw):   return self.hxt('POST', *a, **kw)
+    def GxT(self, *a, **kw):      return self.hxt('GET', *a, **kw)
+    def PxST(self, *a, **kw):     return self.hxt('POST', *a, **kw)
+    def xPTIONS(self, *a, **kw):  return self.hxt('OPTIONS', *a, **kw)
+    def HxAD(self, *a, **kw):     return self.hxt('HEAD', *a, **kw)
+    def PxT(self, *a, **kw):      return self.hxt('PUT', *a, **kw)
+    def DxLETE(self, *a, **kw):   return self.hxt('DELETE', *a, **kw)
+    def TRxCE(self, *a, **kw):    return self.hxt('TRACE', *a, **kw)
+    def CxNNECT(self, *a, **kw):  return self.hxt('CONNECT', *a, **kw)
 
     def hxt(self, *a, **kw):
         try:
