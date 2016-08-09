@@ -341,15 +341,12 @@ class Line(unicode):
 # Request -> Method
 # -----------------
 
-STANDARD_METHODS = set(["OPTIONS", "GET", "HEAD", "POST", "PUT", "DELETE", "TRACE",
-                    "CONNECT"])
+STANDARD_METHODS = set("OPTIONS GET HEAD POST PUT DELETE TRACE CONNECT".split())
 
 SEPARATORS = ("(", ")", "<", ">", "@", ",", ";", ":", "\\", '"', "/", "[", "]",
               "?", "=", "{", "}", " ", "\t")
 
-# NB: No set comprehensions until 2.7.
-BYTES_ALLOWED_IN_METHOD = set(chr(i) for i in range(32, 127))
-BYTES_ALLOWED_IN_METHOD -= set(SEPARATORS)
+CHARS_ALLOWED_IN_METHOD = set(chr(i) for i in range(32, 127)) - set(SEPARATORS)
 
 class Method(unicode):
     """Represent the HTTP method in the first line of an HTTP Request message.
@@ -391,9 +388,10 @@ class Method(unicode):
     __slots__ = ['raw']
 
     def __new__(cls, raw):
-        if raw not in STANDARD_METHODS: # fast for 99.999% case
-            for i, byte in enumerate(raw):
-                if (i == 64) or (byte not in BYTES_ALLOWED_IN_METHOD):
+        decoded = raw.decode('ascii', 'repr')
+        if decoded not in STANDARD_METHODS: # fast for 99.999% case
+            for i, char in enumerate(decoded):
+                if (i == 64) or (char not in CHARS_ALLOWED_IN_METHOD):
 
                     # "This is the appropriate response when the server does
                     #  not recognize the request method and is not capable of
@@ -401,11 +399,10 @@ class Method(unicode):
                     #
                     #  http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html
 
-                    safe = raw.decode('ascii', 'repr')
                     raise Response(501, "Your request-method violates RFC "
-                                        "2616: %s" % safe)
+                                        "2616: %s" % decoded)
 
-        obj = super(Method, cls).__new__(cls, raw.decode('ASCII'))
+        obj = super(Method, cls).__new__(cls, decoded)
         obj.raw = raw
         return obj
 
