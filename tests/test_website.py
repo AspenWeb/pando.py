@@ -37,7 +37,7 @@ def test_normal_response_is_returned(harness):
     harness.fs.www.mk(('index.html', "Greetings, program!"))
     expected = '\r\n'.join("""\
 HTTP/1.1
-Content-Type: text/html
+Content-Type: text/html; charset=UTF-8
 
 Greetings, program!
 """.splitlines())

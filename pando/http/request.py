@@ -39,8 +39,9 @@ from __future__ import unicode_literals
 from io import StringIO
 import re
 import sys
-import urllib
-import urlparse
+
+from six import text_type
+import six.moves.urllib.parse as urlparse
 
 from aspen.http.request import Path as _Path, Querystring as _Querystring
 
@@ -85,7 +86,7 @@ def make_franken_uri(path, qs):
 
             # Some servers (gevent) clobber %2F inside of paths, such
             # that we see /foo%2Fbar/ as /foo/bar/. The %2F is lost to us.
-            parts = [urllib.quote(x) for x in quoted_slash_re.split(path)]
+            parts = [urlparse.quote(x) for x in quoted_slash_re.split(path)]
             path = b"%2F".join(parts)
 
     if qs:
@@ -95,7 +96,7 @@ def make_franken_uri(path, qs):
             # Cross our fingers and hope we have UTF-8 bytes from MSIE. Let's
             # perform the percent-encoding that we would expect MSIE to have
             # done for us.
-            qs = urllib.quote_plus(qs)
+            qs = urlparse.quote_plus(qs)
         qs = b'?' + qs
 
     return path + qs
@@ -144,7 +145,7 @@ class IntWithRaw(int):
         obj.raw = str(i)
         return obj
 
-class UnicodeWithRaw(unicode):
+class UnicodeWithRaw(text_type):
     """Generic subclass of unicode to store the underlying raw bytestring.
     """
 
@@ -314,7 +315,7 @@ class Request(str):
 # Request -> Line
 # ---------------
 
-class Line(unicode):
+class Line(text_type):
     """Represent the first line of an HTTP Request message.
     """
 
@@ -327,7 +328,7 @@ class Line(unicode):
         method = Method(method)
         uri = URI(uri)
         version = Version(version)
-        decoded = u" ".join([method, uri, version])
+        decoded = " ".join([method, uri, version])
 
         obj = super(Line, cls).__new__(cls, decoded)
         obj.method = method
@@ -348,7 +349,7 @@ SEPARATORS = ("(", ")", "<", ">", "@", ",", ";", ":", "\\", '"', "/", "[", "]",
 
 CHARS_ALLOWED_IN_METHOD = set(chr(i) for i in range(32, 127)) - set(SEPARATORS)
 
-class Method(unicode):
+class Method(text_type):
     """Represent the HTTP method in the first line of an HTTP Request message.
 
     Spec sez ASCII subset:
@@ -410,7 +411,7 @@ class Method(unicode):
 # Request -> Line -> URI
 # ......................
 
-class URI(unicode):
+class URI(text_type):
     """Represent the Request-URI in the first line of an HTTP Request message.
 
     XXX spec-ify this
@@ -430,7 +431,7 @@ class URI(unicode):
 
         # let's decode username and password as url-encoded UTF-8
         no_None = lambda o: o if o is not None else ""
-        parse = lambda o: UnicodeWithRaw(urllib.unquote(no_None(o)))
+        parse = lambda o: UnicodeWithRaw(urlparse.unquote(no_None(o)))
         username = parse(uri.username)
         password = parse(uri.password)
 
@@ -473,14 +474,14 @@ class Querystring(Mapping, _Querystring):
 # Request -> Line -> Version
 # ..........................
 
-versions = { 'HTTP/0.9': ((0, 9), u'HTTP/0.9')
-           , 'HTTP/1.0': ((1, 0), u'HTTP/1.0')
-           , 'HTTP/1.1': ((1, 1), u'HTTP/1.1')
+versions = { b'HTTP/0.9': ((0, 9), 'HTTP/0.9')
+           , b'HTTP/1.0': ((1, 0), 'HTTP/1.0')
+           , b'HTTP/1.1': ((1, 1), 'HTTP/1.1')
             }  # Go ahead, find me another version.
 
-version_re = re.compile('HTTP/\d+\.\d+')
+version_re = re.compile(br'HTTP/\d+\.\d+')
 
-class Version(unicode):
+class Version(text_type):
     """Represent the version in an HTTP status line. HTTP/1.1. Like that.
 
         HTTP-Version   = "HTTP" "/" 1*DIGIT "." 1*DIGIT

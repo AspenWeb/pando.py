@@ -7,13 +7,17 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from Cookie import SimpleCookie
-from StringIO import StringIO
+from io import BytesIO
+
+from six import text_type
+from six.moves.http_cookies import SimpleCookie
 
 import mimetypes
+
 from .. import Response
 from ..utils import typecheck
 from ..website import Website
+
 
 BOUNDARY = b'BoUnDaRyStRiNg'
 MULTIPART_CONTENT = b'multipart/form-data; boundary=%s' % BOUNDARY
@@ -164,16 +168,16 @@ class Client(object):
         # exceptions to this: ``'CONTENT_TYPE'``, ``'CONTENT_LENGTH'`` which
         # are explicitly checked for.
 
-        typecheck(path, (str, unicode), method, unicode, content_type, str, body, str)
+        typecheck(path, (bytes, text_type), method, text_type, content_type, bytes, body, bytes)
         environ = {}
         environ[b'CONTENT_TYPE'] = content_type
         environ[b'HTTP_COOKIE'] = self.cookie.output(header=b'', sep=b'; ')
         environ[b'HTTP_HOST'] = b'localhost'
-        environ[b'PATH_INFO'] = path if type(path) is str else path.decode('UTF-8')
+        environ[b'PATH_INFO'] = path.decode('UTF-8') if type(path) is bytes else path
         environ[b'REMOTE_ADDR'] = b'0.0.0.0'
         environ[b'REQUEST_METHOD'] = method.decode('ASCII')
         environ[b'SERVER_PROTOCOL'] = b'HTTP/1.1'
-        environ[b'wsgi.input'] = StringIO(body)
-        environ[b'HTTP_CONTENT_LENGTH'] = bytes(len(body))
+        environ[b'wsgi.input'] = BytesIO(body)
+        environ[b'HTTP_CONTENT_LENGTH'] = str(len(body)).encode('ascii')
         environ.update(kw)
         return environ

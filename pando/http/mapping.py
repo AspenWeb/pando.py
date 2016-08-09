@@ -25,7 +25,7 @@ class CaseInsensitiveMapping(Mapping):
             items = d.iteritems if hasattr(d, 'iteritems') else d
             for k, v in items():
                 self[k] = v
-        for k, v in kw.iteritems():
+        for k, v in kw.items():
             self[k] = v
 
     def __contains__(self, name):

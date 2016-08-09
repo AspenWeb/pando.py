@@ -12,6 +12,8 @@ import os
 import re
 import sys
 
+from six import text_type
+
 from . import status_strings
 from .baseheaders import BaseHeaders as Headers
 
@@ -66,7 +68,7 @@ class Response(Exception):
         """
         if not isinstance(code, int):
             raise TypeError("'code' must be an integer")
-        elif not isinstance(body, basestring) and not hasattr(body, '__iter__'):
+        elif not isinstance(body, (bytes, text_type)) and not hasattr(body, '__iter__'):
             raise TypeError("'body' must be a string or iterable of strings")
         elif headers is not None and not isinstance(headers, (dict, list)):
             raise TypeError("'headers' must be a dictionary or a list of " +
@@ -91,7 +93,7 @@ class Response(Exception):
         for morsel in self.headers.cookie.values():
             self.headers.add('Set-Cookie', morsel.OutputString())
         wsgi_headers = []
-        for k, vals in self.headers.iteritems():
+        for k, vals in self.headers.items():
             try:        # XXX This is a hack. It's red hot, baby.
                 k = k.encode('US-ASCII')
             except UnicodeEncodeError:
@@ -107,9 +109,9 @@ class Response(Exception):
 
         start_response(wsgi_status, wsgi_headers)
         body = self.body
-        if isinstance(body, basestring):
+        if not isinstance(body, (list, tuple)):
             body = [body]
-        body = (x.encode(self.charset) if isinstance(x, unicode) else x for x in body)
+        body = (x.encode(self.charset) if not isinstance(x, bytes) else x for x in body)
         return CloseWrapper(self.request, body)
 
     def __repr__(self):

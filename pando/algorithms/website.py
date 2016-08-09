@@ -131,7 +131,7 @@ def create_response_object(state):
 
 
 def fill_response_with_output(output, response, request_processor):
-    if isinstance(output.body, unicode):
+    if not isinstance(output.body, bytes):
         output.charset = request_processor.charset_dynamic
         output.body = output.body.encode(output.charset)
     response.body = output.body
