@@ -4,7 +4,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import os
-import StringIO
+import io
 
 from pytest import raises
 from pando.website import Website
@@ -59,7 +59,7 @@ website.redirect('http://elsewhere', code=304)
     actual = harness.client.GET(raise_immediately=False)
     assert actual.code == 304
     headers = actual.headers
-    assert headers.keys() == ['Location']
+    assert list(headers.keys()) == ['Location']
 
 def test_nice_error_response_is_returned(harness):
     harness.short_circuit = False
@@ -328,7 +328,7 @@ def build_environ(path):
         'QUERY_STRING': b'',
         'SERVER_SOFTWARE': b'build_environ/1.0',
         'SERVER_PROTOCOL': b'HTTP/1.1',
-        'wsgi.input': StringIO.StringIO()
+        'wsgi.input': io.BytesIO()
     }
 
 def test_call_wraps_wsgi_middleware(client):

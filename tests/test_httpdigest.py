@@ -43,7 +43,7 @@ def _digest_auth_for(headers, username, password):
     HA1 = digest( username + b':' + fields[b'realm'] + b':' + password )
     HA2 = digest( b'GET:' + fields['uri'] )
     fields[b'response'] = digest( b':'.join([ HA1, fields['nonce'], fields['nc'], fields['cnonce'], fields['qop'], HA2 ]))
-    return b"Digest " + b','.join([ b'%s="%s"' % (k, v) for k, v in fields.items() ])
+    return b"Digest " + b','.join([ b'%s="%s"' % (k, v) for k, v in list(fields.items()) ])
 
 @yield_fixture
 def request_with(harness):

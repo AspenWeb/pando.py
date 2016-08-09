@@ -14,7 +14,7 @@ FORMDATA = object()
 WWWFORM = object()
 
 def make_body(raw, headers=None, content_type=WWWFORM):
-    if isinstance(raw, unicode):
+    if not isinstance(raw, bytes):
         raw = raw.encode('ascii')
     if headers is None:
         defaults = { FORMDATA: "multipart/form-data; boundary=AaB03x",

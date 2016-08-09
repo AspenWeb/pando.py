@@ -55,7 +55,7 @@ def test_response_body_as_iterable_comes_through_untouched():
 
 def test_response_body_can_be_unicode():
     try:
-        Response(body=u'Greetings, program!')
+        Response(body='Greetings, program!')
     except:
         assert False, 'expecting no error'
 

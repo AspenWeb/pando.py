@@ -15,6 +15,7 @@ PANDO_DEPS = [
     'filesystem_tree>=1.0.1',
     'dependency_injection>=1.1.0',
     ('aspen', 'https://github.com/AspenWeb/aspen.py/archive/master.zip'),
+    'six',
     ]
 
 TEST_DEPS = [

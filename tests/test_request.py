@@ -14,7 +14,7 @@ from pando.exceptions import MalformedHeader
 def test_request_line_raw_works(harness):
     request = harness.make_request()
     actual = request.line.raw
-    expected = u"GET / HTTP/1.1"
+    expected = "GET / HTTP/1.1"
     assert actual == expected
 
 def test_raw_is_raw():
@@ -35,12 +35,12 @@ def test_request_line_version_defaults_to_HTTP_1_1(harness):
 def test_request_line_version_raw_works(harness):
     request = harness.make_request()
     actual = request.line.version.raw
-    expected = u"HTTP/1.1"
+    expected = "HTTP/1.1"
     assert actual == expected
 
 def test_allow_default_method_is_GET(harness):
     request = harness.make_request()
-    expected = u'GET'
+    expected = 'GET'
     actual = request.line.method
     assert actual == expected
 
@@ -152,7 +152,7 @@ def test_qs_alias_is_read_only(harness):
 
 def test_cookie_alias_is_readable(harness):
     request = harness.make_request()
-    assert request.cookie.values() == []
+    assert list(request.cookie.values()) == []
 
 def test_cookie_alias_is_read_only(harness):
     request = harness.make_request()
