@@ -12,8 +12,6 @@ import os
 import re
 import sys
 
-from aspen.utils import ascii_dammit
-
 from . import status_strings
 from .baseheaders import BaseHeaders as Headers
 
@@ -97,14 +95,14 @@ class Response(Exception):
             try:        # XXX This is a hack. It's red hot, baby.
                 k = k.encode('US-ASCII')
             except UnicodeEncodeError:
-                k = ascii_dammit(k)
-                raise ValueError("Header key %s must be US-ASCII.")
+                k = k.decode('US-ASCII', 'repr')
+                raise ValueError("Header key %s isn't US-ASCII." % k)
             for v in vals:
                 try:    # XXX This also is a hack. It is also red hot, baby.
                     v = v.encode('US-ASCII')
                 except UnicodeEncodeError:
-                    v = ascii_dammit(v)
-                    raise ValueError("Header value %s must be US-ASCII.")
+                    v = v.decode('US-ASCII', 'repr')
+                    raise ValueError("Header value %s isn't US-ASCII." % k)
                 wsgi_headers.append((k, v))
 
         start_response(wsgi_status, wsgi_headers)

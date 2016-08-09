@@ -59,6 +59,9 @@ from __future__ import unicode_literals
 import sys
 import pkg_resources
 
+import aspen.utils as _x  # this registers the 'repr' codec error strategy
+del _x
+
 # imports of convenience
 from aspen.simplates import json_ as json
 from aspen.simplates.renderers import BUILTIN_RENDERERS, RENDERERS

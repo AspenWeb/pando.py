@@ -43,7 +43,6 @@ import urllib
 import urlparse
 
 from aspen.http.request import Path as _Path, Querystring as _Querystring
-from aspen.utils import ascii_dammit
 
 from .. import Response
 from .baseheaders import BaseHeaders
@@ -402,7 +401,7 @@ class Method(unicode):
                     #
                     #  http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html
 
-                    safe = ascii_dammit(raw)
+                    safe = raw.decode('ascii', 'repr')
                     raise Response(501, "Your request-method violates RFC "
                                         "2616: %s" % safe)
 
@@ -498,7 +497,7 @@ class Version(unicode):
     def __new__(cls, raw):
         version = versions.get(raw, None)
         if version is None: # fast for 99.999999% case
-            safe = ascii_dammit(raw)
+            safe = raw.decode('ascii', 'repr')
             if version_re.match(raw) is None:
                 raise Response(400, "Bad HTTP version: %s." % safe)
             else:
