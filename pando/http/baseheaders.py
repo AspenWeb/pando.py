@@ -7,8 +7,8 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from six.moves.http_cookies import CookieError, SimpleCookie
 
-from ..backcompat import CookieError, SimpleCookie
 from .mapping import CaseInsensitiveMapping
 from ..utils import typecheck
 
