@@ -13,7 +13,7 @@ def test_response_is_a_wsgi_callable():
     response = Response(body=b"Greetings, program!")
     def start_response(status, headers):
         pass
-    expected = ["Greetings, program!"]
+    expected = [b"Greetings, program!"]
     actual = list(response({}, start_response).body)
     assert actual == expected
 
@@ -27,7 +27,7 @@ def test_response_wsgi_status_is_not_based_on_str_method():
 
 def test_response_body_can_be_bytestring():
     response = Response(body=b"Greetings, program!")
-    expected = "Greetings, program!"
+    expected = b"Greetings, program!"
     actual = response.body
     assert actual == expected
 
@@ -35,7 +35,7 @@ def test_response_body_as_bytestring_results_in_an_iterable():
     response = Response(body=b"Greetings, program!")
     def start_response(status, headers):
         pass
-    expected = ["Greetings, program!"]
+    expected = [b"Greetings, program!"]
     actual = list(response({}, start_response).body)
     assert actual == expected
 
