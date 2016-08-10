@@ -40,7 +40,7 @@ from io import StringIO
 import re
 import sys
 
-from six import text_type
+from six import PY2, text_type
 import six.moves.urllib.parse as urlparse
 
 from aspen.http.request import Path as _Path, Querystring as _Querystring
@@ -149,8 +149,13 @@ class UnicodeWithRaw(text_type):
 
     __slots__ = ['raw']
 
-    def __new__(cls, raw, encoding="UTF-8"):
-        obj = super(UnicodeWithRaw, cls).__new__(cls, raw.decode(encoding))
+    def __new__(cls, raw, encoding='UTF-8', unquote=None):
+        if unquote:
+            s = unquote(raw if PY2 else raw.decode(encoding))
+            decoded = s.decode(encoding) if isinstance(s, bytes) else s
+        else:
+            decoded = raw.decode(encoding)
+        obj = super(UnicodeWithRaw, cls).__new__(cls, decoded)
         obj.raw = raw
         return obj
 
@@ -430,8 +435,8 @@ class URI(text_type):
         scheme = UnicodeWithRaw(uri.scheme)
 
         # let's decode username and password as url-encoded UTF-8
-        no_None = lambda o: o if o is not None else ""
-        parse = lambda o: UnicodeWithRaw(urlparse.unquote(no_None(o)))
+        no_None = lambda o: o if o is not None else b""
+        parse = lambda o: UnicodeWithRaw(no_None(o), unquote=urlparse.unquote)
         username = parse(uri.username)
         password = parse(uri.password)
 
@@ -441,9 +446,9 @@ class URI(text_type):
         # port is IntWithRaw (will be 0 if absent), which is fine
         port = IntWithRaw(uri.port)
 
-        # path and querystring get bytes and do their own parsing
-        path = Path(uri.path)
-        querystring = Querystring(uri.query)
+        # path and querystring want unicode and do their own parsing
+        path = Path(uri.path.decode('ascii'))
+        querystring = Querystring(uri.query.decode('ascii'))
 
         # we require that the uri as a whole be decodable with ASCII
         decoded = raw.decode('ASCII')
