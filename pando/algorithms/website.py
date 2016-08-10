@@ -119,7 +119,7 @@ def resource_available():
 
 
 def extract_accept_from_request(request):
-    return {'accept_header': request.headers.get('accept')}
+    return {'accept_header': request.headers.get(b'Accept')}
 
 
 def create_response_object(state):
@@ -135,11 +135,11 @@ def fill_response_with_output(output, response, request_processor):
         output.charset = request_processor.charset_dynamic
         output.body = output.body.encode(output.charset)
     response.body = output.body
-    if 'Content-Type' not in response.headers:
+    if b'Content-Type' not in response.headers:
         ct = output.media_type
         if output.charset:
             ct += '; charset=' + output.charset
-        response.headers['Content-Type'] = ct
+        response.headers[b'Content-Type'] = ct.encode('ascii')
 
 
 def get_response_for_exception(website, exception):

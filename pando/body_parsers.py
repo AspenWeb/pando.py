@@ -71,7 +71,8 @@ def parse_body(raw, headers, parsers):
     typecheck(headers, Headers)
 
     # Note we ignore parameters for now
-    content_type = headers.get("Content-Type", "").split(';')[0]
+    content_type = headers.get(b"Content-Type", b"").split(b';')[0]
+    content_type = content_type.decode('ascii', 'repr')
 
     def default_parser(raw, headers):
         if not content_type and not raw:

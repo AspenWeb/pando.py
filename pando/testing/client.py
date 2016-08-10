@@ -138,7 +138,7 @@ class Client(object):
         if content_type is MULTIPART_CONTENT:
             body = encode_multipart(BOUNDARY, data)
 
-        environ = self.build_wsgi_environ(method, path, body, str(content_type), **headers)
+        environ = self.build_wsgi_environ(method, path, body, content_type, **headers)
         state = self.website.respond( environ
                                     , raise_immediately=raise_immediately
                                     , return_after=return_after
@@ -173,9 +173,9 @@ class Client(object):
         environ[b'CONTENT_TYPE'] = content_type
         environ[b'HTTP_COOKIE'] = self.cookie.output(header=b'', sep=b'; ')
         environ[b'HTTP_HOST'] = b'localhost'
-        environ[b'PATH_INFO'] = path.decode('UTF-8') if type(path) is bytes else path
+        environ[b'PATH_INFO'] = path.encode('ascii') if type(path) != bytes else path
         environ[b'REMOTE_ADDR'] = b'0.0.0.0'
-        environ[b'REQUEST_METHOD'] = method.decode('ASCII')
+        environ[b'REQUEST_METHOD'] = method.encode('ascii')
         environ[b'SERVER_PROTOCOL'] = b'HTTP/1.1'
         environ[b'wsgi.input'] = BytesIO(body)
         environ[b'HTTP_CONTENT_LENGTH'] = str(len(body)).encode('ascii')

@@ -59,7 +59,7 @@ website.redirect('http://elsewhere', code=304)
     actual = harness.client.GET(raise_immediately=False)
     assert actual.code == 304
     headers = actual.headers
-    assert list(headers.keys()) == ['Location']
+    assert list(headers.keys()) == [b'Location']
 
 def test_nice_error_response_is_returned(harness):
     harness.short_circuit = False
@@ -163,7 +163,7 @@ raise Response(404)
     """))
     response = harness.client.GET('/foo', raise_immediately=False, HTTP_ACCEPT=b'text/fake')
     assert response.code == 404
-    assert 'text/plain' in response.headers['Content-Type']
+    assert b'text/plain' in response.headers[b'Content-Type']
 
 def test_default_error_spt_handles_text_html(harness):
     harness.fs.www.mk(('foo.html.spt',"""
@@ -174,7 +174,7 @@ raise Response(404)
     """))
     response = harness.client.GET('/foo.html', raise_immediately=False)
     assert response.code == 404
-    assert 'text/html' in response.headers['Content-Type']
+    assert b'text/html' in response.headers[b'Content-Type']
 
 def test_default_error_spt_handles_application_json(harness):
     harness.fs.www.mk(('foo.json.spt',"""
@@ -185,7 +185,7 @@ raise Response(404)
     """))
     response = harness.client.GET('/foo.json', raise_immediately=False)
     assert response.code == 404
-    assert response.headers['Content-Type'] == 'application/json; charset=UTF-8'
+    assert response.headers[b'Content-Type'] == b'application/json; charset=UTF-8'
     assert response.body == '''\
 { "error_code": 404
 , "error_message_short": "Not Found"
@@ -203,7 +203,7 @@ raise Response(404, "Right, sooo...")
     """))
     response = harness.client.GET('/foo.json', raise_immediately=False)
     assert response.code == 404
-    assert response.headers['Content-Type'] == 'application/json; charset=UTF-8'
+    assert response.headers[b'Content-Type'] == b'application/json; charset=UTF-8'
     assert response.body == '''\
 { "error_code": 404
 , "error_message_short": "Not Found"
@@ -220,7 +220,7 @@ raise Response(404)
     """))
     response = harness.client.GET('/foo.xml', raise_immediately=False)
     assert response.code == 404
-    assert response.headers['Content-Type'] == 'text/plain; charset=UTF-8'
+    assert response.headers[b'Content-Type'] == b'text/plain; charset=UTF-8'
     assert response.body == "Not found, program!\n\n"
 
 def test_default_error_spt_fall_through_includes_msg_for_show_tracebacks(harness):
@@ -233,7 +233,7 @@ raise Response(404, "Try again!")
     """))
     response = harness.client.GET('/foo.xml', raise_immediately=False)
     assert response.code == 404
-    assert response.headers['Content-Type'] == 'text/plain; charset=UTF-8'
+    assert response.headers[b'Content-Type'] == b'text/plain; charset=UTF-8'
     assert response.body == "Not found, program!\nTry again!\n"
 
 def test_custom_error_spt_without_text_plain_doesnt_result_in_406(harness):
@@ -266,7 +266,7 @@ raise Response(404)
     """))
     response = harness.client.GET('/foo.xml', raise_immediately=False)
     assert response.code == 404
-    assert response.headers['Content-Type'] == 'text/plain; charset=UTF-8'
+    assert response.headers[b'Content-Type'] == b'text/plain; charset=UTF-8'
     assert response.body == "Oh no!\n"
 
 
@@ -359,15 +359,15 @@ def test_redirect_permanent_is_301(website):
     assert raises(Response, website.redirect, '/', permanent=True).value.code == 301
 
 def test_redirect_without_website_base_url_is_fine(website):
-    assert raises(Response, website.redirect, '/').value.headers['Location'] == '/'
+    assert raises(Response, website.redirect, '/').value.headers[b'Location'] == b'/'
 
 def test_redirect_honors_website_base_url(website):
     website.base_url = 'foo'
-    assert raises(Response, website.redirect, '/').value.headers['Location'] == 'foo/'
+    assert raises(Response, website.redirect, '/').value.headers[b'Location'] == b'foo/'
 
 def test_redirect_can_override_base_url_per_call(website):
     website.base_url = 'foo'
-    assert raises(Response, website.redirect, '/', base_url='b').value.headers['Location'] == 'b/'
+    assert raises(Response, website.redirect, '/', base_url='b').value.headers[b'Location'] == b'b/'
 
 def test_redirect_declines_to_construct_bad_urls(website):
     raised = raises(BadLocation, website.redirect, '../foo', base_url='http://www.example.com')
@@ -381,21 +381,21 @@ def test_redirect_declines_to_construct_more_bad_urls(website):
 
 def test_redirect_will_construct_a_good_absolute_url(website):
     response = raises(Response, website.redirect, '/foo', base_url='http://www.example.com').value
-    assert response.headers['Location'] == 'http://www.example.com/foo'
+    assert response.headers[b'Location'] == b'http://www.example.com/foo'
 
 def test_redirect_will_allow_a_relative_path(website):
     response = raises(Response, website.redirect, '../foo', base_url='').value
-    assert response.headers['Location'] == '../foo'
+    assert response.headers[b'Location'] == b'../foo'
 
 def test_redirect_will_allow_an_absolute_url(website):
     response = raises(Response, website.redirect, 'http://www.example.org/foo', base_url='').value
-    assert response.headers['Location'] == 'http://www.example.org/foo'
+    assert response.headers[b'Location'] == b'http://www.example.org/foo'
 
 def test_redirect_can_use_given_response(website):
-    response = Response(65, 'Greetings, program!', {'Location': 'A Town'})
+    response = Response(65, 'Greetings, program!', {b'Location': b'A Town'})
     response = raises(Response, website.redirect, '/flah', response=response).value
     assert response.code == 302                     # gets clobbered
-    assert response.headers['Location'] == '/flah'  # gets clobbered
+    assert response.headers[b'Location'] == b'/flah'  # gets clobbered
     assert response.body == 'Greetings, program!'   # not clobbered
 
 
@@ -406,21 +406,21 @@ def test_canonicalize_base_url_canonicalizes_base_url(harness):
     harness.client.hydrate_website(base_url='http://example.com')
     response = harness.client.GxT()
     assert response.code == 302
-    assert response.headers['Location'] == 'http://example.com/'
+    assert response.headers[b'Location'] == b'http://example.com/'
 
 def test_canonicalize_base_url_includes_path_and_qs_for_GET(harness):
     harness.fs.www.mk(('index.html', 'Greetings, program!'))
     harness.client.hydrate_website(base_url='http://example.com')
     response = harness.client.GxT('/foo/bar?baz=buz')
     assert response.code == 302
-    assert response.headers['Location'] == 'http://example.com/foo/bar?baz=buz'
+    assert response.headers[b'Location'] == b'http://example.com/foo/bar?baz=buz'
 
 def test_canonicalize_base_url_redirects_to_homepage_for_POST(harness):
     harness.fs.www.mk(('index.html', 'Greetings, program!'))
     harness.client.hydrate_website(base_url='http://example.com')
     response = harness.client.PxST('/foo/bar?baz=buz')
     assert response.code == 302
-    assert response.headers['Location'] == 'http://example.com/'
+    assert response.headers[b'Location'] == b'http://example.com/'
 
 def test_canonicalize_base_url_allows_good_base_url(harness):
     harness.fs.www.mk(('index.html', 'Greetings, program!'))

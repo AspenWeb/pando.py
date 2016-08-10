@@ -117,14 +117,14 @@ def make_franken_headers(environ):
 def kick_against_goad(environ):
     """Kick against the goad. Try to squeeze blood from a stone. Do our best.
     """
-    method = environ['REQUEST_METHOD']
-    uri = make_franken_uri( environ.get('PATH_INFO', b'')
-                          , environ.get('QUERY_STRING', b'')
+    method = environ[b'REQUEST_METHOD']
+    uri = make_franken_uri( environ.get(b'PATH_INFO', b'')
+                          , environ.get(b'QUERY_STRING', b'')
                           )
-    server = environ.get('SERVER_SOFTWARE', b'')
-    version = environ['SERVER_PROTOCOL']
+    server = environ.get(b'SERVER_SOFTWARE', b'')
+    version = environ[b'SERVER_PROTOCOL']
     headers = make_franken_headers(environ)
-    body = environ['wsgi.input']
+    body = environ[b'wsgi.input']
     return method, uri, server, version, headers, body
 
 
@@ -187,7 +187,7 @@ class Request(str):
             obj.headers = Headers(headers)
             if body is None:
                 body = StringIO('')
-            raw_len = int(obj.headers.get('Content-length', '') or '0')
+            raw_len = int(obj.headers.get(b'Content-length', b'') or b'0')
             obj.raw_body = body.read(raw_len)
             obj.context = {}
         except UnicodeError:
@@ -303,13 +303,15 @@ class Request(str):
         """
         methods = [x.upper() for x in methods]
         if self.line.method not in methods:
-            raise Response(405, headers={'Allow': ', '.join(methods)})
+            raise Response(405, headers={
+                b'Allow': b', '.join(m.encode('ascii') for m in methods)
+            })
 
     def is_xhr(self):
         """Check the value of X-Requested-With.
         """
-        val = self.headers.get('X-Requested-With', '')
-        return val.lower() == 'xmlhttprequest'
+        val = self.headers.get(b'X-Requested-With', b'')
+        return val.lower() == b'xmlhttprequest'
 
 
 # Request -> Line
@@ -324,7 +326,7 @@ class Line(text_type):
     def __new__(cls, method, uri, version):
         """Takes three bytestrings.
         """
-        raw = " ".join([method, uri, version])
+        raw = b" ".join([method, uri, version])
         method = Method(method)
         uri = URI(uri)
         version = Version(version)
@@ -530,7 +532,7 @@ class Headers(BaseHeaders):
         # Per the spec, respond with 400 if no Host header is given. However,
         # we prefer X-Forwarded-For if that is available.
 
-        host = self.get('X-Forwarded-Host', self['Host']) # KeyError raises 400
+        host = self.get(b'X-Forwarded-Host', self[b'Host']) # KeyError raises 400
         self.host = UnicodeWithRaw(host, encoding='idna')
 
 
@@ -539,4 +541,4 @@ class Headers(BaseHeaders):
         # http://docs.python.org/library/wsgiref.html#wsgiref.util.guess_scheme
 
         scheme = 'https' if self.get('HTTPS', False) else 'http'
-        self.scheme = UnicodeWithRaw(scheme)
+        self.scheme = scheme

@@ -58,7 +58,7 @@ class Response(Exception):
 
             - code      an HTTP response code, e.g., 404
             - body      the message body as a string
-            - headers   a Headers instance
+            - headers   a dict, list, or bytestring of HTTP headers
             - charset   string that will be set in the Content-Type in the future at some point but not now
 
         Code is first because when you're raising your own Responses, they're
@@ -79,14 +79,8 @@ class Response(Exception):
         Exception.__init__(self)
         self.code = code
         self.body = body
-        self.headers = Headers(b'')
+        self.headers = Headers(headers)
         self.charset = charset
-        if headers:
-            if isinstance(headers, dict):
-                headers = headers.items()
-            for k, v in headers:
-                self.headers[k] = v
-        self.headers.cookie.load(self.headers.get('Cookie', b''))
 
     def __call__(self, environ, start_response):
         wsgi_status = self._status_text()

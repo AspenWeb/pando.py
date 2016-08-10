@@ -81,31 +81,31 @@ def test_is_xhr_false(harness):
 
 def test_is_xhr_true(harness):
     request = harness.make_request()
-    request.headers['X-Requested-With'] = 'XmlHttpRequest'
+    request.headers[b'X-Requested-With'] = b'XmlHttpRequest'
     assert request.is_xhr()
 
 def test_is_xhr_is_case_insensitive(harness):
     request = harness.make_request()
-    request.headers['X-Requested-With'] = 'xMLhTTPrEQUEST'
+    request.headers[b'X-Requested-With'] = b'xMLhTTPrEQUEST'
     assert request.is_xhr()
 
 
 def test_headers_access_gets_a_value():
     headers = BaseHeaders(b"Foo: Bar")
     expected = b"Bar"
-    actual = headers['Foo']
+    actual = headers[b'Foo']
     assert actual == expected
 
 def test_headers_access_gets_last_value():
     headers = BaseHeaders(b"Foo: Bar\r\nFoo: Baz")
     expected = b"Baz"
-    actual = headers['Foo']
+    actual = headers[b'Foo']
     assert actual == expected
 
 def test_headers_access_is_case_insensitive():
     headers = BaseHeaders(b"Foo: Bar")
     expected = b"Bar"
-    actual = headers['foo']
+    actual = headers[b'foo']
     assert actual == expected
 
 def test_headers_dont_unicodify_cookie():

@@ -62,5 +62,5 @@ def test_response_body_can_be_unicode():
 def test_response_headers_protect_against_crlf_injection():
     response = Response()
     def inject():
-        response.headers['Location'] = 'foo\r\nbar'
+        response.headers[b'Location'] = b'foo\r\nbar'
     raises(CRLFInjection, inject)

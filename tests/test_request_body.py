@@ -17,17 +17,17 @@ def make_body(raw, headers=None, content_type=WWWFORM):
     if not isinstance(raw, bytes):
         raw = raw.encode('ascii')
     if headers is None:
-        defaults = { FORMDATA: "multipart/form-data; boundary=AaB03x",
-                     WWWFORM: "application/x-www-form-urlencoded" }
-        headers = {"Content-Type": defaults.get(content_type, content_type)}
-    if not 'content-length' in headers:
-        headers['Content-length'] = str(len(raw))
+        defaults = { FORMDATA: b"multipart/form-data; boundary=AaB03x",
+                     WWWFORM: b"application/x-www-form-urlencoded" }
+        headers = {b"Content-Type": defaults.get(content_type, content_type)}
+    if not b'content-length' in headers:
+        headers[b'Content-length'] = str(len(raw)).encode('ascii')
     body_parsers = {
             "application/json": parsers.jsondata,
             "application/x-www-form-urlencoded": parsers.formdata,
             "multipart/form-data": parsers.formdata
     }
-    headers['Host'] = 'Blah'
+    headers[b'Host'] = b'Blah'
     return parsers.parse_body(raw, Headers(headers), body_parsers)
 
 
@@ -70,15 +70,15 @@ def test_multiple_values_are_multiple():
 
 def test_params_doesnt_break_www_form():
     body = make_body("statement=foo"
-                    , content_type="application/x-www-form-urlencoded; charset=UTF-8; cheese=yummy"
+                    , content_type=b"application/x-www-form-urlencoded; charset=UTF-8; cheese=yummy"
                      )
     actual = body['statement']
     assert actual == "foo"
 
 def test_malformed_body_jsondata():
     with raises(MalformedBody):
-        make_body("foo", content_type="application/json")
+        make_body("foo", content_type=b"application/json")
 
 def test_malformed_body_formdata():
     with raises(MalformedBody):
-        make_body("", content_type="multipart/form-data; boundary=\0")
+        make_body("", content_type=b"multipart/form-data; boundary=\0")

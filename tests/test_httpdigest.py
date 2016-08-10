@@ -24,7 +24,7 @@ def _auth_header(username, password):
     return b"Basic " + base64.b64encode(username + b":" + password)
 
 def _auth_headers(response):
-    wwwauth = response.headers['WWW-Authenticate']
+    wwwauth = response.headers[b'WWW-Authenticate']
     assert wwwauth.startswith('Digest')
     assert wwwauth.endswith('"')
     keyvals = wwwauth[len('Digest '):-1].split(b'",')

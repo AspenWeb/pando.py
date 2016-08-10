@@ -7,10 +7,10 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from six import PY3
 from six.moves.http_cookies import CookieError, SimpleCookie
 
 from .mapping import CaseInsensitiveMapping
-from ..utils import typecheck
 
 
 def _check_for_CRLF(value):
@@ -33,10 +33,9 @@ class BaseHeaders(CaseInsensitiveMapping):
     """
 
     def __init__(self, d):
-        """Takes headers as a dict or str.
+        """Takes headers as a dict, list, or bytestring.
         """
-        typecheck(d, (dict, str))
-        if isinstance(d, str):
+        if isinstance(d, bytes):
             from pando.exceptions import MalformedHeader
 
             def genheaders():
@@ -51,15 +50,18 @@ class BaseHeaders(CaseInsensitiveMapping):
                         raise MalformedHeader(line)
                     yield k, v.strip()
         else:
-            genheaders = d.iteritems
+            genheaders = d.items if isinstance(d, dict) else (d or ()).__iter__
         CaseInsensitiveMapping.__init__(self, genheaders)
 
         # Cookie
         # ======
 
         self.cookie = SimpleCookie()
+        cookie = self.get('Cookie', b'')
+        if PY3 and isinstance(cookie, bytes):
+            cookie = cookie.decode('ascii', 'replace')
         try:
-            self.cookie.load(self.get('Cookie', b''))
+            self.cookie.load(cookie)
         except CookieError:
             pass  # XXX really?
 
