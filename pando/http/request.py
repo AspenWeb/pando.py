@@ -40,7 +40,7 @@ from io import StringIO
 import re
 import sys
 
-from six import PY2, text_type
+from six import text_type
 import six.moves.urllib.parse as urlparse
 
 from aspen.http.request import Path as _Path, Querystring as _Querystring
@@ -149,13 +149,8 @@ class UnicodeWithRaw(text_type):
 
     __slots__ = ['raw']
 
-    def __new__(cls, raw, encoding='UTF-8', unquote=None):
-        if unquote:
-            s = unquote(raw if PY2 else raw.decode(encoding))
-            decoded = s.decode(encoding) if isinstance(s, bytes) else s
-        else:
-            decoded = raw.decode(encoding)
-        obj = super(UnicodeWithRaw, cls).__new__(cls, decoded)
+    def __new__(cls, raw, encoding='UTF-8'):
+        obj = super(UnicodeWithRaw, cls).__new__(cls, raw.decode(encoding))
         obj.raw = raw
         return obj
 
@@ -423,41 +418,15 @@ class URI(text_type):
 
     """
 
-    __slots__ = ['scheme', 'username', 'password', 'host', 'port', 'path',
-                 'querystring', 'raw']
+    __slots__ = ['path', 'querystring', 'raw']
 
     def __new__(cls, raw):
-
-        # split str and not unicode so we can store .raw for each subobj
-        uri = urlparse.urlsplit(raw)
-
-        # scheme is going to be ASCII 99.99999999% of the time
-        scheme = UnicodeWithRaw(uri.scheme)
-
-        # let's decode username and password as url-encoded UTF-8
-        no_None = lambda o: o if o is not None else b""
-        parse = lambda o: UnicodeWithRaw(no_None(o), unquote=urlparse.unquote)
-        username = parse(uri.username)
-        password = parse(uri.password)
-
-        # host we will decode as IDNA, which may raise UnicodeError
-        host = UnicodeWithRaw(no_None(uri.hostname), 'IDNA')
-
-        # port is IntWithRaw (will be 0 if absent), which is fine
-        port = IntWithRaw(uri.port)
-
-        # path and querystring want unicode and do their own parsing
-        path = Path(uri.path.decode('ascii'))
-        querystring = Querystring(uri.query.decode('ascii'))
-
         # we require that the uri as a whole be decodable with ASCII
         decoded = raw.decode('ASCII')
+        parts = decoded.split('?', 1)
+        path = Path(parts[0])
+        querystring = Querystring(parts[1] if len(parts) > 1 else '')
         obj = super(URI, cls).__new__(cls, decoded)
-        obj.scheme = scheme
-        obj.username = username
-        obj.password = password
-        obj.host = host
-        obj.port = port
         obj.path = path
         obj.querystring = querystring
         obj.raw = raw

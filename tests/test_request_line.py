@@ -160,125 +160,29 @@ def test_uri_works_at_all():
     actual = uri
     assert actual == expected
 
-def test_a_nice_unicode_uri():
-    uri = URI(b"http://%E2%98%84:bar@localhost:5370/+%E2%98%84.html?%E2%98%84=%E2%98%84+bar")
-    assert uri == "http://%E2%98%84:bar@localhost:5370/+%E2%98%84.html?%E2%98%84=%E2%98%84+bar", uri
-
-
-def test_uri_sets_scheme():
-    uri = URI(b"http://foobar:secret@www.example.com:8080/baz.html?buz=bloo")
-    assert uri.scheme == "http", uri.scheme
-
-def test_uri_sets_username():
-    uri = URI(b"http://foobar:secret@www.example.com:8080/baz.html?buz=bloo")
-    assert uri.username == "foobar", uri.username
-
-def test_uri_sets_password():
-    uri = URI(b"http://foobar:secret@www.example.com:8080/baz.html?buz=bloo")
-    assert uri.password == "secret", uri.password
-
-def test_uri_sets_host():
-    uri = URI(b"http://foobar:secret@www.example.com:8080/baz.html?buz=bloo")
-    assert uri.host == "www.example.com", uri.host
-
-def test_uri_sets_port():
-    uri = URI(b"http://foobar:secret@www.example.com:8080/baz.html?buz=bloo")
-    assert uri.port == 8080, uri.port
 
 def test_uri_sets_path():
-    uri = URI(b"http://foobar:secret@www.example.com:8080/baz.html?buz=bloo")
+    uri = URI(b"/baz.html?buz=bloo")
     assert uri.path.decoded == "/baz.html", uri.path.decoded
 
 def test_uri_sets_querystring():
-    uri = URI(b"http://foobar:secret@www.example.com:8080/baz.html?buz=bloo")
+    uri = URI(b"/baz.html?buz=bloo")
     assert uri.querystring.decoded == "buz=bloo", uri.querystring.decoded
 
 
-def test_uri_scheme_is_unicode():
-    uri = URI(b"http://foobar:secret@www.example.com:8080/baz.html?buz=bloo")
-    assert isinstance(uri.scheme, text_type)
-
-def test_uri_username_is_unicode():
-    uri = URI(b"http://foobar:secret@www.example.com:8080/baz.html?buz=bloo")
-    assert isinstance(uri.username, text_type)
-
-def test_uri_password_is_unicode():
-    uri = URI(b"http://foobar:secret@www.example.com:8080/baz.html?buz=bloo")
-    assert isinstance(uri.password, text_type)
-
-def test_uri_host_is_unicode():
-    uri = URI(b"http://foobar:secret@www.example.com:8080/baz.html?buz=bloo")
-    assert isinstance(uri.host, text_type)
-
-def test_uri_port_is_int():
-    uri = URI(b"http://foobar:secret@www.example.com:8080/baz.html?buz=bloo")
-    assert isinstance(uri.port, int)
-
 def test_uri_path_is_Mapping():
-    uri = URI(b"http://foobar:secret@www.example.com:8080/baz.html?buz=bloo")
+    uri = URI(b"/baz.html?buz=bloo")
     assert isinstance(uri.path, Mapping)
 
 def test_uri_querystring_is_Mapping():
-    uri = URI(b"http://foobar:secret@www.example.com:8080/baz.html?buz=bloo")
+    uri = URI(b"/baz.html?buz=bloo")
     assert isinstance(uri.querystring, Mapping)
-
-
-def test_uri_empty_scheme_is_empty_unicode():
-    uri = URI(b"://foobar:secret@www.example.com:8080/baz.html?buz=bloo")
-    assert uri.scheme == "", uri.scheme
-    assert isinstance(uri.scheme, text_type), uri.scheme.__class__
-
-def test_uri_empty_username_is_empty_unicode():
-    uri = URI(b"http://:secret@www.example.com:8080/baz.html?buz=bloo")
-    assert uri.username == "", uri.username
-    assert isinstance(uri.username, text_type), uri.username.__class__
-
-def test_uri_empty_password_is_empty_unicode():
-    uri = URI(b"http://foobar:@www.example.com:8080/baz.html?buz=bloo")
-    assert uri.password == "", uri.password
-    assert isinstance(uri.password, text_type), uri.password.__class__
-
-def test_uri_empty_host_is_empty_unicode():
-    uri = URI(b"http://foobar:secret@:8080/baz.html?buz=bloo")
-    assert uri.host == "", uri.host
-    assert isinstance(uri.host, text_type), uri.host.__class__
-
-def test_uri_empty_port_is_0():
-    uri = URI(b"://foobar:secret@www.example.com:8080/baz.html?buz=bloo")
-    assert uri.port == 0, uri.port
 
 
 def test_uri_normal_case_is_normal():
     uri = URI(b"/baz.html?buz=bloo")
     assert uri.path == Path("/baz.html")
     assert uri.querystring == Querystring("buz=bloo")
-
-
-def test_uri_ASCII_worketh():
-    uri = URI(byte(127))
-    assert uri == chr(127), uri
-
-def test_uri_non_ASCII_worketh_not():
-    raises(UnicodeDecodeError, URI, byte(128))
-
-def test_uri_encoded_username_is_unencoded_properly():
-    uri = URI(b"http://%e2%98%84:secret@www.example.com/foo.html")
-    assert uri.username == '\u2604', uri.username
-
-def test_uri_encoded_password_is_unencoded_properly():
-    uri = URI(b"http://foobar:%e2%98%84@www.example.com/foo.html")
-    assert uri.password == '\u2604', uri.password
-
-def test_uri_international_domain_name_comes_out_properly():
-    uri = URI(b"http://www.xn--cev.tk/foo.html")
-    assert uri.host == 'www.\u658b.tk', uri.host
-
-def test_uri_bad_international_domain_name_raises_UnicodeError():
-    raises(UnicodeError, URI, b"http://www.xn--ced.tk/foo.html")
-
-def test_uri_raw_is_available_on_something():
-    uri = URI(b"http://www.xn--cev.tk/")
-    assert uri.host.raw == b"www.xn--cev.tk", uri.host.raw
 
 
 
