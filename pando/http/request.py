@@ -136,8 +136,6 @@ class IntWithRaw(int):
     """Generic subclass of int to store the underlying raw bytestring.
     """
 
-    __slots__ = ['raw']
-
     def __new__(cls, i):
         if i is None:
             i = 0
