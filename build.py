@@ -229,45 +229,6 @@ def clean_build():
     run('python', 'setup.py', 'clean', '-a')
     run('rm', '-rf', 'dist')
 
-# Jython
-# ======
-JYTHON_URL = "http://search.maven.org/remotecontent?filepath=org/python/jython-installer/2.7-b1/jython-installer-2.7-b1.jar"
-
-def _jython_home():
-    if not os.path.exists('jython_home'):
-        local_jython = 'jython-installer.jar'
-        run('wget', JYTHON_URL, '-qO', local_jython)
-        run('java', '-jar', local_jython, '-s', '-d', 'jython_home')
-
-def _jenv():
-    _jython_home()
-    jenv = dict(os.environ)
-    jenv['PATH'] = os.path.join('.', 'jython_home', 'bin') + ':' + jenv['PATH']
-    args = [ 'jython' ] + ENV_ARGS + [ '--python=jython', 'jenv' ]
-    run(*args, env=jenv)
-
-def clean_jenv():
-    """clean up the jython environment"""
-    shell('find', '.', '-name', '*.class', '-delete')
-    shell('rm', '-rf', 'jenv', 'jython_home')
-
-def jython_test():
-    """install jython and run tests with coverage (requires java)"""
-    _jenv()
-    run(_virt('pip', 'jenv'), 'install', *TEST_DEPS)
-    run(_virt('jython', 'jenv'), 'setup.py', 'develop')
-    run(_virt('jython', 'jenv'), _virt('py.test', 'jenv'),
-            '--junitxml=jython-testresults.xml', 'tests',
-            '--cov-report', 'term',
-            '--cov-report', 'xml',
-            '--cov', 'pando',
-            ignore_status=True)
-
-def clean_jtest():
-    """clean jython test results"""
-    shell('find', '.', '-name', '*.class', '-delete')
-    shell('rm', '-rf', 'jython-testresults.xml')
-
 
 def show_targets():
     """show the list of valid targets (this list)"""
@@ -278,8 +239,6 @@ def show_targets():
                'build', 'wheel', None,
                'sphinx', 'autosphinx', None,
                'clean', 'clean_env', 'clean_test', 'clean_build', 'clean_sphinx', None,
-               'jython_test', None,
-               'clean_jenv', 'clean_jtest', None,
                ]
     #docs = '\n'.join(["  %s - %s" % (t, LOCALS[t].__doc__) for t in targets])
     #print(docs)
