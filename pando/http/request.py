@@ -36,7 +36,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 
-from io import StringIO
+from io import BytesIO
 import re
 import sys
 
@@ -184,7 +184,7 @@ class Request(str):
                 headers = b'Host: localhost'
             obj.headers = Headers(headers)
             if body is None:
-                body = StringIO('')
+                body = BytesIO(b'')
             raw_len = int(obj.headers.get(b'Content-length', b'') or b'0')
             obj.raw_body = body.read(raw_len)
             obj.context = {}

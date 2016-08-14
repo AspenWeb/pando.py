@@ -22,7 +22,7 @@ class CaseInsensitiveMapping(Mapping):
     def __init__(self, *a, **kw):
         if a:
             d = a[0]
-            items = d.iteritems if hasattr(d, 'iteritems') else d
+            items = d.items if hasattr(d, 'items') else d
             for k, v in items():
                 self[k] = v
         for k, v in kw.items():
