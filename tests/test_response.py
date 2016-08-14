@@ -46,10 +46,10 @@ def test_response_body_can_be_iterable():
     assert actual == expected
 
 def test_response_body_as_iterable_comes_through_untouched():
-    response = Response(body=["Greetings, ", "program!"])
+    response = Response(body=[b"Greetings, ", b"program!"])
     def start_response(status, headers):
         pass
-    expected = ["Greetings, ", "program!"]
+    expected = [b"Greetings, ", b"program!"]
     actual = list(response({}, start_response).body)
     assert actual == expected
 
