@@ -46,6 +46,7 @@ import six.moves.urllib.parse as urlparse
 from aspen.http.request import Path as _Path, Querystring as _Querystring
 
 from .. import Response
+from ..utils import maybe_encode
 from .baseheaders import BaseHeaders
 from .mapping import Mapping
 
@@ -217,7 +218,13 @@ class Request(str):
         also be more efficient to parse directly for our API. But people love
         their gunicorn. :-/
 
+        Almost all the keys and values in a WSGI environ dict are (supposed to
+        be) of type `str`, meaning bytestrings in python 2 and unicode strings
+        in python 3. In this function we normalize them to bytestrings.
+        Ref: https://www.python.org/dev/peps/pep-3333/#a-note-on-string-types
+
         """
+        environ = {maybe_encode(k): maybe_encode(v) for k, v in environ.items()}
         return cls(*kick_against_goad(environ))
 
 

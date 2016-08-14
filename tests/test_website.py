@@ -315,20 +315,24 @@ class TestMiddleware(object):
         self.app = app
 
     def __call__(self, environ, start_response):
-        if environ['PATH_INFO'] == '/middleware':
+        if environ[b'PATH_INFO'] == '/middleware':
             start_response('200 OK', [('Content-Type', 'text/plain')])
             return ['TestMiddleware']
         return self.app(environ, start_response)
 
 def build_environ(path):
-    """Build WSGI environ for testing."""
+    """Build WSGI environ for testing.
+
+    It's intentional that some keys and values are unicode instead of bytes, we
+    need to support both and this is where we test that.
+    """
     return {
-        'REQUEST_METHOD': b'GET',
-        'PATH_INFO': path,
-        'QUERY_STRING': b'',
-        'SERVER_SOFTWARE': b'build_environ/1.0',
-        'SERVER_PROTOCOL': b'HTTP/1.1',
-        'wsgi.input': io.BytesIO()
+        b'REQUEST_METHOD': b'GET',
+        b'PATH_INFO': path,
+         'QUERY_STRING': '',
+        b'SERVER_SOFTWARE': b'build_environ/1.0',
+        b'SERVER_PROTOCOL': 'HTTP/1.1',
+         'wsgi.input': io.BytesIO()
     }
 
 def test_call_wraps_wsgi_middleware(client):

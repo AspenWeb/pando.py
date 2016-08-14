@@ -164,9 +164,9 @@ def test_cookie_alias_is_read_only(harness):
 
 def test_goad_passes_method_through():
     environ = {}
-    environ['REQUEST_METHOD'] = b'\xdead\xbeef'
-    environ['SERVER_PROTOCOL'] = b''
-    environ['wsgi.input'] = None
+    environ[b'REQUEST_METHOD'] = b'\xdead\xbeef'
+    environ[b'SERVER_PROTOCOL'] = b''
+    environ[b'wsgi.input'] = None
 
     expected = (b'\xdead\xbeef', b'', b'', b'', {}, None)
     actual = kick_against_goad(environ)
@@ -174,21 +174,21 @@ def test_goad_passes_method_through():
 
 def test_goad_makes_franken_uri():
     environ = {}
-    environ['REQUEST_METHOD'] = b''
-    environ['SERVER_PROTOCOL'] = b''
-    environ['PATH_INFO'] = b'/cheese'
-    environ['QUERY_STRING'] = b'foo=bar'
-    environ['wsgi.input'] = b''
+    environ[b'REQUEST_METHOD'] = b''
+    environ[b'SERVER_PROTOCOL'] = b''
+    environ[b'PATH_INFO'] = b'/cheese'
+    environ[b'QUERY_STRING'] = b'foo=bar'
+    environ[b'wsgi.input'] = b''
 
-    expected = ('', '/cheese?foo=bar', '', '', {}, '')
+    expected = (b'', b'/cheese?foo=bar', b'', b'', {}, b'')
     actual = kick_against_goad(environ)
     assert actual == expected
 
 def test_goad_passes_version_through():
     environ = {}
-    environ['REQUEST_METHOD'] = b''
-    environ['SERVER_PROTOCOL'] = b'\xdead\xbeef'
-    environ['wsgi.input'] = None
+    environ[b'REQUEST_METHOD'] = b''
+    environ[b'SERVER_PROTOCOL'] = b'\xdead\xbeef'
+    environ[b'wsgi.input'] = None
 
     expected = (b'', b'', b'', b'\xdead\xbeef', {}, None)
     actual = kick_against_goad(environ)
@@ -196,10 +196,10 @@ def test_goad_passes_version_through():
 
 def test_goad_makes_franken_headers():
     environ = {}
-    environ['REQUEST_METHOD'] = b''
-    environ['SERVER_PROTOCOL'] = b''
-    environ['HTTP_FOO_BAR'] = b'baz=buz'
-    environ['wsgi.input'] = b''
+    environ[b'REQUEST_METHOD'] = b''
+    environ[b'SERVER_PROTOCOL'] = b''
+    environ[b'HTTP_FOO_BAR'] = b'baz=buz'
+    environ[b'wsgi.input'] = b''
 
     expected = (b'', b'', b'', b'', {b'FOO-BAR': b'baz=buz'}, b'')
     actual = kick_against_goad(environ)
@@ -207,9 +207,9 @@ def test_goad_makes_franken_headers():
 
 def test_goad_passes_body_through():
     environ = {}
-    environ['REQUEST_METHOD'] = b''
-    environ['SERVER_PROTOCOL'] = b''
-    environ['wsgi.input'] = b'\xdead\xbeef'
+    environ[b'REQUEST_METHOD'] = b''
+    environ[b'SERVER_PROTOCOL'] = b''
+    environ[b'wsgi.input'] = b'\xdead\xbeef'
 
     expected = (b'', b'', b'', b'', {}, b'\xdead\xbeef')
     actual = kick_against_goad(environ)
