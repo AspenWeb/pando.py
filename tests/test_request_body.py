@@ -41,7 +41,7 @@ def test_body_barely_works():
     assert actual == "yes"
 
 
-UPLOAD = """\
+UPLOAD = '\r\n'.join("""\
 --AaB03x
 Content-Disposition: form-data; name="submit-name"
 
@@ -52,7 +52,7 @@ Content-Type: text/plain
 
 ... contents of file1.txt ...
 --AaB03x--
-"""
+""".splitlines())
 
 def test_body_barely_works_for_form_data():
     body = make_body(UPLOAD, content_type=FORMDATA)
