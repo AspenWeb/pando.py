@@ -23,6 +23,7 @@ from __future__ import unicode_literals
 
 
 import base64
+import binascii
 
 from .. import Response
 
@@ -95,7 +96,7 @@ class BasicAuth(object):
             return False, self.fail_400
         try:
             userpass = base64.b64decode(header[len(b'Basic '):])
-        except TypeError:
+        except (binascii.Error, TypeError):
             # malformed user:pass
             return False, self.fail_400
         if not b':' in userpass:
