@@ -49,9 +49,11 @@ class BaseHeaders(CaseInsensitiveMapping):
                         # (per http://tools.ietf.org/html/rfc7230#section-3.2.4)
                         raise MalformedHeader(line)
                     yield k, v.strip()
+
+            headers = genheaders()
         else:
-            genheaders = d.items if isinstance(d, dict) else (d or ()).__iter__
-        CaseInsensitiveMapping.__init__(self, genheaders)
+            headers = d
+        CaseInsensitiveMapping.__init__(self, headers)
 
         # Cookie
         # ======

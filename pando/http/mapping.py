@@ -20,10 +20,11 @@ class Mapping(_Mapping):
 class CaseInsensitiveMapping(Mapping):
 
     def __init__(self, *a, **kw):
-        if a:
-            d = a[0]
-            items = d.items if hasattr(d, 'items') else d
-            for k, v in items():
+        for it in a:
+            if it is None:
+                continue
+            items = it.items() if hasattr(it, 'items') else it
+            for k, v in items:
                 self[k] = v
         for k, v in kw.items():
             self[k] = v
