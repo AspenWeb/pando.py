@@ -12,7 +12,7 @@ from fabricate import ExecutionError, main, run, shell, autoclean
 PANDO_DEPS = [
     'python-mimeparse>=0.1.4',
     'first>=2.0.1',
-    'algorithm>=1.1.0',
+    'algorithm>=1.2.0',
     'filesystem_tree>=1.0.1',
     'dependency_injection>=1.1.0',
     ('aspen', 'https://github.com/AspenWeb/aspen.py/archive/master.zip'),
