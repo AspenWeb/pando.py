@@ -33,7 +33,10 @@ class FileUpload(object):
     def __init__(self, data, filename, content_type=None):
         self.data = data
         self.filename = filename
-        self.content_type = content_type or mimetypes.guess_type(filename)[0]
+        self.content_type = (
+            content_type or
+            mimetypes.guess_type(filename.decode('ascii', 'repr'))[0].encode('ascii')
+        )
 
 
 def encode_multipart(boundary, data):
@@ -52,18 +55,18 @@ def encode_multipart(boundary, data):
             file_upload = value
             lines.extend([
                 b'--' + boundary,
-                b'Content-Disposition: form-data; name="{}"; filename="{}"'
-                 .format(str(key), str(file_upload.filename)),
-                b'Content-Type: {}'.format(file_upload.content_type),
+                b'Content-Disposition: form-data; name="%s"; filename="%s"' %
+                 (key, file_upload.filename),
+                b'Content-Type: ' + file_upload.content_type,
                 b'',
-                str(file_upload.data)
+                file_upload.data
             ])
         else:
             lines.extend([
                 b'--' + boundary,
-                b'Content-Disposition: form-data; name="%s"' % str(key),
+                b'Content-Disposition: form-data; name="%s"' % key,
                 b'',
-                str(value)
+                value
             ])
 
     lines.extend([

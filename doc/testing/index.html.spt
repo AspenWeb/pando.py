@@ -28,7 +28,7 @@ capture it using the <code>x</code> variants:</p>
 
 <pre>
 def test_changing_thing_breaks(client):
-    response = client.PxST('/change-thing.html', data={'foo': 'bar'})
+    response = client.PxST('/change-thing.html', data={b'foo': b'bar'})
     assert response.code == 400
 </pre>
 
