@@ -14,7 +14,7 @@ from pando.exceptions import MalformedHeader
 def test_request_line_raw_works(harness):
     request = harness.make_request()
     actual = request.line.raw
-    expected = "GET / HTTP/1.1"
+    expected = b"GET / HTTP/1.1"
     assert actual == expected
 
 def test_raw_is_raw():
@@ -35,7 +35,7 @@ def test_request_line_version_defaults_to_HTTP_1_1(harness):
 def test_request_line_version_raw_works(harness):
     request = harness.make_request()
     actual = request.line.version.raw
-    expected = "HTTP/1.1"
+    expected = b"HTTP/1.1"
     assert actual == expected
 
 def test_allow_default_method_is_GET(harness):

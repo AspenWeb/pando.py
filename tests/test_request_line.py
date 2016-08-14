@@ -36,7 +36,7 @@ def test_line_has_version():
     assert line.version == "HTTP/0.9"
 
 def test_line_chokes_on_non_ASCII_in_uri():
-    raises(UnicodeDecodeError, Line, "GET", byte(128), "HTTP/1.1")
+    raises(UnicodeDecodeError, Line, b"GET", byte(128), b"HTTP/1.1")
 
 
 # Method
@@ -63,7 +63,7 @@ def test_method_raw_is_bytestring():
     assert isinstance(method.raw, bytes)
 
 def test_method_cant_have_more_attributes():
-    method = Method("GET")
+    method = Method(b"GET")
     raises(AttributeError, setattr, method, "foo", "bar")
 
 def test_method_can_be_OPTIONS(): assert Method(b"OPTIONS") == "OPTIONS"
@@ -77,7 +77,7 @@ def test_method_can_be_CONNECT(): assert Method(b"CONNECT") == "CONNECT"
 
 def test_method_can_be_big():
     big = b"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz--"
-    assert Method(big) == big
+    assert Method(big).raw == big
 
 def test_method_we_cap_it_at_64_bytes_just_cause____I_mean___come_on___right():
     big = b"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz--!"
@@ -154,7 +154,7 @@ def test_method_no_chr_125(): the501(125) # }
 # ===
 
 def test_uri_works_at_all():
-    uri = URI("/")
+    uri = URI(b"/")
     expected = "/"
     actual = uri
     assert actual == expected
