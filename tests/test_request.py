@@ -19,8 +19,8 @@ def test_request_line_raw_works(harness):
 
 def test_raw_is_raw():
     request = Request()
-    expected = b"GET / HTTP/1.1\r\nHost: localhost\r\n\r\n"
-    actual = request
+    expected = "GET / HTTP/1.1\r\nHost: localhost\r\n\r\n"
+    actual = str(request)
     assert actual == expected
 
 def test_blank_by_default():

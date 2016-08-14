@@ -40,7 +40,7 @@ from io import BytesIO
 import re
 import sys
 
-from six import text_type
+from six import PY2, text_type
 import six.moves.urllib.parse as urlparse
 
 from aspen.http.request import Path as _Path, Querystring as _Querystring
@@ -278,8 +278,9 @@ class Request(str):
         """Lazily load the body and return the whole message.
         """
         if not self._raw:
-            fmt = "%s\r\n%s\r\n\r\n%s"
-            self._raw = fmt % (self.line.raw, self.headers.raw, self.raw_body)
+            fmt = b"%s\r\n%s\r\n\r\n%s"
+            bs = fmt % (self.line.raw, self.headers.raw, self.raw_body)
+            self._raw = bs if PY2 else bs.decode('ascii')
         return self._raw
 
     def __repr__(self):
