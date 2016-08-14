@@ -121,15 +121,15 @@ class Response(Exception):
         return status_strings.get(self.code, 'Unknown HTTP status')
 
     def _to_http(self, version):
-        """Given a version string like 1.1, return an HTTP message, a string.
+        """Given a version string like 1.1, return an HTTP message (bytestring).
         """
-        status_line = "HTTP/%s" % version
+        status_line = b"HTTP/%s" % version.encode('ascii')
         headers = self.headers.raw
         body = self.body
-        if self.headers.get('Content-Type', '').startswith('text/'):
-            body = body.replace('\n', '\r\n')
-            body = body.replace('\r\r', '\r')
-        return '\r\n'.join([status_line, headers, '', body])
+        if self.headers.get(b'Content-Type', b'').startswith(b'text/'):
+            body = body.replace(b'\n', b'\r\n')
+            body = body.replace(b'\r\r', b'\r')
+        return b'\r\n'.join([status_line, headers, b'', body])
 
     def whence_raised(self):
         """Return a tuple, (filename, linenum) where we were raised from.
