@@ -63,8 +63,10 @@ def formdata(raw, headers):
 
 def jsondata(raw, headers):
     """Parse raw as json data"""
-
-    return json.loads(raw)
+    try:
+        return json.loads(raw.decode('utf8'))
+    except UnicodeDecodeError as e:
+        raise MalformedBody(str(e))
 
 
 def parse_body(raw, headers, parsers):
