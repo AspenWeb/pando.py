@@ -89,15 +89,13 @@ class Response(Exception):
         wsgi_headers = []
         for k, vals in self.headers.items():
             try:        # XXX This is a hack. It's red hot, baby.
-                k = k.encode('US-ASCII')
+                k = k.encode('US-ASCII') if not isinstance(k, bytes) else k
             except UnicodeEncodeError:
-                k = k.decode('US-ASCII', 'repr')
                 raise ValueError("Header key %s isn't US-ASCII." % k)
             for v in vals:
                 try:    # XXX This also is a hack. It is also red hot, baby.
-                    v = v.encode('US-ASCII')
+                    v = v.encode('US-ASCII') if not isinstance(v, bytes) else v
                 except UnicodeEncodeError:
-                    v = v.decode('US-ASCII', 'repr')
                     raise ValueError("Header value %s isn't US-ASCII." % k)
                 wsgi_headers.append((k, v))
 
