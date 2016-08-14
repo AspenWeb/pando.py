@@ -200,8 +200,6 @@ def delegate_error_to_simplate(website, state, response, request=None, resource=
         output = resource.render(state)
         fill_response_with_output(output, response, website.request_processor)
 
-    return {'exception': None}
-
 
 def log_traceback_for_exception(website, exception):
     if isinstance(exception, Response):
