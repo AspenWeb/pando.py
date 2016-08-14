@@ -79,7 +79,7 @@ class BaseHeaders(CaseInsensitiveMapping):
         """Return the headers as a string, formatted for an HTTP message.
         """
         out = []
-        for header, values in self.items():
+        for header, values in sorted(self.items()):
             for value in values:
                 out.append(b'%s: %s' % (header, value))
         return b'\r\n'.join(out)
