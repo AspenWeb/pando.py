@@ -28,6 +28,11 @@ def test_basic():
     actual = website.www_root
     assert actual == expected
 
+def test_website_is_accessible_from_first_page_of_simplates(harness):
+    harness.fs.www.mk(('index.spt', "website\n[---]\n[---]\n"))
+    response = harness.client.GET(raise_immediately=False)
+    assert response.code == 200, response.body
+
 def test_normal_response_is_returned(harness):
     harness.fs.www.mk(('index.html', "Greetings, program!"))
     expected = '\r\n'.join("""\
@@ -141,7 +146,7 @@ raise Response(420)
     assert response.code == 420
     assert response.body == 'Enhance your calm.'
 
-def test_delegate_error_to_simplate_respects_original_accept_header(harness):
+def test_delegate_error_to_simplate_ignores_original_accept_header(harness):
     harness.fs.project.mk(('error.spt', """[---]
 [---] text/fake
 Lorem ipsum
@@ -158,7 +163,7 @@ raise Response(404)
     """))
     response = harness.client.GET('/foo', raise_immediately=False, HTTP_ACCEPT=b'text/fake')
     assert response.code == 404
-    assert 'text/fake' in response.headers['Content-Type']
+    assert 'text/plain' in response.headers['Content-Type']
 
 def test_default_error_spt_handles_text_html(harness):
     harness.fs.www.mk(('foo.html.spt',"""
@@ -180,7 +185,7 @@ raise Response(404)
     """))
     response = harness.client.GET('/foo.json', raise_immediately=False)
     assert response.code == 404
-    assert response.headers['Content-Type'] == 'application/json'
+    assert response.headers['Content-Type'] == 'application/json; charset=UTF-8'
     assert response.body == '''\
 { "error_code": 404
 , "error_message_short": "Not Found"
@@ -198,7 +203,7 @@ raise Response(404, "Right, sooo...")
     """))
     response = harness.client.GET('/foo.json', raise_immediately=False)
     assert response.code == 404
-    assert response.headers['Content-Type'] == 'application/json'
+    assert response.headers['Content-Type'] == 'application/json; charset=UTF-8'
     assert response.body == '''\
 { "error_code": 404
 , "error_message_short": "Not Found"
@@ -231,7 +236,7 @@ raise Response(404, "Try again!")
     assert response.headers['Content-Type'] == 'text/plain; charset=UTF-8'
     assert response.body == "Not found, program!\nTry again!\n"
 
-def test_custom_error_spt_without_text_plain_results_in_406(harness):
+def test_custom_error_spt_without_text_plain_doesnt_result_in_406(harness):
     harness.fs.project.mk(('error.spt', """
 [---]
 [---] text/html
@@ -244,7 +249,8 @@ raise Response(404)
 [---]
     """))
     response = harness.client.GET('/foo.xml', raise_immediately=False)
-    assert response.code == 406
+    assert response.code == 404
+    assert response.body == "<h1>Oh no!</h1>\n"
 
 def test_custom_error_spt_with_text_plain_works(harness):
     harness.fs.project.mk(('error.spt', """

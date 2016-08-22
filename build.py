@@ -11,9 +11,10 @@ from fabricate import ExecutionError, main, run, shell, autoclean
 PANDO_DEPS = [
     'python-mimeparse>=0.1.4',
     'first>=2.0.1',
-    'algorithm>=1.0.0',
+    'algorithm>=1.1.0',
     'filesystem_tree>=1.0.1',
     'dependency_injection>=1.1.0',
+    ('aspen', 'https://github.com/AspenWeb/aspen.py/archive/master.zip'),
     ]
 
 TEST_DEPS = [
@@ -68,7 +69,7 @@ def env():
 
 
 def _deps(envdir):
-    run(_virt('pip', envdir), 'install', *PANDO_DEPS)
+    run(_virt('pip', envdir), 'install', *[d[1] if isinstance(d, tuple) else d for d in PANDO_DEPS])
 
 
 def _test_deps(envdir):

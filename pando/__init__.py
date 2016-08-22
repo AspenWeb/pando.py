@@ -59,11 +59,14 @@ from __future__ import unicode_literals
 import sys
 import pkg_resources
 
+import aspen.utils as _x  # this registers the 'repr' codec error strategy
+del _x
+
 # imports of convenience
+from aspen.simplates import json_ as json
+from aspen.simplates.renderers import BUILTIN_RENDERERS, RENDERERS
 from .http.response import Response
-from . import json_ as json
 from .logging import log, log_dammit
-from .simplates.renderers import BUILTIN_RENDERERS, RENDERERS
 
 # Shut up, PyFlakes. I know I'm addicted to you.
 Response, json, log, log_dammit, BUILTIN_RENDERERS, RENDERERS

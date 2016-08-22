@@ -11,9 +11,10 @@ import os
 import sys
 from collections import namedtuple
 
-from .. import resources
-from .client import Client
+from aspen import resources
 from filesystem_tree import FilesystemTree
+
+from .client import Client
 
 
 CWD = os.getcwd()
@@ -78,11 +79,11 @@ class Harness(object):
         return self.client.GET(uripath, **kw)
 
     def make_request(self, *a, **kw):
-        kw['return_after'] = 'dispatch_request_to_filesystem'
+        kw['return_after'] = 'dispatch_path_to_filesystem'
         kw['want'] = 'request'
         return self.simple(*a, **kw)
 
     def make_dispatch_result(self, *a, **kw):
-        kw['return_after'] = 'dispatch_request_to_filesystem'
+        kw['return_after'] = 'dispatch_path_to_filesystem'
         kw['want'] = 'dispatch_result'
         return self.simple(*a, **kw)

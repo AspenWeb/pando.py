@@ -12,23 +12,6 @@ from __future__ import unicode_literals
 from . import Response
 
 
-class ConfigurationError(StandardError):
-    """This is an error in any part of our configuration.
-    """
-
-    def __init__(self, msg):
-        StandardError.__init__(self)
-        self.msg = msg
-
-    def __str__(self):
-        return self.msg
-
-
-class LoadError(Exception):
-    """Represent a problem loading a resource.
-    """
-
-
 class CRLFInjection(Response):
     """
     A 400 Response (per #249) raised if there's a suspected CRLF Injection attack in the headers
