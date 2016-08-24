@@ -25,6 +25,7 @@ TEST_DEPS = [
     'py>=1.4.20',
     'pytest>=2.5.2',
     'pytest-cov>=1.6',
+    'pyflakes',
     ]
 
 ENV_ARGS = [
