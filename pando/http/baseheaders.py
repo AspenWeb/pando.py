@@ -83,6 +83,6 @@ class BaseHeaders(CaseInsensitiveMapping):
         out = []
         for header, values in sorted(self.items()):
             for value in values:
-                out.append(b'%s: %s' % (header, value))
+                out.append(header + b': ' + value)
         return b'\r\n'.join(out)
     raw = property(raw)

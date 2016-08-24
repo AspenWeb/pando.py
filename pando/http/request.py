@@ -278,8 +278,11 @@ class Request(str):
         """Lazily load the body and return the whole message.
         """
         if not self._raw:
-            fmt = b"%s\r\n%s\r\n\r\n%s"
-            bs = fmt % (self.line.raw, self.headers.raw, self.raw_body)
+            bs = (
+                self.line.raw + b'\r\n' +
+                self.headers.raw + b'\r\n\r\n' +
+                self.raw_body
+            )
             self._raw = bs if PY2 else bs.decode('ascii')
         return self._raw
 

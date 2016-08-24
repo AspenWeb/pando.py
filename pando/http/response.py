@@ -121,7 +121,7 @@ class Response(Exception):
     def _to_http(self, version):
         """Given a version string like 1.1, return an HTTP message (bytestring).
         """
-        status_line = b"HTTP/%s" % version.encode('ascii')
+        status_line = ("HTTP/%s" % version).encode('ascii')
         headers = self.headers.raw
         body = self.body
         if self.headers.get(b'Content-Type', b'').startswith(b'text/'):

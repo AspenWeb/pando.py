@@ -76,7 +76,7 @@ class BasicAuth(object):
         """
         failhtml = html or b'''Not Authorized. <a href="#">Try again.</a>'''
         self.verify_password = verify_password
-        fail_header = {b'WWW-Authenticate': b'Basic realm="%s"' % realm}
+        fail_header = {b'WWW-Authenticate': b'Basic realm="' + realm + b'"'}
         self.fail_401 = Response(401, failhtml, fail_header)
         self.fail_400 = Response(400, failhtml, fail_header)
         self.logging_out = set([])

@@ -20,7 +20,7 @@ from ..website import Website
 
 
 BOUNDARY = b'BoUnDaRyStRiNg'
-MULTIPART_CONTENT = b'multipart/form-data; boundary=%s' % BOUNDARY
+MULTIPART_CONTENT = b'multipart/form-data; boundary=' + BOUNDARY
 
 
 class DidntRaiseResponse(Exception): pass
@@ -55,8 +55,7 @@ def encode_multipart(boundary, data):
             file_upload = value
             lines.extend([
                 b'--' + boundary,
-                b'Content-Disposition: form-data; name="%s"; filename="%s"' %
-                 (key, file_upload.filename),
+                b'Content-Disposition: form-data; name="' + key + b'"; filename="' + file_upload.filename + b'"',
                 b'Content-Type: ' + file_upload.content_type,
                 b'',
                 file_upload.data
@@ -64,7 +63,7 @@ def encode_multipart(boundary, data):
         else:
             lines.extend([
                 b'--' + boundary,
-                b'Content-Disposition: form-data; name="%s"' % key,
+                b'Content-Disposition: form-data; name="' + key + b'"',
                 b'',
                 value
             ])
