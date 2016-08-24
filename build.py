@@ -1,5 +1,6 @@
 from __future__ import division, print_function, unicode_literals, with_statement
 
+import fnmatch
 import os
 import shlex
 import sys
@@ -111,7 +112,7 @@ def clean_env():
 def clean():
     """clean all artifacts"""
     autoclean()
-    shell('find', '.', '-name', '*.pyc', '-delete')
+    delete_files('*.pyc', '.')
     clean_env()
     clean_sphinx()
     clean_test()
@@ -160,7 +161,7 @@ def test():
 
 def _test(pytest_args=()):
     _test_deps()
-    shell('find', 'pando', 'tests', '-name', '*.pyc', '-delete')
+    delete_files('*.pyc', 'pando', 'tests')
     pytest_args = pytest_args or shlex.split(os.environ.get('PYTEST_ARGS', ''))
     shell('python', '-m', 'pytest', 'tests', *pytest_args, ignore_status=False, silent=False)
     shell('pyflakes', 'pando', 'tests', ignore_status=False, silent=False)
@@ -211,9 +212,9 @@ def clean_test():
     shell('rm', '-rf', '.tox')
     shell('rm', '-rf', '.coverage', 'coverage.xml', 'testresults.xml', 'htmlcov', 'pylint.out')
 
+
 # Build
 # =====
-
 
 def build():
     """build an egg"""
@@ -229,6 +230,20 @@ def clean_build():
     """clean build artifacts"""
     run('python', 'setup.py', 'clean', '-a')
     run('rm', '-rf', 'dist')
+
+
+# Utils
+# =====
+
+def find_files(directory, pattern):
+    for root, dirs, files in os.walk(directory):
+        for filename in fnmatch.filter(files, pattern):
+            yield os.path.join(root, filename)
+
+def delete_files(pattern, *directories):
+    for d in directories:
+        for fpath in find_files(d, pattern):
+            os.remove(fpath)
 
 
 def show_targets():
