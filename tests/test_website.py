@@ -146,7 +146,7 @@ raise Response(420)
     assert response.code == 420
     assert response.body == b'Enhance your calm.'
 
-def test_delegate_error_to_simplate_ignores_original_accept_header(harness):
+def test_delegate_error_to_simplate_favors_already_negotiated_media_type(harness):
     harness.fs.project.mk(('error.spt', """[---]
 [---] text/fake
 Lorem ipsum
@@ -158,12 +158,25 @@ Error
     harness.fs.www.mk(('foo.spt',"""
 from pando import Response
 [---]
-raise Response(404)
+raise Response(403)
 [---] text/plain
     """))
     response = harness.client.GET('/foo', raise_immediately=False, HTTP_ACCEPT=b'text/fake')
-    assert response.code == 404
+    assert response.code == 403
+    # If it hadn't raised an exception `foo.spt` would have returned
+    # `text/plain`, so that's what `error.spt` should return.
     assert b'text/plain' in response.headers[b'Content-Type']
+
+def test_delegate_error_to_simplate_falls_back_to_original_accept_header(harness):
+    harness.fs.project.mk(('error.spt', """[---]
+[---] text/plain
+Error
+[---] text/fake
+Lorem ipsum
+"""))
+    response = harness.client.GET('/foo', raise_immediately=False, HTTP_ACCEPT=b'text/fake')
+    assert response.code == 404
+    assert b'text/fake' in response.headers[b'Content-Type']
 
 def test_default_error_spt_handles_text_html(harness):
     harness.fs.www.mk(('foo.html.spt',"""
