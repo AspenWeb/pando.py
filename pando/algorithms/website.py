@@ -59,6 +59,7 @@ def parse_environ_into_request(environ):
 
 def insert_variables_for_aspen(request, website):
     return {
+        'accept_header': request.headers.get(b'Accept'),
         'path': request.path,
         'querystring': request.qs,
         'request_processor': website.request_processor,
@@ -116,10 +117,6 @@ def handle_dispatch_exception(website, exception):
 def resource_available():
     """No-op placeholder for easy hookage"""
     pass
-
-
-def extract_accept_from_request(request):
-    return {'accept_header': request.headers.get(b'Accept')}
 
 
 def create_response_object(state):
@@ -193,9 +190,13 @@ def delegate_error_to_simplate(website, state, response, request=None, resource=
                                                   )
         # Try to return an error that matches the type of the response the
         # client would have received if the error didn't occur
-        wanted = getattr(state.get('output'), 'media_type', None)
-        wanted = (wanted + ',' if wanted else '') + 'text/plain;q=0.2,*/*;q=0.1'
-        state['accept_header'] = wanted
+        wanted = getattr(state.get('output'), 'media_type', None) or ''
+        # If we don't have a media type (e.g. when we're returning a 404), then
+        # we fall back to the Accept header
+        wanted += ',' + (state.get('accept_header') or b'').decode('ascii', 'repr')
+        # As a last resort we accept anything, with a preference for text/plain
+        wanted += ',text/plain;q=0.2,*/*;q=0.1'
+        state['accept_header'] = wanted.lstrip(',')
 
         output = resource.render(state)
         fill_response_with_output(output, response, website.request_processor)
