@@ -15,7 +15,7 @@ from six.moves.http_cookies import SimpleCookie
 import mimetypes
 
 from .. import Response
-from ..utils import typecheck
+from ..utils import maybe_encode, typecheck
 from ..website import Website
 
 
@@ -63,9 +63,9 @@ def encode_multipart(boundary, data):
         else:
             lines.extend([
                 b'--' + boundary,
-                b'Content-Disposition: form-data; name="' + key + b'"',
+                b'Content-Disposition: form-data; name="' + maybe_encode(key, 'utf8') + b'"',
                 b'',
-                value
+                maybe_encode(value, 'utf8')
             ])
 
     lines.extend([
@@ -139,6 +139,8 @@ class Client(object):
         data = {} if data is None else data
         if content_type is MULTIPART_CONTENT:
             body = encode_multipart(BOUNDARY, data)
+        else:
+            content_type = maybe_encode(content_type)
 
         environ = self.build_wsgi_environ(method, path, body, content_type, **headers)
         state = self.website.respond( environ
