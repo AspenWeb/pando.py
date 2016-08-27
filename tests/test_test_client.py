@@ -19,6 +19,16 @@ def test_test_client_handles_body(harness):
     response = harness.client.POST('/foo', data={b'bar': b'42'})
     assert response.body == b'42'
 
+def test_test_client_sends_cookies(harness):
+    harness.fs.www.mk(('foo.spt', '''
+    [---]
+    miam = request.headers.cookie[str('miam')].value
+    [---] text/plain via stdlib_format
+    {miam}'''))
+    harness.client.cookie[str('miam')] = str('a_cookie')
+    response = harness.client.POST('/foo')
+    assert response.body == b'a_cookie'
+
 def test_test_client_handles_file_upload(harness):
     harness.fs.www.mk(('foo.spt', '''
     [---]
