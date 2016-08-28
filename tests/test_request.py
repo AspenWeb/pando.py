@@ -114,6 +114,10 @@ def test_headers_dont_unicodify_cookie():
     actual = headers[b'Cookie']
     assert actual == expected
 
+def test_baseheaders_loads_cookies_as_str():
+    headers = BaseHeaders(b"Cookie: key=value")
+    assert headers.cookie[str('key')].value == str('value')
+
 def test_headers_handle_no_colon():
     raises(MalformedHeader, BaseHeaders, b"Foo Bar")
 
