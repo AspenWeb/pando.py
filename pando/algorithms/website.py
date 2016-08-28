@@ -58,8 +58,9 @@ def parse_environ_into_request(environ):
 
 
 def insert_variables_for_aspen(request, website):
+    accept = request.headers.get(b'Accept')
     return {
-        'accept_header': request.headers.get(b'Accept'),
+        'accept_header': None if accept is None else accept.decode('ascii', 'repr'),
         'path': request.path,
         'querystring': request.qs,
         'request_processor': website.request_processor,
@@ -193,7 +194,7 @@ def delegate_error_to_simplate(website, state, response, request=None, resource=
         wanted = getattr(state.get('output'), 'media_type', None) or ''
         # If we don't have a media type (e.g. when we're returning a 404), then
         # we fall back to the Accept header
-        wanted += ',' + (state.get('accept_header') or b'').decode('ascii', 'repr')
+        wanted += ',' + (state.get('accept_header') or '')
         # As a last resort we accept anything, with a preference for text/plain
         wanted += ',text/plain;q=0.2,*/*;q=0.1'
         state['accept_header'] = wanted.lstrip(',')
