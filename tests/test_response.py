@@ -59,6 +59,14 @@ def test_response_body_can_be_unicode():
     except:
         assert False, 'expecting no error'
 
+def test_response_headers_are_str():
+    response = Response()
+    response.headers[b'Location'] = b'somewhere'
+    def start_response(status, headers):
+        assert isinstance(headers[0][0], str)
+        assert isinstance(headers[0][1], str)
+    response({}, start_response)
+
 def test_response_headers_protect_against_crlf_injection():
     response = Response()
     def inject():
