@@ -59,7 +59,7 @@ class BaseHeaders(CaseInsensitiveMapping):
         # ======
 
         self.cookie = SimpleCookie()
-        cookie = self.get('Cookie', b'')
+        cookie = self.get(b'Cookie', b'')
         if PY3 and isinstance(cookie, bytes):
             cookie = cookie.decode('ascii', 'replace')
         try:
