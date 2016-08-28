@@ -175,7 +175,7 @@ class Client(object):
         typecheck(path, (bytes, text_type), method, text_type, content_type, bytes, body, bytes)
         environ = {}
         environ[b'CONTENT_TYPE'] = content_type
-        environ[b'HTTP_COOKIE'] = self.cookie.output(header=b'', sep=b'; ')
+        environ[b'HTTP_COOKIE'] = self.cookie.output(header='', sep='; ')
         environ[b'HTTP_HOST'] = b'localhost'
         environ[b'PATH_INFO'] = path.encode('ascii') if type(path) != bytes else path
         environ[b'REMOTE_ADDR'] = b'0.0.0.0'
