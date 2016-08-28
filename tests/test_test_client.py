@@ -1,6 +1,15 @@
 from pando.testing.client import FileUpload
 
 
+def test_test_client_can_override_headers(harness):
+    harness.fs.www.mk(('foo.spt', '''
+    [---]
+    host = request.headers[b'Host'].decode('idna')
+    [---] text/html via stdlib_format
+    {host}'''))
+    response = harness.client.POST('/foo', HTTP_HOST=b'example.org')
+    assert response.body == b'example.org'
+
 def test_test_client_handles_body(harness):
     harness.fs.www.mk(('foo.spt', '''
     [---]
