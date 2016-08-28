@@ -13,6 +13,17 @@ def test_website_can_respond(harness):
     assert harness.client.GET().body == b'Greetings, program!'
 
 
+def test_website_can_respond_with_negotiation(harness):
+    harness.fs.www.mk(('index.spt', '''
+        [---]
+        [---] text/plain
+        Greetings, program!
+        [---] text/html
+        <h1>Hi!
+    '''))
+    assert harness.client.GET(HTTP_ACCEPT=b'text/html').body == b'<h1>Hi!\n'
+
+
 def test_404_comes_out_404(harness):
     harness.fs.project.mk(('404.spt', '[---]\n[---] text/plain\nEep!'))
     assert harness.client.GET(raise_immediately=False).code == 404
