@@ -64,3 +64,11 @@ def test_response_headers_protect_against_crlf_injection():
     def inject():
         response.headers[b'Location'] = b'foo\r\nbar'
     raises(CRLFInjection, inject)
+
+def test_response_cookie():
+    response = Response()
+    response.headers.cookie[str('foo')] = str('bar')
+    def start_response(status, headers):
+        assert headers[0][0] == b'Set-Cookie'
+        assert headers[0][1].startswith(b'foo=bar')
+    response({}, start_response)
