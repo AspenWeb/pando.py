@@ -321,7 +321,7 @@ raise Response(400,1,2,3,4,5,6,7,8,9)
     assert b'Response(400,1,2,3,4,5,6,7,8,9)' in response.body
 
 
-class TestMiddleware(object):
+class _TestMiddleware(object):
     """Simple WSGI middleware for testing."""
 
     def __init__(self, app):
@@ -330,7 +330,7 @@ class TestMiddleware(object):
     def __call__(self, environ, start_response):
         if environ[b'PATH_INFO'] == '/middleware':
             start_response('200 OK', [('Content-Type', 'text/plain')])
-            return ['TestMiddleware']
+            return ['_TestMiddleware']
         return self.app(environ, start_response)
 
 def build_environ(path):
@@ -350,7 +350,7 @@ def build_environ(path):
 
 def test_call_wraps_wsgi_middleware(client):
     client.website.algorithm.default_short_circuit = False
-    client.website.wsgi_app = TestMiddleware(client.website.wsgi_app)
+    client.website.wsgi_app = _TestMiddleware(client.website.wsgi_app)
     respond = [False, False]
     def start_response_should_404(status, headers):
         assert status.lower().strip() == '404 not found'
