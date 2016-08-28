@@ -86,6 +86,8 @@ class Response(Exception):
         wsgi_status = self._status_text()
         for morsel in self.headers.cookie.values():
             self.headers.add(b'Set-Cookie', morsel.OutputString().encode('ascii'))
+
+        # To comply with PEP 3333 headers should be `str` (bytes in py2 and unicode in py3)
         wsgi_headers = []
         for k, vals in self.headers.items():
             try:        # XXX This is a hack. It's red hot, baby.
@@ -97,7 +99,14 @@ class Response(Exception):
                     v = v.encode('US-ASCII') if not isinstance(v, bytes) else v
                 except UnicodeEncodeError:
                     raise ValueError("Header value %s isn't US-ASCII." % k)
-                wsgi_headers.append((k, v))
+                if str is bytes:  # python2 shortcut, no need to decode
+                    wsgi_headers.append((k, v))
+                    continue
+                try:
+                    wsgi_headers.append((k.decode('ascii'), v.decode('ascii')))
+                except UnicodeDecodeError:
+                    k, v = k.decode('ascii', 'repr'), v.decode('ascii', 'repr')
+                    raise ValueError("Header `%s: %s` isn't US-ASCII." % (k, v))
 
         start_response(wsgi_status, wsgi_headers)
         body = self.body

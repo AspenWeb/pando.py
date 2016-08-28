@@ -77,6 +77,6 @@ def test_response_cookie():
     response = Response()
     response.headers.cookie[str('foo')] = str('bar')
     def start_response(status, headers):
-        assert headers[0][0] == b'Set-Cookie'
-        assert headers[0][1].startswith(b'foo=bar')
+        assert headers[0][0] == str('Set-Cookie')
+        assert headers[0][1].startswith(str('foo=bar'))
     response({}, start_response)
