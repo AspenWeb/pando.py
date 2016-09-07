@@ -1,6 +1,25 @@
 Pando Changelog
 ===============
 
+0.43 - Released Wed Sept 7 2016 by @Changaco
+--------------------------------------------
+
+* rename from Aspen to Pando (#552) and use the new `aspen` library (#556)
+
+* add support for python 3 (#544, #559)
+
+* switch to stdlib `logging` module (#522)
+
+* add no-op functions to website algorithm for easy hookage (#523)
+
+* improve simplate interpretation (#516, #517, #518)
+
+* add all the RFC2616 HTTP methods to the test client (#558)
+
+* allow `Response` subclasses to modify `__str__()` (#555)
+
+* simplify HTTP headers handling (#554)
+
 0.42 - Released Thu Sept 10 2015 by @whit537
 --------------------------------------------
 
