@@ -9,6 +9,9 @@ from __future__ import unicode_literals
 
 import datetime
 import os
+import string
+
+from six.moves.urllib.parse import quote
 
 from algorithm import Algorithm
 from aspen.configuration import configure, parse
@@ -16,7 +19,7 @@ from aspen.request_processor import KNOBS as ASPEN_KNOBS, RequestProcessor
 
 from . import body_parsers
 from .http.response import Response
-from .utils import to_rfc822, utc
+from .utils import maybe_encode, to_rfc822, utc
 from .exceptions import BadLocation
 
 # 2006-11-17 was the first release of pando - v0.3
@@ -126,12 +129,13 @@ class Website(object):
         response = response if response else Response()
         response.code = code if code else (301 if permanent else 302)
         base_url = base_url if base_url is not None else self.base_url
+        location = quote(maybe_encode(location, 'utf8'), string.punctuation)
         if not location.startswith(base_url):
             newloc = base_url + location
             if not location.startswith('/'):
                 raise BadLocation(newloc)
             location = newloc
-        response.headers[b'Location'] = location.encode('ascii')
+        response.headers[b'Location'] = maybe_encode(location)
         raise response
 
 
