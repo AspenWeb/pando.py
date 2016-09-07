@@ -50,6 +50,18 @@ def test_fatal_error_response_is_returned(harness):
     actual = harness.client.GET(raise_immediately=False).code
     assert actual == expected
 
+def test_dispatch_redirect_works(harness):
+    harness.fs.www.mk(('foobar/index.spt', ""))
+    r = harness.client.GET('/foobar', raise_immediately=False)
+    assert r.code == 302
+    assert r.headers[b'Location'] == b'/foobar/'
+
+def test_dispatch_redirect_works_with_unicode(harness):
+    harness.fs.www.mk(('%foobar/index.spt', ""))
+    r = harness.client.GET('/f%C3%A9e', raise_immediately=False)
+    assert r.code == 302
+    assert r.headers[b'Location'] == b'/f%C3%A9e/'
+
 def test_redirect_has_only_location(harness):
     harness.fs.www.mk(('index.html.spt', """
 from pando import Response

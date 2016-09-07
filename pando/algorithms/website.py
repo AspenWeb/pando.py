@@ -95,7 +95,7 @@ def redirect_to_base_url(website, request):
 
 def handle_dispatch_exception(website, exception):
     if isinstance(exception, Redirect):
-        raise Response(302, exception.message)
+        website.redirect(exception.message)
     elif isinstance(exception, UnindexedDirectory) and website.list_directories:
         autoindex_spt = website.ours_or_theirs('autoindex.html.spt')
         dispatch_result = DispatchResult( DispatchStatus.okay
