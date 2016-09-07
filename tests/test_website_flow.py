@@ -10,7 +10,18 @@ from pando.http.response import Response
 
 def test_website_can_respond(harness):
     harness.fs.www.mk(('index.html.spt', '[---]\n[---]\nGreetings, program!'))
-    assert harness.client.GET().body == 'Greetings, program!'
+    assert harness.client.GET().body == b'Greetings, program!'
+
+
+def test_website_can_respond_with_negotiation(harness):
+    harness.fs.www.mk(('index.spt', '''
+        [---]
+        [---] text/plain
+        Greetings, program!
+        [---] text/html
+        <h1>Hi!
+    '''))
+    assert harness.client.GET(HTTP_ACCEPT=b'text/html').body == b'<h1>Hi!\n'
 
 
 def test_404_comes_out_404(harness):
@@ -23,7 +34,7 @@ def test_user_can_influence_request_context_via_algorithm_state(harness):
     def add_foo_to_context(request):
         return {'foo': 'bar'}
     harness.client.website.algorithm.insert_after('parse_environ_into_request', add_foo_to_context)
-    assert harness.client.GET().body == 'bar'
+    assert harness.client.GET().body == b'bar'
 
 
 def test_early_failures_dont_break_everything(harness):

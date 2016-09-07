@@ -10,6 +10,12 @@ from __future__ import unicode_literals
 import datetime
 import re
 
+from six import text_type
+
+
+def maybe_encode(s, codec='ascii'):
+    return s.encode(codec) if isinstance(s, text_type) else s
+
 
 # datetime helpers
 # ================

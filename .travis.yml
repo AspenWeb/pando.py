@@ -4,12 +4,12 @@ branches:
     - master
 language: python
 python:
-  - 2.7
+  - 3.5
 before_install:
   - pip install --upgrade pip
   - pip --version
 install: python build.py dev
-script: python build.py analyse
+script: python build.py test_cov
 notifications:
   email: false
   irc: 

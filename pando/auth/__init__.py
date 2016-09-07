@@ -12,13 +12,11 @@ Currently:
 
 """
 from .. import Response
-from ..utils import typecheck
 
 
 class BaseUser(object):
 
     def __init__(self, token):
-        typecheck(token, (unicode, None))
         self.token = token
 
     @property

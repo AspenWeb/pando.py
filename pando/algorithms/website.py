@@ -58,7 +58,9 @@ def parse_environ_into_request(environ):
 
 
 def insert_variables_for_aspen(request, website):
+    accept = request.headers.get(b'Accept')
     return {
+        'accept_header': None if accept is None else accept.decode('ascii', 'repr'),
         'path': request.path,
         'querystring': request.qs,
         'request_processor': website.request_processor,
@@ -118,10 +120,6 @@ def resource_available():
     pass
 
 
-def extract_accept_from_request(request):
-    return {'accept_header': request.headers.get('accept')}
-
-
 def create_response_object(state):
     state.setdefault('response', Response())
 
@@ -131,15 +129,15 @@ def create_response_object(state):
 
 
 def fill_response_with_output(output, response, request_processor):
-    if isinstance(output.body, unicode):
+    if not isinstance(output.body, bytes):
         output.charset = request_processor.charset_dynamic
         output.body = output.body.encode(output.charset)
     response.body = output.body
-    if 'Content-Type' not in response.headers:
+    if b'Content-Type' not in response.headers:
         ct = output.media_type
         if output.charset:
             ct += '; charset=' + output.charset
-        response.headers['Content-Type'] = ct
+        response.headers[b'Content-Type'] = ct.encode('ascii')
 
 
 def get_response_for_exception(website, exception):
@@ -193,14 +191,16 @@ def delegate_error_to_simplate(website, state, response, request=None, resource=
                                                   )
         # Try to return an error that matches the type of the response the
         # client would have received if the error didn't occur
-        wanted = getattr(state.get('output'), 'media_type', None)
-        wanted = (wanted + ',' if wanted else '') + 'text/plain;q=0.2,*/*;q=0.1'
-        state['accept_header'] = wanted
+        wanted = getattr(state.get('output'), 'media_type', None) or ''
+        # If we don't have a media type (e.g. when we're returning a 404), then
+        # we fall back to the Accept header
+        wanted += ',' + (state.get('accept_header') or '')
+        # As a last resort we accept anything, with a preference for text/plain
+        wanted += ',text/plain;q=0.2,*/*;q=0.1'
+        state['accept_header'] = wanted.lstrip(',')
 
         output = resource.render(state)
         fill_response_with_output(output, response, website.request_processor)
-
-    return {'exception': None}
 
 
 def log_traceback_for_exception(website, exception):

@@ -12,6 +12,8 @@ import os
 import re
 import sys
 
+from six import text_type
+
 from . import status_strings
 from .baseheaders import BaseHeaders as Headers
 
@@ -56,7 +58,7 @@ class Response(Exception):
 
             - code      an HTTP response code, e.g., 404
             - body      the message body as a string
-            - headers   a Headers instance
+            - headers   a dict, list, or bytestring of HTTP headers
             - charset   string that will be set in the Content-Type in the future at some point but not now
 
         Code is first because when you're raising your own Responses, they're
@@ -66,7 +68,7 @@ class Response(Exception):
         """
         if not isinstance(code, int):
             raise TypeError("'code' must be an integer")
-        elif not isinstance(body, basestring) and not hasattr(body, '__iter__'):
+        elif not isinstance(body, (bytes, text_type)) and not hasattr(body, '__iter__'):
             raise TypeError("'body' must be a string or iterable of strings")
         elif headers is not None and not isinstance(headers, (dict, list)):
             raise TypeError("'headers' must be a dictionary or a list of " +
@@ -77,39 +79,40 @@ class Response(Exception):
         Exception.__init__(self)
         self.code = code
         self.body = body
-        self.headers = Headers(b'')
+        self.headers = Headers(headers)
         self.charset = charset
-        if headers:
-            if isinstance(headers, dict):
-                headers = headers.items()
-            for k, v in headers:
-                self.headers[k] = v
-        self.headers.cookie.load(self.headers.get('Cookie', b''))
 
     def __call__(self, environ, start_response):
         wsgi_status = self._status_text()
         for morsel in self.headers.cookie.values():
-            self.headers.add('Set-Cookie', morsel.OutputString())
+            self.headers.add(b'Set-Cookie', morsel.OutputString().encode('ascii'))
+
+        # To comply with PEP 3333 headers should be `str` (bytes in py2 and unicode in py3)
         wsgi_headers = []
-        for k, vals in self.headers.iteritems():
+        for k, vals in self.headers.items():
             try:        # XXX This is a hack. It's red hot, baby.
-                k = k.encode('US-ASCII')
+                k = k.encode('US-ASCII') if not isinstance(k, bytes) else k
             except UnicodeEncodeError:
-                k = k.decode('US-ASCII', 'repr')
                 raise ValueError("Header key %s isn't US-ASCII." % k)
             for v in vals:
                 try:    # XXX This also is a hack. It is also red hot, baby.
-                    v = v.encode('US-ASCII')
+                    v = v.encode('US-ASCII') if not isinstance(v, bytes) else v
                 except UnicodeEncodeError:
-                    v = v.decode('US-ASCII', 'repr')
                     raise ValueError("Header value %s isn't US-ASCII." % k)
-                wsgi_headers.append((k, v))
+                if str is bytes:  # python2 shortcut, no need to decode
+                    wsgi_headers.append((k, v))
+                    continue
+                try:
+                    wsgi_headers.append((k.decode('ascii'), v.decode('ascii')))
+                except UnicodeDecodeError:
+                    k, v = k.decode('ascii', 'repr'), v.decode('ascii', 'repr')
+                    raise ValueError("Header `%s: %s` isn't US-ASCII." % (k, v))
 
         start_response(wsgi_status, wsgi_headers)
         body = self.body
-        if isinstance(body, basestring):
+        if not isinstance(body, (list, tuple)):
             body = [body]
-        body = (x.encode(self.charset) if isinstance(x, unicode) else x for x in body)
+        body = (x.encode(self.charset) if not isinstance(x, bytes) else x for x in body)
         return CloseWrapper(self.request, body)
 
     def __repr__(self):
@@ -125,15 +128,15 @@ class Response(Exception):
         return status_strings.get(self.code, 'Unknown HTTP status')
 
     def _to_http(self, version):
-        """Given a version string like 1.1, return an HTTP message, a string.
+        """Given a version string like 1.1, return an HTTP message (bytestring).
         """
-        status_line = "HTTP/%s" % version
+        status_line = ("HTTP/%s" % version).encode('ascii')
         headers = self.headers.raw
         body = self.body
-        if self.headers.get('Content-Type', '').startswith('text/'):
-            body = body.replace('\n', '\r\n')
-            body = body.replace('\r\r', '\r')
-        return '\r\n'.join([status_line, headers, '', body])
+        if self.headers.get(b'Content-Type', b'').startswith(b'text/'):
+            body = body.replace(b'\n', b'\r\n')
+            body = body.replace(b'\r\r', b'\r')
+        return b'\r\n'.join([status_line, headers, b'', body])
 
     def whence_raised(self):
         """Return a tuple, (filename, linenum) where we were raised from.

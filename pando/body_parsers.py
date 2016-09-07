@@ -14,11 +14,14 @@ Headers mapping of the supplied headers
 """
 
 import cgi
+from io import BytesIO
+
+from six import PY3
 
 from . import json
 from .utils import typecheck
 from .http.request import Headers
-from .http.mapping import Mapping
+from .http.mapping import CaseInsensitiveMapping, Mapping
 from .exceptions import MalformedBody, UnknownBodyType
 
 
@@ -32,7 +35,13 @@ def formdata(raw, headers):
     # method is GET (we already parsed the querystring elsewhere).
 
     environ = {"REQUEST_METHOD": "POST"}
-    parsed = cgi.FieldStorage( fp = cgi.StringIO(raw)  # Ack.
+    if PY3:
+        _headers = CaseInsensitiveMapping()
+        for k, vals in headers.items():
+            for v in vals:
+                _headers.add(k.decode('ascii'), v.decode('ascii'))
+        headers = _headers
+    parsed = cgi.FieldStorage( fp = BytesIO(raw)  # Ack.
                              , environ = environ
                              , headers = headers
                              , keep_blank_values = True
@@ -44,20 +53,20 @@ def formdata(raw, headers):
         if not isinstance(vals, list):
             vals = [vals]
         for v in vals:
-            if isinstance(v, cgi.MiniFieldStorage):
-                v = v.value.decode("UTF-8")  # XXX Really?  Always UTF-8?
-            else:
-                assert isinstance(v, cgi.FieldStorage), v
-                if v.filename is None:
-                    v = v.value.decode("UTF-8")
+            if v.filename is None:
+                v = v.value
+                if isinstance(v, bytes):
+                    v = v.decode("UTF-8")  # XXX Really?  Always UTF-8?
             result.add(k, v)
     return result
 
 
 def jsondata(raw, headers):
     """Parse raw as json data"""
-
-    return json.loads(raw)
+    try:
+        return json.loads(raw.decode('utf8'))
+    except UnicodeDecodeError as e:
+        raise MalformedBody(str(e))
 
 
 def parse_body(raw, headers, parsers):
@@ -71,7 +80,8 @@ def parse_body(raw, headers, parsers):
     typecheck(headers, Headers)
 
     # Note we ignore parameters for now
-    content_type = headers.get("Content-Type", "").split(';')[0]
+    content_type = headers.get(b"Content-Type", b"").split(b';')[0]
+    content_type = content_type.decode('ascii', 'repr')
 
     def default_parser(raw, headers):
         if not content_type and not raw:

@@ -7,16 +7,20 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from Cookie import SimpleCookie
-from StringIO import StringIO
+from io import BytesIO
+
+from six import text_type
+from six.moves.http_cookies import SimpleCookie
 
 import mimetypes
+
 from .. import Response
-from ..utils import typecheck
+from ..utils import maybe_encode, typecheck
 from ..website import Website
 
+
 BOUNDARY = b'BoUnDaRyStRiNg'
-MULTIPART_CONTENT = b'multipart/form-data; boundary=%s' % BOUNDARY
+MULTIPART_CONTENT = b'multipart/form-data; boundary=' + BOUNDARY
 
 
 class DidntRaiseResponse(Exception): pass
@@ -29,7 +33,10 @@ class FileUpload(object):
     def __init__(self, data, filename, content_type=None):
         self.data = data
         self.filename = filename
-        self.content_type = content_type or mimetypes.guess_type(filename)[0]
+        self.content_type = (
+            content_type or
+            mimetypes.guess_type(filename.decode('ascii', 'repr'))[0].encode('ascii')
+        )
 
 
 def encode_multipart(boundary, data):
@@ -48,18 +55,17 @@ def encode_multipart(boundary, data):
             file_upload = value
             lines.extend([
                 b'--' + boundary,
-                b'Content-Disposition: form-data; name="{}"; filename="{}"'
-                 .format(str(key), str(file_upload.filename)),
-                b'Content-Type: {}'.format(file_upload.content_type),
+                b'Content-Disposition: form-data; name="' + key + b'"; filename="' + file_upload.filename + b'"',
+                b'Content-Type: ' + file_upload.content_type,
                 b'',
-                str(file_upload.data)
+                file_upload.data
             ])
         else:
             lines.extend([
                 b'--' + boundary,
-                b'Content-Disposition: form-data; name="%s"' % str(key),
+                b'Content-Disposition: form-data; name="' + maybe_encode(key, 'utf8') + b'"',
                 b'',
-                str(value)
+                maybe_encode(value, 'utf8')
             ])
 
     lines.extend([
@@ -133,8 +139,10 @@ class Client(object):
         data = {} if data is None else data
         if content_type is MULTIPART_CONTENT:
             body = encode_multipart(BOUNDARY, data)
+        else:
+            content_type = maybe_encode(content_type)
 
-        environ = self.build_wsgi_environ(method, path, body, str(content_type), **headers)
+        environ = self.build_wsgi_environ(method, path, body, content_type, **headers)
         state = self.website.respond( environ
                                     , raise_immediately=raise_immediately
                                     , return_after=return_after
@@ -164,16 +172,16 @@ class Client(object):
         # exceptions to this: ``'CONTENT_TYPE'``, ``'CONTENT_LENGTH'`` which
         # are explicitly checked for.
 
-        typecheck(path, (str, unicode), method, unicode, content_type, str, body, str)
+        typecheck(path, (bytes, text_type), method, text_type, content_type, bytes, body, bytes)
         environ = {}
         environ[b'CONTENT_TYPE'] = content_type
-        environ[b'HTTP_COOKIE'] = self.cookie.output(header=b'', sep=b'; ')
+        environ[b'HTTP_COOKIE'] = self.cookie.output(header='', sep='; ')
         environ[b'HTTP_HOST'] = b'localhost'
-        environ[b'PATH_INFO'] = path if type(path) is str else path.decode('UTF-8')
+        environ[b'PATH_INFO'] = path.encode('ascii') if type(path) != bytes else path
         environ[b'REMOTE_ADDR'] = b'0.0.0.0'
-        environ[b'REQUEST_METHOD'] = method.decode('ASCII')
+        environ[b'REQUEST_METHOD'] = method.encode('ascii')
         environ[b'SERVER_PROTOCOL'] = b'HTTP/1.1'
-        environ[b'wsgi.input'] = StringIO(body)
-        environ[b'HTTP_CONTENT_LENGTH'] = bytes(len(body))
-        environ.update(kw)
+        environ[b'wsgi.input'] = BytesIO(body)
+        environ[b'HTTP_CONTENT_LENGTH'] = str(len(body)).encode('ascii')
+        environ.update((k.encode('ascii'), v) for k, v in kw.items())
         return environ

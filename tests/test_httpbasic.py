@@ -14,7 +14,7 @@ import base64
 
 def _auth_header(username, password):
     """return the value part of an Authorization: header for basic auth with the specified username and password"""
-    return b"Basic " + base64.b64encode(username + ":" + password)
+    return b"Basic " + base64.b64encode(username + b":" + password)
 
 # tests
 
@@ -32,44 +32,44 @@ def request_with(harness):
     yield request_with
 
 def test_good_works(request_with):
-    request = request_with( lambda u, p: u == "username" and p == "password"
-                          , _auth_header("username", "password")
+    request = request_with( lambda u, p: u == b"username" and p == b"password"
+                          , _auth_header(b"username", b"password")
                            )
     success = request.auth.authorized()
     assert success
-    assert request.auth.username() == "username", request.auth.username()
+    assert request.auth.username() == b"username"
 
 def test_hard_passwords(request_with):
-    for password in [ 'pass', 'username', ':password', ':password:','::::::' ]:
-        request = request_with( lambda u, p: u == "username" and p == password
-                              , _auth_header("username"
+    for password in [b'pass', b'username', b':password', b':password:', b'::::::']:
+        request = request_with( lambda u, p: u == b"username" and p == password
+                              , _auth_header(b"username"
                               , password)
                                )
         success = request.auth.authorized()
         assert success
-        assert request.auth.username() == "username", request.auth.username()
+        assert request.auth.username() == b"username"
 
 def test_no_auth(request_with):
-    auth = lambda u, p: u == "username" and p == "password"
+    auth = lambda u, p: u == b"username" and p == b"password"
     response = raises(Response, request_with, auth, None).value
     assert response.code == 401, response
 
 def test_bad_fails(request_with):
-    auth = lambda u, p: u == "username" and p == "password"
-    response = raises(Response, request_with, auth, _auth_header("username", "wrong password")).value
+    auth = lambda u, p: u == b"username" and p == b"password"
+    response = raises(Response, request_with, auth, _auth_header(b"username", b"wrong password")).value
     assert response.code == 401, response
 
 def test_wrong_auth(request_with):
-    auth = lambda u, p: u == "username" and p == "password"
+    auth = lambda u, p: u == b"username" and p == b"password"
     response = raises(Response, request_with, auth, b"Wacky xxx").value
     assert response.code == 400
 
 def test_malformed_password(request_with):
-    auth = lambda u, p: u == "username" and p == "password"
+    auth = lambda u, p: u == b"username" and p == b"password"
     response = raises( Response
                      , request_with
                      , auth
-                     , b"Basic " + base64.b64encode("usernamepassword")
+                     , b"Basic " + base64.b64encode(b"usernamepassword")
                       ).value
     assert response.code == 400
     response = raises(Response, request_with, auth, b"Basic xxx").value

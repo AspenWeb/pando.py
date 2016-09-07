@@ -36,15 +36,17 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 
-from io import StringIO
+from io import BytesIO
 import re
 import sys
-import urllib
-import urlparse
+
+from six import PY2, text_type
+import six.moves.urllib.parse as urlparse
 
 from aspen.http.request import Path as _Path, Querystring as _Querystring
 
 from .. import Response
+from ..utils import maybe_encode
 from .baseheaders import BaseHeaders
 from .mapping import Mapping
 
@@ -85,7 +87,7 @@ def make_franken_uri(path, qs):
 
             # Some servers (gevent) clobber %2F inside of paths, such
             # that we see /foo%2Fbar/ as /foo/bar/. The %2F is lost to us.
-            parts = [urllib.quote(x) for x in quoted_slash_re.split(path)]
+            parts = [urlparse.quote(x) for x in quoted_slash_re.split(path)]
             path = b"%2F".join(parts)
 
     if qs:
@@ -95,7 +97,7 @@ def make_franken_uri(path, qs):
             # Cross our fingers and hope we have UTF-8 bytes from MSIE. Let's
             # perform the percent-encoding that we would expect MSIE to have
             # done for us.
-            qs = urllib.quote_plus(qs)
+            qs = urlparse.quote_plus(qs)
         qs = b'?' + qs
 
     return path + qs
@@ -116,14 +118,14 @@ def make_franken_headers(environ):
 def kick_against_goad(environ):
     """Kick against the goad. Try to squeeze blood from a stone. Do our best.
     """
-    method = environ['REQUEST_METHOD']
-    uri = make_franken_uri( environ.get('PATH_INFO', b'')
-                          , environ.get('QUERY_STRING', b'')
+    method = environ[b'REQUEST_METHOD']
+    uri = make_franken_uri( environ.get(b'PATH_INFO', b'')
+                          , environ.get(b'QUERY_STRING', b'')
                           )
-    server = environ.get('SERVER_SOFTWARE', b'')
-    version = environ['SERVER_PROTOCOL']
+    server = environ.get(b'SERVER_SOFTWARE', b'')
+    version = environ[b'SERVER_PROTOCOL']
     headers = make_franken_headers(environ)
-    body = environ['wsgi.input']
+    body = environ[b'wsgi.input']
     return method, uri, server, version, headers, body
 
 
@@ -135,8 +137,6 @@ class IntWithRaw(int):
     """Generic subclass of int to store the underlying raw bytestring.
     """
 
-    __slots__ = ['raw']
-
     def __new__(cls, i):
         if i is None:
             i = 0
@@ -144,13 +144,13 @@ class IntWithRaw(int):
         obj.raw = str(i)
         return obj
 
-class UnicodeWithRaw(unicode):
+class UnicodeWithRaw(text_type):
     """Generic subclass of unicode to store the underlying raw bytestring.
     """
 
     __slots__ = ['raw']
 
-    def __new__(cls, raw, encoding="UTF-8"):
+    def __new__(cls, raw, encoding='UTF-8'):
         obj = super(UnicodeWithRaw, cls).__new__(cls, raw.decode(encoding))
         obj.raw = raw
         return obj
@@ -185,8 +185,8 @@ class Request(str):
                 headers = b'Host: localhost'
             obj.headers = Headers(headers)
             if body is None:
-                body = StringIO('')
-            raw_len = int(obj.headers.get('Content-length', '') or '0')
+                body = BytesIO(b'')
+            raw_len = int(obj.headers.get(b'Content-length', b'') or b'0')
             obj.raw_body = body.read(raw_len)
             obj.context = {}
         except UnicodeError:
@@ -218,7 +218,13 @@ class Request(str):
         also be more efficient to parse directly for our API. But people love
         their gunicorn. :-/
 
+        Almost all the keys and values in a WSGI environ dict are (supposed to
+        be) of type `str`, meaning bytestrings in python 2 and unicode strings
+        in python 3. In this function we normalize them to bytestrings.
+        Ref: https://www.python.org/dev/peps/pep-3333/#a-note-on-string-types
+
         """
+        environ = {maybe_encode(k): maybe_encode(v) for k, v in environ.items()}
         return cls(*kick_against_goad(environ))
 
 
@@ -272,8 +278,12 @@ class Request(str):
         """Lazily load the body and return the whole message.
         """
         if not self._raw:
-            fmt = "%s\r\n%s\r\n\r\n%s"
-            self._raw = fmt % (self.line.raw, self.headers.raw, self.raw_body)
+            bs = (
+                self.line.raw + b'\r\n' +
+                self.headers.raw + b'\r\n\r\n' +
+                self.raw_body
+            )
+            self._raw = bs if PY2 else bs.decode('ascii')
         return self._raw
 
     def __repr__(self):
@@ -302,19 +312,21 @@ class Request(str):
         """
         methods = [x.upper() for x in methods]
         if self.line.method not in methods:
-            raise Response(405, headers={'Allow': ', '.join(methods)})
+            raise Response(405, headers={
+                b'Allow': b', '.join(m.encode('ascii') for m in methods)
+            })
 
     def is_xhr(self):
         """Check the value of X-Requested-With.
         """
-        val = self.headers.get('X-Requested-With', '')
-        return val.lower() == 'xmlhttprequest'
+        val = self.headers.get(b'X-Requested-With', b'')
+        return val.lower() == b'xmlhttprequest'
 
 
 # Request -> Line
 # ---------------
 
-class Line(unicode):
+class Line(text_type):
     """Represent the first line of an HTTP Request message.
     """
 
@@ -323,11 +335,11 @@ class Line(unicode):
     def __new__(cls, method, uri, version):
         """Takes three bytestrings.
         """
-        raw = " ".join([method, uri, version])
+        raw = b" ".join([method, uri, version])
         method = Method(method)
         uri = URI(uri)
         version = Version(version)
-        decoded = u" ".join([method, uri, version])
+        decoded = " ".join([method, uri, version])
 
         obj = super(Line, cls).__new__(cls, decoded)
         obj.method = method
@@ -341,17 +353,14 @@ class Line(unicode):
 # Request -> Method
 # -----------------
 
-STANDARD_METHODS = set(["OPTIONS", "GET", "HEAD", "POST", "PUT", "DELETE", "TRACE",
-                    "CONNECT"])
+STANDARD_METHODS = set("OPTIONS GET HEAD POST PUT DELETE TRACE CONNECT".split())
 
 SEPARATORS = ("(", ")", "<", ">", "@", ",", ";", ":", "\\", '"', "/", "[", "]",
               "?", "=", "{", "}", " ", "\t")
 
-# NB: No set comprehensions until 2.7.
-BYTES_ALLOWED_IN_METHOD = set(chr(i) for i in range(32, 127))
-BYTES_ALLOWED_IN_METHOD -= set(SEPARATORS)
+CHARS_ALLOWED_IN_METHOD = set(chr(i) for i in range(32, 127)) - set(SEPARATORS)
 
-class Method(unicode):
+class Method(text_type):
     """Represent the HTTP method in the first line of an HTTP Request message.
 
     Spec sez ASCII subset:
@@ -391,9 +400,10 @@ class Method(unicode):
     __slots__ = ['raw']
 
     def __new__(cls, raw):
-        if raw not in STANDARD_METHODS: # fast for 99.999% case
-            for i, byte in enumerate(raw):
-                if (i == 64) or (byte not in BYTES_ALLOWED_IN_METHOD):
+        decoded = raw.decode('ascii', 'repr')
+        if decoded not in STANDARD_METHODS: # fast for 99.999% case
+            for i, char in enumerate(decoded):
+                if (i == 64) or (char not in CHARS_ALLOWED_IN_METHOD):
 
                     # "This is the appropriate response when the server does
                     #  not recognize the request method and is not capable of
@@ -401,11 +411,10 @@ class Method(unicode):
                     #
                     #  http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html
 
-                    safe = raw.decode('ascii', 'repr')
                     raise Response(501, "Your request-method violates RFC "
-                                        "2616: %s" % safe)
+                                        "2616: %s" % decoded)
 
-        obj = super(Method, cls).__new__(cls, raw.decode('ASCII'))
+        obj = super(Method, cls).__new__(cls, decoded)
         obj.raw = raw
         return obj
 
@@ -413,48 +422,22 @@ class Method(unicode):
 # Request -> Line -> URI
 # ......................
 
-class URI(unicode):
+class URI(text_type):
     """Represent the Request-URI in the first line of an HTTP Request message.
 
     XXX spec-ify this
 
     """
 
-    __slots__ = ['scheme', 'username', 'password', 'host', 'port', 'path',
-                 'querystring', 'raw']
+    __slots__ = ['path', 'querystring', 'raw']
 
     def __new__(cls, raw):
-
-        # split str and not unicode so we can store .raw for each subobj
-        uri = urlparse.urlsplit(raw)
-
-        # scheme is going to be ASCII 99.99999999% of the time
-        scheme = UnicodeWithRaw(uri.scheme)
-
-        # let's decode username and password as url-encoded UTF-8
-        no_None = lambda o: o if o is not None else ""
-        parse = lambda o: UnicodeWithRaw(urllib.unquote(no_None(o)))
-        username = parse(uri.username)
-        password = parse(uri.password)
-
-        # host we will decode as IDNA, which may raise UnicodeError
-        host = UnicodeWithRaw(no_None(uri.hostname), 'IDNA')
-
-        # port is IntWithRaw (will be 0 if absent), which is fine
-        port = IntWithRaw(uri.port)
-
-        # path and querystring get bytes and do their own parsing
-        path = Path(uri.path)
-        querystring = Querystring(uri.query)
-
         # we require that the uri as a whole be decodable with ASCII
         decoded = raw.decode('ASCII')
+        parts = decoded.split('?', 1)
+        path = Path(parts[0])
+        querystring = Querystring(parts[1] if len(parts) > 1 else '')
         obj = super(URI, cls).__new__(cls, decoded)
-        obj.scheme = scheme
-        obj.username = username
-        obj.password = password
-        obj.host = host
-        obj.port = port
         obj.path = path
         obj.querystring = querystring
         obj.raw = raw
@@ -476,14 +459,14 @@ class Querystring(Mapping, _Querystring):
 # Request -> Line -> Version
 # ..........................
 
-versions = { 'HTTP/0.9': ((0, 9), u'HTTP/0.9')
-           , 'HTTP/1.0': ((1, 0), u'HTTP/1.0')
-           , 'HTTP/1.1': ((1, 1), u'HTTP/1.1')
+versions = { b'HTTP/0.9': ((0, 9), 'HTTP/0.9')
+           , b'HTTP/1.0': ((1, 0), 'HTTP/1.0')
+           , b'HTTP/1.1': ((1, 1), 'HTTP/1.1')
             }  # Go ahead, find me another version.
 
-version_re = re.compile('HTTP/\d+\.\d+')
+version_re = re.compile(br'HTTP/\d+\.\d+')
 
-class Version(unicode):
+class Version(text_type):
     """Represent the version in an HTTP status line. HTTP/1.1. Like that.
 
         HTTP-Version   = "HTTP" "/" 1*DIGIT "." 1*DIGIT
@@ -532,7 +515,7 @@ class Headers(BaseHeaders):
         # Per the spec, respond with 400 if no Host header is given. However,
         # we prefer X-Forwarded-For if that is available.
 
-        host = self.get('X-Forwarded-Host', self['Host']) # KeyError raises 400
+        host = self.get(b'X-Forwarded-Host', self[b'Host']) # KeyError raises 400
         self.host = UnicodeWithRaw(host, encoding='idna')
 
 
@@ -541,4 +524,4 @@ class Headers(BaseHeaders):
         # http://docs.python.org/library/wsgiref.html#wsgiref.util.guess_scheme
 
         scheme = 'https' if self.get('HTTPS', False) else 'http'
-        self.scheme = UnicodeWithRaw(scheme)
+        self.scheme = scheme

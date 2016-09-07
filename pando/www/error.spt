@@ -5,7 +5,15 @@ from __future__ import unicode_literals
 
 from pando import json
 from pando.http import status_strings
-from pando.backcompat import html_escape
+
+try:                # 3
+    from html import escape as html_escape
+except ImportError: # 2
+    from cgi import escape as cgi_escape
+    def html_escape(*args,**kwargs):
+        # make the defaults match the py3 defaults
+        kwargs['quote'] = kwargs.get('quote', True)
+        return cgi_escape(*args,**kwargs)
 
 try:
     from pygments.lexers import PythonTracebackLexer

@@ -7,10 +7,10 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from six import PY3
+from six.moves.http_cookies import CookieError, SimpleCookie
 
-from ..backcompat import CookieError, SimpleCookie
 from .mapping import CaseInsensitiveMapping
-from ..utils import typecheck
 
 
 def _check_for_CRLF(value):
@@ -33,10 +33,9 @@ class BaseHeaders(CaseInsensitiveMapping):
     """
 
     def __init__(self, d):
-        """Takes headers as a dict or str.
+        """Takes headers as a dict, list, or bytestring.
         """
-        typecheck(d, (dict, str))
-        if isinstance(d, str):
+        if isinstance(d, bytes):
             from pando.exceptions import MalformedHeader
 
             def genheaders():
@@ -50,16 +49,21 @@ class BaseHeaders(CaseInsensitiveMapping):
                         # (per http://tools.ietf.org/html/rfc7230#section-3.2.4)
                         raise MalformedHeader(line)
                     yield k, v.strip()
+
+            headers = genheaders()
         else:
-            genheaders = d.iteritems
-        CaseInsensitiveMapping.__init__(self, genheaders)
+            headers = d
+        CaseInsensitiveMapping.__init__(self, headers)
 
         # Cookie
         # ======
 
         self.cookie = SimpleCookie()
+        cookie = self.get(b'Cookie', b'')
+        if PY3 and isinstance(cookie, bytes):
+            cookie = cookie.decode('ascii', 'replace')
         try:
-            self.cookie.load(self.get('Cookie', b''))
+            self.cookie.load(cookie)
         except CookieError:
             pass  # XXX really?
 
@@ -77,8 +81,8 @@ class BaseHeaders(CaseInsensitiveMapping):
         """Return the headers as a string, formatted for an HTTP message.
         """
         out = []
-        for header, values in self.iteritems():
+        for header, values in sorted(self.items()):
             for value in values:
-                out.append(b'%s: %s' % (header, value))
+                out.append(header + b': ' + value)
         return b'\r\n'.join(out)
     raw = property(raw)

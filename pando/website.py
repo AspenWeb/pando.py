@@ -131,7 +131,7 @@ class Website(object):
             if not location.startswith('/'):
                 raise BadLocation(newloc)
             location = newloc
-        response.headers['Location'] = location
+        response.headers[b'Location'] = location.encode('ascii')
         raise response
 
 
@@ -139,10 +139,10 @@ class Website(object):
     # =========================
 
     def _extract_scheme(self, request):
-        return request.headers.get('X-Forwarded-Proto', 'http')  # Heroku
+        return request.headers.get(b'X-Forwarded-Proto', b'http')  # Heroku
 
     def _extract_host(self, request):
-        return request.headers['Host']  # will 400 if missing
+        return request.headers[b'Host']  # will 400 if missing
 
     _canonicalize_base_url_code = 302
 
@@ -152,8 +152,8 @@ class Website(object):
         if not self.base_url:
             return
 
-        scheme = self._extract_scheme(request)
-        host = self._extract_host(request)
+        scheme = self._extract_scheme(request).decode('ascii', 'repr')
+        host = self._extract_host(request).decode('ascii', 'repr')
 
         actual = scheme + "://" + host
 
