@@ -3,6 +3,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import os
 from pytest import raises
 
 from pando import Response
@@ -87,5 +88,5 @@ def test_set_whence_raised_works():
     except Response as r:
         assert r.whence_raised == (None, None)
         r.set_whence_raised()
-        assert r.whence_raised[0] == 'tests/test_response.py'
+        assert r.whence_raised[0] == 'tests' + os.sep + 'test_response.py'
         assert isinstance(r.whence_raised[1], int)
