@@ -241,15 +241,17 @@ def log_result_of_request(website, request=None, dispatch_result=None, response=
     # ===============================
 
     if response is None:
-        response = "(no response available)"
+        status = "(no response available)"
     else:
+        status = response._status_text()
         filename, linenum = response.whence_raised()
         if filename is not None:
-            response = "%s (%s:%d)" % (response, filename, linenum)
-        else:
-            response = str(response)
+            status += " (%s:%d)" % (filename, linenum)
 
     # Log it.
     # =======
 
-    _log("%-36s %s" % (response, msg))
+    # INFO when code < 400, WARNING when < 500, ERROR when < 600, CRITICAL when
+    # we don't have a response code
+    level = max((getattr(response, 'code', 600) - 100) // 100 * 10, 20)
+    _log("%-36s %s" % (status, msg), level=level)
