@@ -65,7 +65,7 @@ class Response(Exception):
         self.headers = Headers(headers)
 
     def to_wsgi(self, environ, start_response, charset):
-        wsgi_status = self._status_text()
+        wsgi_status = str(self._status_text())
         for morsel in self.headers.cookie.values():
             self.headers.add(b'Set-Cookie', morsel.OutputString().encode('ascii'))
 
