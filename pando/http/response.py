@@ -9,7 +9,6 @@ from __future__ import unicode_literals
 
 
 import os
-import re
 import sys
 
 from six import text_type
@@ -34,32 +33,18 @@ class CloseWrapper(object):
         pass
 
 
-# Define a charset name filter.
-# =============================
-# "The character set names may be up to 40 characters taken from the
-#  printable characters of US-ASCII."
-#  (http://www.iana.org/assignments/character-sets)
-#
-# We're going to be slightly more restrictive. Instead of allowing all
-# printable characters, which include whitespace and newlines, we're going to
-# only allow punctuation that is actually in use in the current IANA list.
-
-charset_re = re.compile("^[A-Za-z0-9:_()+.-]{1,40}$")
-
-
 class Response(Exception):
     """Represent an HTTP Response message.
     """
 
     request = None
 
-    def __init__(self, code=200, body='', headers=None, charset="UTF-8"):
-        """Takes an int, a string, a dict, and a basestring.
+    def __init__(self, code=200, body='', headers=None):
+        """Takes an int, a string, a dict.
 
             - code      an HTTP response code, e.g., 404
             - body      the message body as a string
             - headers   a dict, list, or bytestring of HTTP headers
-            - charset   string that will be set in the Content-Type in the future at some point but not now
 
         Code is first because when you're raising your own Responses, they're
         usually error conditions. Body is second because one more often wants
@@ -73,16 +58,13 @@ class Response(Exception):
         elif headers is not None and not isinstance(headers, (dict, list)):
             raise TypeError("'headers' must be a dictionary or a list of " +
                             "2-tuples")
-        elif charset_re.match(charset) is None:
-            raise TypeError("'charset' must match " + charset_re.pattern)
 
         Exception.__init__(self)
         self.code = code
         self.body = body
         self.headers = Headers(headers)
-        self.charset = charset
 
-    def __call__(self, environ, start_response):
+    def to_wsgi(self, environ, start_response, charset):
         wsgi_status = self._status_text()
         for morsel in self.headers.cookie.values():
             self.headers.add(b'Set-Cookie', morsel.OutputString().encode('ascii'))
@@ -112,7 +94,7 @@ class Response(Exception):
         body = self.body
         if not isinstance(body, (list, tuple)):
             body = [body]
-        body = (x.encode(self.charset) if not isinstance(x, bytes) else x for x in body)
+        body = (x.encode(charset) if not isinstance(x, bytes) else x for x in body)
         return CloseWrapper(self.request, body)
 
     def __repr__(self):
