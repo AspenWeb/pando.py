@@ -30,7 +30,6 @@ KNOBS = {
     # 'name':               (default,               from_unicode),
     'base_url':             ('',                    parse.identity),
     'list_directories':     (False,                 parse.yes_no),
-    'logging_threshold':    (0,                     int),
     'show_tracebacks':      (False,                 parse.yes_no),
     'colorize_tracebacks':  (True,                  parse.yes_no),
 }
