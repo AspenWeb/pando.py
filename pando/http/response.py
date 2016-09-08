@@ -38,6 +38,7 @@ class Response(Exception):
     """
 
     request = None
+    whence_raised = (None, None)
 
     def __init__(self, code=200, body='', headers=None):
         """Takes an int, a string, a dict.
@@ -120,11 +121,12 @@ class Response(Exception):
             body = body.replace(b'\r\r', b'\r')
         return b'\r\n'.join([status_line, headers, b'', body])
 
-    def whence_raised(self):
-        """Return a tuple, (filename, linenum) where we were raised from.
+    def set_whence_raised(self):
+        """Sets self.whence_raised
 
-        If we're not the exception currently being handled then the return
-        value is (None, None).
+        It's a tuple, (filename, linenum) where we were raised from.
+
+        This function needs to be called from inside the `except` block.
 
         """
         tb = filepath = linenum = None
@@ -147,4 +149,4 @@ class Response(Exception):
                 linenum = frame.f_lineno
         finally:
             del tb  # http://docs.python.org/2/library/sys.html#sys.exc_info
-        return filepath, linenum
+        self.whence_raised = (filepath, linenum)
