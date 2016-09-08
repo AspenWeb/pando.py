@@ -46,7 +46,7 @@ import six.moves.urllib.parse as urlparse
 from aspen.http.request import Path as _Path, Querystring as _Querystring
 
 from .. import Response
-from ..utils import maybe_encode
+from ..utils import try_encode
 from .baseheaders import BaseHeaders
 from .mapping import Mapping
 
@@ -224,7 +224,7 @@ class Request(str):
         Ref: https://www.python.org/dev/peps/pep-3333/#a-note-on-string-types
 
         """
-        environ = {maybe_encode(k): maybe_encode(v) for k, v in environ.items()}
+        environ = {try_encode(k): try_encode(v) for k, v in environ.items()}
         return cls(*kick_against_goad(environ))
 
 
