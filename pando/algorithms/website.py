@@ -144,6 +144,7 @@ def get_response_for_exception(website, exception):
     tb = traceback.format_exc()
     if isinstance(exception, Response):
         response = exception
+        response.set_whence_raised()
     elif isinstance(exception, NotFound):
         response = Response(404)
     elif isinstance(exception, NegotiationFailure):
@@ -206,6 +207,7 @@ def delegate_error_to_simplate(website, state, response, request=None, resource=
 def log_traceback_for_exception(website, exception):
     if isinstance(exception, Response):
         response = exception
+        response.set_whence_raised()
         if response.code < 500:
             return {'response': response, 'exception': None}
     else:
@@ -244,7 +246,7 @@ def log_result_of_request(website, request=None, dispatch_result=None, response=
         status = "(no response available)"
     else:
         status = response._status_text()
-        filename, linenum = response.whence_raised()
+        filename, linenum = response.whence_raised
         if filename is not None:
             status += " (%s:%d)" % (filename, linenum)
 

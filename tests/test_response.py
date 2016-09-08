@@ -3,6 +3,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import os
 from pytest import raises
 
 from pando import Response
@@ -80,3 +81,12 @@ def test_response_cookie():
         assert headers[0][0] == str('Set-Cookie')
         assert headers[0][1].startswith(str('foo=bar'))
     response.to_wsgi({}, start_response, 'utf8')
+
+def test_set_whence_raised_works():
+    try:
+        raise Response(200)
+    except Response as r:
+        assert r.whence_raised == (None, None)
+        r.set_whence_raised()
+        assert r.whence_raised[0] == 'tests' + os.sep + 'test_response.py'
+        assert isinstance(r.whence_raised[1], int)
