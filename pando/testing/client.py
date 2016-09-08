@@ -82,9 +82,7 @@ class Client(object):
     def __init__(self, www_root=None, project_root=None):
         self.www_root = www_root
         self.project_root = project_root
-        self.cookie = SimpleCookie()
         self._website = None
-
 
     def hydrate_website(self, **kwargs):
         if (self._website is None) or kwargs:
@@ -97,12 +95,15 @@ class Client(object):
 
     website = property(hydrate_website)
 
-
     def load_resource(self, path):
         """Given an URL path, return a Resource instance.
         """
         return self.GET(path=path, return_after='get_resource_for_request', want='resource')
 
+    def get_session(self):
+        s = StatefulClient(www_root=self.www_root, project_root=self.project_root)
+        s._website = self._website
+        return s
 
     # HTTP Methods (RFC 2616)
     # ============
@@ -148,11 +149,10 @@ class Client(object):
                                     , return_after=return_after
                                      )
 
-        response = state.get('response')
-        if response is not None:
-            if response.headers.cookie:
-                self.cookie.update(response.headers.cookie)
+        return self.resolve_want(state, want)
 
+    @staticmethod
+    def resolve_want(state, want):
         attr_path = want.split('.')
         base = attr_path[0]
         attr_path = attr_path[1:]
@@ -164,7 +164,7 @@ class Client(object):
         return out
 
 
-    def build_wsgi_environ(self, method, path, body, content_type, **kw):
+    def build_wsgi_environ(self, method, path, body, content_type, cookies=None, **kw):
 
         # NOTE that in Pando (request.py make_franken_headers) only headers
         # beginning with ``HTTP`` are included in the request - and those are
@@ -172,10 +172,16 @@ class Client(object):
         # exceptions to this: ``'CONTENT_TYPE'``, ``'CONTENT_LENGTH'`` which
         # are explicitly checked for.
 
+        if isinstance(cookies, dict) and not isinstance(cookies, SimpleCookie):
+            cookies, d = SimpleCookie(), cookies
+            for k, v in d.items():
+                cookies[str(k)] = str(v)
+
         typecheck(path, (bytes, text_type), method, text_type, content_type, bytes, body, bytes)
         environ = {}
         environ[b'CONTENT_TYPE'] = content_type
-        environ[b'HTTP_COOKIE'] = self.cookie.output(header='', sep='; ')
+        if cookies is not None:
+            environ[b'HTTP_COOKIE'] = cookies.output(header='', sep='; ')
         environ[b'HTTP_HOST'] = b'localhost'
         environ[b'PATH_INFO'] = path.encode('ascii') if type(path) != bytes else path
         environ[b'REMOTE_ADDR'] = b'0.0.0.0'
@@ -185,3 +191,42 @@ class Client(object):
         environ[b'HTTP_CONTENT_LENGTH'] = str(len(body)).encode('ascii')
         environ.update((k.encode('ascii'), v) for k, v in kw.items())
         return environ
+
+
+class StatefulClient(Client):
+    """This is a Client subclass that keeps cookies between calls."""
+
+    def __init__(self, *a, **kw):
+        super(StatefulClient, self).__init__(*a, **kw)
+        self.cookie = SimpleCookie()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *a):
+        self.cookie.clear()
+
+    def hit(self, *a, **kw):
+        cookies = kw.pop('cookies', None)
+        if cookies:
+            cookie = SimpleCookie()
+            # session cookies first
+            cookie.update(self.cookie)
+            # request cookies second
+            if isinstance(cookies, SimpleCookie):
+                cookie.update(cookies)
+            else:
+                for k, v in cookies.items():
+                    cookie[str(k)] = str(v)
+        else:
+            cookie = self.cookie
+        kw['cookies'] = cookie
+
+        want = kw.pop('want', 'response')
+        kw['want'] = 'state'
+        state = super(StatefulClient, self).hit(*a, **kw)
+        r = state.get('response')
+        if isinstance(r, Response) and r.headers.cookie:
+            self.cookie.update(r.headers.cookie)
+
+        return self.resolve_want(state, want)
