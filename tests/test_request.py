@@ -1,3 +1,5 @@
+# coding: utf8
+
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -6,7 +8,7 @@ from __future__ import unicode_literals
 from pytest import raises
 
 from pando import Response
-from pando.http.request import make_franken_headers, kick_against_goad, Request
+from pando.http.request import kick_against_goad, Request
 from pando.http.baseheaders import BaseHeaders
 from pando.exceptions import MalformedHeader
 
@@ -220,6 +222,19 @@ def test_goad_passes_body_through():
     assert actual == expected
 
 
-def test_can_make_franken_headers_from_non_ascii_values():
-    actual = make_franken_headers({b'HTTP_FOO_BAR': b'\xdead\xbeef'})
-    assert actual == {b'FOO-BAR': b'\xdead\xbeef'}
+# from_wsgi
+
+def test_from_wsgi_tolerates_non_ascii_environ():
+    environ = {}
+    environ[b'REQUEST_METHOD'] = b'GET'
+    environ[b'HTTP_HOST'] = b'localhost'
+    environ[b'SERVER_PROTOCOL'] = b'HTTP/1.0'
+    environ[b'wsgi.input'] = None
+    environ[b'HTTP_\xff'] = b'\xdead\xbeef'
+    environ['HTTP_À'] = 'µ'
+    headers = Request.from_wsgi(environ).headers
+    assert headers[b'\xff'] is environ[b'HTTP_\xff']
+    if str is bytes:
+        assert headers['À'] is environ['HTTP_À']
+    else:
+        assert 'À' not in headers
