@@ -427,6 +427,10 @@ def test_redirect_can_use_given_response(website):
     assert response.headers[b'Location'] == b'/flah'  # gets clobbered
     assert response.body == 'Greetings, program!'   # not clobbered
 
+def test_redirect_doesnt_overescape(website):
+    response = raises(Response, website.redirect, '/f%C3%A9e').value
+    assert response.headers[b'Location'] == b'/f%C3%A9e'
+
 
 # canonicalize_base_url
 
