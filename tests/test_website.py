@@ -375,6 +375,19 @@ def test_call_wraps_wsgi_middleware(client):
     client.website(build_environ('/middleware'), start_response_should_200)
     assert respond[1]
 
+def test_raised_unicode_response_is_encoded_with_configured_charset(harness):
+    harness.fs.www.mk(('index.html.spt', '''
+        from pando import Response
+        [---]
+        raise Response(200, "touch\\u00e9")
+        [---]
+    '''))
+    harness.client.hydrate_website(charset_dynamic='latin9')
+    def start_response(*a):
+        pass
+    body = harness.client.website(build_environ('/'), start_response)
+    assert list(body) == [b'touch\xe9']
+
 
 # redirect
 
