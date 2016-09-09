@@ -382,7 +382,7 @@ def test_raised_unicode_response_is_encoded_with_configured_charset(harness):
         raise Response(200, "touch\\u00e9")
         [---]
     '''))
-    harness.client.hydrate_website(charset_dynamic='latin9')
+    harness.client.hydrate_website(encode_output_as='latin9')
     def start_response(*a):
         pass
     body = harness.client.website(build_environ('/'), start_response)
