@@ -130,7 +130,7 @@ def create_response_object(state):
 
 def fill_response_with_output(output, response, request_processor):
     if not isinstance(output.body, bytes):
-        output.charset = request_processor.charset_dynamic
+        output.charset = request_processor.encode_output_as
         output.body = output.body.encode(output.charset)
     response.body = output.body
     if b'Content-Type' not in response.headers:

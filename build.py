@@ -16,7 +16,7 @@ PANDO_DEPS = [
     'algorithm>=1.2.0',
     'filesystem_tree>=1.0.1',
     'dependency_injection>=1.1.0',
-    'aspen>=1.0rc1',
+    'aspen>=1.0rc2',
     'six',
     ]
 
