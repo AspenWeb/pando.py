@@ -1,6 +1,21 @@
 Pando Changelog
 ===============
 
+0.44 - Released Fri Sept 9 2016 by @Changaco
+--------------------------------------------
+
+* bring back whence_raised (the location a Response was raised from) (#567)
+
+* improve compatibility with different WSGI servers (#566)
+
+* clean up logging (#565)
+
+* drop `Response.charset` attribute (#563)
+
+* switch basic test client from stateful to stateless (#564)
+
+* fix dispatch redirects (#562)
+
 0.43 - Released Wed Sept 7 2016 by @Changaco
 --------------------------------------------
 
