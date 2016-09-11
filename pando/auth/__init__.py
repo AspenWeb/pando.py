@@ -8,7 +8,6 @@ Currently:
 
     * cookie - Cookie Auth
     * httpbasic - HTTP BASIC Auth
-    * httpdigest - HTTP DIGEST Auth
 
 """
 from .. import Response

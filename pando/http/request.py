@@ -363,7 +363,7 @@ CHARS_ALLOWED_IN_METHOD = set(chr(i) for i in range(32, 127)) - set(SEPARATORS)
 class Method(text_type):
     """Represent the HTTP method in the first line of an HTTP Request message.
 
-    Spec sez ASCII subset:
+    Spec sez ASCII subset::
 
         Method         = "OPTIONS"                ; Section 9.2
                        | "GET"                    ; Section 9.3
@@ -377,7 +377,6 @@ class Method(text_type):
         extension-method = token
 
         (http://www.w3.org/Protocols/rfc2616/rfc2616-sec5.html#sec5.1.1)
-
 
         CHAR           = <any US-ASCII character (octets 0 - 127)>
         ...

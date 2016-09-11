@@ -67,12 +67,13 @@ class BasicAuth(object):
     def __init__(self, verify_password, html=None, realm=b'protected'):
         """Constructor for an HTTP BASIC AUTH handler.
 
-        :verify_password - a function that, when passed the args
+        :param verify_password: a function that, when passed the args
             (user, password), will return True iff the password is
             correct for the specified user
-        :html - The HTML page to return along with a 401 'Not
+        :param html: The HTML page to return along with a 401 'Not
             Authorized' response. Has a reasonable default
-        :realm - the name of the auth realm
+        :param realm: the name of the auth realm
+
         """
         failhtml = html or b'''Not Authorized. <a href="#">Try again.</a>'''
         self.verify_password = verify_password

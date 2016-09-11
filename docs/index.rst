@@ -35,11 +35,6 @@ Library Reference
    :member-order: bysource
    :special-members:
 
-.. automodule:: pando.auth.httpdigest
-   :members:
-   :member-order: bysource
-   :special-members:
-
 .. automodule:: pando.body_parsers
    :members:
    :member-order: bysource

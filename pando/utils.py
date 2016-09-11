@@ -91,7 +91,7 @@ def to_rfc822(dt):
 def typecheck(*checks):
     """Assert that arguments are of a certain type.
 
-    Checks is a flattened sequence of objects and target types, like this:
+    Checks is a flattened sequence of objects and target types, like this::
 
         ( {'foo': 2}, dict
         , [1,2,3], list
