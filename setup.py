@@ -6,8 +6,6 @@ except ImportError:
 
 from setuptools import find_packages, setup
 
-from build import PANDO_DEPS, TEST_DEPS
-
 version = open('version.txt').read()
 
 
@@ -35,7 +33,7 @@ setup( author = 'Chad Whitacre et al.'
      , version = version
      , zip_safe = False
      , package_data = {'pando': ['www/*', 'configuration/mime.types']}
-     , install_requires = [d[0] if isinstance(d, tuple) else d for d in PANDO_DEPS]
+     , install_requires = open('requirements.txt').read()
      , extras_require = {'fcgi': ['flup']}
-     , tests_require = TEST_DEPS
+     , tests_require = open('requirements_tests.txt').read()
       )
