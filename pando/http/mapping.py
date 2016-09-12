@@ -1,6 +1,6 @@
 """
-pando.http.mapping
-~~~~~~~~~~~~~~~~~~
+:mod:`mapping`
+--------------
 """
 from __future__ import absolute_import
 from __future__ import division

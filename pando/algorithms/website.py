@@ -1,6 +1,6 @@
 """
-pando.algorithms.website
-~~~~~~~~~~~~~~~~~~~~~~~~
+:mod:`website`
+--------------
 
 These functions comprise the request processing functionality of Pando.
 

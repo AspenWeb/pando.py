@@ -1,6 +1,6 @@
 """
-pando.auth.cookie
-~~~~~~~~~~~~~~~~~
+:mod:`cookie`
+-------------
 
 This is a cookie authentication implementation for Pando.
 """

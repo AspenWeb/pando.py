@@ -1,4 +1,9 @@
-"""This is Pando, a Python web framework.
+"""
+#########
+  Pando
+#########
+
+This is Pando, a Python web framework.
 
 Pando's source code is on `GitHub`_, and is `MIT-licensed`_.
 
@@ -6,8 +11,9 @@ Pando's source code is on `GitHub`_, and is `MIT-licensed`_.
 .. _MIT-licensed: http://opensource.org/licenses/MIT
 
 
-Installation
-------------
+**************
+ Installation
+**************
 
 :py:mod:`pando` is available on `PyPI`_::
 
@@ -16,8 +22,9 @@ Installation
 .. _pypi: https://pypi.python.org/pypi/pando
 
 
-Quick Start
------------
+*************
+ Quick Start
+*************
 
 Given: `POSIX <http://en.wikipedia.org/wiki/POSIX#POSIX-oriented_operating_systems>`_
 and `virtualenv <http://pypi.python.org/pypi/virtualenv>`_
@@ -49,6 +56,24 @@ Step 4: Create a web page, and start pando inside it::
 Step 5: Check `localhost <http://localhost:8080>`_ for your new page!
 
     .. image:: ../doc/quick-start/greetings-program.small.png
+
+
+***********
+ Reference
+***********
+
+This is the API reference for the Pando library.
+
+.. automodule:: pando.algorithms
+.. automodule:: pando.auth
+.. automodule:: pando.body_parsers
+.. automodule:: pando.exceptions
+.. automodule:: pando.http
+.. automodule:: pando.logging
+.. automodule:: pando.testing
+.. automodule:: pando.utils
+.. automodule:: pando.website
+.. automodule:: pando.wsgi
 
 """
 from __future__ import absolute_import

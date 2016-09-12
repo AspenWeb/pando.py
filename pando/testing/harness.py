@@ -1,6 +1,6 @@
 """
-pando.testing.harness
-~~~~~~~~~~~~~~~~~~~~~
+:mod:`harness`
+--------------
 """
 from __future__ import absolute_import
 from __future__ import division

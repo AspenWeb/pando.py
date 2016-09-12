@@ -1,6 +1,6 @@
 """
-pando.http.baseheaders
-~~~~~~~~~~~~~~~~~~~~~~
+:mod:`baseheaders`
+------------------
 """
 from __future__ import absolute_import
 from __future__ import division
