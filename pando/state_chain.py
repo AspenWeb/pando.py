@@ -12,18 +12,6 @@ Dependencies are injected as specified in each function definition. Each functio
 should return :py:obj:`None`, or a dictionary that will be used to update the
 state in the calling routine.
 
-The naming convention we've adopted for the functions in this file is:
-
-    verb_object_preposition_object-of-preposition
-
-For example:
-
-    parse_environ_into_request
-
-All four parts are a single word each (there are exactly three underscores in
-each function name). This convention is intended to make function names easy to
-understand and remember.
-
 It's important that function names remain relatively stable over time, as
 downstream applications are expected to insert their own functions into this
 chain based on the names of our functions here. A change in function names
