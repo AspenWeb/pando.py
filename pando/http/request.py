@@ -251,7 +251,7 @@ class Request(str):
     def body(self):
         '''Lazily parse the body, iff _parse_body is set.
            Otherwise default to raw_body.  In the normal course of things,
-           _parse_body is set in pando.algorithm.website
+           _parse_body is set by pando.state_chain.parse_body_into_request()
         '''
         if hasattr(self, 'parsed_body'):
             return self.parsed_body

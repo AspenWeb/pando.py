@@ -49,7 +49,7 @@ class Website(object):
         """
         self.request_processor = RequestProcessor(**kwargs)
         aspen_algo = self.request_processor.algorithm
-        pando_algo = Algorithm.from_dotted_name('pando.algorithms.website')
+        pando_algo = Algorithm.from_dotted_name('pando.state_chain')
         pando_algo.insert_before(
             'handle_dispatch_exception',
             aspen_algo['dispatch_path_to_filesystem'],

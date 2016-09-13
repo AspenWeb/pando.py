@@ -1,18 +1,16 @@
 """
-:mod:`website`
---------------
+:mod:`state_chain`
+----------------
 
 These functions comprise the request processing functionality of Pando.
 
-The order of functions in this module defines Pando algorithm for request
-processing. The actual parsing is done by Algorithm.from_dotted_name():
+The order of functions in this module defines Pando's state chain for request
+processing. The actual parsing is done by `Algorithm.from_dotted_name()
+<http://algorithm-py.readthedocs.org/en/latest/#algorithm.Algorithm.from_dotted_name>`_.
 
-http://algorithm-py.readthedocs.org/en/1.0.0/#algorithm.Algorithm.from_dotted_name
-
-Dependencies are injected as
-specified in each function definition. Each function should return None, or a
-dictionary that will be used to update the algorithm state in the calling
-routine.
+Dependencies are injected as specified in each function definition. Each function
+should return :py:obj:`None`, or a dictionary that will be used to update the
+state in the calling routine.
 
 The naming convention we've adopted for the functions in this file is:
 
@@ -28,7 +26,7 @@ understand and remember.
 
 It's important that function names remain relatively stable over time, as
 downstream applications are expected to insert their own functions into this
-algorithm based on the names of our functions here. A change in function names
+chain based on the names of our functions here. A change in function names
 or ordering here would constitute a backwards-incompatible change.
 
 """
@@ -46,11 +44,11 @@ from aspen.request_processor.dispatcher import (
 )
 from first import first as _first
 
-from .. import log as _log
-from .. import log_dammit as _log_dammit
-from .. import body_parsers
-from ..http.request import Request
-from ..http.response import Response
+from . import body_parsers
+from .logging import log as _log
+from .logging import log_dammit as _log_dammit
+from .http.request import Request
+from .http.response import Response
 
 
 def parse_environ_into_request(environ):
@@ -89,7 +87,7 @@ def redirect_to_base_url(website, request):
     website.canonicalize_base_url(request)
 
 
-# the following function is inserted here by `Website.__init__()`:
+# The following function is inserted here by `Website.__init__()`:
 # aspen.request_processor.algorithm.dispatch_path_to_filesystem
 
 
