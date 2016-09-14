@@ -13,7 +13,7 @@ To use:
     auth = httpbasic.inbound_responder(my_password_verifier)
 
     # install it
-    website.algorithm.insert_after('parse_environ_into_request', auth)
+    website.state_chain.insert_after('parse_environ_into_request', auth)
 
 """
 from __future__ import absolute_import

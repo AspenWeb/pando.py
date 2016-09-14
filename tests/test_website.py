@@ -361,7 +361,7 @@ def build_environ(path):
     }
 
 def test_call_wraps_wsgi_middleware(client):
-    client.website.algorithm.default_short_circuit = False
+    client.website.state_chain.default_short_circuit = False
     client.website.wsgi_app = _TestMiddleware(client.website.wsgi_app)
     respond = [False, False]
     def start_response_should_404(status, headers):
