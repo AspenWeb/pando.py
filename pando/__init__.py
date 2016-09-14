@@ -64,12 +64,12 @@ Step 5: Check `localhost <http://localhost:8080>`_ for your new page!
 
 This is the API reference for the Pando library.
 
-.. automodule:: pando.algorithms
 .. automodule:: pando.auth
 .. automodule:: pando.body_parsers
 .. automodule:: pando.exceptions
 .. automodule:: pando.http
 .. automodule:: pando.logging
+.. automodule:: pando.state_chain
 .. automodule:: pando.testing
 .. automodule:: pando.utils
 .. automodule:: pando.website
