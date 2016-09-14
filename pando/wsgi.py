@@ -1,6 +1,6 @@
 """
-pando.wsgi
-++++++++++
+:mod:`wsgi`
+===========
 
 Provide a WSGI callable.
 

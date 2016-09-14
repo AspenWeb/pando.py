@@ -1,6 +1,6 @@
 """
-pando.body_parsers
-++++++++++++++++++
+:mod:`body_parsers`
+===================
 
 Pando body parsers are optional ways to enable Pando to uniformly
 parse POST body content according to its supplied Content-Type.

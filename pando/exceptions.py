@@ -1,6 +1,6 @@
 """
-pando.exceptions
-++++++++++++++++
+:mod:`exceptions`
+=================
 
 Exceptions used by Pando
 """

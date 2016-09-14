@@ -1,6 +1,6 @@
 """
-pando.auth.httpbasic
-~~~~~~~~~~~~~~~~~~~~
+:mod:`httpbasic`
+----------------
 
 HTTP BASIC Auth module for Pando.
 

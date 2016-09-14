@@ -1,6 +1,12 @@
 """
-pando.http
-++++++++++
+:mod:`http`
+===========
+
+.. automodule:: pando.http.baseheaders
+.. automodule:: pando.http.mapping
+.. automodule:: pando.http.request
+.. automodule:: pando.http.response
+
 """
 
 from __future__ import absolute_import

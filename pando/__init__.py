@@ -1,4 +1,9 @@
-"""This is Pando, a Python web framework.
+"""
+#########
+  Pando
+#########
+
+This is Pando, a Python web framework.
 
 Pando's source code is on `GitHub`_, and is `MIT-licensed`_.
 
@@ -6,8 +11,9 @@ Pando's source code is on `GitHub`_, and is `MIT-licensed`_.
 .. _MIT-licensed: http://opensource.org/licenses/MIT
 
 
-Installation
-------------
+**************
+ Installation
+**************
 
 :py:mod:`pando` is available on `PyPI`_::
 
@@ -16,8 +22,9 @@ Installation
 .. _pypi: https://pypi.python.org/pypi/pando
 
 
-Quick Start
------------
+*************
+ Quick Start
+*************
 
 Given: `POSIX <http://en.wikipedia.org/wiki/POSIX#POSIX-oriented_operating_systems>`_
 and `virtualenv <http://pypi.python.org/pypi/virtualenv>`_
@@ -50,12 +57,31 @@ Step 5: Check `localhost <http://localhost:8080>`_ for your new page!
 
     .. image:: ../doc/quick-start/greetings-program.small.png
 
+
+***********
+ Reference
+***********
+
+This is the API reference for the Pando library.
+
+.. automodule:: pando.algorithms
+.. automodule:: pando.auth
+.. automodule:: pando.body_parsers
+.. automodule:: pando.exceptions
+.. automodule:: pando.http
+.. automodule:: pando.logging
+.. automodule:: pando.testing
+.. automodule:: pando.utils
+.. automodule:: pando.website
+.. automodule:: pando.wsgi
+
 """
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from os.path import dirname, join
 import sys
 import pkg_resources
 
@@ -71,8 +97,13 @@ from .logging import log, log_dammit
 # Shut up, PyFlakes. I know I'm addicted to you.
 Response, json, log, log_dammit, BUILTIN_RENDERERS, RENDERERS
 
-dist = pkg_resources.get_distribution('pando')
-__version__ = dist.version
+try:
+    dist = pkg_resources.get_distribution('pando')
+    __version__ = dist.version
+except pkg_resources.DistributionNotFound:
+    with open(join(dirname(dirname(__file__)), 'version.txt')) as f:
+        __version__ = f.read()
+
 WINDOWS = sys.platform[:3] == 'win'
 
 is_callable = callable

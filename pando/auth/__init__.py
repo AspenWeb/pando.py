@@ -1,6 +1,6 @@
 """
-pando.auth
-++++++++++
+:mod:`auth`
+===========
 
 Pando's Auth modules.
 
@@ -8,6 +8,9 @@ Currently:
 
     * cookie - Cookie Auth
     * httpbasic - HTTP BASIC Auth
+
+.. automodule:: pando.auth.cookie
+.. automodule:: pando.auth.httpbasic
 
 """
 from .. import Response

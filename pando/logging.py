@@ -1,6 +1,6 @@
 """
-pando.logging
-+++++++++++++
+:mod:`logging`
+==============
 
 Pando logging convenience wrappers
 

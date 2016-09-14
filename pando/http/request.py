@@ -1,6 +1,6 @@
 """
-pando.http.request
-~~~~~~~~~~~~~~~~~~
+:mod:`request`
+--------------
 
 Define a Request class and child classes.
 
