@@ -48,21 +48,10 @@ class Website(object):
         """Takes configuration in kwargs.
         """
         self.request_processor = RequestProcessor(**kwargs)
-        aspen_chain = self.request_processor.algorithm
         pando_chain = Algorithm.from_dotted_name('pando.state_chain')
-        pando_chain.insert_before(
-            'handle_dispatch_exception',
-            aspen_chain['dispatch_path_to_filesystem'],
-        )
-        pando_chain.insert_before(
-            'resource_available',
-            aspen_chain['apply_typecasters_to_path'],
-            aspen_chain['load_resource_from_filesystem'],
-        )
-        pando_chain.insert_before(
-            'fill_response_with_output',
-            aspen_chain['render_resource'],
-        )
+        pando_chain.functions = [
+            getattr(f, 'placeholder_for', f) for f in pando_chain.functions
+        ]
         self.state_chain = pando_chain
         self.configure(**kwargs)
 

@@ -37,6 +37,7 @@ from .logging import log as _log
 from .logging import log_dammit as _log_dammit
 from .http.request import Request
 from .http.response import Response
+from .utils import _import_from
 
 
 def parse_environ_into_request(environ):
@@ -75,8 +76,9 @@ def redirect_to_base_url(website, request):
     website.canonicalize_base_url(request)
 
 
-# The following function is inserted here by `Website.__init__()`:
-# aspen.request_processor.algorithm.dispatch_path_to_filesystem
+@_import_from('aspen.request_processor.algorithm')
+def dispatch_path_to_filesystem():
+    pass
 
 
 def handle_dispatch_exception(website, exception):
@@ -96,9 +98,14 @@ def handle_dispatch_exception(website, exception):
         raise Response(404)
 
 
-# the following functions are inserted here by `Website.__init__()`:
-# aspen.request_processor.algorithm.apply_typecasters_to_path
-# aspen.request_processor.algorithm.load_resource_from_filesystem
+@_import_from('aspen.request_processor.algorithm')
+def apply_typecasters_to_path():
+    pass
+
+
+@_import_from('aspen.request_processor.algorithm')
+def load_resource_from_filesystem():
+    pass
 
 
 def resource_available():
@@ -110,8 +117,9 @@ def create_response_object(state):
     state.setdefault('response', Response())
 
 
-# the following function is inserted here by `Website.__init__()`:
-# aspen.request_processor.algorithm.render_resource
+@_import_from('aspen.request_processor.algorithm')
+def render_resource():
+    pass
 
 
 def fill_response_with_output(output, response, request_processor):
