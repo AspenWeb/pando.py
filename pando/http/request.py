@@ -21,14 +21,6 @@ we use to model each::
             - scheme            unicode     str
         - body                  Body        Content-Type?
 
-
-XXX TODO
-    make URI conform to spec (path, querystring)
-    test franken*
-    validate Mapping
-    clean up headers
-    clean up body
-
 """
 from __future__ import absolute_import
 from __future__ import division
@@ -423,9 +415,6 @@ class Method(text_type):
 
 class URI(text_type):
     """Represent the Request-URI in the first line of an HTTP Request message.
-
-    XXX spec-ify this
-
     """
 
     __slots__ = ['path', 'querystring', 'raw']
