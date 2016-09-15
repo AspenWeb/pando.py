@@ -79,75 +79,71 @@ def test_method_can_be_big():
     big = b"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz--"
     assert Method(big).raw == big
 
-def test_method_we_cap_it_at_64_bytes_just_cause____I_mean___come_on___right():
-    big = b"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz--!"
-    assert raises(Response, Method, big).value.code == 501
-
 def test_method_cant_be_non_ASCII():
-    assert raises(Response, Method, b"\x80").value.code == 501
+    assert raises(Response, Method, b"\x80").value.code == 400
 
 def test_method_can_be_valid_perl():
     assert Method(b"!#$%&'*+-.^_`|~") == "!#$%&'*+-.^_`|~"
 
-def the501(i):
-    assert raises(Response, Method, byte(i)).value.code == 501
+def the400(i):
+    assert raises(Response, Method, byte(i)).value.code == 400
 
 # 0-31
-def test_method_no_chr_0(): the501(0)
-def test_method_no_chr_1(): the501(1)
-def test_method_no_chr_2(): the501(2)
-def test_method_no_chr_3(): the501(3)
-def test_method_no_chr_4(): the501(4)
-def test_method_no_chr_5(): the501(5)
-def test_method_no_chr_6(): the501(6)
-def test_method_no_chr_7(): the501(7)
-def test_method_no_chr_8(): the501(8)
-def test_method_no_chr_9(): the501(9) # HT
+def test_method_no_chr_0(): the400(0)
+def test_method_no_chr_1(): the400(1)
+def test_method_no_chr_2(): the400(2)
+def test_method_no_chr_3(): the400(3)
+def test_method_no_chr_4(): the400(4)
+def test_method_no_chr_5(): the400(5)
+def test_method_no_chr_6(): the400(6)
+def test_method_no_chr_7(): the400(7)
+def test_method_no_chr_8(): the400(8)
+def test_method_no_chr_9(): the400(9) # HT
 
-def test_method_no_chr_10(): the501(10)
-def test_method_no_chr_11(): the501(11)
-def test_method_no_chr_12(): the501(12)
-def test_method_no_chr_13(): the501(13)
-def test_method_no_chr_14(): the501(14)
-def test_method_no_chr_15(): the501(15)
-def test_method_no_chr_16(): the501(16)
-def test_method_no_chr_17(): the501(17)
-def test_method_no_chr_18(): the501(18)
-def test_method_no_chr_19(): the501(19)
+def test_method_no_chr_10(): the400(10)
+def test_method_no_chr_11(): the400(11)
+def test_method_no_chr_12(): the400(12)
+def test_method_no_chr_13(): the400(13)
+def test_method_no_chr_14(): the400(14)
+def test_method_no_chr_15(): the400(15)
+def test_method_no_chr_16(): the400(16)
+def test_method_no_chr_17(): the400(17)
+def test_method_no_chr_18(): the400(18)
+def test_method_no_chr_19(): the400(19)
 
-def test_method_no_chr_20(): the501(20)
-def test_method_no_chr_21(): the501(21)
-def test_method_no_chr_22(): the501(22)
-def test_method_no_chr_23(): the501(23)
-def test_method_no_chr_24(): the501(24)
-def test_method_no_chr_25(): the501(25)
-def test_method_no_chr_26(): the501(26)
-def test_method_no_chr_27(): the501(27)
-def test_method_no_chr_28(): the501(28)
-def test_method_no_chr_29(): the501(29)
+def test_method_no_chr_20(): the400(20)
+def test_method_no_chr_21(): the400(21)
+def test_method_no_chr_22(): the400(22)
+def test_method_no_chr_23(): the400(23)
+def test_method_no_chr_24(): the400(24)
+def test_method_no_chr_25(): the400(25)
+def test_method_no_chr_26(): the400(26)
+def test_method_no_chr_27(): the400(27)
+def test_method_no_chr_28(): the400(28)
+def test_method_no_chr_29(): the400(29)
 
-def test_method_no_chr_30(): the501(30)
-def test_method_no_chr_31(): the501(31)
-def test_method_no_chr_32(): the501(32) # space
+def test_method_no_chr_30(): the400(30)
+def test_method_no_chr_31(): the400(31)
+def test_method_no_chr_32(): the400(32) # space
 def test_method_no_chr_33(): assert Method(byte(33)) == '!'
 
-def test_method_no_chr_40(): the501(40) # (
-def test_method_no_chr_41(): the501(41) # )
-def test_method_no_chr_60(): the501(60) # <
-def test_method_no_chr_62(): the501(62) # >
-def test_method_no_chr_64(): the501(64) # @
-def test_method_no_chr_44(): the501(44) # ,
-def test_method_no_chr_59(): the501(59) # ;
-def test_method_no_chr_58(): the501(58) # :
-def test_method_no_chr_92(): the501(92) # \
-def test_method_no_chr_34(): the501(34) # "
-def test_method_no_chr_47(): the501(47) # /
-def test_method_no_chr_91(): the501(91) # [
-def test_method_no_chr_93(): the501(93) # ]
-def test_method_no_chr_63(): the501(63) # ?
-def test_method_no_chr_61(): the501(61) # =
-def test_method_no_chr_123(): the501(123) # {
-def test_method_no_chr_125(): the501(125) # }
+def test_method_no_chr_40(): the400(40) # (
+def test_method_no_chr_41(): the400(41) # )
+def test_method_no_chr_60(): the400(60) # <
+def test_method_no_chr_62(): the400(62) # >
+def test_method_no_chr_64(): the400(64) # @
+def test_method_no_chr_44(): the400(44) # ,
+def test_method_no_chr_59(): the400(59) # ;
+def test_method_no_chr_58(): the400(58) # :
+def test_method_no_chr_92(): the400(92) # \
+def test_method_no_chr_34(): the400(34) # "
+def test_method_no_chr_47(): the400(47) # /
+def test_method_no_chr_91(): the400(91) # [
+def test_method_no_chr_93(): the400(93) # ]
+def test_method_no_chr_63(): the400(63) # ?
+def test_method_no_chr_61(): the400(61) # =
+def test_method_no_chr_123(): the400(123) # {
+def test_method_no_chr_125(): the400(125) # }
 
 
 # URI

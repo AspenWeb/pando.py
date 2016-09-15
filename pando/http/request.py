@@ -343,64 +343,49 @@ class Line(bytes):
 # -----------------
 
 STANDARD_METHODS = set("OPTIONS GET HEAD POST PUT DELETE TRACE CONNECT".split())
+"""A set containing the 8 basic HTTP methods.
 
-SEPARATORS = ("(", ")", "<", ">", "@", ",", ";", ":", "\\", '"', "/", "[", "]",
-              "?", "=", "{", "}", " ", "\t")
+If your application uses other standard methods (see the `HTTP Method Registry
+<http://www.iana.org/assignments/http-methods/http-methods.xhtml>`_), or custom
+methods, you can add them to this set to improve performance.
+"""
 
-CHARS_ALLOWED_IN_METHOD = set(chr(i) for i in range(32, 127)) - set(SEPARATORS)
+CHARS_ALLOWED_IN_METHOD = set(
+    string.ascii_letters + string.digits + "!#$%&'*+-.^_`|~"
+)
 
 class Method(text_type):
     """Represent the HTTP method in the first line of an HTTP Request message.
-
-    Spec sez ASCII subset::
-
-        Method         = "OPTIONS"                ; Section 9.2
-                       | "GET"                    ; Section 9.3
-                       | "HEAD"                   ; Section 9.4
-                       | "POST"                   ; Section 9.5
-                       | "PUT"                    ; Section 9.6
-                       | "DELETE"                 ; Section 9.7
-                       | "TRACE"                  ; Section 9.8
-                       | "CONNECT"                ; Section 9.9
-                       | extension-method
-        extension-method = token
-
-        (http://www.w3.org/Protocols/rfc2616/rfc2616-sec5.html#sec5.1.1)
-
-        CHAR           = <any US-ASCII character (octets 0 - 127)>
-        ...
-        CTL            = <any US-ASCII control character
-                         (octets 0 - 31) and DEL (127)>
-        ...
-        SP             = <US-ASCII SP, space (32)>
-        HT             = <US-ASCII HT, horizontal-tab (9)>
-        ...
-        token          = 1*<any CHAR except CTLs or separators>
-        separators     = "(" | ")" | "<" | ">" | "@"
-                       | "," | ";" | ":" | "\" | <">
-                       | "/" | "[" | "]" | "?" | "="
-                       | "{" | "}" | SP | HT
-
-        (http://www.w3.org/Protocols/rfc2616/rfc2616-sec2.html#sec2.2)
-
     """
 
     __slots__ = ['raw']
 
     def __new__(cls, raw):
+        """Creates a new Method object.
+
+        Raises a 400 :py:class:`.Response` if the given bytestring is not a
+        valid HTTP method, per RFC7230 section 3.1.1:
+
+            Recipients of an invalid request-line SHOULD respond with either a
+            400 (Bad Request) error or a 301 (Moved Permanently) redirect with
+            the request-target properly encoded.
+
+        `RFC7230 <https://tools.ietf.org/html/rfc7230>`_ defines valid methods as::
+
+            method         = token
+
+            token          = 1*tchar
+
+            tchar          = "!" / "#" / "$" / "%" / "&" / "'" / "*"
+                           / "+" / "-" / "." / "^" / "_" / "`" / "|" / "~"
+                           / DIGIT / ALPHA
+                           ; any VCHAR, except delimiters
+
+        """
         decoded = raw.decode('ascii', 'repr')
         if decoded not in STANDARD_METHODS: # fast for 99.999% case
-            for i, char in enumerate(decoded):
-                if (i == 64) or (char not in CHARS_ALLOWED_IN_METHOD):
-
-                    # "This is the appropriate response when the server does
-                    #  not recognize the request method and is not capable of
-                    #  supporting it for any resource."
-                    #
-                    #  http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html
-
-                    raise Response(501, "Your request-method violates RFC "
-                                        "2616: %s" % decoded)
+            if any(char not in CHARS_ALLOWED_IN_METHOD for char in decoded):
+                raise Response(400, "Your request method violates RFC 7230: %s" % decoded)
 
         obj = super(Method, cls).__new__(cls, decoded)
         obj.raw = raw
