@@ -21,7 +21,7 @@ def byte(i):
 
 def test_line_works():
     line = Line(b"GET", b"/", b"HTTP/0.9")
-    assert line == "GET / HTTP/0.9"
+    assert line == b"GET / HTTP/0.9"
 
 def test_line_has_method():
     line = Line(b"GET", b"/", b"HTTP/0.9")
@@ -33,7 +33,7 @@ def test_line_has_uri():
 
 def test_line_has_version():
     line = Line(b"GET", b"/", b"HTTP/0.9")
-    assert line.version == "HTTP/0.9"
+    assert line.version == b"HTTP/0.9"
 
 def test_line_chokes_on_non_ASCII_in_uri():
     raises(UnicodeDecodeError, Line, b"GET", byte(128), b"HTTP/1.1")
@@ -190,30 +190,30 @@ def test_uri_normal_case_is_normal():
 
 def test_version_can_be_HTTP_0_9():
     actual = Version(b"HTTP/0.9")
-    expected = "HTTP/0.9"
+    expected = b"HTTP/0.9"
     assert actual == expected
 
 def test_version_can_be_HTTP_1_0():
     actual = Version(b"HTTP/1.0")
-    expected = "HTTP/1.0"
+    expected = b"HTTP/1.0"
     assert actual == expected
 
 def test_version_can_be_HTTP_1_1():
     actual = Version(b"HTTP/1.1")
-    expected = "HTTP/1.1"
+    expected = b"HTTP/1.1"
     assert actual == expected
 
-def test_version_cant_be_HTTP_1_2():
-    assert raises(Response, Version, b"HTTP/1.2").value.code == 505
+def test_version_can_be_HTTP_1_2():
+    assert Version(b"HTTP/1.2").info == (1, 2)
 
 def test_version_cant_be_junk():
-    assert raises(Response, Version, b"http flah flah").value.code == 400
+    assert raises(Response, lambda: Version(b"http flah flah").info).value.code == 400
 
 def test_version_cant_even_be_lowercase():
-    assert raises(Response, Version, b"http/1.1").value.code == 400
+    assert raises(Response, lambda: Version(b"http/1.1").info).value.code == 400
 
 def test_version_with_garbage_is_safe():
-    r = raises(Response, Version, b"HTTP\xef/1.1").value
+    r = raises(Response, lambda: Version(b"HTTP\xef/1.1").info).value
     assert r.code == 400, r.code
     assert r.body == "Bad HTTP version: HTTP\\xef/1.1.", r.body
 
@@ -235,8 +235,6 @@ def test_version_info_is_tuple():
     actual = version.info
     assert actual == expected
 
-def test_version_raw_is_bytestring():
+def test_version_is_bytestring():
     version = Version(b"HTTP/0.9")
-    expected = bytes
-    actual = version.raw.__class__
-    assert actual is expected
+    assert isinstance(version, bytes)

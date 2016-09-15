@@ -30,6 +30,7 @@ from __future__ import unicode_literals
 
 from io import BytesIO
 import re
+import string
 import sys
 
 from six import PY2, text_type
@@ -271,7 +272,7 @@ class Request(str):
         """
         if not self._raw:
             bs = (
-                self.line.raw + b'\r\n' +
+                self.line + b'\r\n' +
                 self.headers.raw + b'\r\n\r\n' +
                 self.raw_body
             )
@@ -318,11 +319,9 @@ class Request(str):
 # Request -> Line
 # ---------------
 
-class Line(text_type):
+class Line(bytes):
     """Represent the first line of an HTTP Request message.
     """
-
-    __slots__ = ['method', 'uri', 'version', 'raw']
 
     def __new__(cls, method, uri, version):
         """Takes three bytestrings.
@@ -331,13 +330,11 @@ class Line(text_type):
         method = Method(method)
         uri = URI(uri)
         version = Version(version)
-        decoded = " ".join([method, uri, version])
 
-        obj = super(Line, cls).__new__(cls, decoded)
+        obj = super(Line, cls).__new__(cls, raw)
         obj.method = method
         obj.uri = uri
         obj.version = version
-        obj.raw = raw
         return obj
 
 
@@ -451,42 +448,50 @@ class Querystring(Mapping, _Querystring):
 # Request -> Line -> Version
 # ..........................
 
-versions = { b'HTTP/0.9': ((0, 9), 'HTTP/0.9')
-           , b'HTTP/1.0': ((1, 0), 'HTTP/1.0')
-           , b'HTTP/1.1': ((1, 1), 'HTTP/1.1')
-            }  # Go ahead, find me another version.
+versions = { b'HTTP/0.9': (0, 9)
+           , b'HTTP/1.0': (1, 0)
+           , b'HTTP/1.1': (1, 1)
+            }
 
-version_re = re.compile(br'HTTP/\d+\.\d+')
+version_re = re.compile(br'^HTTP/([0-9])\.([0-9])$')
 
-class Version(text_type):
-    """Represent the version in an HTTP status line. HTTP/1.1. Like that.
+class Version(bytes):
+    """Holds the version from the HTTP status line, e.g. HTTP/1.1.
 
-        HTTP-Version   = "HTTP" "/" 1*DIGIT "." 1*DIGIT
+    Accessing the :py:attr:`info`, :py:attr:`major`, or :py:attr:`minor`
+    attribute will raise a 400 :py:class:`.Response` if the version is invalid.
 
-        (http://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html)
+    `RFC7230 section 2.6 <https://tools.ietf.org/html/rfc7230#section-2.6>`_::
+
+        HTTP-version  = HTTP-name "/" DIGIT "." DIGIT
+        HTTP-name     = %x48.54.54.50 ; "HTTP", case-sensitive
 
     """
 
-    __slots__ = ['major', 'minor', 'info', 'raw']
+    __slots__ = []
 
-    def __new__(cls, raw):
-        version = versions.get(raw, None)
-        if version is None: # fast for 99.999999% case
-            safe = raw.decode('ascii', 'repr')
-            if version_re.match(raw) is None:
+    @property
+    def info(self):
+        version = versions.get(self, None)
+        if version is not None:  # fast for 99.999999% case
+            return version
+        else:
+            safe = self.safe_decode()
+            m = version_re.match(self)
+            if m is None:
                 raise Response(400, "Bad HTTP version: %s." % safe)
-            else:
-                raise Response(505, "HTTP Version Not Supported: %s. This "
-                                    "server supports HTTP/0.9, HTTP/1.0, and "
-                                    "HTTP/1.1." % safe)
-        version, decoded = version
+            return int(m.group(1)), int(m.group(2))
 
-        obj = super(Version, cls).__new__(cls, decoded)
-        obj.major = version[0]  # 1
-        obj.minor = version[1]  # 1
-        obj.info = version      # (1, 1)
-        obj.raw = raw           # 'HTTP/1.1'
-        return obj
+    @property
+    def major(self):
+        return self.info[0]
+
+    @property
+    def minor(self):
+        return self.info[1]
+
+    def safe_decode(self):
+        return self.decode('ascii', 'repr')
 
 
 # Request -> Headers

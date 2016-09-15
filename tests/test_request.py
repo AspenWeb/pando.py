@@ -13,12 +13,6 @@ from pando.http.baseheaders import BaseHeaders
 from pando.exceptions import MalformedHeader
 
 
-def test_request_line_raw_works(harness):
-    request = harness.make_request()
-    actual = request.line.raw
-    expected = b"GET / HTTP/1.1"
-    assert actual == expected
-
 def test_raw_is_raw():
     request = Request()
     expected = "GET / HTTP/1.1\r\nHost: localhost\r\n\r\n"
@@ -32,12 +26,6 @@ def test_request_line_version_defaults_to_HTTP_1_1(harness):
     request = harness.make_request()
     actual = request.line.version.info
     expected = (1, 1)
-    assert actual == expected
-
-def test_request_line_version_raw_works(harness):
-    request = harness.make_request()
-    actual = request.line.version.raw
-    expected = b"HTTP/1.1"
     assert actual == expected
 
 def test_allow_default_method_is_GET(harness):
