@@ -35,4 +35,4 @@ Step 4: Create a web page, and start pando inside it::
 
 Step 5: Check `localhost <http://localhost:8080>`_ for your new page!
 
-    .. image:: ../doc/quick-start/greetings-program.small.png
+    .. image:: images/greetings-program.png
