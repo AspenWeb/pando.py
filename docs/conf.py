@@ -55,7 +55,10 @@ autodoc_member_order = 'bysource'
 _autodoc_exclusions = {
     '__weakref__',  # special-members
     '__doc__', '__module__', '__dict__',  # undoc-members
+    '__subclasshook__',  # inherited-members
 }
+
+text_type = unicode if sys.version_info[0] < 3 else str
 
 def autodoc_skip_member(app, what, name, obj, skip, options):
     return (
@@ -65,6 +68,15 @@ def autodoc_skip_member(app, what, name, obj, skip, options):
             what in ('class', 'exception') and
             name == '__init__' and
             not obj.__doc__
+        ) or
+        options.inherited_members and (
+            # inherited-members adds a lot of crap, we filter it here
+            str(obj).startswith('<built-in method ') or
+            obj is getattr(object, name, None) or
+            obj is getattr(dict, name, None) or
+            obj is getattr(int, name, None) or
+            obj is getattr(bytes, name, None) or
+            obj is getattr(text_type, name, None)
         )
     )
 
