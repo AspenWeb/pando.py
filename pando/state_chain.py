@@ -9,7 +9,7 @@ processing. The actual parsing is done by `Algorithm.from_dotted_name()
 <http://algorithm-py.readthedocs.org/en/latest/#algorithm.Algorithm.from_dotted_name>`_.
 
 Dependencies are injected as specified in each function definition. Each function
-should return :py:obj:`None`, or a dictionary that will be used to update the
+should return :obj:`None`, or a dictionary that will be used to update the
 state in the calling routine.
 
 It's important that function names remain relatively stable over time, as

@@ -47,7 +47,7 @@ class Website(object):
     def __init__(self, **kwargs):
         """Takes configuration in kwargs.
         """
-        #: An Aspen :py:class:`~aspen.request_processor.RequestProcessor` instance.
+        #: An Aspen :class:`~aspen.request_processor.RequestProcessor` instance.
         self.request_processor = RequestProcessor(**kwargs)
 
         pando_chain = Algorithm.from_dotted_name('pando.state_chain')
@@ -55,7 +55,7 @@ class Website(object):
             getattr(f, 'placeholder_for', f) for f in pando_chain.functions
         ]
         #: The chain of functions used to process an HTTP request, imported from
-        #: :py:mod:`pando.state_chain`.
+        #: :mod:`pando.state_chain`.
         self.state_chain = pando_chain
 
         # copy aspen's config variables, for backward compatibility
@@ -78,7 +78,7 @@ class Website(object):
         }
 
     def __call__(self, environ, start_response):
-        """Alias of :py:meth:`wsgi_app`.
+        """Alias of :meth:`wsgi_app`.
         """
         return self.wsgi_app(environ, start_response)
 
@@ -181,7 +181,7 @@ class Website(object):
     def ours_or_theirs(self, filename):
         """Given a filename, return a filepath or ``None``.
 
-        It looks for the file in :py:attr:`self.project_root`, then in Pando's
+        It looks for the file in :attr:`self.project_root`, then in Pando's
         default files directory. ``None`` is returned if the file is not found
         in either location.
         """

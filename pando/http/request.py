@@ -333,7 +333,7 @@ class Method(bytes):
     def __new__(cls, raw):
         """Creates a new Method object.
 
-        Raises a 400 :py:class:`.Response` if the given bytestring is not a
+        Raises a 400 :class:`.Response` if the given bytestring is not a
         valid HTTP method, per RFC7230 section 3.1.1:
 
             Recipients of an invalid request-line SHOULD respond with either a
@@ -375,7 +375,7 @@ class URI(text_type):
         """Creates a URI object from a raw bytestring.
 
         We require that ``raw`` be decodable with ASCII, if it isn't a
-        :py:exc:`UnicodeDecodeError` is raised.
+        :exc:`UnicodeDecodeError` is raised.
         """
         decoded = raw.decode('ASCII')
         parts = decoded.split('?', 1)
@@ -413,8 +413,8 @@ version_re = re.compile(br'^HTTP/([0-9])\.([0-9])$')
 class Version(bytes):
     """Holds the version from the HTTP status line, e.g. HTTP/1.1.
 
-    Accessing the :py:attr:`info`, :py:attr:`major`, or :py:attr:`minor`
-    attribute will raise a 400 :py:class:`.Response` if the version is invalid.
+    Accessing the :attr:`info`, :attr:`major`, or :attr:`minor`
+    attribute will raise a 400 :class:`.Response` if the version is invalid.
 
     `RFC7230 section 2.6 <https://tools.ietf.org/html/rfc7230#section-2.6>`_::
 

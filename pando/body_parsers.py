@@ -12,7 +12,7 @@ A body parser has the signature::
    def name(raw, headers):
 
 where ``raw`` is the raw bytestring to be parsed, and ``headers`` is the
-:py:class:`.Headers` mapping of the supplied headers.
+:class:`.Headers` mapping of the supplied headers.
 """
 
 import cgi
@@ -79,8 +79,8 @@ def parse_body(raw, headers, parsers):
     """Parses the ``raw`` bytestring using the ``headers`` to determine which of
     the ``parsers`` should be used.
 
-    Raises :py:exc:`.UnknownBodyType` if the HTTP ``Content-Type`` isn't recognized,
-    and :py:exc:`.MalformedBody` if the parser raises a :py:exc:`ValueError`.
+    Raises :exc:`.UnknownBodyType` if the HTTP ``Content-Type`` isn't recognized,
+    and :exc:`.MalformedBody` if the parser raises a :exc:`ValueError`.
 
     """
 

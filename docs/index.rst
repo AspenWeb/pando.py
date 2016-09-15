@@ -14,7 +14,7 @@ Pando's source code is on `GitHub`_, and is `MIT-licensed`_.
  Installation
 **************
 
-:py:mod:`pando` is available on `PyPI`_::
+:mod:`pando` is available on `PyPI`_::
 
     $ pip install pando
 
