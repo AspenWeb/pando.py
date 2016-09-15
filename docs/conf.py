@@ -49,8 +49,27 @@ pygments_style = 'sphinx'
 
 # -- Autodoc options
 
-autodoc_default_flags = ['members', 'undoc-members']
+autodoc_default_flags = ['members', 'undoc-members', 'special-members']
 autodoc_member_order = 'bysource'
+
+_autodoc_exclusions = {
+    '__weakref__',  # special-members
+    '__doc__', '__module__', '__dict__',  # undoc-members
+}
+
+def autodoc_skip_member(app, what, name, obj, skip, options):
+    return (
+        skip or
+        name in _autodoc_exclusions or
+        ( # __init__ with missing or empty doctsring, no point in showing it
+            what in ('class', 'exception') and
+            name == '__init__' and
+            not obj.__doc__
+        )
+    )
+
+def setup(app):
+    app.connect('autodoc-skip-member', autodoc_skip_member)
 
 
 # -- Options for HTML output ---------------------------------------------------
