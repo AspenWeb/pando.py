@@ -5,7 +5,7 @@
 Define a Request class and child classes.
 
 Here is how we analyze the structure of an HTTP message, along with the objects
-we use to model each:
+we use to model each::
 
     - request                   Request
         - line                  Line
@@ -210,13 +210,11 @@ class Request(str):
 
     @classmethod
     def from_wsgi(cls, environ):
-        """Given a WSGI environ, return an instance of cls.
+        """Given a WSGI environ, return a new instance of the class.
 
         The conversion from HTTP to WSGI is lossy. This method does its best to
         go the other direction, but we can't guarantee that we've reconstructed
-        the bytes as they were on the wire (which is what I want). It would
-        also be more efficient to parse directly for our API. But people love
-        their gunicorn. :-/
+        the bytes as they were on the wire.
 
         Almost all the keys and values in a WSGI environ dict are (supposed to
         be) of type `str`, meaning bytestrings in python 2 and unicode strings
@@ -249,12 +247,14 @@ class Request(str):
 
     @property
     def body(self):
-        '''Lazily parse the body, iff _parse_body is set.
-           Otherwise default to raw_body.  In the normal course of things,
-           _parse_body is set by pando.state_chain.parse_body_into_request()
-        '''
+        """Lazily parse the body.
+
+        If we don't have a parser that matches the request's ``Content-Type``,
+        then the raw body is returned as a bytestring.
+        """
         if hasattr(self, 'parsed_body'):
             return self.parsed_body
+        # In the normal course of things, _parse_body is set by parse_body_into_request()
         if hasattr(self, '_parse_body'):
             self.parsed_body = self._parse_body(self)
             return self.parsed_body
@@ -262,7 +262,7 @@ class Request(str):
 
     @body.setter
     def body(self, value):
-        '''Let the developer set the body to something if they want'''
+        """Let the developer set the body to something if they want"""
         self.parsed_body = value
 
 
@@ -431,7 +431,11 @@ class URI(text_type):
     __slots__ = ['path', 'querystring', 'raw']
 
     def __new__(cls, raw):
-        # we require that the uri as a whole be decodable with ASCII
+        """Creates a URI object from a raw bytestring.
+
+        We require that ``raw`` be decodable with ASCII, if it isn't a
+        :py:exc:`UnicodeDecodeError` is raised.
+        """
         decoded = raw.decode('ASCII')
         parts = decoded.split('?', 1)
         path = Path(parts[0])

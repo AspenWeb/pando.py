@@ -47,15 +47,17 @@ class Website(object):
     def __init__(self, **kwargs):
         """Takes configuration in kwargs.
         """
+        #: An Aspen :py:class:`~aspen.request_processor.RequestProcessor` instance.
         self.request_processor = RequestProcessor(**kwargs)
+
         pando_chain = Algorithm.from_dotted_name('pando.state_chain')
         pando_chain.functions = [
             getattr(f, 'placeholder_for', f) for f in pando_chain.functions
         ]
+        #: The chain of functions used to process an HTTP request, imported from
+        #: :py:mod:`pando.state_chain`.
         self.state_chain = pando_chain
-        self.configure(**kwargs)
 
-    def configure(self, **kwargs):
         # copy aspen's config variables, for backward compatibility
         extra = 'typecasters renderer_factories default_renderers_by_media_type'
         for key in list(ASPEN_KNOBS) + extra.split():
@@ -68,14 +70,16 @@ class Website(object):
         self.request_processor.simplate_defaults.initial_context['website'] = self
 
         # load bodyparsers
+        #: Mapping of content types to parsing functions.
         self.body_parsers = {
             "application/x-www-form-urlencoded": body_parsers.formdata,
             "multipart/form-data": body_parsers.formdata,
             self.media_type_json: body_parsers.jsondata
         }
 
-
     def __call__(self, environ, start_response):
+        """Alias of :py:meth:`wsgi_app`.
+        """
         return self.wsgi_app(environ, start_response)
 
     def wsgi_app(self, environ, start_response):
@@ -90,7 +94,6 @@ class Website(object):
         """
         response = self.respond(environ)['response']
         return response.to_wsgi(environ, start_response, self.encode_output_as)
-
 
     def respond(self, environ, raise_immediately=None, return_after=None):
         """Given a WSGI environ, return a state dict.
@@ -167,14 +170,20 @@ class Website(object):
     # ===============
 
     def find_ours(self, filename):
-        """Given a filename, return the filepath to pando's internal version
-        of that filename.  No existence checking is done, this just abstracts
-        away the __file__ reference nastiness.
+        """Given a ``filename``, return the filepath to pando's internal version
+        of that filename.
+
+        No existence checking is done, this just abstracts away the ``__file__``
+        reference nastiness.
         """
         return os.path.join(os.path.dirname(__file__), 'www', filename)
 
     def ours_or_theirs(self, filename):
-        """Given a filename, return a filepath or None.
+        """Given a filename, return a filepath or ``None``.
+
+        It looks for the file in :py:attr:`self.project_root`, then in Pando's
+        default files directory. ``None`` is returned if the file is not found
+        in either location.
         """
         if self.project_root is not None:
             theirs = os.path.join(self.project_root, filename)

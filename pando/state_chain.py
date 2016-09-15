@@ -1,6 +1,6 @@
 """
 :mod:`state_chain`
-----------------
+------------------
 
 These functions comprise the request processing functionality of Pando.
 
