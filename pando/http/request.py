@@ -122,33 +122,6 @@ def kick_against_goad(environ):
     return method, uri, server, version, headers, body
 
 
-# *WithRaw
-# ========
-# A few parts of the Request object model use these generic objects.
-
-class IntWithRaw(int):
-    """Generic subclass of int to store the underlying raw bytestring.
-    """
-
-    def __new__(cls, i):
-        if i is None:
-            i = 0
-        obj = super(IntWithRaw, cls).__new__(cls, i)
-        obj.raw = str(i)
-        return obj
-
-class UnicodeWithRaw(text_type):
-    """Generic subclass of unicode to store the underlying raw bytestring.
-    """
-
-    __slots__ = ['raw']
-
-    def __new__(cls, raw, encoding='UTF-8'):
-        obj = super(UnicodeWithRaw, cls).__new__(cls, raw.decode(encoding))
-        obj.raw = raw
-        return obj
-
-
 ###########
 # Request #
 ###########
@@ -495,7 +468,10 @@ class Headers(BaseHeaders):
         # we prefer X-Forwarded-For if that is available.
 
         host = self.get(b'X-Forwarded-Host', self[b'Host']) # KeyError raises 400
-        self.host = UnicodeWithRaw(host, encoding='idna')
+        try:
+            self.host = host.decode('idna')
+        except UnicodeError:
+            self.host = ''
 
 
         # Scheme
