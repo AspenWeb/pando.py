@@ -25,7 +25,7 @@ def test_line_works():
 
 def test_line_has_method():
     line = Line(b"GET", b"/", b"HTTP/0.9")
-    assert line.method == "GET"
+    assert line.method == b"GET"
 
 def test_line_has_uri():
     line = Line(b"GET", b"/", b"HTTP/0.9")
@@ -44,46 +44,42 @@ def test_line_chokes_on_non_ASCII_in_uri():
 
 def test_method_works():
     method = Method(b"GET")
-    assert method == "GET"
+    assert method == b"GET"
 
-def test_method_is_unicode_subclass():
+def test_method_is_bytes_subclass():
     method = Method(b"GET")
-    assert issubclass(method.__class__, text_type)
+    assert issubclass(method.__class__, bytes)
 
-def test_method_is_unicode_instance():
+def test_method_is_bytes_instance():
     method = Method(b"GET")
-    assert isinstance(method, text_type)
+    assert isinstance(method, bytes)
 
-def test_method_raw_works():
+def test_method_as_text_works():
     method = Method(b"GET")
-    assert method.raw == b"GET"
+    assert method.as_text == "GET"
 
-def test_method_raw_is_bytestring():
+def test_method_as_text_is_text():
     method = Method(b"GET")
-    assert isinstance(method.raw, bytes)
+    assert isinstance(method.as_text, text_type)
 
-def test_method_cant_have_more_attributes():
-    method = Method(b"GET")
-    raises(AttributeError, setattr, method, "foo", "bar")
-
-def test_method_can_be_OPTIONS(): assert Method(b"OPTIONS") == "OPTIONS"
-def test_method_can_be_GET():     assert Method(b"GET")     == "GET"
-def test_method_can_be_HEAD():    assert Method(b"HEAD")    == "HEAD"
-def test_method_can_be_POST():    assert Method(b"POST")    == "POST"
-def test_method_can_be_PUT():     assert Method(b"PUT")     == "PUT"
-def test_method_can_be_DELETE():  assert Method(b"DELETE")  == "DELETE"
-def test_method_can_be_TRACE():   assert Method(b"TRACE")   == "TRACE"
-def test_method_can_be_CONNECT(): assert Method(b"CONNECT") == "CONNECT"
+def test_method_can_be_OPTIONS(): assert Method(b"OPTIONS") == b"OPTIONS"
+def test_method_can_be_GET():     assert Method(b"GET")     == b"GET"
+def test_method_can_be_HEAD():    assert Method(b"HEAD")    == b"HEAD"
+def test_method_can_be_POST():    assert Method(b"POST")    == b"POST"
+def test_method_can_be_PUT():     assert Method(b"PUT")     == b"PUT"
+def test_method_can_be_DELETE():  assert Method(b"DELETE")  == b"DELETE"
+def test_method_can_be_TRACE():   assert Method(b"TRACE")   == b"TRACE"
+def test_method_can_be_CONNECT(): assert Method(b"CONNECT") == b"CONNECT"
 
 def test_method_can_be_big():
     big = b"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz--"
-    assert Method(big).raw == big
+    assert Method(big) == big
 
 def test_method_cant_be_non_ASCII():
     assert raises(Response, Method, b"\x80").value.code == 400
 
 def test_method_can_be_valid_perl():
-    assert Method(b"!#$%&'*+-.^_`|~") == "!#$%&'*+-.^_`|~"
+    assert Method(b"!#$%&'*+-.^_`|~") == b"!#$%&'*+-.^_`|~"
 
 def the400(i):
     assert raises(Response, Method, byte(i)).value.code == 400
@@ -125,7 +121,7 @@ def test_method_no_chr_29(): the400(29)
 def test_method_no_chr_30(): the400(30)
 def test_method_no_chr_31(): the400(31)
 def test_method_no_chr_32(): the400(32) # space
-def test_method_no_chr_33(): assert Method(byte(33)) == '!'
+def test_method_no_chr_33(): assert Method(byte(33)) == b'!'
 
 def test_method_no_chr_40(): the400(40) # (
 def test_method_no_chr_41(): the400(41) # )

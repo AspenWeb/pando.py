@@ -30,7 +30,7 @@ def test_request_line_version_defaults_to_HTTP_1_1(harness):
 
 def test_allow_default_method_is_GET(harness):
     request = harness.make_request()
-    expected = 'GET'
+    expected = b'GET'
     actual = request.line.method
     assert actual == expected
 
@@ -54,14 +54,14 @@ def test_allow_can_handle_lowercase(harness):
 
 def test_methods_start_with_GET(harness):
     request = harness.make_request()
-    expected = "GET"
+    expected = b"GET"
     actual = request.line.method
     assert actual == expected
 
 def test_methods_changing_changes(harness):
     request = harness.make_request()
-    request.line.method = 'POST'
-    expected = "POST"
+    request.line.method = b'POST'
+    expected = b"POST"
     actual = request.line.method
     assert actual == expected
 

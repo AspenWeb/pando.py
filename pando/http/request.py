@@ -224,7 +224,7 @@ class Request(str):
 
     @property
     def method(self):
-        return self.line.method
+        return self.line.method.as_text
 
     @property
     def path(self):
@@ -304,7 +304,7 @@ class Request(str):
 
         """
         methods = [x.upper() for x in methods]
-        if self.line.method not in methods:
+        if self.method not in methods:
             raise Response(405, headers={
                 b'Allow': b', '.join(m.encode('ascii') for m in methods)
             })
@@ -338,7 +338,6 @@ class Line(bytes):
         return obj
 
 
-
 # Request -> Method
 # -----------------
 
@@ -354,11 +353,9 @@ CHARS_ALLOWED_IN_METHOD = set(
     string.ascii_letters + string.digits + "!#$%&'*+-.^_`|~"
 )
 
-class Method(text_type):
+class Method(bytes):
     """Represent the HTTP method in the first line of an HTTP Request message.
     """
-
-    __slots__ = ['raw']
 
     def __new__(cls, raw):
         """Creates a new Method object.
@@ -387,8 +384,8 @@ class Method(text_type):
             if any(char not in CHARS_ALLOWED_IN_METHOD for char in decoded):
                 raise Response(400, "Your request method violates RFC 7230: %s" % decoded)
 
-        obj = super(Method, cls).__new__(cls, decoded)
-        obj.raw = raw
+        obj = super(Method, cls).__new__(cls, raw)
+        obj.as_text = decoded
         return obj
 
 

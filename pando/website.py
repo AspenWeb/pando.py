@@ -155,7 +155,7 @@ class Website(object):
 
         if actual != self.base_url:
             url = self.base_url
-            if request.line.method in ('GET', 'HEAD', 'OPTIONS', 'TRACE'):
+            if request.method in ('GET', 'HEAD', 'OPTIONS', 'TRACE'):
                 # Redirect to a particular path for idempotent methods.
                 url += request.line.uri.path.raw
                 if request.line.uri.querystring:
