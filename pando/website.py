@@ -157,9 +157,9 @@ class Website(object):
             url = self.base_url
             if request.method in ('GET', 'HEAD', 'OPTIONS', 'TRACE'):
                 # Redirect to a particular path for idempotent methods.
-                url += request.line.uri.path.raw
+                url += request.line.uri.path.decoded
                 if request.line.uri.querystring:
-                    url += '?' + request.line.uri.querystring.raw
+                    url += '?' + request.line.uri.querystring.decoded
             else:
                 # For non-idempotent methods, redirect to homepage.
                 url += '/'

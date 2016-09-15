@@ -128,7 +128,7 @@ def test_method_alias_is_read_only(harness):
 
 def test_path_alias_is_readable(harness):
     request = harness.make_request()
-    assert request.path.raw == '/'
+    assert request.path.decoded == '/'
 
 def test_path_alias_is_read_only(harness):
     request = harness.make_request()

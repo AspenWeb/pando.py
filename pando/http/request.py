@@ -33,7 +33,7 @@ import re
 import string
 import sys
 
-from six import PY2, text_type
+from six import PY2
 import six.moves.urllib.parse as urlparse
 
 from aspen.http.request import Path as _Path, Querystring as _Querystring
@@ -201,11 +201,11 @@ class Request(str):
 
     @property
     def path(self):
-        return self.line.uri.path
+        return self.line.uri.path.mapping
 
     @property
     def qs(self):
-        return self.line.uri.querystring
+        return self.line.uri.querystring.mapping
 
     @property
     def cookie(self):
@@ -365,38 +365,95 @@ class Method(bytes):
 # Request -> Line -> URI
 # ......................
 
-class URI(text_type):
+class URI(bytes):
     """Represent the Request-URI in the first line of an HTTP Request message.
     """
-
-    __slots__ = ['path', 'querystring', 'raw']
 
     def __new__(cls, raw):
         """Creates a URI object from a raw bytestring.
 
-        We require that ``raw`` be decodable with ASCII, if it isn't a
-        :exc:`UnicodeDecodeError` is raised.
+        We require that ``raw`` be decodable with ASCII, if it isn't a 400
+        :class:`Response` is raised.
         """
-        decoded = raw.decode('ASCII')
-        parts = decoded.split('?', 1)
+        parts = raw.split(b'?', 1)
         path = Path(parts[0])
-        querystring = Querystring(parts[1] if len(parts) > 1 else '')
-        obj = super(URI, cls).__new__(cls, decoded)
+        querystring = Querystring(parts[1] if len(parts) > 1 else b'')
+        decoded = path.decoded
+        if len(parts) > 1:
+            decoded += '?' + querystring.decoded
+        obj = super(URI, cls).__new__(cls, raw)
         obj.path = path
         obj.querystring = querystring
-        obj.raw = raw
+        obj.decoded = decoded
         return obj
 
 
 # Request -> Line -> URI -> Path
 
-class Path(Mapping, _Path):
+class Path(bytes):
+    """
+    .. attribute:: decoded
+
+        The path decoded to text.
+
+    .. attribute:: mapping
+
+        :class:`.Mapping` of path variables.
+
+    .. attribute:: parts
+
+        List of :class:`~aspen.http.request.PathPart` instances.
+    """
+
+    def __new__(cls, raw):
+        """Creates a Path object from a raw bytestring.
+        """
+        try:
+            decoded = raw.decode('ascii')
+        except UnicodeError:
+            safe = raw.decode('ascii', 'repr')
+            raise Response(400, "Request path isn't ascii: %s" % safe)
+        mapping = _PathMapping(decoded)
+        obj = super(Path, cls).__new__(cls, raw)
+        obj.decoded = decoded
+        obj.mapping = mapping
+        obj.parts = mapping.parts
+        return obj
+
+
+class _PathMapping(Mapping, _Path):
     pass
 
 
 # Request -> Line -> URI -> Querystring
 
-class Querystring(Mapping, _Querystring):
+class Querystring(bytes):
+    """
+    .. attribute:: decoded
+
+        The querystring decoded to text.
+
+    .. attribute:: mapping
+
+        :class:`.Mapping` of querystring variables.
+    """
+
+    def __new__(cls, raw):
+        """Creates a Querystring object from a raw bytestring.
+        """
+        try:
+            decoded = raw.decode('ascii')
+        except UnicodeError:
+            safe = raw.decode('ascii', 'repr')
+            raise Response(400, "Request querystring isn't ascii: %s" % safe)
+        mapping = _QuerystringMapping(decoded)
+        obj = super(Querystring, cls).__new__(cls, raw)
+        obj.decoded = decoded
+        obj.mapping = mapping
+        return obj
+
+
+class _QuerystringMapping(Mapping, _Querystring):
     pass
 
 

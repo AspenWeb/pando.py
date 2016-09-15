@@ -29,14 +29,14 @@ def test_line_has_method():
 
 def test_line_has_uri():
     line = Line(b"GET", b"/", b"HTTP/0.9")
-    assert line.uri == "/"
+    assert line.uri == b"/"
 
 def test_line_has_version():
     line = Line(b"GET", b"/", b"HTTP/0.9")
     assert line.version == b"HTTP/0.9"
 
-def test_line_chokes_on_non_ASCII_in_uri():
-    raises(UnicodeDecodeError, Line, b"GET", byte(128), b"HTTP/1.1")
+def test_line_raises_404_on_non_ASCII_in_uri():
+    assert raises(Response, Line, b"GET", byte(128), b"HTTP/1.1").value.code == 400
 
 
 # Method
@@ -147,9 +147,7 @@ def test_method_no_chr_125(): the400(125) # }
 
 def test_uri_works_at_all():
     uri = URI(b"/")
-    expected = "/"
-    actual = uri
-    assert actual == expected
+    assert uri == b'/'
 
 
 def test_uri_sets_path():
@@ -161,19 +159,19 @@ def test_uri_sets_querystring():
     assert uri.querystring.decoded == "buz=bloo", uri.querystring.decoded
 
 
-def test_uri_path_is_Mapping():
+def test_uri_path_mapping():
     uri = URI(b"/baz.html?buz=bloo")
-    assert isinstance(uri.path, Mapping)
+    assert isinstance(uri.path.mapping, Mapping)
 
-def test_uri_querystring_is_Mapping():
+def test_uri_querystring_mapping():
     uri = URI(b"/baz.html?buz=bloo")
-    assert isinstance(uri.querystring, Mapping)
+    assert isinstance(uri.querystring.mapping, Mapping)
 
 
 def test_uri_normal_case_is_normal():
     uri = URI(b"/baz.html?buz=bloo")
-    assert uri.path == Path("/baz.html")
-    assert uri.querystring == Querystring("buz=bloo")
+    assert uri.path == Path(b"/baz.html")
+    assert uri.querystring == Querystring(b"buz=bloo")
 
 
 

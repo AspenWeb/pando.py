@@ -230,7 +230,7 @@ def log_result_of_request(website, request=None, dispatch_result=None, response=
                 fspath = '.' + fspath
         else:
             fspath = '...' + fspath[-21:]
-        msg = "%-24s %s" % (request.line.uri.path.raw, fspath)
+        msg = "%-24s %s" % (request.line.uri.path.decoded, fspath)
 
 
     # Where was response raised from?
