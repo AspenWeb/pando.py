@@ -2,15 +2,17 @@
 :mod:`body_parsers`
 ===================
 
-Pando body parsers are optional ways to enable Pando to uniformly
-parse POST body content according to its supplied Content-Type.
+This module contains Pando's built-in body parsers.
 
-A body parser has the signature:
+Body parsers are optional ways to enable Pando to uniformly parse POST body
+content according to its supplied ``Content-Type``.
+
+A body parser has the signature::
 
    def name(raw, headers):
 
-where _raw_ is the raw bytes to be parsed, and _headers_ is the
-Headers mapping of the supplied headers
+where ``raw`` is the raw bytestring to be parsed, and ``headers`` is the
+:py:class:`.Headers` mapping of the supplied headers.
 """
 
 import cgi
@@ -26,7 +28,11 @@ from .exceptions import MalformedBody, UnknownBodyType
 
 
 def formdata(raw, headers):
-    """Parse raw as form data"""
+    """Parse ``raw`` as form data.
+
+    Supports ``application/x-www-form-urlencoded`` and ``multipart/form-data``.
+
+    """
 
     # Force the cgi module to parse as we want. If it doesn't find
     # something besides GET or HEAD here then it ignores the fp
@@ -62,7 +68,7 @@ def formdata(raw, headers):
 
 
 def jsondata(raw, headers):
-    """Parse raw as json data"""
+    """Parse ``raw`` as JSON data."""
     try:
         return json.loads(raw.decode('utf8'))
     except UnicodeDecodeError as e:
@@ -70,10 +76,11 @@ def jsondata(raw, headers):
 
 
 def parse_body(raw, headers, parsers):
-    """Takes a file-like object, a str, and another str.
+    """Parses the ``raw`` bytestring using the ``headers`` to determine which of
+    the ``parsers`` should be used.
 
-    If the Mapping API is used (in/one/all/has), then the iterable will be
-    read and parsed according to content_type.
+    Raises :py:exc:`.UnknownBodyType` if the HTTP ``Content-Type`` isn't recognized,
+    and :py:exc:`.MalformedBody` if the parser raises a :py:exc:`ValueError`.
 
     """
 

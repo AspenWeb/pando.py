@@ -3,8 +3,14 @@
 ===========
 
 .. automodule:: pando.http.baseheaders
+    :inherited-members:
+    :show-inheritance:
 .. automodule:: pando.http.mapping
+    :inherited-members:
+    :show-inheritance:
 .. automodule:: pando.http.request
+    :inherited-members:
+    :show-inheritance:
 .. automodule:: pando.http.response
 
 """

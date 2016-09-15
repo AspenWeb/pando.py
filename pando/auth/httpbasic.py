@@ -2,9 +2,9 @@
 :mod:`httpbasic`
 ----------------
 
-HTTP BASIC Auth module for Pando.
+HTTP Basic Auth module for Pando.
 
-To use:
+To use::
 
     # import it
     from pando.auth import httpbasic
@@ -62,10 +62,10 @@ class BAWrapper(object):
 
 
 class BasicAuth(object):
-    """An HTTP BASIC AUTH handler for Pando."""
+    """An HTTP Basic Auth handler for Pando."""
 
     def __init__(self, verify_password, html=None, realm=b'protected'):
-        """Constructor for an HTTP BASIC AUTH handler.
+        """Constructor for an HTTP Basic Auth handler.
 
         :param verify_password: a function that, when passed the args
             (user, password), will return True iff the password is
@@ -83,7 +83,7 @@ class BasicAuth(object):
         self.logging_out = set([])
 
     def authorized(self, request):
-        """Returns whether this request passes BASIC auth or not, and
+        """Returns whether this request passes Basic auth or not, and
            the Response to raise if not
         """
         header = request.headers.get(b'Authorization', b'')

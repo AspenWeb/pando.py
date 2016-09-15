@@ -49,8 +49,39 @@ pygments_style = 'sphinx'
 
 # -- Autodoc options
 
-autodoc_default_flags = ['members', 'undoc-members']
+autodoc_default_flags = ['members', 'undoc-members', 'special-members']
 autodoc_member_order = 'bysource'
+
+_autodoc_exclusions = {
+    '__weakref__',  # special-members
+    '__doc__', '__module__', '__dict__',  # undoc-members
+    '__subclasshook__',  # inherited-members
+}
+
+text_type = unicode if sys.version_info[0] < 3 else str
+
+def autodoc_skip_member(app, what, name, obj, skip, options):
+    return (
+        skip or
+        name in _autodoc_exclusions or
+        ( # __init__ with missing or empty doctsring, no point in showing it
+            what in ('class', 'exception') and
+            name == '__init__' and
+            not obj.__doc__
+        ) or
+        options.inherited_members and (
+            # inherited-members adds a lot of crap, we filter it here
+            str(obj).startswith('<built-in method ') or
+            obj is getattr(object, name, None) or
+            obj is getattr(dict, name, None) or
+            obj is getattr(int, name, None) or
+            obj is getattr(bytes, name, None) or
+            obj is getattr(text_type, name, None)
+        )
+    )
+
+def setup(app):
+    app.connect('autodoc-skip-member', autodoc_skip_member)
 
 
 # -- Options for HTML output ---------------------------------------------------
@@ -97,4 +128,7 @@ texinfo_documents = [
 
 
 # Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {'http://docs.python.org/': None}
+intersphinx_mapping = {
+    'python': ('https://docs.python.org/3.5/', None),
+    'aspen': ('http://core.aspen.io/en/latest/', None),
+}

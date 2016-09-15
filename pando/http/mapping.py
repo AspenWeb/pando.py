@@ -13,6 +13,8 @@ from aspen.http.mapping import Mapping as _Mapping
 class Mapping(_Mapping):
 
     def keyerror(self, name):
+        """Raises a 400 :py:class:`~pando.http.response.Response`.
+        """
         from .response import Response
         raise Response(400, "Missing key: %s" % repr(name))
 
@@ -20,6 +22,12 @@ class Mapping(_Mapping):
 class CaseInsensitiveMapping(Mapping):
 
     def __init__(self, *a, **kw):
+        """Initializes the mapping.
+
+        Loops through positional arguments first, then through keyword args.
+
+        Positional arguments can be dicts or lists of items.
+        """
         for it in a:
             if it is None:
                 continue
