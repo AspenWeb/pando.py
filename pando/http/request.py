@@ -279,7 +279,7 @@ class Request(object):
 
     @property
     def host(self):
-        """This property returns the hostname of the request as text.
+        """This property returns the hostname of the request, as a text string.
 
         Raises a 400 :class:`.Response` if no ``Host`` header is found or if
         decoding it fails. See
