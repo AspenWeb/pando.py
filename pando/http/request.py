@@ -145,13 +145,12 @@ class Request(object):
         """
         self.website = website
         self.server_software = server_software
+        self.body_stream = body
         try:
             self.line = Line(method, uri, version)
             if not headers:
                 headers = b'Host: localhost'
             self.headers = Headers(headers)
-            self.body_stream = body
-            self.context = {}
         except UnicodeError:
             # Figure out where the error occurred.
             # ====================================
