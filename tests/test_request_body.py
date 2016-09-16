@@ -7,8 +7,9 @@ from io import BytesIO
 
 from pytest import raises
 
-from pando.http.request import Request
 from pando.exceptions import MalformedBody, UnknownBodyType
+from pando.http.request import Request
+from pando.http.response import Response
 from pando.website import Website
 
 
@@ -22,8 +23,8 @@ def make_body(raw, headers=None, content_type=WWWFORM):
         defaults = { FORMDATA: b"multipart/form-data; boundary=AaB03x",
                      WWWFORM: b"application/x-www-form-urlencoded" }
         headers = {b"Content-Type": defaults.get(content_type, content_type)}
-    if not b'content-length' in headers:
-        headers[b'Content-length'] = str(len(raw)).encode('ascii')
+    if not b'Content-Length' in headers:
+        headers[b'Content-Length'] = str(len(raw)).encode('ascii')
     headers[b'Host'] = b'Blah'
     website = Website()
     request = Request(website, body=BytesIO(raw), headers=headers)
@@ -81,3 +82,11 @@ def test_malformed_body_jsondata():
 def test_malformed_body_formdata():
     with raises(MalformedBody):
         make_body("", content_type=b"multipart/form-data; boundary=\0")
+
+def test_bad_content_length():
+    with raises(Response) as x:
+        make_body("{}", headers={
+            b'Content-Length': b'NaN',
+            b'Content-Type': b'application/json',
+        })
+    assert x.value.code == 400
