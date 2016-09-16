@@ -55,7 +55,7 @@ def insert_variables_for_aspen(request, website):
 
 
 def parse_body_into_request(request, website):
-    request._parse_body = lambda _: body_parsers.parse_body( request.raw_body
+    request._parse_body = lambda _: body_parsers.parse_body( request.body_bytes
                                                            , request.headers
                                                            , website.body_parsers
                                                             )

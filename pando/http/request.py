@@ -28,7 +28,6 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 
-from io import BytesIO
 import re
 import string
 import sys
@@ -145,10 +144,7 @@ class Request(object):
             if not headers:
                 headers = b'Host: localhost'
             self.headers = Headers(headers)
-            if body is None:
-                body = BytesIO(b'')
-            raw_len = int(self.headers.get(b'Content-length', b'') or b'0')
-            self.raw_body = body.read(raw_len)
+            self.body_stream = body
             self.context = {}
         except UnicodeError:
             # Figure out where the error occurred.
@@ -203,6 +199,20 @@ class Request(object):
         return self.headers.cookie
 
     @property
+    def body_bytes(self):
+        """Lazily read the whole body stream.
+
+        Returns ``b''`` if the request has no body.
+        """
+        if self.body_stream is None:
+            return b''
+        if hasattr(self, '_body_bytes'):
+            return self._body_bytes
+        raw_len = int(self.headers.get(b'Content-length', b'') or b'0')
+        self._body_bytes = self.body_stream.read(raw_len)
+        return self._body_bytes
+
+    @property
     def body(self):
         """Lazily parse the body.
 
@@ -215,7 +225,7 @@ class Request(object):
         if hasattr(self, '_parse_body'):
             self.parsed_body = self._parse_body(self)
             return self.parsed_body
-        return self.raw_body
+        return self.body_bytes
 
     @body.setter
     def body(self, value):
@@ -225,7 +235,6 @@ class Request(object):
     # Special methods
     # ===============
 
-    _raw = "" # XXX We should reset this when subobjects are mutated.
     def __str__(self):
         """Lazily load the body and return the whole message.
 
@@ -234,14 +243,12 @@ class Request(object):
         to read bytes off the wire if we can avoid it, though, because for mega
         file uploads and such this could have a big impact.
         """
-        if not self._raw:
-            bs = (
-                self.line + b'\r\n' +
-                self.headers.raw + b'\r\n\r\n' +
-                self.raw_body
-            )
-            self._raw = bs if PY2 else bs.decode('ascii')
-        return self._raw
+        bs = (
+            self.line + b'\r\n' +
+            self.headers.raw + b'\r\n\r\n' +
+            self.body_bytes
+        )
+        return bs if PY2 else bs.decode('ascii')
 
     def __repr__(self):
         return str.__repr__(str(self))
