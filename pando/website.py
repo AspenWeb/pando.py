@@ -133,24 +133,18 @@ class Website(object):
     # Base URL Canonicalization
     # =========================
 
-    def _extract_scheme(self, request):
-        return request.headers.get(b'X-Forwarded-Proto', b'http')  # Heroku
-
-    def _extract_host(self, request):
-        return request.headers[b'Host']  # will 400 if missing
-
     _canonicalize_base_url_code = 302
 
     def canonicalize_base_url(self, request):
         """Enforces a base_url such as http://localhost:8080 (no path part).
+
+        See :attr:`.Request.host` and :attr:`.Request.scheme` for how the
+        request host and scheme are determined.
         """
         if not self.base_url:
             return
 
-        scheme = self._extract_scheme(request).decode('ascii', 'backslashreplace')
-        host = self._extract_host(request).decode('ascii', 'backslashreplace')
-
-        actual = scheme + "://" + host
+        actual = request.scheme + "://" + request.host
 
         if actual != self.base_url:
             url = self.base_url
