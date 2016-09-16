@@ -129,10 +129,11 @@ class Request(object):
     """Represent an HTTP Request message. It's bytes, dammit. But lazy.
     """
 
-    def __init__(self, method=b'GET', uri=b'/', server_software=b'',
+    def __init__(self, website, method=b'GET', uri=b'/', server_software=b'',
                 version=b'HTTP/1.1', headers=b'', body=None):
         """Takes five bytestrings and a file-like object.
         """
+        self.website = website
         self.server_software = server_software
         try:
             self.line = Line(method, uri, version)
@@ -158,7 +159,7 @@ class Request(object):
                                 "(%s:%d)" % (filename, frame.f_lineno))
 
     @classmethod
-    def from_wsgi(cls, environ):
+    def from_wsgi(cls, website, environ):
         """Given a WSGI environ, return a new instance of the class.
 
         The conversion from HTTP to WSGI is lossy. This method does its best to
@@ -172,7 +173,7 @@ class Request(object):
 
         """
         environ = {try_encode(k): try_encode(v) for k, v in environ.items()}
-        return cls(*kick_against_goad(environ))
+        return cls(website, *kick_against_goad(environ))
 
     # Aliases
     # =======

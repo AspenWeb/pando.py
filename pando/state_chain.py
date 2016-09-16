@@ -40,8 +40,8 @@ from .http.response import Response
 from .utils import _import_from
 
 
-def parse_environ_into_request(environ):
-    return {'request': Request.from_wsgi(environ)}
+def parse_environ_into_request(environ, website):
+    return {'request': Request.from_wsgi(website, environ)}
 
 
 def insert_variables_for_aspen(request, website):
