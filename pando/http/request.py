@@ -17,8 +17,6 @@ we use to model each::
             - version           Version     ASCII
         - headers               Headers     str
             - cookie            Cookie      str
-            - host              unicode     str
-            - scheme            unicode     str
         - body                  Body        Content-Type?
 
 """
@@ -41,7 +39,7 @@ from .. import Response
 from ..exceptions import MalformedBody, UnknownBodyType
 from ..urlparse import quote, quote_plus
 from ..utils import maybe_encode
-from .baseheaders import BaseHeaders
+from .baseheaders import BaseHeaders as Headers
 from .mapping import Mapping
 
 
@@ -285,6 +283,34 @@ class Request(object):
             raise Response(400,
                 "The 'Host' header is not a valid domain name: %r" % host
             )
+
+    @property
+    def scheme(self):
+        """This property attempts to determine the original request scheme.
+
+        This is useful if you want to know whether the communication channel is
+        secure (https) or not (http).
+
+        For now this property only supports the non-standard but widely used
+        ``X-Forwarded-Proto`` header. Support for `RFC7239
+        <https://tools.ietf.org/html/rfc7239>`_ may be added in the future
+        (patches welcome ;-)).
+
+        ``wsgi.url_scheme`` is ignored because `PEP 3333`_ does not guarantee
+        its accuracy.
+
+        .. warning::
+            If you use this property you need to ensure that your HTTP servers
+            properly set the ``X-Forwarded-Proto`` header, **and** that they
+            protect it from being forged by the client.
+
+        This property returns :obj:`None` if the ``X-Forwarded-Proto`` header is
+        missing. Otherwise it returns the header value as a unicode string.
+
+        .. _PEP 3333: https://www.python.org/dev/peps/pep-3333/
+        """
+        x = self.headers.get(b'X-Forwarded-Proto')
+        return x.decode('ascii', 'backslashreplace') if isinstance(x, bytes) else x
 
     # Special methods
     # ===============
@@ -548,24 +574,3 @@ class Version(bytes):
 
     def safe_decode(self):
         return self.decode('ascii', 'backslashreplace')
-
-
-# Request -> Headers
-# ------------------
-
-class Headers(BaseHeaders):
-    """Model headers in an HTTP Request message.
-    """
-
-    def __init__(self, raw):
-        """Extend BaseHeaders to add extra attributes.
-        """
-        BaseHeaders.__init__(self, raw)
-
-
-        # Scheme
-        # ======
-        # http://docs.python.org/library/wsgiref.html#wsgiref.util.guess_scheme
-
-        scheme = 'https' if self.get('HTTPS', False) else 'http'
-        self.scheme = scheme
