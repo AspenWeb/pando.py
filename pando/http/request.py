@@ -126,7 +126,7 @@ def kick_against_goad(environ):
 # Request #
 ###########
 
-class Request(str):
+class Request(object):
     """Represent an HTTP Request message. It's bytes, dammit. But lazy.
     """
 
@@ -134,27 +134,22 @@ class Request(str):
     original_resource = None
     server_software = ''
 
-    # NB: no __slots__ for str:
-    #   http://docs.python.org/reference/datamodel.html#__slots__
 
-
-    def __new__(cls, method=b'GET', uri=b'/', server_software=b'',
+    def __init__(self, method=b'GET', uri=b'/', server_software=b'',
                 version=b'HTTP/1.1', headers=b'', body=None):
         """Takes five bytestrings and a file-like object.
         """
-        obj = str.__new__(cls, '') # start with an empty string, see below for
-                                   # laziness
-        obj.server_software = server_software
+        self.server_software = server_software
         try:
-            obj.line = Line(method, uri, version)
+            self.line = Line(method, uri, version)
             if not headers:
                 headers = b'Host: localhost'
-            obj.headers = Headers(headers)
+            self.headers = Headers(headers)
             if body is None:
                 body = BytesIO(b'')
-            raw_len = int(obj.headers.get(b'Content-length', b'') or b'0')
-            obj.raw_body = body.read(raw_len)
-            obj.context = {}
+            raw_len = int(self.headers.get(b'Content-length', b'') or b'0')
+            self.raw_body = body.read(raw_len)
+            self.context = {}
         except UnicodeError:
             # Figure out where the error occurred.
             # ====================================
@@ -170,9 +165,6 @@ class Request(str):
 
             raise Response(400, "Request is undecodable. "
                                 "(%s:%d)" % (filename, frame.f_lineno))
-
-        return obj
-
 
     @classmethod
     def from_wsgi(cls, environ):
@@ -191,9 +183,8 @@ class Request(str):
         environ = {try_encode(k): try_encode(v) for k, v in environ.items()}
         return cls(*kick_against_goad(environ))
 
-
-    # Set up some aliases.
-    # ====================
+    # Aliases
+    # =======
 
     @property
     def method(self):
@@ -231,17 +222,17 @@ class Request(str):
         """Let the developer set the body to something if they want"""
         self.parsed_body = value
 
-
-    # Extend str to lazily load bytes.
-    # ================================
-    # When working with a Request object interactively or in a debugging
-    # situation we want it to behave transparently string-like. We don't want
-    # to read bytes off the wire if we can avoid it, though, because for mega
-    # file uploads and such this could have a big impact.
+    # Special methods
+    # ===============
 
     _raw = "" # XXX We should reset this when subobjects are mutated.
     def __str__(self):
         """Lazily load the body and return the whole message.
+
+        When working with a Request object interactively or in a debugging
+        situation we want it to behave transparently string-like. We don't want
+        to read bytes off the wire if we can avoid it, though, because for mega
+        file uploads and such this could have a big impact.
         """
         if not self._raw:
             bs = (
@@ -255,16 +246,8 @@ class Request(str):
     def __repr__(self):
         return str.__repr__(str(self))
 
-    # str defines rich comparisons, so we have to extend those and not simply
-    # __cmp__ (http://docs.python.org/reference/datamodel.html#object.__lt__)
-
-    def __lt__(self, other): return str.__lt__(str(self), other)
-    def __le__(self, other): return str.__le__(str(self), other)
-    def __eq__(self, other): return str.__eq__(str(self), other)
-    def __ne__(self, other): return str.__ne__(str(self), other)
-    def __gt__(self, other): return str.__gt__(str(self), other)
-    def __ge__(self, other): return str.__ge__(str(self), other)
-
+    def __cmp__(self, other):
+        return str.__cmp__(str(self), other)
 
     # Public Methods
     # ==============
