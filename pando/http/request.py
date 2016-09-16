@@ -126,12 +126,21 @@ def kick_against_goad(environ):
 ###########
 
 class Request(object):
-    """Represent an HTTP Request message. It's bytes, dammit. But lazy.
+    """Represent an HTTP Request message.
+
+    .. attribute:: line
+
+        See :class:`.Line`.
+
+    .. attribute:: headers
+
+        A mapping of HTTP headers. See :class:`.Headers`.
+
     """
 
     def __init__(self, website, method=b'GET', uri=b'/', server_software=b'',
                 version=b'HTTP/1.1', headers=b'', body=None):
-        """Takes five bytestrings and a file-like object.
+        """``body`` is expected to be a file-like object.
         """
         self.website = website
         self.server_software = server_software
@@ -196,9 +205,9 @@ class Request(object):
 
     @property
     def body_bytes(self):
-        """Lazily read the whole body stream.
+        """Lazily read the whole request body.
 
-        Returns ``b''`` if the request has no body.
+        Returns ``b''`` if the request doesn't have a body.
         """
         if self.body_stream is None:
             return b''
