@@ -205,6 +205,21 @@ class Request(object):
         return self.headers.cookie
 
     @property
+    def content_length(self):
+        """This property attempts to parse the ``Content-Length`` header.
+
+        Returns zero if the header is missing or empty.
+
+        Raises a 400 :class:`.Response` if the header is not a valid integer.
+        """
+        cl = self.headers.get(b'Content-Length') or b'0'
+        try:
+            return int(cl)
+        except ValueError:
+            safe = cl.decode('ascii', 'repr')
+            raise Response(400, "Content-Length is not a valid integer: %s" % safe)
+
+    @property
     def body_bytes(self):
         """Lazily read the whole request body.
 
@@ -214,8 +229,7 @@ class Request(object):
             return b''
         if hasattr(self, '_body_bytes'):
             return self._body_bytes
-        raw_len = int(self.headers.get(b'Content-length', b'') or b'0')
-        self._body_bytes = self.body_stream.read(raw_len)
+        self._body_bytes = self.body_stream.read(self.content_length)
         return self._body_bytes
 
     @property
