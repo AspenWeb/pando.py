@@ -203,6 +203,9 @@ class Request(object):
     def cookie(self):
         return self.headers.cookie
 
+    # Body handling
+    # =============
+
     @property
     def content_length(self):
         """This property attempts to parse the ``Content-Length`` header.
@@ -216,7 +219,9 @@ class Request(object):
             return int(cl)
         except ValueError:
             safe = cl.decode('ascii', 'repr')
-            raise Response(400, "Content-Length is not a valid integer: %s" % safe)
+            raise Response(400,
+                "The 'Content-Length' header is not a valid integer: %s" % safe
+            )
 
     @property
     def body_bytes(self):
@@ -270,6 +275,26 @@ class Request(object):
             return parser(raw, self.headers)
         except ValueError as e:
             raise MalformedBody(str(e))
+
+    # Other properties
+    # ================
+
+    @property
+    def host(self):
+        """This property returns the hostname of the request as text.
+
+        Raises a 400 :class:`.Response` if no ``Host`` header is found or if
+        decoding it fails. See
+        `RFC7230 section 5.4 <https://tools.ietf.org/html/rfc7230#section-5.4>`_.
+        """
+        host = self.headers[b'Host']
+        try:
+            return host.decode('idna')
+        except UnicodeError:
+            safe = host.decode('ascii', 'repr')
+            raise Response(400,
+                "The 'Host' header is not a valid domain name: %s" % safe
+            )
 
     # Special methods
     # ===============
@@ -546,18 +571,6 @@ class Headers(BaseHeaders):
         """Extend BaseHeaders to add extra attributes.
         """
         BaseHeaders.__init__(self, raw)
-
-
-        # Host
-        # ====
-        # Per the spec, respond with 400 if no Host header is given. However,
-        # we prefer X-Forwarded-For if that is available.
-
-        host = self.get(b'X-Forwarded-Host', self[b'Host']) # KeyError raises 400
-        try:
-            self.host = host.decode('idna')
-        except UnicodeError:
-            self.host = ''
 
 
         # Scheme
