@@ -132,15 +132,13 @@ class Request(object):
     """
 
     def __init__(self, website, method=b'GET', uri=b'/', server_software=b'',
-                version=b'HTTP/1.1', headers=b'', body=None):
+                version=b'HTTP/1.1', headers={b'Host': b'localhost'}, body=None):
         """``body`` is expected to be a file-like object.
         """
         self.website = website
         self.server_software = server_software
         self.body_stream = body
         self.line = Line(method, uri, version)
-        if not headers:
-            headers = b'Host: localhost'
         self.headers = Headers(headers)
 
     @classmethod

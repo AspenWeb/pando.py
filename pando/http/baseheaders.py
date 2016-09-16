@@ -35,27 +35,9 @@ class BaseHeaders(CaseInsensitiveMapping):
     have good notes on why we do everything as pure bytes here.
     """
 
-    def __init__(self, d):
-        """Takes headers as a dict, list, or bytestring.
+    def __init__(self, headers=()):
+        """Takes headers as a dict, or list of items.
         """
-        if isinstance(d, bytes):
-            from pando.exceptions import MalformedHeader
-
-            def genheaders():
-                for line in d.splitlines():
-                    if b':' not in line:
-                        # no colon separator in header
-                        raise MalformedHeader(line)
-                    k, v = line.split(b':', 1)
-                    if k != k.strip():
-                        # disallowed leading or trailing whitspace
-                        # (per http://tools.ietf.org/html/rfc7230#section-3.2.4)
-                        raise MalformedHeader(line)
-                    yield k, v.strip()
-
-            headers = genheaders()
-        else:
-            headers = d
         CaseInsensitiveMapping.__init__(self, headers)
 
         # Cookie

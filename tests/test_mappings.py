@@ -85,21 +85,21 @@ def test_case_insensitive_mapping_ones_is_case_insensitive():
 
 
 def test_headers_can_be_raw_when_non_ascii():
-    headers = BaseHeaders(b'Foo: b\xc3\xabar\r\nOh: Yeah!')
+    headers = BaseHeaders({b'Foo': b'b\xc3\xabar', b'Oh': b'Yeah!'})
     assert headers.raw == b'Foo: b\xc3\xabar\r\nOh: Yeah!'
 
 def test_headers_reject_CR_injection():
     with raises(CRLFInjection):
-        BaseHeaders(b'')[b'foo'] = b'\rbar'
+        BaseHeaders()[b'foo'] = b'\rbar'
 
 def test_headers_reject_LF_injection():
     with raises(CRLFInjection):
-        BaseHeaders(b'')[b'foo'] = b'\nbar'
+        BaseHeaders()[b'foo'] = b'\nbar'
 
 def test_headers_reject_CR_injection_from_add():
     with raises(CRLFInjection):
-        BaseHeaders(b'').add(b'foo', b'\rbar')
+        BaseHeaders().add(b'foo', b'\rbar')
 
 def test_headers_reject_LF_injection_from_add():
     with raises(CRLFInjection):
-        BaseHeaders(b'').add(b'foo', b'\nbar')
+        BaseHeaders().add(b'foo', b'\nbar')

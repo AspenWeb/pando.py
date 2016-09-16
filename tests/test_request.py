@@ -10,7 +10,6 @@ from ipaddress import IPv4Network
 from pytest import raises
 
 from pando import Response
-from pando.exceptions import MalformedHeader
 from pando.http.request import kick_against_goad, make_franken_uri, Request
 from pando.http.baseheaders import BaseHeaders
 
@@ -83,38 +82,32 @@ def test_is_xhr_is_case_insensitive(harness):
 
 
 def test_headers_access_gets_a_value():
-    headers = BaseHeaders(b"Foo: Bar")
+    headers = BaseHeaders([(b"Foo", b"Bar")])
     expected = b"Bar"
     actual = headers[b'Foo']
     assert actual == expected
 
 def test_headers_access_gets_last_value():
-    headers = BaseHeaders(b"Foo: Bar\r\nFoo: Baz")
+    headers = BaseHeaders([(b"Foo", b"Bar"), (b"Foo", b"Baz")])
     expected = b"Baz"
     actual = headers[b'Foo']
     assert actual == expected
 
 def test_headers_access_is_case_insensitive():
-    headers = BaseHeaders(b"Foo: Bar")
+    headers = BaseHeaders({b"Foo": b"Bar"})
     expected = b"Bar"
     actual = headers[b'foo']
     assert actual == expected
 
 def test_headers_dont_unicodify_cookie():
-    headers = BaseHeaders(b"Cookie: somecookiedata")
+    headers = BaseHeaders({b"Cookie": b"somecookiedata"})
     expected = b"somecookiedata"
     actual = headers[b'Cookie']
     assert actual == expected
 
 def test_baseheaders_loads_cookies_as_str():
-    headers = BaseHeaders(b"Cookie: key=value")
+    headers = BaseHeaders({b"Cookie": b"key=value"})
     assert headers.cookie[str('key')].value == str('value')
-
-def test_headers_handle_no_colon():
-    raises(MalformedHeader, BaseHeaders, b"Foo Bar")
-
-def test_headers_handle_bad_spaces():
-    raises(MalformedHeader, BaseHeaders, b"Foo : Bar")
 
 
 # aliases
