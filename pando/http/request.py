@@ -129,11 +129,6 @@ class Request(object):
     """Represent an HTTP Request message. It's bytes, dammit. But lazy.
     """
 
-    resource = None
-    original_resource = None
-    server_software = ''
-
-
     def __init__(self, method=b'GET', uri=b'/', server_software=b'',
                 version=b'HTTP/1.1', headers=b'', body=None):
         """Takes five bytestrings and a file-like object.
