@@ -140,7 +140,7 @@ class Request(object):
     """
 
     def __init__(self, website, method=b'GET', uri=b'/', server_software=b'',
-                version=b'HTTP/1.1', headers=b'', body=None):
+                version=b'HTTP/1.1', headers={b'Host': b'localhost'}, body=None):
         """``body`` is expected to be a file-like object.
         """
         self.website = website
@@ -148,8 +148,6 @@ class Request(object):
         self.body_stream = body
         try:
             self.line = Line(method, uri, version)
-            if not headers:
-                headers = b'Host: localhost'
             self.headers = Headers(headers)
         except UnicodeError:
             # Figure out where the error occurred.

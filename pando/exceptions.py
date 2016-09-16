@@ -23,18 +23,6 @@ class CRLFInjection(Response):
         Response.__init__(self, code=400, body="Possible CRLF Injection detected.")
 
 
-class MalformedHeader(Response):
-    """
-    A 400 :class:`.Response` (per `RFC7230 section 3.2.4`_) raised if there's
-    no ``:`` in a header field, or if there's leading or trailing whitespace in
-    the key part of a header field.
-
-    .. _RFC7230 section 3.2.4: http://tools.ietf.org/html/rfc7230#section-3.2.4
-    """
-    def __init__(self, header):
-        Response.__init__(self, code=400, body="Malformed header: %s" % header)
-
-
 class MalformedBody(Response):
     """
     A 400 :class:`.Response` raised if parsing the body of a POST request fails.
