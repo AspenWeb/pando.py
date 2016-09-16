@@ -38,6 +38,7 @@ import six.moves.urllib.parse as urlparse
 from aspen.http.request import Path as _Path, Querystring as _Querystring
 
 from .. import Response
+from ..exceptions import MalformedBody, UnknownBodyType
 from ..utils import try_encode
 from .baseheaders import BaseHeaders
 from .mapping import Mapping
@@ -219,23 +220,43 @@ class Request(object):
 
     @property
     def body(self):
-        """Lazily parse the body.
-
-        If we don't have a parser that matches the request's ``Content-Type``,
-        then the raw body is returned as a bytestring.
+        """This property calls :meth:`parse_body()` and caches the result.
         """
         if hasattr(self, 'parsed_body'):
             return self.parsed_body
-        # In the normal course of things, _parse_body is set by parse_body_into_request()
-        if hasattr(self, '_parse_body'):
-            self.parsed_body = self._parse_body(self)
-            return self.parsed_body
-        return self.body_bytes
+        self.parsed_body = self.parse_body()
+        return self.parsed_body
 
     @body.setter
     def body(self, value):
         """Let the developer set the body to something if they want"""
         self.parsed_body = value
+
+    def parse_body(self):
+        """Parses :attr:`body_bytes` using :attr:`headers` to determine which of
+        the :attr:`~pando.website.Website.body_parsers` should be used.
+
+        Raises :exc:`.UnknownBodyType` if the HTTP ``Content-Type`` isn't
+        recognized, and :exc:`.MalformedBody` if the parsing fails.
+
+        """
+
+        raw = self.body_bytes
+
+        # Note we ignore parameters for now
+        content_type = self.headers.get(b"Content-Type", b"").split(b';')[0]
+        content_type = content_type.decode('ascii', 'repr')
+
+        def default_parser(raw, headers):
+            if not content_type and not raw:
+                return {}
+            raise UnknownBodyType(content_type)
+
+        parser = self.website.body_parsers.get(content_type, default_parser)
+        try:
+            return parser(raw, self.headers)
+        except ValueError as e:
+            raise MalformedBody(str(e))
 
     # Special methods
     # ===============

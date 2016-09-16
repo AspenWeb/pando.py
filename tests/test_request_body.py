@@ -3,11 +3,13 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from io import BytesIO
+
 from pytest import raises
 
-from pando.http.request import Headers
-import pando.body_parsers as parsers
+from pando.http.request import Request
 from pando.exceptions import MalformedBody, UnknownBodyType
+from pando.website import Website
 
 
 FORMDATA = object()
@@ -22,13 +24,10 @@ def make_body(raw, headers=None, content_type=WWWFORM):
         headers = {b"Content-Type": defaults.get(content_type, content_type)}
     if not b'content-length' in headers:
         headers[b'Content-length'] = str(len(raw)).encode('ascii')
-    body_parsers = {
-            "application/json": parsers.jsondata,
-            "application/x-www-form-urlencoded": parsers.formdata,
-            "multipart/form-data": parsers.formdata
-    }
     headers[b'Host'] = b'Blah'
-    return parsers.parse_body(raw, Headers(headers), body_parsers)
+    website = Website()
+    request = Request(website, body=BytesIO(raw), headers=headers)
+    return request.body
 
 
 def test_body_is_unparsed_for_empty_content_type():
