@@ -17,7 +17,7 @@ from __future__ import unicode_literals
 
 from .website import Website
 
-#: This is the WSGI callable, an instance of :py:class:`.Website`.
+#: This is the WSGI callable, an instance of :class:`.Website`.
 website = Website()
 
 #: Alias of ``website``. A number of WSGI servers look for this name by default,

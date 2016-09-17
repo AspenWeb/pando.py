@@ -13,12 +13,6 @@ from pando.http.baseheaders import BaseHeaders
 from pando.exceptions import MalformedHeader
 
 
-def test_request_line_raw_works(harness):
-    request = harness.make_request()
-    actual = request.line.raw
-    expected = b"GET / HTTP/1.1"
-    assert actual == expected
-
 def test_raw_is_raw():
     request = Request()
     expected = "GET / HTTP/1.1\r\nHost: localhost\r\n\r\n"
@@ -34,15 +28,9 @@ def test_request_line_version_defaults_to_HTTP_1_1(harness):
     expected = (1, 1)
     assert actual == expected
 
-def test_request_line_version_raw_works(harness):
-    request = harness.make_request()
-    actual = request.line.version.raw
-    expected = b"HTTP/1.1"
-    assert actual == expected
-
 def test_allow_default_method_is_GET(harness):
     request = harness.make_request()
-    expected = 'GET'
+    expected = b'GET'
     actual = request.line.method
     assert actual == expected
 
@@ -66,14 +54,14 @@ def test_allow_can_handle_lowercase(harness):
 
 def test_methods_start_with_GET(harness):
     request = harness.make_request()
-    expected = "GET"
+    expected = b"GET"
     actual = request.line.method
     assert actual == expected
 
 def test_methods_changing_changes(harness):
     request = harness.make_request()
-    request.line.method = 'POST'
-    expected = "POST"
+    request.line.method = b'POST'
+    expected = b"POST"
     actual = request.line.method
     assert actual == expected
 
@@ -140,7 +128,7 @@ def test_method_alias_is_read_only(harness):
 
 def test_path_alias_is_readable(harness):
     request = harness.make_request()
-    assert request.path.raw == '/'
+    assert request.path.decoded == '/'
 
 def test_path_alias_is_read_only(harness):
     request = harness.make_request()

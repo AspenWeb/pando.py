@@ -30,9 +30,10 @@ from __future__ import unicode_literals
 
 from io import BytesIO
 import re
+import string
 import sys
 
-from six import PY2, text_type
+from six import PY2
 import six.moves.urllib.parse as urlparse
 
 from aspen.http.request import Path as _Path, Querystring as _Querystring
@@ -121,33 +122,6 @@ def kick_against_goad(environ):
     return method, uri, server, version, headers, body
 
 
-# *WithRaw
-# ========
-# A few parts of the Request object model use these generic objects.
-
-class IntWithRaw(int):
-    """Generic subclass of int to store the underlying raw bytestring.
-    """
-
-    def __new__(cls, i):
-        if i is None:
-            i = 0
-        obj = super(IntWithRaw, cls).__new__(cls, i)
-        obj.raw = str(i)
-        return obj
-
-class UnicodeWithRaw(text_type):
-    """Generic subclass of unicode to store the underlying raw bytestring.
-    """
-
-    __slots__ = ['raw']
-
-    def __new__(cls, raw, encoding='UTF-8'):
-        obj = super(UnicodeWithRaw, cls).__new__(cls, raw.decode(encoding))
-        obj.raw = raw
-        return obj
-
-
 ###########
 # Request #
 ###########
@@ -223,15 +197,15 @@ class Request(str):
 
     @property
     def method(self):
-        return self.line.method
+        return self.line.method.as_text
 
     @property
     def path(self):
-        return self.line.uri.path
+        return self.line.uri.path.mapping
 
     @property
     def qs(self):
-        return self.line.uri.querystring
+        return self.line.uri.querystring.mapping
 
     @property
     def cookie(self):
@@ -271,7 +245,7 @@ class Request(str):
         """
         if not self._raw:
             bs = (
-                self.line.raw + b'\r\n' +
+                self.line + b'\r\n' +
                 self.headers.raw + b'\r\n\r\n' +
                 self.raw_body
             )
@@ -303,7 +277,7 @@ class Request(str):
 
         """
         methods = [x.upper() for x in methods]
-        if self.line.method not in methods:
+        if self.method not in methods:
             raise Response(405, headers={
                 b'Allow': b', '.join(m.encode('ascii') for m in methods)
             })
@@ -318,11 +292,9 @@ class Request(str):
 # Request -> Line
 # ---------------
 
-class Line(text_type):
+class Line(bytes):
     """Represent the first line of an HTTP Request message.
     """
-
-    __slots__ = ['method', 'uri', 'version', 'raw']
 
     def __new__(cls, method, uri, version):
         """Takes three bytestrings.
@@ -331,162 +303,207 @@ class Line(text_type):
         method = Method(method)
         uri = URI(uri)
         version = Version(version)
-        decoded = " ".join([method, uri, version])
 
-        obj = super(Line, cls).__new__(cls, decoded)
+        obj = super(Line, cls).__new__(cls, raw)
         obj.method = method
         obj.uri = uri
         obj.version = version
-        obj.raw = raw
         return obj
-
 
 
 # Request -> Method
 # -----------------
 
 STANDARD_METHODS = set("OPTIONS GET HEAD POST PUT DELETE TRACE CONNECT".split())
+"""A set containing the 8 basic HTTP methods.
 
-SEPARATORS = ("(", ")", "<", ">", "@", ",", ";", ":", "\\", '"', "/", "[", "]",
-              "?", "=", "{", "}", " ", "\t")
+If your application uses other standard methods (see the `HTTP Method Registry
+<http://www.iana.org/assignments/http-methods/http-methods.xhtml>`_), or custom
+methods, you can add them to this set to improve performance.
+"""
 
-CHARS_ALLOWED_IN_METHOD = set(chr(i) for i in range(32, 127)) - set(SEPARATORS)
+CHARS_ALLOWED_IN_METHOD = set(
+    string.ascii_letters + string.digits + "!#$%&'*+-.^_`|~"
+)
 
-class Method(text_type):
+class Method(bytes):
     """Represent the HTTP method in the first line of an HTTP Request message.
-
-    Spec sez ASCII subset::
-
-        Method         = "OPTIONS"                ; Section 9.2
-                       | "GET"                    ; Section 9.3
-                       | "HEAD"                   ; Section 9.4
-                       | "POST"                   ; Section 9.5
-                       | "PUT"                    ; Section 9.6
-                       | "DELETE"                 ; Section 9.7
-                       | "TRACE"                  ; Section 9.8
-                       | "CONNECT"                ; Section 9.9
-                       | extension-method
-        extension-method = token
-
-        (http://www.w3.org/Protocols/rfc2616/rfc2616-sec5.html#sec5.1.1)
-
-        CHAR           = <any US-ASCII character (octets 0 - 127)>
-        ...
-        CTL            = <any US-ASCII control character
-                         (octets 0 - 31) and DEL (127)>
-        ...
-        SP             = <US-ASCII SP, space (32)>
-        HT             = <US-ASCII HT, horizontal-tab (9)>
-        ...
-        token          = 1*<any CHAR except CTLs or separators>
-        separators     = "(" | ")" | "<" | ">" | "@"
-                       | "," | ";" | ":" | "\" | <">
-                       | "/" | "[" | "]" | "?" | "="
-                       | "{" | "}" | SP | HT
-
-        (http://www.w3.org/Protocols/rfc2616/rfc2616-sec2.html#sec2.2)
-
     """
 
-    __slots__ = ['raw']
-
     def __new__(cls, raw):
+        """Creates a new Method object.
+
+        Raises a 400 :class:`.Response` if the given bytestring is not a
+        valid HTTP method, per RFC7230 section 3.1.1:
+
+            Recipients of an invalid request-line SHOULD respond with either a
+            400 (Bad Request) error or a 301 (Moved Permanently) redirect with
+            the request-target properly encoded.
+
+        `RFC7230 <https://tools.ietf.org/html/rfc7230>`_ defines valid methods as::
+
+            method         = token
+
+            token          = 1*tchar
+
+            tchar          = "!" / "#" / "$" / "%" / "&" / "'" / "*"
+                           / "+" / "-" / "." / "^" / "_" / "`" / "|" / "~"
+                           / DIGIT / ALPHA
+                           ; any VCHAR, except delimiters
+
+        """
         decoded = raw.decode('ascii', 'repr')
         if decoded not in STANDARD_METHODS: # fast for 99.999% case
-            for i, char in enumerate(decoded):
-                if (i == 64) or (char not in CHARS_ALLOWED_IN_METHOD):
+            if any(char not in CHARS_ALLOWED_IN_METHOD for char in decoded):
+                raise Response(400, "Your request method violates RFC 7230: %s" % decoded)
 
-                    # "This is the appropriate response when the server does
-                    #  not recognize the request method and is not capable of
-                    #  supporting it for any resource."
-                    #
-                    #  http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html
-
-                    raise Response(501, "Your request-method violates RFC "
-                                        "2616: %s" % decoded)
-
-        obj = super(Method, cls).__new__(cls, decoded)
-        obj.raw = raw
+        obj = super(Method, cls).__new__(cls, raw)
+        obj.as_text = decoded
         return obj
 
 
 # Request -> Line -> URI
 # ......................
 
-class URI(text_type):
+class URI(bytes):
     """Represent the Request-URI in the first line of an HTTP Request message.
     """
-
-    __slots__ = ['path', 'querystring', 'raw']
 
     def __new__(cls, raw):
         """Creates a URI object from a raw bytestring.
 
-        We require that ``raw`` be decodable with ASCII, if it isn't a
-        :py:exc:`UnicodeDecodeError` is raised.
+        We require that ``raw`` be decodable with ASCII, if it isn't a 400
+        :class:`Response` is raised.
         """
-        decoded = raw.decode('ASCII')
-        parts = decoded.split('?', 1)
+        parts = raw.split(b'?', 1)
         path = Path(parts[0])
-        querystring = Querystring(parts[1] if len(parts) > 1 else '')
-        obj = super(URI, cls).__new__(cls, decoded)
+        querystring = Querystring(parts[1] if len(parts) > 1 else b'')
+        decoded = path.decoded
+        if len(parts) > 1:
+            decoded += '?' + querystring.decoded
+        obj = super(URI, cls).__new__(cls, raw)
         obj.path = path
         obj.querystring = querystring
-        obj.raw = raw
+        obj.decoded = decoded
         return obj
 
 
 # Request -> Line -> URI -> Path
 
-class Path(Mapping, _Path):
+class Path(bytes):
+    """
+    .. attribute:: decoded
+
+        The path decoded to text.
+
+    .. attribute:: mapping
+
+        :class:`.Mapping` of path variables.
+
+    .. attribute:: parts
+
+        List of :class:`~aspen.http.request.PathPart` instances.
+    """
+
+    def __new__(cls, raw):
+        """Creates a Path object from a raw bytestring.
+        """
+        try:
+            decoded = raw.decode('ascii')
+        except UnicodeError:
+            safe = raw.decode('ascii', 'repr')
+            raise Response(400, "Request path isn't ascii: %s" % safe)
+        mapping = _PathMapping(decoded)
+        obj = super(Path, cls).__new__(cls, raw)
+        obj.decoded = decoded
+        obj.mapping = mapping
+        obj.parts = mapping.parts
+        return obj
+
+
+class _PathMapping(Mapping, _Path):
     pass
 
 
 # Request -> Line -> URI -> Querystring
 
-class Querystring(Mapping, _Querystring):
+class Querystring(bytes):
+    """
+    .. attribute:: decoded
+
+        The querystring decoded to text.
+
+    .. attribute:: mapping
+
+        :class:`.Mapping` of querystring variables.
+    """
+
+    def __new__(cls, raw):
+        """Creates a Querystring object from a raw bytestring.
+        """
+        try:
+            decoded = raw.decode('ascii')
+        except UnicodeError:
+            safe = raw.decode('ascii', 'repr')
+            raise Response(400, "Request querystring isn't ascii: %s" % safe)
+        mapping = _QuerystringMapping(decoded)
+        obj = super(Querystring, cls).__new__(cls, raw)
+        obj.decoded = decoded
+        obj.mapping = mapping
+        return obj
+
+
+class _QuerystringMapping(Mapping, _Querystring):
     pass
 
 
 # Request -> Line -> Version
 # ..........................
 
-versions = { b'HTTP/0.9': ((0, 9), 'HTTP/0.9')
-           , b'HTTP/1.0': ((1, 0), 'HTTP/1.0')
-           , b'HTTP/1.1': ((1, 1), 'HTTP/1.1')
-            }  # Go ahead, find me another version.
+versions = { b'HTTP/0.9': (0, 9)
+           , b'HTTP/1.0': (1, 0)
+           , b'HTTP/1.1': (1, 1)
+            }
 
-version_re = re.compile(br'HTTP/\d+\.\d+')
+version_re = re.compile(br'^HTTP/([0-9])\.([0-9])$')
 
-class Version(text_type):
-    """Represent the version in an HTTP status line. HTTP/1.1. Like that.
+class Version(bytes):
+    """Holds the version from the HTTP status line, e.g. HTTP/1.1.
 
-        HTTP-Version   = "HTTP" "/" 1*DIGIT "." 1*DIGIT
+    Accessing the :attr:`info`, :attr:`major`, or :attr:`minor`
+    attribute will raise a 400 :class:`.Response` if the version is invalid.
 
-        (http://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html)
+    `RFC7230 section 2.6 <https://tools.ietf.org/html/rfc7230#section-2.6>`_::
+
+        HTTP-version  = HTTP-name "/" DIGIT "." DIGIT
+        HTTP-name     = %x48.54.54.50 ; "HTTP", case-sensitive
 
     """
 
-    __slots__ = ['major', 'minor', 'info', 'raw']
+    __slots__ = []
 
-    def __new__(cls, raw):
-        version = versions.get(raw, None)
-        if version is None: # fast for 99.999999% case
-            safe = raw.decode('ascii', 'repr')
-            if version_re.match(raw) is None:
+    @property
+    def info(self):
+        version = versions.get(self, None)
+        if version is not None:  # fast for 99.999999% case
+            return version
+        else:
+            safe = self.safe_decode()
+            m = version_re.match(self)
+            if m is None:
                 raise Response(400, "Bad HTTP version: %s." % safe)
-            else:
-                raise Response(505, "HTTP Version Not Supported: %s. This "
-                                    "server supports HTTP/0.9, HTTP/1.0, and "
-                                    "HTTP/1.1." % safe)
-        version, decoded = version
+            return int(m.group(1)), int(m.group(2))
 
-        obj = super(Version, cls).__new__(cls, decoded)
-        obj.major = version[0]  # 1
-        obj.minor = version[1]  # 1
-        obj.info = version      # (1, 1)
-        obj.raw = raw           # 'HTTP/1.1'
-        return obj
+    @property
+    def major(self):
+        return self.info[0]
+
+    @property
+    def minor(self):
+        return self.info[1]
+
+    def safe_decode(self):
+        return self.decode('ascii', 'repr')
 
 
 # Request -> Headers
@@ -508,7 +525,10 @@ class Headers(BaseHeaders):
         # we prefer X-Forwarded-For if that is available.
 
         host = self.get(b'X-Forwarded-Host', self[b'Host']) # KeyError raises 400
-        self.host = UnicodeWithRaw(host, encoding='idna')
+        try:
+            self.host = host.decode('idna')
+        except UnicodeError:
+            self.host = ''
 
 
         # Scheme

@@ -13,7 +13,7 @@ from aspen.http.mapping import Mapping as _Mapping
 class Mapping(_Mapping):
 
     def keyerror(self, name):
-        """Raises a 400 :py:class:`~pando.http.response.Response`.
+        """Raises a 400 :class:`~pando.http.response.Response`.
         """
         from .response import Response
         raise Response(400, "Missing key: %s" % repr(name))

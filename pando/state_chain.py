@@ -9,7 +9,7 @@ processing. The actual parsing is done by `Algorithm.from_dotted_name()
 <http://algorithm-py.readthedocs.org/en/latest/#algorithm.Algorithm.from_dotted_name>`_.
 
 Dependencies are injected as specified in each function definition. Each function
-should return :py:obj:`None`, or a dictionary that will be used to update the
+should return :obj:`None`, or a dictionary that will be used to update the
 state in the calling routine.
 
 It's important that function names remain relatively stable over time, as
@@ -68,7 +68,7 @@ def request_available():
 
 def raise_200_for_OPTIONS(request):
     """A hook to return 200 to an 'OPTIONS \*' request"""
-    if request.line.method == "OPTIONS" and request.line.uri == "*":
+    if request.line.method == b"OPTIONS" and request.line.uri == "*":
         raise Response(200)
 
 
@@ -230,7 +230,7 @@ def log_result_of_request(website, request=None, dispatch_result=None, response=
                 fspath = '.' + fspath
         else:
             fspath = '...' + fspath[-21:]
-        msg = "%-24s %s" % (request.line.uri.path.raw, fspath)
+        msg = "%-24s %s" % (request.line.uri.path.decoded, fspath)
 
 
     # Where was response raised from?
