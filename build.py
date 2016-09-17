@@ -10,13 +10,11 @@ from fabricate import ExecutionError, main, run, shell, autoclean
 # Core Executables
 # ================
 
+# See https://github.com/AspenWeb/pando.py/issues/542
 USE_PY_VENV = sys.version_info > (3, 3)
 
 ENV_ARGS = [
-    '-m', 'venv'
-] if USE_PY_VENV else [
-    '-m', 'virtualenv',
-    '--prompt=[pando]',
+    '-m', ('venv' if USE_PY_VENV else 'virtualenv')
 ]
 
 
