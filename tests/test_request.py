@@ -14,13 +14,13 @@ from pando.exceptions import MalformedHeader
 
 
 def test_raw_is_raw():
-    request = Request()
+    request = Request(None)
     expected = "GET / HTTP/1.1\r\nHost: localhost\r\n\r\n"
     actual = str(request)
     assert actual == expected
 
 def test_blank_by_default():
-    raises(AttributeError, lambda: Request().version)
+    raises(AttributeError, lambda: Request(None).version)
 
 def test_request_line_version_defaults_to_HTTP_1_1(harness):
     request = harness.make_request()
@@ -220,7 +220,7 @@ def test_from_wsgi_tolerates_non_ascii_environ():
     environ[b'wsgi.input'] = None
     environ[b'HTTP_\xff'] = b'\xdead\xbeef'
     environ['HTTP_À'] = 'µ'
-    headers = Request.from_wsgi(environ).headers
+    headers = Request.from_wsgi(None, environ).headers
     assert headers[b'\xff'] is environ[b'HTTP_\xff']
     if str is bytes:
         assert headers['À'] is environ['HTTP_À']

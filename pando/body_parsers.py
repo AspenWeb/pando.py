@@ -21,10 +21,8 @@ from io import BytesIO
 from six import PY3
 
 from . import json
-from .utils import typecheck
-from .http.request import Headers
 from .http.mapping import CaseInsensitiveMapping, Mapping
-from .exceptions import MalformedBody, UnknownBodyType
+from .exceptions import MalformedBody
 
 
 def formdata(raw, headers):
@@ -72,30 +70,4 @@ def jsondata(raw, headers):
     try:
         return json.loads(raw.decode('utf8'))
     except UnicodeDecodeError as e:
-        raise MalformedBody(str(e))
-
-
-def parse_body(raw, headers, parsers):
-    """Parses the ``raw`` bytestring using the ``headers`` to determine which of
-    the ``parsers`` should be used.
-
-    Raises :exc:`.UnknownBodyType` if the HTTP ``Content-Type`` isn't recognized,
-    and :exc:`.MalformedBody` if the parser raises a :exc:`ValueError`.
-
-    """
-
-    typecheck(headers, Headers)
-
-    # Note we ignore parameters for now
-    content_type = headers.get(b"Content-Type", b"").split(b';')[0]
-    content_type = content_type.decode('ascii', 'repr')
-
-    def default_parser(raw, headers):
-        if not content_type and not raw:
-            return {}
-        raise UnknownBodyType(content_type)
-
-    try:
-        return parsers.get(content_type, default_parser)(raw, headers)
-    except ValueError as e:
         raise MalformedBody(str(e))

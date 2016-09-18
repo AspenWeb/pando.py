@@ -37,7 +37,6 @@ def inbound_responder(*args, **kwargs):
         authed, response = auth.authorized(request)
         if not authed:
             raise response
-        return request
     return httpbasic_inbound_responder
 
 

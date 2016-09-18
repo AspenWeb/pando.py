@@ -28,7 +28,6 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 
-from io import BytesIO
 import re
 import string
 import sys
@@ -39,6 +38,7 @@ import six.moves.urllib.parse as urlparse
 from aspen.http.request import Path as _Path, Querystring as _Querystring
 
 from .. import Response
+from ..exceptions import MalformedBody, UnknownBodyType
 from ..utils import try_encode
 from .baseheaders import BaseHeaders
 from .mapping import Mapping
@@ -126,35 +126,31 @@ def kick_against_goad(environ):
 # Request #
 ###########
 
-class Request(str):
-    """Represent an HTTP Request message. It's bytes, dammit. But lazy.
+class Request(object):
+    """Represent an HTTP Request message.
+
+    .. attribute:: line
+
+        See :class:`.Line`.
+
+    .. attribute:: headers
+
+        A mapping of HTTP headers. See :class:`.Headers`.
+
     """
 
-    resource = None
-    original_resource = None
-    server_software = ''
-
-    # NB: no __slots__ for str:
-    #   http://docs.python.org/reference/datamodel.html#__slots__
-
-
-    def __new__(cls, method=b'GET', uri=b'/', server_software=b'',
+    def __init__(self, website, method=b'GET', uri=b'/', server_software=b'',
                 version=b'HTTP/1.1', headers=b'', body=None):
-        """Takes five bytestrings and a file-like object.
+        """``body`` is expected to be a file-like object.
         """
-        obj = str.__new__(cls, '') # start with an empty string, see below for
-                                   # laziness
-        obj.server_software = server_software
+        self.website = website
+        self.server_software = server_software
+        self.body_stream = body
         try:
-            obj.line = Line(method, uri, version)
+            self.line = Line(method, uri, version)
             if not headers:
                 headers = b'Host: localhost'
-            obj.headers = Headers(headers)
-            if body is None:
-                body = BytesIO(b'')
-            raw_len = int(obj.headers.get(b'Content-length', b'') or b'0')
-            obj.raw_body = body.read(raw_len)
-            obj.context = {}
+            self.headers = Headers(headers)
         except UnicodeError:
             # Figure out where the error occurred.
             # ====================================
@@ -171,11 +167,8 @@ class Request(str):
             raise Response(400, "Request is undecodable. "
                                 "(%s:%d)" % (filename, frame.f_lineno))
 
-        return obj
-
-
     @classmethod
-    def from_wsgi(cls, environ):
+    def from_wsgi(cls, website, environ):
         """Given a WSGI environ, return a new instance of the class.
 
         The conversion from HTTP to WSGI is lossy. This method does its best to
@@ -189,11 +182,10 @@ class Request(str):
 
         """
         environ = {try_encode(k): try_encode(v) for k, v in environ.items()}
-        return cls(*kick_against_goad(environ))
+        return cls(website, *kick_against_goad(environ))
 
-
-    # Set up some aliases.
-    # ====================
+    # Aliases
+    # =======
 
     @property
     def method(self):
@@ -212,59 +204,96 @@ class Request(str):
         return self.headers.cookie
 
     @property
-    def body(self):
-        """Lazily parse the body.
+    def content_length(self):
+        """This property attempts to parse the ``Content-Length`` header.
 
-        If we don't have a parser that matches the request's ``Content-Type``,
-        then the raw body is returned as a bytestring.
+        Returns zero if the header is missing or empty.
+
+        Raises a 400 :class:`.Response` if the header is not a valid integer.
+        """
+        cl = self.headers.get(b'Content-Length') or b'0'
+        try:
+            return int(cl)
+        except ValueError:
+            safe = cl.decode('ascii', 'repr')
+            raise Response(400, "Content-Length is not a valid integer: %s" % safe)
+
+    @property
+    def body_bytes(self):
+        """Lazily read the whole request body.
+
+        Returns ``b''`` if the request doesn't have a body.
+        """
+        if self.body_stream is None:
+            return b''
+        if hasattr(self, '_body_bytes'):
+            return self._body_bytes
+        self._body_bytes = self.body_stream.read(self.content_length)
+        return self._body_bytes
+
+    @property
+    def body(self):
+        """This property calls :meth:`parse_body()` and caches the result.
         """
         if hasattr(self, 'parsed_body'):
             return self.parsed_body
-        # In the normal course of things, _parse_body is set by parse_body_into_request()
-        if hasattr(self, '_parse_body'):
-            self.parsed_body = self._parse_body(self)
-            return self.parsed_body
-        return self.raw_body
+        self.parsed_body = self.parse_body()
+        return self.parsed_body
 
     @body.setter
     def body(self, value):
         """Let the developer set the body to something if they want"""
         self.parsed_body = value
 
+    def parse_body(self):
+        """Parses :attr:`body_bytes` using :attr:`headers` to determine which of
+        the :attr:`~pando.website.Website.body_parsers` should be used.
 
-    # Extend str to lazily load bytes.
-    # ================================
-    # When working with a Request object interactively or in a debugging
-    # situation we want it to behave transparently string-like. We don't want
-    # to read bytes off the wire if we can avoid it, though, because for mega
-    # file uploads and such this could have a big impact.
+        Raises :exc:`.UnknownBodyType` if the HTTP ``Content-Type`` isn't
+        recognized, and :exc:`.MalformedBody` if the parsing fails.
 
-    _raw = "" # XXX We should reset this when subobjects are mutated.
+        """
+
+        raw = self.body_bytes
+
+        # Note we ignore parameters for now
+        content_type = self.headers.get(b"Content-Type", b"").split(b';')[0]
+        content_type = content_type.decode('ascii', 'repr')
+
+        def default_parser(raw, headers):
+            if not content_type and not raw:
+                return {}
+            raise UnknownBodyType(content_type)
+
+        parser = self.website.body_parsers.get(content_type, default_parser)
+        try:
+            return parser(raw, self.headers)
+        except ValueError as e:
+            raise MalformedBody(str(e))
+
+    # Special methods
+    # ===============
+
     def __str__(self):
         """Lazily load the body and return the whole message.
+
+        When working with a Request object interactively or in a debugging
+        situation we want it to behave transparently string-like. We don't want
+        to read bytes off the wire if we can avoid it, though, because for mega
+        file uploads and such this could have a big impact.
         """
-        if not self._raw:
-            bs = (
-                self.line + b'\r\n' +
-                self.headers.raw + b'\r\n\r\n' +
-                self.raw_body
-            )
-            self._raw = bs if PY2 else bs.decode('ascii')
-        return self._raw
+        bs = (
+            self.line + b'\r\n' +
+            self.headers.raw + b'\r\n\r\n' +
+            self.body_bytes
+        )
+        return bs if PY2 else bs.decode('ascii')
 
     def __repr__(self):
         return str.__repr__(str(self))
 
-    # str defines rich comparisons, so we have to extend those and not simply
-    # __cmp__ (http://docs.python.org/reference/datamodel.html#object.__lt__)
-
-    def __lt__(self, other): return str.__lt__(str(self), other)
-    def __le__(self, other): return str.__le__(str(self), other)
-    def __eq__(self, other): return str.__eq__(str(self), other)
-    def __ne__(self, other): return str.__ne__(str(self), other)
-    def __gt__(self, other): return str.__gt__(str(self), other)
-    def __ge__(self, other): return str.__ge__(str(self), other)
-
+    def __cmp__(self, other):
+        return str.__cmp__(str(self), other)
 
     # Public Methods
     # ==============

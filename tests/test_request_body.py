@@ -3,11 +3,14 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from io import BytesIO
+
 from pytest import raises
 
-from pando.http.request import Headers
-import pando.body_parsers as parsers
 from pando.exceptions import MalformedBody, UnknownBodyType
+from pando.http.request import Request
+from pando.http.response import Response
+from pando.website import Website
 
 
 FORMDATA = object()
@@ -20,15 +23,12 @@ def make_body(raw, headers=None, content_type=WWWFORM):
         defaults = { FORMDATA: b"multipart/form-data; boundary=AaB03x",
                      WWWFORM: b"application/x-www-form-urlencoded" }
         headers = {b"Content-Type": defaults.get(content_type, content_type)}
-    if not b'content-length' in headers:
-        headers[b'Content-length'] = str(len(raw)).encode('ascii')
-    body_parsers = {
-            "application/json": parsers.jsondata,
-            "application/x-www-form-urlencoded": parsers.formdata,
-            "multipart/form-data": parsers.formdata
-    }
+    if not b'Content-Length' in headers:
+        headers[b'Content-Length'] = str(len(raw)).encode('ascii')
     headers[b'Host'] = b'Blah'
-    return parsers.parse_body(raw, Headers(headers), body_parsers)
+    website = Website()
+    request = Request(website, body=BytesIO(raw), headers=headers)
+    return request.body
 
 
 def test_body_is_unparsed_for_empty_content_type():
@@ -82,3 +82,11 @@ def test_malformed_body_jsondata():
 def test_malformed_body_formdata():
     with raises(MalformedBody):
         make_body("", content_type=b"multipart/form-data; boundary=\0")
+
+def test_bad_content_length():
+    with raises(Response) as x:
+        make_body("{}", headers={
+            b'Content-Length': b'NaN',
+            b'Content-Type': b'application/json',
+        })
+    assert x.value.code == 400

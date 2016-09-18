@@ -32,7 +32,6 @@ from aspen.request_processor.dispatcher import (
 )
 from first import first as _first
 
-from . import body_parsers
 from .logging import log as _log
 from .logging import log_dammit as _log_dammit
 from .http.request import Request
@@ -40,8 +39,8 @@ from .http.response import Response
 from .utils import _import_from
 
 
-def parse_environ_into_request(environ):
-    return {'request': Request.from_wsgi(environ)}
+def parse_environ_into_request(environ, website):
+    return {'request': Request.from_wsgi(website, environ)}
 
 
 def insert_variables_for_aspen(request, website):
@@ -52,13 +51,6 @@ def insert_variables_for_aspen(request, website):
         'querystring': request.qs,
         'request_processor': website.request_processor,
     }
-
-
-def parse_body_into_request(request, website):
-    request._parse_body = lambda _: body_parsers.parse_body( request.raw_body
-                                                           , request.headers
-                                                           , website.body_parsers
-                                                            )
 
 
 def request_available():
