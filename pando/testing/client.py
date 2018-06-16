@@ -35,7 +35,7 @@ class FileUpload(object):
         self.filename = filename
         self.content_type = (
             content_type or
-            mimetypes.guess_type(filename.decode('ascii', 'repr'))[0].encode('ascii')
+            mimetypes.guess_type(filename.decode('ascii', 'backslashreplace'))[0].encode('ascii')
         )
 
 

@@ -16,6 +16,7 @@ from six.moves.urllib.parse import quote
 from algorithm import Algorithm
 from aspen.configuration import configure, parse
 from aspen.request_processor import KNOBS as ASPEN_KNOBS, RequestProcessor
+from aspen.simplates.simplate import Simplate
 
 from . import body_parsers
 from .http.response import Response
@@ -59,15 +60,17 @@ class Website(object):
         self.state_chain = pando_chain
 
         # copy aspen's config variables, for backward compatibility
-        extra = 'typecasters renderer_factories default_renderers_by_media_type'
-        for key in list(ASPEN_KNOBS) + extra.split():
+        extra = ['typecasters']
+        for key in list(ASPEN_KNOBS) + extra:
             self.__dict__[key] = self.request_processor.__dict__[key]
+        for key in ('renderer_factories', 'default_renderers_by_media_type'):
+            self.__dict__[key] = Simplate.__dict__[key]
 
         # load our own config variables
         configure(KNOBS, self.__dict__, 'PANDO_', kwargs)
 
         # add ourself to the initial context of simplates
-        self.request_processor.simplate_defaults.initial_context['website'] = self
+        Simplate.defaults.initial_context['website'] = self
 
         # load bodyparsers
         #: Mapping of content types to parsing functions.
@@ -148,8 +151,8 @@ class Website(object):
         if not self.base_url:
             return
 
-        scheme = self._extract_scheme(request).decode('ascii', 'repr')
-        host = self._extract_host(request).decode('ascii', 'repr')
+        scheme = self._extract_scheme(request).decode('ascii', 'backslashreplace')
+        host = self._extract_host(request).decode('ascii', 'backslashreplace')
 
         actual = scheme + "://" + host
 

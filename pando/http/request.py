@@ -215,7 +215,7 @@ class Request(object):
         try:
             return int(cl)
         except ValueError:
-            safe = cl.decode('ascii', 'repr')
+            safe = cl.decode('ascii', 'backslashreplace')
             raise Response(400, "Content-Length is not a valid integer: %s" % safe)
 
     @property
@@ -258,7 +258,7 @@ class Request(object):
 
         # Note we ignore parameters for now
         content_type = self.headers.get(b"Content-Type", b"").split(b';')[0]
-        content_type = content_type.decode('ascii', 'repr')
+        content_type = content_type.decode('ascii', 'backslashreplace')
 
         def default_parser(raw, headers):
             if not content_type and not raw:
@@ -381,7 +381,7 @@ class Method(bytes):
                            ; any VCHAR, except delimiters
 
         """
-        decoded = raw.decode('ascii', 'repr')
+        decoded = raw.decode('ascii', 'backslashreplace')
         if decoded not in STANDARD_METHODS: # fast for 99.999% case
             if any(char not in CHARS_ALLOWED_IN_METHOD for char in decoded):
                 raise Response(400, "Your request method violates RFC 7230: %s" % decoded)
@@ -440,7 +440,7 @@ class Path(bytes):
         try:
             decoded = raw.decode('ascii')
         except UnicodeError:
-            safe = raw.decode('ascii', 'repr')
+            safe = raw.decode('ascii', 'backslashreplace')
             raise Response(400, "Request path isn't ascii: %s" % safe)
         mapping = _PathMapping(decoded)
         obj = super(Path, cls).__new__(cls, raw)
@@ -473,7 +473,7 @@ class Querystring(bytes):
         try:
             decoded = raw.decode('ascii')
         except UnicodeError:
-            safe = raw.decode('ascii', 'repr')
+            safe = raw.decode('ascii', 'backslashreplace')
             raise Response(400, "Request querystring isn't ascii: %s" % safe)
         mapping = _QuerystringMapping(decoded)
         obj = super(Querystring, cls).__new__(cls, raw)
@@ -532,7 +532,7 @@ class Version(bytes):
         return self.info[1]
 
     def safe_decode(self):
-        return self.decode('ascii', 'repr')
+        return self.decode('ascii', 'backslashreplace')
 
 
 # Request -> Headers
