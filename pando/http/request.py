@@ -33,12 +33,12 @@ import string
 import sys
 
 from six import PY2
-import six.moves.urllib.parse as urlparse
 
 from aspen.http.request import Path as _Path, Querystring as _Querystring
 
 from .. import Response
 from ..exceptions import MalformedBody, UnknownBodyType
+from ..urlparse import quote, quote_plus
 from ..utils import try_encode
 from .baseheaders import BaseHeaders
 from .mapping import Mapping
@@ -80,7 +80,7 @@ def make_franken_uri(path, qs):
 
             # Some servers (gevent) clobber %2F inside of paths, such
             # that we see /foo%2Fbar/ as /foo/bar/. The %2F is lost to us.
-            parts = [urlparse.quote(x) for x in quoted_slash_re.split(path)]
+            parts = [quote(x) for x in quoted_slash_re.split(path)]
             path = b"%2F".join(parts)
 
     if qs:
@@ -90,7 +90,7 @@ def make_franken_uri(path, qs):
             # Cross our fingers and hope we have UTF-8 bytes from MSIE. Let's
             # perform the percent-encoding that we would expect MSIE to have
             # done for us.
-            qs = urlparse.quote_plus(qs)
+            qs = quote_plus(qs)
         qs = b'?' + qs
 
     return path + qs
