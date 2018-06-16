@@ -1,20 +1,22 @@
+dist: trusty
 sudo: false
 branches:
   only:
     - master
 language: python
 python:
+  - 2.7
+  - 3.4
   - 3.5
+  - 3.6
 before_install:
-  - pip install --upgrade pip
-  - pip --version
-install: python build.py dev
-script: python build.py test_cov
+  - travis_retry pip install tox-travis
+script: tox
 notifications:
   email: false
-  irc: 
+  irc:
     channels:
-      - "irc.freenode.org#aspen"
+      - "chat.freenode.net#aspen"
     on_success: change
     on_failure: always
     template:
