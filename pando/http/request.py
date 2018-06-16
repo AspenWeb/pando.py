@@ -146,26 +146,10 @@ class Request(object):
         self.website = website
         self.server_software = server_software
         self.body_stream = body
-        try:
-            self.line = Line(method, uri, version)
-            if not headers:
-                headers = b'Host: localhost'
-            self.headers = Headers(headers)
-        except UnicodeError:
-            # Figure out where the error occurred.
-            # ====================================
-            # This gives us *something* to go on when we have a Request we
-            # can't parse. XXX Make this more nicer. That will require wrapping
-            # every point in Request parsing where we decode bytes.
-
-            tb = sys.exc_info()[2]
-            while tb.tb_next is not None:
-                tb = tb.tb_next
-            frame = tb.tb_frame
-            filename = tb.tb_frame.f_code.co_filename
-
-            raise Response(400, "Request is undecodable. "
-                                "(%s:%d)" % (filename, frame.f_lineno))
+        self.line = Line(method, uri, version)
+        if not headers:
+            headers = b'Host: localhost'
+        self.headers = Headers(headers)
 
     @classmethod
     def from_wsgi(cls, website, environ):
@@ -182,7 +166,23 @@ class Request(object):
 
         """
         environ = {try_encode(k): try_encode(v) for k, v in environ.items()}
-        return cls(website, *kick_against_goad(environ))
+        try:
+            return cls(website, *kick_against_goad(environ))
+        except UnicodeError:
+            # Figure out where the error occurred.
+            # ====================================
+            # This gives us *something* to go on when we have a Request we
+            # can't parse. XXX Make this more nicer. That will require wrapping
+            # every point in Request parsing where we decode bytes.
+
+            tb = sys.exc_info()[2]
+            while tb.tb_next is not None:
+                tb = tb.tb_next
+            frame = tb.tb_frame
+            filename = tb.tb_frame.f_code.co_filename
+
+            raise Response(400, "Request is undecodable. "
+                                "(%s:%d)" % (filename, frame.f_lineno))
 
     # Aliases
     # =======
