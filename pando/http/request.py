@@ -542,7 +542,7 @@ class Headers(BaseHeaders):
         # Host
         # ====
         # Per the spec, respond with 400 if no Host header is given. However,
-        # we prefer X-Forwarded-For if that is available.
+        # we prefer X-Forwarded-Host if that is available.
 
         host = self.get(b'X-Forwarded-Host', self[b'Host']) # KeyError raises 400
         try:
