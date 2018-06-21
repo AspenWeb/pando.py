@@ -26,10 +26,9 @@ from __future__ import unicode_literals
 import traceback
 
 from aspen import resources
+from aspen.exceptions import NotFound, Redirect, UnindexedDirectory
 from aspen.http.resource import NegotiationFailure
-from aspen.request_processor.dispatcher import (
-    DispatchResult, DispatchStatus, NotFound, Redirect, UnindexedDirectory,
-)
+from aspen.request_processor.dispatcher import DispatchResult, DispatchStatus
 from first import first as _first
 
 from .logging import log as _log
@@ -46,7 +45,7 @@ def parse_environ_into_request(environ, website):
 def insert_variables_for_aspen(request, website):
     accept = request.headers.get(b'Accept')
     return {
-        'accept_header': None if accept is None else accept.decode('ascii', 'repr'),
+        'accept_header': None if accept is None else accept.decode('ascii', 'backslashreplace'),
         'path': request.path,
         'querystring': request.qs,
         'request_processor': website.request_processor,
