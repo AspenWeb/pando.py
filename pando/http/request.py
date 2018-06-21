@@ -33,12 +33,12 @@ import string
 import sys
 
 from six import PY2
-import six.moves.urllib.parse as urlparse
 
 from aspen.http.request import Path as _Path, Querystring as _Querystring
 
 from .. import Response
 from ..exceptions import MalformedBody, UnknownBodyType
+from ..urlparse import quote, quote_plus
 from ..utils import try_encode
 from .baseheaders import BaseHeaders
 from .mapping import Mapping
@@ -80,7 +80,7 @@ def make_franken_uri(path, qs):
 
             # Some servers (gevent) clobber %2F inside of paths, such
             # that we see /foo%2Fbar/ as /foo/bar/. The %2F is lost to us.
-            parts = [urlparse.quote(x) for x in quoted_slash_re.split(path)]
+            parts = [quote(x) for x in quoted_slash_re.split(path)]
             path = b"%2F".join(parts)
 
     if qs:
@@ -90,7 +90,7 @@ def make_franken_uri(path, qs):
             # Cross our fingers and hope we have UTF-8 bytes from MSIE. Let's
             # perform the percent-encoding that we would expect MSIE to have
             # done for us.
-            qs = urlparse.quote_plus(qs)
+            qs = quote_plus(qs)
         qs = b'?' + qs
 
     return path + qs
@@ -146,26 +146,10 @@ class Request(object):
         self.website = website
         self.server_software = server_software
         self.body_stream = body
-        try:
-            self.line = Line(method, uri, version)
-            if not headers:
-                headers = b'Host: localhost'
-            self.headers = Headers(headers)
-        except UnicodeError:
-            # Figure out where the error occurred.
-            # ====================================
-            # This gives us *something* to go on when we have a Request we
-            # can't parse. XXX Make this more nicer. That will require wrapping
-            # every point in Request parsing where we decode bytes.
-
-            tb = sys.exc_info()[2]
-            while tb.tb_next is not None:
-                tb = tb.tb_next
-            frame = tb.tb_frame
-            filename = tb.tb_frame.f_code.co_filename
-
-            raise Response(400, "Request is undecodable. "
-                                "(%s:%d)" % (filename, frame.f_lineno))
+        self.line = Line(method, uri, version)
+        if not headers:
+            headers = b'Host: localhost'
+        self.headers = Headers(headers)
 
     @classmethod
     def from_wsgi(cls, website, environ):
@@ -182,7 +166,23 @@ class Request(object):
 
         """
         environ = {try_encode(k): try_encode(v) for k, v in environ.items()}
-        return cls(website, *kick_against_goad(environ))
+        try:
+            return cls(website, *kick_against_goad(environ))
+        except UnicodeError:
+            # Figure out where the error occurred.
+            # ====================================
+            # This gives us *something* to go on when we have a Request we
+            # can't parse. XXX Make this more nicer. That will require wrapping
+            # every point in Request parsing where we decode bytes.
+
+            tb = sys.exc_info()[2]
+            while tb.tb_next is not None:
+                tb = tb.tb_next
+            frame = tb.tb_frame
+            filename = tb.tb_frame.f_code.co_filename
+
+            raise Response(400, "Request is undecodable. "
+                                "(%s:%d)" % (filename, frame.f_lineno))
 
     # Aliases
     # =======
