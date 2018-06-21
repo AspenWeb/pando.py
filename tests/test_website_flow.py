@@ -46,3 +46,30 @@ def test_early_failures_dont_break_everything(harness):
         assert harness.client.GET("/", raise_immediately=False).code == 400
     finally:
         Request.from_wsgi = old_from_wsgi
+
+
+def test_static_resource_GET(harness):
+    harness.fs.www.mk(('file.js', "Hello world!"))
+    r = harness.client.GET('/file.js')
+    assert r.code == 200
+    assert r.body == b"Hello world!"
+
+
+def test_static_resource_HEAD(harness):
+    harness.fs.www.mk(('file.js', "Hello world!"))
+    r = harness.client.HEAD('/file.js')
+    assert r.code == 200
+    assert not r.body
+    assert r.headers[b'Content-Length'] == b'12'
+
+
+def test_static_resource_PUT(harness):
+    harness.fs.www.mk(('file.js', "Hello world!"))
+    r = harness.client.PxT('/file.js', body=b'Malicious JS code.')
+    assert r.code == 405
+
+
+def test_static_resource_unknown_method(harness):
+    harness.fs.www.mk(('file.js', "Hello world!"))
+    r = harness.client.hxt('UNKNOWN', '/file.js')
+    assert r.code == 405
