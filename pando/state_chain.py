@@ -27,7 +27,7 @@ import traceback
 
 from aspen import resources
 from aspen.exceptions import NotFound, Redirect, UnindexedDirectory
-from aspen.http.resource import NegotiationFailure
+from aspen.http.resource import Static, NegotiationFailure
 from aspen.request_processor.dispatcher import DispatchResult, DispatchStatus
 from first import first as _first
 
@@ -108,21 +108,26 @@ def create_response_object(state):
     state.setdefault('response', Response())
 
 
-@_import_from('aspen.request_processor.algorithm')
-def render_resource():
-    pass
-
-
-def fill_response_with_output(output, response, request_processor):
-    if not isinstance(output.body, bytes):
-        output.charset = request_processor.encode_output_as
-        output.body = output.body.encode(output.charset)
-    response.body = output.body
+def render_response(state, resource, response, request_processor):
+    if isinstance(resource, Static):
+        if state['request'].method == 'GET':
+            response.body = resource.raw
+        elif state['request'].method == 'HEAD':
+            response.headers[b'Content-Length'] = str(len(resource.raw)).encode('ascii')
+        else:
+            raise Response(405)
+        media_type, charset = resource.media_type, resource.charset
+    else:
+        output = resource.render(state)
+        if not isinstance(output.body, bytes):
+            output.charset = request_processor.encode_output_as
+            output.body = output.body.encode(output.charset)
+        media_type, charset = output.media_type, output.charset
+        response.body = output.body
     if b'Content-Type' not in response.headers:
-        ct = output.media_type
-        if output.charset:
-            ct += '; charset=' + output.charset
-        response.headers[b'Content-Type'] = ct.encode('ascii')
+        if charset:
+            media_type += '; charset=' + charset
+        response.headers[b'Content-Type'] = media_type.encode('ascii')
 
 
 def get_response_for_exception(website, exception):
@@ -185,8 +190,7 @@ def delegate_error_to_simplate(website, state, response, request=None, resource=
         wanted += ',text/plain;q=0.2,*/*;q=0.1'
         state['accept_header'] = wanted.lstrip(',')
 
-        output = resource.render(state)
-        fill_response_with_output(output, response, website.request_processor)
+        render_response(state, resource, response, website.request_processor)
 
 
 def log_traceback_for_exception(website, exception):
