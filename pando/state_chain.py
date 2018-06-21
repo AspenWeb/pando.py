@@ -113,7 +113,7 @@ def render_response(state, resource, response, request_processor):
         if state['request'].method == 'GET':
             response.body = resource.raw
         elif state['request'].method == 'HEAD':
-            response.headers[b'Content-Length'] = b'%i' % len(resource.raw)
+            response.headers[b'Content-Length'] = str(len(resource.raw)).encode('ascii')
         else:
             raise Response(405)
         media_type, charset = resource.media_type, resource.charset
