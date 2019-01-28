@@ -1,6 +1,25 @@
 Pando Changelog
 ===============
 
+0.45 - Released Mon Jan 28 2019 by @Changaco
+--------------------------------------------
+
+* BREAKING: invert the type hierarchy of `request.line` (#576)
+
+* BREAKING: move `pando.algorithms.website` to `pando.state_chain` (#573)
+
+* check HTTP method of requests for static files (#586)
+
+* fix request parsing (#585)
+
+* improve handling of request body (#578)
+
+* work around a virtualenv bug (#577)
+
+* improve the docs (#570, #572, #575)
+
+* upgrade to aspen 1.0rc3 (#569 and #582)
+
 0.44 - Released Fri Sept 9 2016 by @Changaco
 --------------------------------------------
 
