@@ -43,8 +43,13 @@ else
         git push
         git push --tags
 
-        python setup.py sdist --formats=zip,gztar,bztar upload
-        python setup.py bdist_wheel --universal upload
+        umask 002
+        git ls-files -z | xargs -0 chmod u=rwX,g=rX,o=rX
+
+        python setup.py sdist
+        python setup.py bdist_wheel --universal
+
+        twine upload dist/pando-$1.*
 
         printf "\055dev" >> version.txt
         git commit version.txt -m"Bump version to $1-dev"
