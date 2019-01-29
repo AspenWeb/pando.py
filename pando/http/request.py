@@ -31,6 +31,7 @@ from __future__ import unicode_literals
 import re
 import string
 import sys
+import traceback
 
 from six import PY2
 
@@ -150,21 +151,17 @@ class Request(object):
         environ = {try_encode(k): try_encode(v) for k, v in environ.items()}
         try:
             return cls(website, *kick_against_goad(environ))
-        except UnicodeError:
-            # Figure out where the error occurred.
-            # ====================================
-            # This gives us *something* to go on when we have a Request we
-            # can't parse. XXX Make this more nicer. That will require wrapping
-            # every point in Request parsing where we decode bytes.
-
-            tb = sys.exc_info()[2]
-            while tb.tb_next is not None:
-                tb = tb.tb_next
-            frame = tb.tb_frame
-            filename = tb.tb_frame.f_code.co_filename
-
-            raise Response(400, "Request is undecodable. "
-                                "(%s:%d)" % (filename, frame.f_lineno))
+        except UnicodeError as e:
+            if website.show_tracebacks:
+                msg = traceback.format_exc()
+            else:
+                tb = sys.exc_info()[2]
+                while tb.tb_next is not None:
+                    tb = tb.tb_next
+                frame = tb.tb_frame
+                filename = tb.tb_frame.f_code.co_filename
+                msg = "Request is undecodable: %s (%s:%d)" % (e, filename, frame.f_lineno)
+            raise Response(400, msg)
 
     # Aliases
     # =======
