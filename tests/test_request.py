@@ -8,9 +8,9 @@ from __future__ import unicode_literals
 from pytest import raises
 
 from pando import Response
+from pando.exceptions import MalformedHeader
 from pando.http.request import kick_against_goad, Request
 from pando.http.baseheaders import BaseHeaders
-from pando.exceptions import MalformedHeader
 
 
 def test_raw_is_raw():
@@ -212,15 +212,17 @@ def test_goad_passes_body_through():
 
 # from_wsgi
 
-def test_from_wsgi_tolerates_non_ascii_environ():
+def test_from_wsgi_tolerates_non_ascii_environ(harness):
     environ = {}
-    environ[b'REQUEST_METHOD'] = b'GET'
-    environ[b'HTTP_HOST'] = b'localhost'
-    environ[b'SERVER_PROTOCOL'] = b'HTTP/1.0'
-    environ[b'wsgi.input'] = None
+    environ['REQUEST_METHOD'] = 'GET'
+    environ['HTTP_HOST'] = 'µ.example.com'
+    environ['SERVER_PROTOCOL'] = 'HTTP/1.0'
+    environ['wsgi.input'] = None
     environ[b'HTTP_\xff'] = b'\xdead\xbeef'
     environ['HTTP_À'] = 'µ'
-    headers = Request.from_wsgi(None, environ).headers
+    environ['PATH_INFO'] = '/µ'
+    environ['QUERY_STRING'] = 'µ=µ'
+    headers = Request.from_wsgi(harness.client.website, environ).headers
     assert headers[b'\xff'] is environ[b'HTTP_\xff']
     if str is bytes:
         assert headers['À'] is environ['HTTP_À']
