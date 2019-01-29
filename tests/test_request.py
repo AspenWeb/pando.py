@@ -9,7 +9,7 @@ from pytest import raises
 
 from pando import Response
 from pando.exceptions import MalformedHeader
-from pando.http.request import kick_against_goad, Request
+from pando.http.request import kick_against_goad, make_franken_uri, Request
 from pando.http.baseheaders import BaseHeaders
 
 
@@ -152,6 +152,14 @@ def test_cookie_alias_is_read_only(harness):
     request = harness.make_request()
     with raises(AttributeError):
         request.cookie = 'foo'
+
+
+# make_franken_uri
+
+def test_make_franken_uri_works_with_properly_escaped_uri():
+    expected = b'/%C2%B5?%C2%B5=%C2%B5&foo=bar'
+    actual = make_franken_uri(b'/%C2%B5', b'%C2%B5=%C2%B5&foo=bar')
+    assert actual == expected
 
 
 # kick_against_goad
