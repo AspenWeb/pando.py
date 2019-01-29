@@ -51,9 +51,6 @@ from .mapping import Mapping
 # routines for going from WSGI back to HTTP. Since WSGI is lossy, we end up
 # with a Dr. Frankenstein's HTTP message.
 
-quoted_slash_re = re.compile("%2F", re.IGNORECASE)
-
-
 def make_franken_uri(path, qs):
     """Given two bytestrings, return a bytestring.
 
@@ -71,27 +68,12 @@ def make_franken_uri(path, qs):
 
     """
     if path:
-        try:
-            path.decode('ASCII')    # NB: We throw away this unicode!
-        except UnicodeDecodeError:
-
-            # XXX How would we get non-ASCII here? The lookout.net post
-            # indicates that all browsers send ASCII for the path.
-
-            # Some servers (gevent) clobber %2F inside of paths, such
-            # that we see /foo%2Fbar/ as /foo/bar/. The %2F is lost to us.
-            parts = [quote(x) for x in quoted_slash_re.split(path)]
-            path = b"%2F".join(parts)
+        # Some servers (gevent) clobber %2F inside of paths, such
+        # that we see /foo%2Fbar/ as /foo/bar/. The %2F is lost to us.
+        path = quote(path).encode('ascii')
 
     if qs:
-        try:
-            qs.decode('ASCII')      # NB: We throw away this unicode!
-        except UnicodeDecodeError:
-            # Cross our fingers and hope we have UTF-8 bytes from MSIE. Let's
-            # perform the percent-encoding that we would expect MSIE to have
-            # done for us.
-            qs = quote_plus(qs)
-        qs = b'?' + qs
+        qs = b'?' + quote_plus(qs, '=&').encode('ascii')
 
     return path + qs
 
