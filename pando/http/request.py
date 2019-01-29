@@ -69,12 +69,23 @@ def make_franken_uri(path, qs):
 
     """
     if path:
-        # Some servers (gevent) clobber %2F inside of paths, such
-        # that we see /foo%2Fbar/ as /foo/bar/. The %2F is lost to us.
-        path = quote(path).encode('ascii')
+        try:
+            if type(path) is bytes:
+                path.decode('ascii')
+            else:
+                path = path.encode('ascii')
+        except UnicodeError:
+            path = quote(path, '%/').encode('ascii')
 
     if qs:
-        qs = b'?' + quote_plus(qs, '=&').encode('ascii')
+        try:
+            if type(qs) is bytes:
+                qs.decode('ascii')
+            else:
+                qs = qs.encode('ascii')
+        except UnicodeError:
+            qs = quote_plus(qs, '%=&').encode('ascii')
+        qs = b'?' + qs
 
     return path + qs
 
