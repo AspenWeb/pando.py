@@ -11,10 +11,10 @@ import datetime
 import os
 import string
 
-from algorithm import Algorithm
 from aspen.configuration import configure, parse
 from aspen.request_processor import KNOBS as ASPEN_KNOBS, RequestProcessor
 from aspen.simplates.simplate import Simplate
+from state_chain import StateChain
 
 from . import body_parsers
 from .http.response import Response
@@ -40,7 +40,7 @@ class Website(object):
 
     This object holds configuration information, and how to handle HTTP
     requests (per WSGI). It is available to user-developers inside of their
-    simplates and algorithm functions.
+    simplates and state chain functions.
 
     """
 
@@ -50,7 +50,7 @@ class Website(object):
         #: An Aspen :class:`~aspen.request_processor.RequestProcessor` instance.
         self.request_processor = RequestProcessor(**kwargs)
 
-        pando_chain = Algorithm.from_dotted_name('pando.state_chain')
+        pando_chain = StateChain.from_dotted_name('pando.state_chain')
         pando_chain.functions = [
             getattr(f, 'placeholder_for', f) for f in pando_chain.functions
         ]

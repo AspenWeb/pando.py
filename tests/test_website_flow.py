@@ -29,7 +29,7 @@ def test_404_comes_out_404(harness):
     assert harness.client.GET(raise_immediately=False).code == 404
 
 
-def test_user_can_influence_request_context_via_algorithm_state(harness):
+def test_user_can_influence_request_context_via_chain_state(harness):
     harness.fs.www.mk(('index.html.spt', '[---]\n[---]\n%(foo)s'))
     def add_foo_to_context(request):
         return {'foo': 'bar'}

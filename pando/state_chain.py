@@ -5,8 +5,8 @@
 These functions comprise the request processing functionality of Pando.
 
 The order of functions in this module defines Pando's state chain for request
-processing. The actual parsing is done by `Algorithm.from_dotted_name()
-<http://algorithm-py.readthedocs.org/en/latest/#algorithm.Algorithm.from_dotted_name>`_.
+processing. The actual parsing is done by `StateChain.from_dotted_name()
+<https://state-chain-py.readthedocs.io/en/latest/#state_chain.StateChain.from_dotted_name>`_.
 
 Dependencies are injected as specified in each function definition. Each function
 should return :obj:`None`, or a dictionary that will be used to update the
