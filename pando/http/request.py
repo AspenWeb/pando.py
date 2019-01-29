@@ -88,7 +88,10 @@ def make_franken_headers(environ):
     headers.extend(
         (k, environ.get(k, None)) for k in (b'CONTENT_TYPE', b'CONTENT_LENGTH')
     )
-    return dict((k.replace(b'_', b'-'), v) for k, v in headers if v is not None)
+    headers = dict((k.replace(b'_', b'-'), v) for k, v in headers if v is not None)
+    if not isinstance(headers.get(b'HOST', b''), bytes):
+        headers[b'HOST'] = headers[b'HOST'].encode('idna')
+    return headers
 
 
 def kick_against_goad(environ):
