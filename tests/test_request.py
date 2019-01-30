@@ -222,17 +222,34 @@ def test_goad_passes_body_through():
 
 def test_from_wsgi_tolerates_non_ascii_environ(harness):
     environ = {}
+    environ[b'REQUEST_METHOD'] = b'GET'
+    environ[b'HTTP_HOST'] = 'µ.example.com'.encode('utf8')
+    environ[b'SERVER_PROTOCOL'] = b'HTTP/1.0'
+    environ[b'wsgi.input'] = None
+    environ[b'HTTP_\xff'] = b'\xdead\xbeef'
+    environ['HTTP_À'.encode('utf8')] = 'µ'.encode('utf8')
+    environ[b'PATH_INFO'] = '/µ'.encode('utf8')
+    environ[b'QUERY_STRING'] = 'µ=µ'.encode('utf8')
+    request = Request.from_wsgi(harness.client.website, environ)
+    assert request.line.uri == b'/%C2%B5?%C2%B5=%C2%B5'
+    headers = request.headers
+    assert headers[b'Host'] == b'\xc2\xb5.example.com'
+    assert headers[b'\xff'] is environ[b'HTTP_\xff']
+    assert headers['À'.encode('utf8')] == 'µ'.encode('utf8')
+
+def test_from_wsgi_tolerates_unicode_environ(harness):
+    environ = {}
     environ['REQUEST_METHOD'] = 'GET'
-    environ['HTTP_HOST'] = 'µ.example.com'
+    environ['HTTP_HOST'] = 'µ.example.com'.encode('utf8').decode('latin1')
     environ['SERVER_PROTOCOL'] = 'HTTP/1.0'
     environ['wsgi.input'] = None
     environ[b'HTTP_\xff'] = b'\xdead\xbeef'
-    environ['HTTP_À'] = 'µ'
-    environ['PATH_INFO'] = '/µ'
-    environ['QUERY_STRING'] = 'µ=µ'
-    headers = Request.from_wsgi(harness.client.website, environ).headers
+    environ['HTTP_À'] = 'µ'.encode('utf8').decode('latin1')
+    environ['PATH_INFO'] = '/µ'.encode('utf8').decode('latin1')
+    environ['QUERY_STRING'] = 'µ=µ'.encode('utf8').decode('latin1')
+    request = Request.from_wsgi(harness.client.website, environ)
+    assert request.line.uri == b'/%C2%B5?%C2%B5=%C2%B5'
+    headers = request.headers
+    assert headers[b'Host'] == b'\xc2\xb5.example.com'
     assert headers[b'\xff'] is environ[b'HTTP_\xff']
-    if str is bytes:
-        assert headers['À'] is environ['HTTP_À']
-    else:
-        assert 'À' not in headers
+    assert headers['À'.encode('latin1')] == 'µ'.encode('utf8')
