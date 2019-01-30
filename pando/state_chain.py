@@ -59,7 +59,7 @@ def request_available():
 
 def raise_200_for_OPTIONS(request):
     """A hook to return 200 to an 'OPTIONS \*' request"""
-    if request.line.method == b"OPTIONS" and request.line.uri == "*":
+    if request.line.method == b"OPTIONS" and request.line.uri == b"*":
         raise Response(200)
 
 
