@@ -40,7 +40,7 @@ from aspen.http.request import Path as _Path, Querystring as _Querystring
 from .. import Response
 from ..exceptions import MalformedBody, UnknownBodyType
 from ..urlparse import quote, quote_plus
-from ..utils import try_encode
+from ..utils import maybe_encode
 from .baseheaders import BaseHeaders
 from .mapping import Mapping
 
@@ -70,21 +70,15 @@ def make_franken_uri(path, qs):
     """
     if path:
         try:
-            if type(path) is bytes:
-                path.decode('ascii')
-            else:
-                path = path.encode('ascii')
+            path.decode('ascii')
         except UnicodeError:
-            path = quote(path, '%/').encode('ascii')
+            path = quote(path, string.punctuation).encode('ascii')
 
     if qs:
         try:
-            if type(qs) is bytes:
-                qs.decode('ascii')
-            else:
-                qs = qs.encode('ascii')
+            qs.decode('ascii')
         except UnicodeError:
-            qs = quote_plus(qs, '%=&').encode('ascii')
+            qs = quote_plus(qs, string.punctuation).encode('ascii')
         qs = b'?' + qs
 
     return path + qs
@@ -99,10 +93,7 @@ def make_franken_headers(environ):
     headers.extend(
         (k, environ.get(k, None)) for k in (b'CONTENT_TYPE', b'CONTENT_LENGTH')
     )
-    headers = dict((k.replace(b'_', b'-'), v) for k, v in headers if v is not None)
-    if not isinstance(headers.get(b'HOST', b''), bytes):
-        headers[b'HOST'] = headers[b'HOST'].encode('idna')
-    return headers
+    return dict((k.replace(b'_', b'-'), v) for k, v in headers if v is not None)
 
 
 def kick_against_goad(environ):
@@ -162,8 +153,11 @@ class Request(object):
         Ref: https://www.python.org/dev/peps/pep-3333/#a-note-on-string-types
 
         """
-        environ = {try_encode(k): try_encode(v) for k, v in environ.items()}
         try:
+            environ = {
+                maybe_encode(k, 'latin1'): maybe_encode(v, 'latin1')
+                for k, v in environ.items()
+            }
             return cls(website, *kick_against_goad(environ))
         except UnicodeError as e:
             if website.show_tracebacks:
