@@ -70,15 +70,19 @@ def make_franken_uri(path, qs):
     """
     if path:
         try:
-            path.decode('ascii')
-        except UnicodeError:
-            path = quote(path, string.punctuation).encode('ascii')
+            path.decode('ASCII')    # NB: We throw away this unicode!
+        except UnicodeDecodeError:
+            # Either the client sent unescaped non-ASCII bytes, or the web server
+            # unescaped the path.
+            path = quote(path, string.punctuation).encode('ASCII')
 
     if qs:
         try:
-            qs.decode('ascii')
-        except UnicodeError:
-            qs = quote_plus(qs, string.punctuation).encode('ascii')
+            qs.decode('ASCII')      # NB: We throw away this unicode!
+        except UnicodeDecodeError:
+            # Either the client sent unescaped non-ASCII bytes, or the web server
+            # unescaped the query.
+            qs = quote_plus(qs, string.punctuation).encode('ASCII')
         qs = b'?' + qs
 
     return path + qs
