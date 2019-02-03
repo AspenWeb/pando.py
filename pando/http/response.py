@@ -102,6 +102,10 @@ class Response(Exception):
         return "<Response: %s>" % self._status_text()
 
     def __str__(self):
+        body = self.body
+        if len(body) < 500:
+            body = body.decode('ascii', 'repr') if isinstance(body, bytes) else body
+            return ': '.join((self._status_text(), body))
         return self._status_text()
 
     def _status_text(self):

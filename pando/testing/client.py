@@ -164,7 +164,7 @@ class Client(object):
         return out
 
 
-    def build_wsgi_environ(self, method, path, body, content_type, cookies=None, **kw):
+    def build_wsgi_environ(self, method, url, body, content_type, cookies=None, **kw):
 
         # NOTE that in Pando (request.py make_franken_headers) only headers
         # beginning with ``HTTP`` are included in the request - and those are
@@ -177,13 +177,22 @@ class Client(object):
             for k, v in d.items():
                 cookies[str(k)] = str(v)
 
-        typecheck(path, (bytes, text_type), method, text_type, content_type, bytes, body, bytes)
+        typecheck(url, (bytes, text_type), method, text_type, content_type, bytes, body, bytes)
+        url = url.encode('ascii') if type(url) != bytes else url
+        if b'?' in url:
+            path, qs = url.split(b'?', 1)
+        else:
+            path, qs = url, None
+
         environ = {}
         environ[b'CONTENT_TYPE'] = content_type
         if cookies is not None:
             environ[b'HTTP_COOKIE'] = cookies.output(header='', sep='; ')
         environ[b'HTTP_HOST'] = b'localhost'
-        environ[b'PATH_INFO'] = path.encode('ascii') if type(path) != bytes else path
+        if path:
+            environ[b'PATH_INFO'] = path
+        if qs:
+            environ[b'QUERY_STRING'] = qs
         environ[b'REMOTE_ADDR'] = b'0.0.0.0'
         environ[b'REQUEST_METHOD'] = method.encode('ascii')
         environ[b'SERVER_PROTOCOL'] = b'HTTP/1.1'

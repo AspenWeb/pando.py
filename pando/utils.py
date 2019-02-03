@@ -31,13 +31,6 @@ def maybe_encode(s, codec='ascii'):
     return s.encode(codec) if isinstance(s, text_type) else s
 
 
-def try_encode(s, codec='ascii'):
-    try:
-        return maybe_encode(s, codec)
-    except UnicodeError:
-        return s
-
-
 # datetime helpers
 # ================
 

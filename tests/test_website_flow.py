@@ -73,3 +73,8 @@ def test_static_resource_unknown_method(harness):
     harness.fs.www.mk(('file.js', "Hello world!"))
     r = harness.client.hxt('UNKNOWN', '/file.js')
     assert r.code == 405
+
+
+def test_raise_200_for_OPTIONS(harness):
+    r = harness.client.hxt('OPTIONS', '*')
+    assert r.code == 200

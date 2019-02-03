@@ -31,6 +31,7 @@ from __future__ import unicode_literals
 import re
 import string
 import sys
+import traceback
 
 from six import PY2
 
@@ -39,7 +40,7 @@ from aspen.http.request import Path as _Path, Querystring as _Querystring
 from .. import Response
 from ..exceptions import MalformedBody, UnknownBodyType
 from ..urlparse import quote, quote_plus
-from ..utils import try_encode
+from ..utils import maybe_encode
 from .baseheaders import BaseHeaders
 from .mapping import Mapping
 
@@ -50,9 +51,6 @@ from .mapping import Mapping
 # instead of letting some WSGI server or library do the work for it. Here are
 # routines for going from WSGI back to HTTP. Since WSGI is lossy, we end up
 # with a Dr. Frankenstein's HTTP message.
-
-quoted_slash_re = re.compile("%2F", re.IGNORECASE)
-
 
 def make_franken_uri(path, qs):
     """Given two bytestrings, return a bytestring.
@@ -74,23 +72,17 @@ def make_franken_uri(path, qs):
         try:
             path.decode('ASCII')    # NB: We throw away this unicode!
         except UnicodeDecodeError:
-
-            # XXX How would we get non-ASCII here? The lookout.net post
-            # indicates that all browsers send ASCII for the path.
-
-            # Some servers (gevent) clobber %2F inside of paths, such
-            # that we see /foo%2Fbar/ as /foo/bar/. The %2F is lost to us.
-            parts = [quote(x) for x in quoted_slash_re.split(path)]
-            path = b"%2F".join(parts)
+            # Either the client sent unescaped non-ASCII bytes, or the web server
+            # unescaped the path.
+            path = quote(path, string.punctuation).encode('ASCII')
 
     if qs:
         try:
             qs.decode('ASCII')      # NB: We throw away this unicode!
         except UnicodeDecodeError:
-            # Cross our fingers and hope we have UTF-8 bytes from MSIE. Let's
-            # perform the percent-encoding that we would expect MSIE to have
-            # done for us.
-            qs = quote_plus(qs)
+            # Either the client sent unescaped non-ASCII bytes, or the web server
+            # unescaped the query.
+            qs = quote_plus(qs, string.punctuation).encode('ASCII')
         qs = b'?' + qs
 
     return path + qs
@@ -165,24 +157,23 @@ class Request(object):
         Ref: https://www.python.org/dev/peps/pep-3333/#a-note-on-string-types
 
         """
-        environ = {try_encode(k): try_encode(v) for k, v in environ.items()}
         try:
+            environ = {
+                maybe_encode(k, 'latin1'): maybe_encode(v, 'latin1')
+                for k, v in environ.items()
+            }
             return cls(website, *kick_against_goad(environ))
-        except UnicodeError:
-            # Figure out where the error occurred.
-            # ====================================
-            # This gives us *something* to go on when we have a Request we
-            # can't parse. XXX Make this more nicer. That will require wrapping
-            # every point in Request parsing where we decode bytes.
-
-            tb = sys.exc_info()[2]
-            while tb.tb_next is not None:
-                tb = tb.tb_next
-            frame = tb.tb_frame
-            filename = tb.tb_frame.f_code.co_filename
-
-            raise Response(400, "Request is undecodable. "
-                                "(%s:%d)" % (filename, frame.f_lineno))
+        except UnicodeError as e:
+            if website.show_tracebacks:
+                msg = traceback.format_exc()
+            else:
+                tb = sys.exc_info()[2]
+                while tb.tb_next is not None:
+                    tb = tb.tb_next
+                frame = tb.tb_frame
+                filename = tb.tb_frame.f_code.co_filename
+                msg = "Request is undecodable: %s (%s:%d)" % (e, filename, frame.f_lineno)
+            raise Response(400, msg)
 
     # Aliases
     # =======
