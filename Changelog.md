@@ -1,6 +1,13 @@
 Pando Changelog
 ===============
 
+0.46 - Released Wed Feb 6 2019 by @Changaco
+-------------------------------------------
+
+* fix decoding of request metadata under Python 3 (#589)
+
+* replace the `algorithm` package with `state_chain` (#588)
+
 0.45 - Released Mon Jan 28 2019 by @Changaco
 --------------------------------------------
 
