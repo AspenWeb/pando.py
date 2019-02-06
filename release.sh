@@ -49,7 +49,7 @@ else
         python setup.py sdist
         python setup.py bdist_wheel --universal
 
-        twine upload dist/pando-$1.*
+        twine upload dist/pando-$1*
 
         printf "\055dev" >> version.txt
         git commit version.txt -m"Bump version to $1-dev"
