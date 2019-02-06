@@ -1,3 +1,5 @@
+from os.path import dirname, join
+
 try:
     import setuptools  # noqa
 except ImportError:
@@ -25,6 +27,7 @@ setup( author = 'Chad Whitacre et al.'
      , classifiers = classifiers
      , description = ('Pando is a Python web framework. '
                       'Simplates are the main attraction.')
+     , long_description=open(join(dirname(__file__), 'README.rst')).read()
      , entry_points = {'console_scripts': ['fcgi_pando = fcgi_pando:main [fcgi]']}
      , name = 'pando'
      , packages = find_packages(exclude=['pando.tests', 'pando.tests.*'])
