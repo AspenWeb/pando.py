@@ -114,13 +114,14 @@ def clean():
 # Docs
 # ====
 
-def _sphinx_cmd(cmd, extra_pkgs=[]):
+def _sphinx_cmd(cmd, extra_args=[], extra_pkgs=[]):
     envdir = _env()
     _deps()
     run('pip', 'install', *(['sphinx', 'sphinx-rtd-theme'] + extra_pkgs))
     builddir = 'docs/_build'
     run('mkdir', '-p', builddir)
     args = ['-b', 'html', '-d', builddir + '/doctrees', 'docs', builddir + '/html']
+    args += extra_args
     run(cmd, args)
 
 def sphinx():
@@ -129,7 +130,7 @@ def sphinx():
 
 def autosphinx():
     """run sphinx-autobuild"""
-    _sphinx_cmd("sphinx-autobuild", extra_pkgs=['sphinx-autobuild'])
+    _sphinx_cmd("sphinx-autobuild", ['--watch', 'pando'], extra_pkgs=['sphinx-autobuild'])
 
 def clean_sphinx():
     """clean sphinx artifacts"""
