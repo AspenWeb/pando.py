@@ -23,11 +23,13 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import os
+import os.path
 import traceback
 
 from aspen import resources
-from aspen.exceptions import NotFound, Redirect, UnindexedDirectory
-from aspen.http.resource import Static, NegotiationFailure
+from aspen.exceptions import NegotiationFailure, NotFound
+from aspen.http.resource import Static
 from aspen.request_processor.dispatcher import DispatchResult, DispatchStatus
 from first import first as _first
 
@@ -72,20 +74,17 @@ def dispatch_path_to_filesystem():
     pass
 
 
-def handle_dispatch_exception(website, exception):
-    if isinstance(exception, Redirect):
-        website.redirect(exception.message)
-    elif isinstance(exception, UnindexedDirectory) and website.list_directories:
+def handle_dispatch_errors(dispatch_result, website):
+    if dispatch_result.canonical:
+        website.redirect(dispatch_result.canonical)
+    elif dispatch_result.status == DispatchStatus.unindexed and website.list_directories:
         autoindex_spt = website.ours_or_theirs('autoindex.html.spt')
-        dispatch_result = DispatchResult( DispatchStatus.okay
-                                        , autoindex_spt
-                                        , {}
-                                        , 'Directory autoindex.'
-                                        , {'autoindexdir': exception.message}
-                                        , False
-                                         )
-        return {'dispatch_result': dispatch_result, 'exception': None}
-    elif isinstance(exception, NotFound):
+        dispatch_result = DispatchResult(
+            DispatchStatus.okay, autoindex_spt, dispatch_result.wildcards,
+            dispatch_result.extension, dispatch_result.match
+        )
+        return {'dispatch_result': dispatch_result}
+    elif dispatch_result.status != DispatchStatus.okay:
         raise Response(404)
 
 
@@ -173,13 +172,9 @@ def delegate_error_to_simplate(website, state, response, request=None, resource=
     if fspath is not None:
         request.original_resource = resource
         resource = resources.get(website.request_processor, fspath)
-        state['dispatch_result'] = DispatchResult( DispatchStatus.okay
-                                                 , fspath
-                                                 , {}
-                                                 , 'Found.'
-                                                 , {}
-                                                 , True
-                                                  )
+        state['dispatch_result'] = DispatchResult(
+            DispatchStatus.okay, fspath, None, None, None
+        )
         # Try to return an error that matches the type of the response the
         # client would have received if the error didn't occur
         wanted = getattr(state.get('output'), 'media_type', None) or ''
