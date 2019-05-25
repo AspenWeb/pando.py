@@ -110,9 +110,20 @@ def create_response_object(state):
 def render_response(state, resource, response, request_processor):
     if isinstance(resource, Static):
         if state['request'].method == 'GET':
-            response.body = resource.raw
+            if resource.raw is not None:
+                response.body = resource.raw
+            else:
+                fspath = os.path.realpath(resource.fspath)
+                if not fspath.startswith(request_processor.www_root):
+                    raise Response(500, "resource is outside www_root")
+                with open(fspath, 'rb') as f:
+                    response.body = f.read()
         elif state['request'].method == 'HEAD':
-            response.headers[b'Content-Length'] = str(len(resource.raw)).encode('ascii')
+            if resource.raw is not None:
+                length = len(resource.raw)
+            else:
+                length = os.stat(resource.fspath).st_size
+            response.headers[b'Content-Length'] = str(length).encode('ascii')
         else:
             raise Response(405)
         media_type, charset = resource.media_type, resource.charset
