@@ -7,12 +7,12 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from copy import copy
 import datetime
 import os
 import string
 
-from aspen.configuration import configure, parse
-from aspen.request_processor import KNOBS as ASPEN_KNOBS, RequestProcessor
+from aspen.request_processor import RequestProcessor
 from aspen.simplates.simplate import Simplate
 from state_chain import StateChain
 
@@ -26,15 +26,6 @@ from .exceptions import BadLocation
 THE_PAST = to_rfc822(datetime.datetime(2006, 11, 17, tzinfo=utc))
 
 
-KNOBS = {
-    # 'name':               (default,               from_unicode),
-    'base_url':             ('',                    parse.identity),
-    'list_directories':     (False,                 parse.yes_no),
-    'show_tracebacks':      (False,                 parse.yes_no),
-    'colorize_tracebacks':  (True,                  parse.yes_no),
-}
-
-
 class Website(object):
     """Represent a website.
 
@@ -42,11 +33,13 @@ class Website(object):
     requests (per WSGI). It is available to user-developers inside of their
     simplates and state chain functions.
 
+    :arg kwargs: configuration values. The available options and their default
+                 values are described in :class:`pando.website.DefaultConfiguration`
+                 and :class:`aspen.request_processor.DefaultConfiguration`.
+
     """
 
     def __init__(self, **kwargs):
-        """Takes configuration in kwargs.
-        """
         #: An Aspen :class:`~aspen.request_processor.RequestProcessor` instance.
         self.request_processor = RequestProcessor(**kwargs)
 
@@ -58,15 +51,13 @@ class Website(object):
         #: :mod:`pando.state_chain`.
         self.state_chain = pando_chain
 
-        # copy aspen's config variables, for backward compatibility
-        extra = ['typecasters']
-        for key in list(ASPEN_KNOBS) + extra:
-            self.__dict__[key] = self.request_processor.__dict__[key]
-        for key in ('renderer_factories', 'default_renderers_by_media_type'):
-            self.__dict__[key] = Simplate.__dict__[key]
-
-        # load our own config variables
-        configure(KNOBS, self.__dict__, 'PANDO_', kwargs)
+        # configure from defaults and kwargs
+        defaults = [(k, v) for k, v in DefaultConfiguration.__dict__.items() if k[0] != '_']
+        for name, default in sorted(defaults):
+            if name in kwargs:
+                self.__dict__[name] = kwargs[name]
+            else:
+                self.__dict__[name] = copy(default)
 
         # add ourself to the initial context of simplates
         Simplate.defaults.initial_context['website'] = self
@@ -76,7 +67,7 @@ class Website(object):
         self.body_parsers = {
             "application/x-www-form-urlencoded": body_parsers.formdata,
             "multipart/form-data": body_parsers.formdata,
-            self.media_type_json: body_parsers.jsondata
+            self.request_processor.media_type_json: body_parsers.jsondata
         }
 
     def __call__(self, environ, start_response):
@@ -95,7 +86,7 @@ class Website(object):
 
         """
         response = self.respond(environ)['response']
-        return response.to_wsgi(environ, start_response, self.encode_output_as)
+        return response.to_wsgi(environ, start_response, self.request_processor.encode_output_as)
 
     def respond(self, environ, raise_immediately=None, return_after=None):
         """Given a WSGI environ, return a state dict.
@@ -197,3 +188,49 @@ class Website(object):
             return ours
 
         return None
+
+
+    # Backward compatibility
+    # ======================
+
+    @property
+    def default_renderers_by_media_type(self):
+        "Reference to :obj:`Simplate.default_renderers_by_media_type`, for backward compatibility."
+        return Simplate.default_renderers_by_media_type
+
+    @property
+    def project_root(self):
+        "Reference to :obj:`self.request_processor.project_root`, for backward compatibility."
+        return self.request_processor.project_root
+
+    @property
+    def renderer_factories(self):
+        "Reference to :obj:`Simplate.renderer_factories`, for backward compatibility."
+        return Simplate.renderer_factories
+
+    @property
+    def www_root(self):
+        "Reference to :obj:`self.request_processor.www_root`, for backward compatibility."
+        return self.request_processor.www_root
+
+
+class DefaultConfiguration(object):
+    """Default configuration of :class:`Website` objects.
+    """
+
+    base_url = ''
+    """
+    The website's base URL (scheme and host only, no path). If specified, then
+    requests for URLs that don't match it are automatically redirected. For
+    example, if ``base_url`` is ``https://example.net``, then a request for
+    ``http://www.example.net/foo`` is redirected to ``https://example.net/foo``.
+    """
+
+    colorize_tracebacks = True
+    "Use the Pygments package to prettify tracebacks with syntax highlighting."
+
+    list_directories = False
+    "List the contents of directories that don't have a custom index."
+
+    show_tracebacks = False
+    "Show Python tracebacks in error responses."

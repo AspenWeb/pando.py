@@ -23,8 +23,8 @@ simple_error_spt = """
 # =====
 
 def test_basic():
-    website = Website()
-    expected = os.getcwd()
+    website = Website(www_root='pando/www')
+    expected = os.path.join(os.getcwd(), 'pando', 'www')
     actual = website.www_root
     assert actual == expected
 
@@ -101,12 +101,12 @@ raise Exception("Can I haz traceback ?")
     assert b"Can I haz traceback ?" not in response.body
 
 def test_response_body_exposes_traceback_for_show_tracebacks(harness):
-    harness.client.website.show_tracebacks = True
     harness.fs.project.mk(('error.spt', simple_error_spt))
     harness.fs.www.mk(('index.html.spt', """
 [---]
 raise Exception("Can I haz traceback ?")
 [---]"""))
+    harness.client.hydrate_website(show_tracebacks=True)
     response = harness.client.GET(raise_immediately=False)
     assert response.code == 500
     assert b"Can I haz traceback ?" in response.body
@@ -122,12 +122,12 @@ raise Response(404, "Um, yeah.")
     assert b"Um, yeah." not in response.body
 
 def test_default_error_simplate_exposes_raised_body_for_show_tracebacks(harness):
-    harness.client.website.show_tracebacks = True
     harness.fs.www.mk(('index.html.spt', """
 from pando import Response
 [---]
 raise Response(404, "Um, yeah.")
 [---]"""))
+    harness.client.hydrate_website(show_tracebacks=True)
     response = harness.client.GET(raise_immediately=False)
     assert response.code == 404
     assert b"Um, yeah." in response.body
@@ -219,13 +219,13 @@ raise Response(404)
 '''
 
 def test_default_error_spt_application_json_includes_msg_for_show_tracebacks(harness):
-    harness.client.website.show_tracebacks = True
     harness.fs.www.mk(('foo.json.spt',"""
 from pando import Response
 [---]
 raise Response(404, "Right, sooo...")
 [---]
     """))
+    harness.client.hydrate_website(show_tracebacks=True)
     response = harness.client.GET('/foo.json', raise_immediately=False)
     assert response.code == 404
     assert response.headers[b'Content-Type'] == b'application/json; charset=UTF-8'
@@ -249,13 +249,13 @@ raise Response(404)
     assert response.body == b"Not found, program!\n\n"
 
 def test_default_error_spt_fall_through_includes_msg_for_show_tracebacks(harness):
-    harness.client.website.show_tracebacks = True
     harness.fs.www.mk(('foo.xml.spt',"""
 from pando import Response
 [---]
 raise Response(404, "Try again!")
 [---]
     """))
+    harness.client.hydrate_website(show_tracebacks=True)
     response = harness.client.GET('/foo.xml', raise_immediately=False)
     assert response.code == 404
     assert response.headers[b'Content-Type'] == b'text/plain; charset=UTF-8'
@@ -301,7 +301,7 @@ def test_autoindex_response_is_404_by_default(harness):
 
 def test_autoindex_response_is_returned(harness):
     harness.fs.www.mk(('README', "Greetings, program!"))
-    harness.client.website.list_directories = True
+    harness.client.hydrate_website(list_directories=True)
     body = harness.client.GET(raise_immediately=False).body
     assert b'README' in body
 

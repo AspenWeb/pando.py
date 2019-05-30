@@ -71,7 +71,7 @@ class Harness(object):
                 uripath = '/' + filepath
                 if uripath.endswith('.spt'):
                     uripath = uripath[:-len('.spt')]
-                for indexname in self.client.website.indices:
+                for indexname in self.client.website.request_processor.indices:
                     if uripath.endswith(indexname):
                         uripath = uripath[:-len(indexname)]
                         break
