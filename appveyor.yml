@@ -1,11 +1,11 @@
 environment:
   matrix:
-    - PYTHON: "C:\\Python27"
-      PYTHON_VERSION: "2.7.x"
+    - PYTHON: "C:\\Python37"
+      PYTHON_VERSION: "3.7.x"
       PYTHON_ARCH: "32"
 
-    - PYTHON: "C:\\Python27-x64"
-      PYTHON_VERSION: "2.7.x"
+    - PYTHON: "C:\\Python37-x64"
+      PYTHON_VERSION: "3.7.x"
       PYTHON_ARCH: "64"
 
 install:
@@ -15,15 +15,13 @@ install:
   - "python --version"
   - "python -c \"import struct; print(struct.calcsize('P') * 8)\""
 
-  # Install the project and its dependencies.
-  - "python build.py dev"
+  # Install tox
+  - "pip install tox"
 
 build: false  # Not a C# project, build stuff at the test step instead.
 
 test_script:
-
-  # Build the compiled extension and run the project tests
-  - "python build.py test_cov"
+  - "tox"
 
 branches:
   only:
