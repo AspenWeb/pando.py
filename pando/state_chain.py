@@ -30,6 +30,7 @@ import traceback
 from aspen import resources
 from aspen.exceptions import NegotiationFailure, NotFound
 from aspen.http.resource import Static
+from aspen.request_processor import typecasting
 from aspen.request_processor.dispatcher import DispatchResult, DispatchStatus
 from first import first as _first
 
@@ -37,21 +38,10 @@ from .logging import log as _log
 from .logging import log_dammit as _log_dammit
 from .http.request import Request
 from .http.response import Response
-from .utils import _import_from
 
 
 def parse_environ_into_request(environ, website):
     return {'request': Request.from_wsgi(website, environ)}
-
-
-def insert_variables_for_aspen(request, website):
-    accept = request.headers.get(b'Accept')
-    return {
-        'accept_header': None if accept is None else accept.decode('ascii', 'backslashreplace'),
-        'path': request.path,
-        'querystring': request.qs,
-        'request_processor': website.request_processor,
-    }
 
 
 def request_available():
@@ -69,9 +59,8 @@ def redirect_to_base_url(website, request):
     website.canonicalize_base_url(request)
 
 
-@_import_from('aspen.request_processor.algorithm')
-def dispatch_path_to_filesystem():
-    pass
+def dispatch_path_to_filesystem(website, request):
+    return {'dispatch_result': website.request_processor.dispatch(request.path)}
 
 
 def handle_dispatch_errors(dispatch_result, website):
@@ -88,14 +77,14 @@ def handle_dispatch_errors(dispatch_result, website):
         raise Response(404)
 
 
-@_import_from('aspen.request_processor.algorithm')
-def apply_typecasters_to_path():
-    pass
+def apply_typecasters_to_path(state, website, request):
+    typecasting.apply_typecasters(
+        website.request_processor.typecasters, request.path, state
+    )
 
 
-@_import_from('aspen.request_processor.algorithm')
-def load_resource_from_filesystem():
-    pass
+def load_resource_from_filesystem(website, dispatch_result):
+    return {'resource': resources.get(website.request_processor, dispatch_result.match)}
 
 
 def resource_available():
@@ -107,18 +96,28 @@ def create_response_object(state):
     state.setdefault('response', Response())
 
 
-def render_response(state, resource, response, request_processor):
+def extract_accept_header(request=None, exception=None):
+    if not request:
+        return
+    accept_header = request.headers.get(b'Accept') or None
+    if accept_header:
+        accept_header = accept_header.decode('ascii', 'backslashreplace')
+    return {'accept_header': accept_header}
+
+
+def render_response(state, resource, response, website):
     if isinstance(resource, Static):
-        if state['request'].method == 'GET':
+        method = getattr(state.get('request'), 'method', 'GET')
+        if method == 'GET':
             if resource.raw is not None:
                 response.body = resource.raw
             else:
                 fspath = os.path.realpath(resource.fspath)
-                if not fspath.startswith(request_processor.www_root):
+                if not fspath.startswith(website.request_processor.www_root):
                     raise Response(500, "resource is outside www_root")
                 with open(fspath, 'rb') as f:
                     response.body = f.read()
-        elif state['request'].method == 'HEAD':
+        elif method == 'HEAD':
             if resource.raw is not None:
                 length = len(resource.raw)
             else:
@@ -128,9 +127,15 @@ def render_response(state, resource, response, request_processor):
             raise Response(405)
         media_type, charset = resource.media_type, resource.charset
     else:
-        output = resource.render(state)
+        context = dict(state)  # copy to avoid unintended modifications by simplates
+        output = None
+        try:
+            output = resource.render(context, state['dispatch_result'], state['accept_header'])
+        finally:
+            state['output'] = output or context['output']
         if not isinstance(output.body, bytes):
-            output.charset = request_processor.encode_output_as
+            if not output.charset:
+                output.charset = website.request_processor.encode_output_as
             output.body = output.body.encode(output.charset)
         media_type, charset = output.media_type, output.charset
         response.body = output.body
@@ -191,12 +196,13 @@ def delegate_error_to_simplate(website, state, response, request=None, resource=
         wanted = getattr(state.get('output'), 'media_type', None) or ''
         # If we don't have a media type (e.g. when we're returning a 404), then
         # we fall back to the Accept header
-        wanted += ',' + (state.get('accept_header') or '')
+        if state.get('accept_header'):
+            wanted += ',' + state['accept_header']
         # As a last resort we accept anything, with a preference for text/plain
         wanted += ',text/plain;q=0.2,*/*;q=0.1'
         state['accept_header'] = wanted.lstrip(',')
 
-        render_response(state, resource, response, website.request_processor)
+        render_response(state, resource, response, website)
 
 
 def log_traceback_for_exception(website, exception):

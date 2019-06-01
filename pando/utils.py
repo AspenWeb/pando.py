@@ -8,20 +8,9 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import datetime
-from importlib import import_module
 import re
 
 from six import text_type
-
-
-def _import_from(modname):
-    def r(placeholder_func):
-        f_name = placeholder_func.__name__
-        placeholder_func.__doc__ = ".. autofunction:: %s.%s" % (modname, f_name)
-        real_func = getattr(import_module(modname), f_name)
-        placeholder_func.placeholder_for = real_func
-        return placeholder_func
-    return r
 
 
 # encoding helpers
