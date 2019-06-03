@@ -1,3 +1,5 @@
+# coding: utf8
+
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -35,6 +37,43 @@ def test_user_can_influence_request_context_via_chain_state(harness):
         return {'foo': 'bar'}
     harness.client.website.state_chain.insert_after('parse_environ_into_request', add_foo_to_context)
     assert harness.client.GET().body == b'bar'
+
+
+def test_simplates_dont_implicitly_override_state(harness):
+    harness.fs.www.mk(('index.spt', """
+        [---]
+        resource = 'foo'
+        [---] via stdlib_format
+        {resource}
+    """))
+    state = harness.client.GET('/', want='state')
+    assert state['response'].body == b'foo\n'
+    assert state['resource'] != 'foo'
+
+
+def test_simplates_can_explicitly_override_state(harness):
+    harness.fs.www.mk(('index.spt', """\
+        # coding: utf8
+        [---]
+        state['resource'] = 'foo'
+        [---]
+    """))
+    state = harness.client.GET("/", want='state')
+    assert state['resource'] == 'foo'
+
+
+def test_simplates_can_modify_output(harness):
+    harness.fs.www.mk(('index.spt', """\
+        # coding: utf8
+        [---]
+        output.body = 'thé'
+        output.media_type = 'text/x-foobar'
+        output.charset = 'utf16'
+        [---]
+    """))
+    response = harness.client.GET("/")
+    assert response.body == 'thé'.encode('utf16')
+    assert response.headers[b'Content-Type'] == b'text/x-foobar; charset=utf16'
 
 
 def test_early_failures_dont_break_everything(harness):
