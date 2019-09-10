@@ -147,15 +147,21 @@ def render_response(state, resource, response, website):
         response.headers[b'Content-Type'] = media_type.encode('ascii')
 
 
+def handle_negotiation_exception(exception):
+    if isinstance(exception, NotFound):
+        response = Response(404)
+    elif isinstance(exception, NegotiationFailure):
+        response = Response(406, exception.message)
+    else:
+        return
+    return {'response': response, 'exception': None}
+
+
 def get_response_for_exception(website, exception):
     tb = traceback.format_exc()
     if isinstance(exception, Response):
         response = exception
         response.set_whence_raised()
-    elif isinstance(exception, NotFound):
-        response = Response(404)
-    elif isinstance(exception, NegotiationFailure):
-        response = Response(406, exception.message)
     else:
         response = Response(500)
         if website.show_tracebacks:
