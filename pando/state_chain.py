@@ -63,18 +63,14 @@ def dispatch_path_to_filesystem(website, request):
     return {'dispatch_result': website.request_processor.dispatch(request.path)}
 
 
-def handle_dispatch_errors(dispatch_result, website):
+def raise_404_if_missing(dispatch_result, website):
+    if dispatch_result.status == DispatchStatus.missing:
+        raise Response(404)
+
+
+def redirect_to_canonical_path(dispatch_result, website):
     if dispatch_result.canonical:
         website.redirect(dispatch_result.canonical)
-    elif dispatch_result.status == DispatchStatus.unindexed and website.list_directories:
-        autoindex_spt = website.ours_or_theirs('autoindex.html.spt')
-        dispatch_result = DispatchResult(
-            DispatchStatus.okay, autoindex_spt, dispatch_result.wildcards,
-            dispatch_result.extension, dispatch_result.match
-        )
-        return {'dispatch_result': dispatch_result}
-    elif dispatch_result.status != DispatchStatus.okay:
-        raise Response(404)
 
 
 def apply_typecasters_to_path(state, website, request):
@@ -84,7 +80,13 @@ def apply_typecasters_to_path(state, website, request):
 
 
 def load_resource_from_filesystem(website, dispatch_result):
-    return {'resource': resources.get(website.request_processor, dispatch_result.match)}
+    fspath = dispatch_result.match
+    if dispatch_result.status == DispatchStatus.unindexed:
+        if website.list_directories:
+            fspath = website.ours_or_theirs('autoindex.html.spt')
+        else:
+            raise Response(404)
+    return {'resource': resources.get(website.request_processor, fspath)}
 
 
 def resource_available():

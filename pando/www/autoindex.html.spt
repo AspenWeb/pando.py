@@ -54,7 +54,7 @@ def _get_time(stats):
 # Support the case where we are in the directory where this file actually
 # lives!
 
-fspath = dispatch_result.canonical
+fspath = dispatch_result.match
 assert os.path.isdir(fspath) # sanity check
 
 urlpath = fspath[len(website.www_root):] + os.sep
