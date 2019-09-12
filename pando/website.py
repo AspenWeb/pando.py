@@ -229,6 +229,12 @@ class DefaultConfiguration(object):
     colorize_tracebacks = True
     "Use the Pygments package to prettify tracebacks with syntax highlighting."
 
+    known_schemes = {'http', 'https', 'ws', 'wss'}
+    """
+    The set of known and acceptable request URL schemes. Used by
+    :attr:`.Request.scheme`.
+    """
+
     list_directories = False
     "List the contents of directories that don't have a custom index."
 

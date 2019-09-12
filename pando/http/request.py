@@ -162,7 +162,9 @@ class Request(object):
                 maybe_encode(k, 'latin1'): maybe_encode(v, 'latin1')
                 for k, v in environ.items()
             }
-            return cls(website, *kick_against_goad(environ))
+            r = cls(website, *kick_against_goad(environ))
+            r.environ = environ
+            return r
         except UnicodeError as e:
             if website.show_tracebacks:
                 msg = traceback.format_exc()
@@ -288,31 +290,43 @@ class Request(object):
 
     @property
     def scheme(self):
-        """This property attempts to determine the original request scheme.
+        """The guessed URL scheme of the request, usually 'https' or 'http'.
 
-        This is useful if you want to know whether the communication channel is
-        secure (https) or not (http).
+        If the ``website.trusted_proxies`` list is empty, then the value of the
+        `WSGI`_ variable ``url_scheme`` is returned, otherwise the value of the
+        `X-Forwarded-Proto`_ HTTP header is returned.
 
-        For now this property only supports the non-standard but widely used
-        ``X-Forwarded-Proto`` header. Support for `RFC7239
-        <https://tools.ietf.org/html/rfc7239>`_ may be added in the future
-        (patches welcome ;-)).
+        Support for `RFC7239 <https://tools.ietf.org/html/rfc7239>`_ may be
+        added in the future (patches welcome ;-)).
 
-        ``wsgi.url_scheme`` is ignored because `PEP 3333`_ does not guarantee
-        its accuracy.
+        If the scheme cannot be determined or isn't in
+        :attr:`~pando.website.DefaultConfiguration.known_schemes`,
+        then a :class:`Warning` is emitted and 'https' is returned, because it's
+        better to fail safely than to downgrade to an insecure connection.
 
-        .. warning::
-            If you use this property you need to ensure that your HTTP servers
-            properly set the ``X-Forwarded-Proto`` header, **and** that they
-            protect it from being forged by the client.
-
-        This property returns :obj:`None` if the ``X-Forwarded-Proto`` header is
-        missing. Otherwise it returns the header value as a unicode string.
-
-        .. _PEP 3333: https://www.python.org/dev/peps/pep-3333/
+        .. _WSGI:
+            https://www.python.org/dev/peps/pep-3333/
+        .. _X-Forwarded-Proto:
+            https://developer.mozilla.org/docs/Web/HTTP/Headers/X-Forwarded-Proto
         """
-        x = self.headers.get(b'X-Forwarded-Proto')
-        return x.decode('ascii', 'backslashreplace') if isinstance(x, bytes) else x
+        scheme = None
+        if self.website.trusted_proxies:
+            source = '`X-Forwarded-Proto` header'
+            scheme = self.headers.get(b'X-Forwarded-Proto')
+            if scheme:
+                scheme = scheme.decode('ascii', 'backslashreplace')
+        else:
+            source = '`wsgi.url_scheme` variable'
+            scheme = self.environ.get(b'wsgi.url_scheme')
+            if scheme:
+                scheme = scheme.decode('ascii', 'backslashreplace')
+        if scheme in self.website.known_schemes:
+            return scheme
+        elif not scheme:
+            warnings.warn("The %s is missing or empty." % source)
+        else:
+            warnings.warn("The %s value isn't a known scheme: %r" % (source, scheme))
+        return 'https'
 
     @property
     def source(self):
