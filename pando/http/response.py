@@ -104,7 +104,11 @@ class Response(Exception):
     def __str__(self):
         body = self.body
         if len(body) < 500:
-            body = body.decode('ascii', 'repr') if isinstance(body, bytes) else body
+            if not isinstance(body, str):
+                if isinstance(body, bytes):
+                    body = body.decode('ascii', 'backslashreplace')
+                else:
+                    body = str(body)
             return ': '.join((self._status_text(), body))
         return self._status_text()
 
