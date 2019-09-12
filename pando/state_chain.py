@@ -63,18 +63,14 @@ def dispatch_path_to_filesystem(website, request):
     return {'dispatch_result': website.request_processor.dispatch(request.path)}
 
 
-def handle_dispatch_errors(dispatch_result, website):
+def raise_404_if_missing(dispatch_result, website):
+    if dispatch_result.status == DispatchStatus.missing:
+        raise Response(404)
+
+
+def redirect_to_canonical_path(dispatch_result, website):
     if dispatch_result.canonical:
         website.redirect(dispatch_result.canonical)
-    elif dispatch_result.status == DispatchStatus.unindexed and website.list_directories:
-        autoindex_spt = website.ours_or_theirs('autoindex.html.spt')
-        dispatch_result = DispatchResult(
-            DispatchStatus.okay, autoindex_spt, dispatch_result.wildcards,
-            dispatch_result.extension, dispatch_result.match
-        )
-        return {'dispatch_result': dispatch_result}
-    elif dispatch_result.status != DispatchStatus.okay:
-        raise Response(404)
 
 
 def apply_typecasters_to_path(state, website, request):
@@ -84,7 +80,13 @@ def apply_typecasters_to_path(state, website, request):
 
 
 def load_resource_from_filesystem(website, dispatch_result):
-    return {'resource': resources.get(website.request_processor, dispatch_result.match)}
+    fspath = dispatch_result.match
+    if dispatch_result.status == DispatchStatus.unindexed:
+        if website.list_directories:
+            fspath = website.ours_or_theirs('autoindex.html.spt')
+        else:
+            raise Response(404)
+    return {'resource': resources.get(website.request_processor, fspath)}
 
 
 def resource_available():
@@ -109,23 +111,17 @@ def render_response(state, resource, response, website):
     if isinstance(resource, Static):
         method = getattr(state.get('request'), 'method', 'GET')
         if method == 'GET':
-            if resource.raw is not None:
-                response.body = resource.raw
-            else:
-                fspath = os.path.realpath(resource.fspath)
-                if not fspath.startswith(website.request_processor.www_root):
-                    raise Response(500, "resource is outside www_root")
-                with open(fspath, 'rb') as f:
-                    response.body = f.read()
+            output = resource.render()
         elif method == 'HEAD':
-            if resource.raw is not None:
-                length = len(resource.raw)
-            else:
-                length = os.stat(resource.fspath).st_size
-            response.headers[b'Content-Length'] = str(length).encode('ascii')
+            if b'Content-Length' not in response.headers:
+                if resource.raw is not None:
+                    length = len(resource.raw)
+                else:
+                    length = os.stat(resource.fspath).st_size
+                response.headers[b'Content-Length'] = str(length).encode('ascii')
+            return
         else:
             raise Response(405)
-        media_type, charset = resource.media_type, resource.charset
     else:
         context = dict(state)  # copy to avoid unintended modifications by simplates
         output = None
@@ -133,16 +129,28 @@ def render_response(state, resource, response, website):
             output = resource.render(context, state['dispatch_result'], state['accept_header'])
         finally:
             state['output'] = output or context['output']
-        if not isinstance(output.body, bytes):
-            if not output.charset:
-                output.charset = website.request_processor.encode_output_as
-            output.body = output.body.encode(output.charset)
-        media_type, charset = output.media_type, output.charset
-        response.body = output.body
+
+    if not isinstance(output.body, bytes):
+        if not output.charset:
+            output.charset = website.request_processor.encode_output_as
+        output.body = output.body.encode(output.charset)
+    response.body = output.body
+
     if b'Content-Type' not in response.headers:
-        if charset:
-            media_type += '; charset=' + charset
+        media_type = output.media_type
+        if output.charset:
+            media_type += '; charset=' + output.charset
         response.headers[b'Content-Type'] = media_type.encode('ascii')
+
+
+def handle_negotiation_exception(exception):
+    if isinstance(exception, NotFound):
+        response = Response(404)
+    elif isinstance(exception, NegotiationFailure):
+        response = Response(406, exception.message)
+    else:
+        return
+    return {'response': response, 'exception': None}
 
 
 def get_response_for_exception(website, exception):
@@ -150,10 +158,6 @@ def get_response_for_exception(website, exception):
     if isinstance(exception, Response):
         response = exception
         response.set_whence_raised()
-    elif isinstance(exception, NotFound):
-        response = Response(404)
-    elif isinstance(exception, NegotiationFailure):
-        response = Response(406, exception.message)
     else:
         response = Response(500)
         if website.show_tracebacks:
