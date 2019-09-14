@@ -234,3 +234,26 @@ class DefaultConfiguration(object):
 
     show_tracebacks = False
     "Show Python tracebacks in error responses."
+
+    trusted_proxies = []
+    """
+    The list of reverse proxies that requests to this website go through. With
+    this information we can accurately determine where a request came from (i.e.
+    the IP address of the client) and how it was sent (i.e. encrypted or in
+    plain text).
+
+    Example::
+
+        trusted_proxies=[
+            ['private'],
+            [IPv4Network('1.2.3.4/32'), IPv6Network('2001:2345:6789:abcd::/64')]
+        ]
+
+    Explanation: :attr:`trusted_proxies` is a list of proxy levels, with each
+    item being a list of IP networks (:class:`~ipaddress.IPv4Network` or
+    :class:`~ipaddress.IPv6Network` objects). The special value :obj:`'private'`
+    can be used to indicate that any private IP address is trusted (the
+    :attr:`~ipaddress.IPv4Address.is_private` attribute is used to determine
+    if an IP address is private, both IPv4 and IPv6 are supported).
+
+    """

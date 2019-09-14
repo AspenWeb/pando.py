@@ -26,10 +26,12 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 
+from ipaddress import ip_address
 import re
 import string
 import sys
 import traceback
+import warnings
 
 from six import PY2
 
@@ -311,6 +313,69 @@ class Request(object):
         """
         x = self.headers.get(b'X-Forwarded-Proto')
         return x.decode('ascii', 'backslashreplace') if isinstance(x, bytes) else x
+
+    @property
+    def source(self):
+        """The IP address of the client (an :class:`~ipaddress.IPv4Address` or
+        :class:`~ipaddress.IPv6Address` object).
+
+        This property looks at WSGI's ``REMOTE_ADDR`` variable and HTTP's
+        ``X-Forwarded-For`` header.
+
+        .. warning::
+            Make sure to correctly fill the
+            :attr:`~pando.website.DefaultConfiguration.trusted_proxies` list,
+            otherwise this property will return the IP address of the reverse
+            proxy.
+
+        """
+        r = self.__dict__.get('source')
+        if r is not None:
+            return r
+
+        def f():
+            addr = self.environ.get('REMOTE_ADDR') or self.environ[b'REMOTE_ADDR']
+            addr = ip_address(addr.decode('ascii') if type(addr) is bytes else addr)
+            trusted_proxies = self.website.trusted_proxies
+            forwarded_for = self.headers.get(b'X-Forwarded-For')
+            self.__dict__['bypasses_proxy'] = bool(trusted_proxies)
+            if not trusted_proxies or not forwarded_for:
+                return addr
+            for networks in trusted_proxies:
+                is_trusted = False
+                for network in networks:
+                    is_trusted = addr.is_private if network == 'private' else addr in network
+                    if is_trusted:
+                        break
+                if not is_trusted:
+                    return addr
+                i = forwarded_for.rfind(b',')
+                try:
+                    addr = ip_address(forwarded_for[i+1:].decode('ascii').strip())
+                except (UnicodeDecodeError, ValueError):
+                    return addr
+                if i == -1:
+                    if networks is trusted_proxies[-1]:
+                        break
+                    return addr
+                forwarded_for = forwarded_for[:i]
+            self.__dict__['bypasses_proxy'] = False
+            return addr
+
+        r = f()
+        self.__dict__['source'] = r
+        return r
+
+    @property
+    def bypasses_proxy(self):
+        """This property returns ``False`` if the request came through all the proxy
+        levels listed in :attr:`~pando.website.DefaultConfiguration.trusted_proxies`,
+        and ``True`` if the request bypassed at least one proxy level.
+        """
+        if 'bypasses_proxy' not in self.__dict__:
+            # Call the `source` property to get the `bypasses_proxy` boolean.
+            self.source
+        return self.__dict__['bypasses_proxy']
 
     # Special methods
     # ===============
