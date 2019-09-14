@@ -11,7 +11,6 @@ import os
 import sys
 from collections import namedtuple
 
-from aspen import resources
 from filesystem_tree import FilesystemTree
 
 from .client import Client
@@ -25,13 +24,11 @@ def teardown():
 
     - reset the current working directory
     - remove FSFIX = %{tempdir}/fsfix
-    - reset Pando's global state
     - clear out sys.path_importer_cache
 
     """
     os.chdir(CWD)
     # Reset some process-global caches. Hrm ...
-    resources.__cache__ = {}
     sys.path_importer_cache = {} # see test_weird.py
 
 teardown() # start clean

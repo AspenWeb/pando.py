@@ -26,6 +26,9 @@ from .exceptions import BadLocation
 THE_PAST = to_rfc822(datetime.datetime(2006, 11, 17, tzinfo=utc))
 
 
+PANDO_DIR = os.path.dirname(os.path.abspath(__file__))
+
+
 class Website(object):
     """Represent a website.
 
@@ -42,6 +45,9 @@ class Website(object):
     def __init__(self, **kwargs):
         #: An Aspen :class:`~aspen.request_processor.RequestProcessor` instance.
         self.request_processor = RequestProcessor(**kwargs)
+
+        pando_resources_dir = os.path.join(PANDO_DIR, 'www')
+        self.request_processor.resource_directories.append(pando_resources_dir)
 
         pando_chain = StateChain.from_dotted_name('pando.state_chain')
         pando_chain.functions = [
@@ -169,7 +175,7 @@ class Website(object):
         No existence checking is done, this just abstracts away the ``__file__``
         reference nastiness.
         """
-        return os.path.join(os.path.dirname(__file__), 'www', filename)
+        return os.path.join(PANDO_DIR, 'www', filename)
 
     def ours_or_theirs(self, filename):
         """Given a filename, return a filepath or ``None``.

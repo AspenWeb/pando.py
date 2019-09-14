@@ -27,7 +27,6 @@ import os
 import os.path
 import traceback
 
-from aspen import resources
 from aspen.exceptions import NegotiationFailure, NotFound
 from aspen.http.resource import Static
 from aspen.request_processor import typecasting
@@ -86,7 +85,7 @@ def load_resource_from_filesystem(website, dispatch_result):
             fspath = website.ours_or_theirs('autoindex.html.spt')
         else:
             raise Response(404)
-    return {'resource': resources.get(website.request_processor, fspath)}
+    return {'resource': website.request_processor.resources.get(fspath)}
 
 
 def resource_available():
@@ -191,7 +190,7 @@ def delegate_error_to_simplate(website, state, response, request=None, resource=
 
     if fspath is not None:
         request.original_resource = resource
-        resource = resources.get(website.request_processor, fspath)
+        resource = website.request_processor.resources.get(fspath)
         state['dispatch_result'] = DispatchResult(
             DispatchStatus.okay, fspath, None, None, None
         )
