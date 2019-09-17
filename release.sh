@@ -46,6 +46,8 @@ else
         umask 002
         git ls-files -z | xargs -0 chmod u=rwX,g=rX,o=rX
 
+        rm -rf dist
+
         python setup.py sdist
         python setup.py bdist_wheel --universal
 
@@ -55,7 +57,5 @@ else
         printf "\055dev" >> version.txt
         git commit version.txt -m"Bump version to $1-dev"
         git push
-
-        rm -rf dist
     fi
 fi
