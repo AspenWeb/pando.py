@@ -49,6 +49,7 @@ else
         python setup.py sdist
         python setup.py bdist_wheel --universal
 
+        twine check dist/pando-$1*
         twine upload dist/pando-$1*
 
         printf "\055dev" >> version.txt

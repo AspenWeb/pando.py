@@ -1,6 +1,28 @@
 Pando Changelog
 ===============
 
+0.47 - Released Tue Sep 17 2019 by @Changaco
+--------------------------------------------
+
+* upgrade aspen to 1.0rc7 (#592, #594, #598)
+    * BREAKING: the `ASPEN_*` and `PANDO_*` environment variables are no longer supported,
+      configuration should now be passed as keywords arguments to `Website()`
+    * static files are no longer stored in RAM by default
+    * new optimized dispatchers are used by default
+    * all dispatchers now handle a missing or extraneous slash at the end of a path
+        * a request for `/bar/` can now be dispatched to a `bar.spt` file
+        * a request for `/bar` can now be dispatched to a `bar/index.spt` file
+    * the default encoding of simplates is now UTF-8 when Python is >= 3.0
+    * the global resource cache has been dropped, each `RequestProcessor` object now has its own cache
+    * the detection and handling of dangerous symbolic links have been improved
+    * the obsolete `algorithm` package is no longer a dependency
+
+* add support for Python 3.7 (#593)
+
+* the state chain has been reorganized a bit (#596)
+    * the `handle_dispatch_errors` function has been split into `raise_404_if_missing` and `redirect_to_canonical_path`
+    * some code has been moved from `get_response_for_exception` to a new function named `handle_negotiation_exception`
+
 0.46 - Released Wed Feb 6 2019 by @Changaco
 -------------------------------------------
 
