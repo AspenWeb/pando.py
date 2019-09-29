@@ -127,7 +127,7 @@ def render_response(state, resource, response, website):
         try:
             output = resource.render(context, state['dispatch_result'], state['accept_header'])
         finally:
-            state['output'] = output or context['output']
+            state['output'] = output or context.get('output')
 
     if not isinstance(output.body, bytes):
         if not output.charset:
