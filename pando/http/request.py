@@ -569,7 +569,7 @@ class Path(bytes):
 
 
 class _PathMapping(Mapping, _Path):
-    pass
+    __init__ = _Path.__init__
 
 
 # Request -> Line -> URI -> Querystring
@@ -601,7 +601,7 @@ class Querystring(bytes):
 
 
 class _QuerystringMapping(Mapping, _Querystring):
-    pass
+    __init__ = _Querystring.__init__
 
 
 # Request -> Line -> Version

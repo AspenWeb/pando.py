@@ -8,7 +8,7 @@ from pytest import raises
 
 from pando import Response
 from pando.exceptions import CRLFInjection
-from pando.http.mapping import Mapping, CaseInsensitiveMapping
+from pando.http.mapping import Mapping, CaseInsensitiveMapping, BytesMapping
 from pando.http.baseheaders import BaseHeaders
 
 
@@ -71,17 +71,29 @@ def test_case_insensitive_mapping_popall_is_case_insensitive():
     actual = m.popall('foo')
     assert actual == expected
 
-def test_case_insensitive_mapping_ones_is_case_insensitive():
-    m = CaseInsensitiveMapping()
-    m['Foo'] = 1
-    m.add('foo', 8)
-    m.add('fOO', 9)
-    m.add('FOO', 12)
-    m['bar'] = 2
-    m.add('BAR', 200)
-    expected = [12, 200]
-    actual = m.ones('Foo', 'Bar')
-    assert actual == expected
+
+def test_bytes_mapping():
+    m = BytesMapping()
+    keys = (b'foo', 'foo', 'à'.encode('utf8'), 'à', 0)
+    for k in keys:
+        for v in keys:
+            m[k] = v
+            m.add(k, v)
+            assert k in m
+            if isinstance(k, str):
+                expected = v.decode('utf8') if isinstance(v, bytes) else v
+                assert m[k] == expected
+                assert m.get(k) == expected
+                assert m.all(k) == [expected, expected]
+                assert m.pop(k) == expected
+                assert m.popall(k) == [expected]
+            else:
+                expected = v.encode('utf8') if isinstance(v, str) else v
+                assert m[k] == expected
+                assert m.get(k) == expected
+                assert m.all(k) == [expected, expected]
+                assert m.pop(k) == expected
+                assert m.popall(k) == [expected]
 
 
 def test_headers_can_be_raw_when_non_ascii():
