@@ -5,6 +5,8 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from ipaddress import IPv4Network
+
 from pytest import raises
 
 from pando import Response
@@ -253,3 +255,59 @@ def test_from_wsgi_tolerates_unicode_environ(harness):
     assert headers[b'Host'] == b'\xc2\xb5.example.com'
     assert headers[b'\xff'] is environ[b'HTTP_\xff']
     assert headers['À'.encode('latin1')] == 'µ'.encode('utf8')
+
+
+# source
+
+def request(harness, forwarded_for, source, **kw):
+    harness.client.hydrate_website(trusted_proxies=[
+        [IPv4Network('10.0.0.0/8')],
+        [IPv4Network('141.101.64.0/18')],
+    ])
+    kw['HTTP_X_FORWARDED_FOR'] = forwarded_for
+    kw['REMOTE_ADDR'] = source
+    kw.setdefault('return_after', 'parse_environ_into_request')
+    kw.setdefault('want', 'request')
+    return harness.client.GET('/', **kw)
+
+def test_request_source_with_invalid_header_from_trusted_proxy(harness):
+    r = request(harness, b'f\xc3\xa9e, \t bar', b'10.0.0.1')
+    assert str(r.source) == '10.0.0.1'
+    assert r.bypasses_proxy is True
+
+def test_request_source_with_invalid_header_from_untrusted_proxy(harness):
+    r = request(harness, b'f\xc3\xa9e, \tbar', b'8.8.8.8')
+    assert str(r.source) == '8.8.8.8'
+    assert r.bypasses_proxy is True
+
+def test_request_source_with_valid_headers_from_trusted_proxies(harness):
+    r = request(harness, b'8.8.8.8,141.101.69.139', b'10.0.0.1')
+    assert str(r.source) == '8.8.8.8'
+    assert r.bypasses_proxy is False
+    r = request(harness, b'8.8.8.8', b'10.0.0.2')
+    assert str(r.source) == '8.8.8.8'
+    assert r.bypasses_proxy is True
+
+def test_request_source_with_valid_headers_from_untrusted_proxies(harness):
+    # 8.8.8.8 claims that the request came from 0.0.0.0, but we don't trust 8.8.8.8
+    r = request(harness, b'0.0.0.0, 8.8.8.8,141.101.69.140', b'10.0.0.1')
+    assert str(r.source) == '8.8.8.8'
+    assert r.bypasses_proxy is False
+    r = request(harness, b'0.0.0.0, 8.8.8.8', b'10.0.0.1')
+    assert str(r.source) == '8.8.8.8'
+    assert r.bypasses_proxy is True
+
+def test_request_source_with_forged_headers_from_untrusted_client(harness):
+    # 8.8.8.8 claims that the request came from a trusted proxy, but we don't trust 8.8.8.8
+    r = request(harness, b'0.0.0.0,141.101.69.141, 8.8.8.8,141.101.69.142', b'10.0.0.1')
+    assert str(r.source) == '8.8.8.8'
+    assert r.bypasses_proxy is False
+    r = request(harness, b'0.0.0.0, 141.101.69.143, 8.8.8.8', b'10.0.0.1')
+    assert str(r.source) == '8.8.8.8'
+    assert r.bypasses_proxy is True
+
+def test_request_source_is_cached(harness):
+    r = request(harness, b'1.1.1.1', b'10.0.0.1')
+    src1 = r.source
+    src2 = r.source
+    assert src1 is src2

@@ -133,24 +133,18 @@ class Website(object):
     # Base URL Canonicalization
     # =========================
 
-    def _extract_scheme(self, request):
-        return request.headers.get(b'X-Forwarded-Proto', b'http')  # Heroku
-
-    def _extract_host(self, request):
-        return request.headers[b'Host']  # will 400 if missing
-
     _canonicalize_base_url_code = 302
 
     def canonicalize_base_url(self, request):
         """Enforces a base_url such as http://localhost:8080 (no path part).
+
+        See :attr:`.Request.host` and :attr:`.Request.scheme` for how the
+        request host and scheme are determined.
         """
         if not self.base_url:
             return
 
-        scheme = self._extract_scheme(request).decode('ascii', 'backslashreplace')
-        host = self._extract_host(request).decode('ascii', 'backslashreplace')
-
-        actual = scheme + "://" + host
+        actual = request.scheme + "://" + request.host
 
         if actual != self.base_url:
             url = self.base_url
@@ -235,8 +229,37 @@ class DefaultConfiguration(object):
     colorize_tracebacks = True
     "Use the Pygments package to prettify tracebacks with syntax highlighting."
 
+    known_schemes = {'http', 'https', 'ws', 'wss'}
+    """
+    The set of known and acceptable request URL schemes. Used by
+    :attr:`.Request.scheme`.
+    """
+
     list_directories = False
     "List the contents of directories that don't have a custom index."
 
     show_tracebacks = False
     "Show Python tracebacks in error responses."
+
+    trusted_proxies = []
+    """
+    The list of reverse proxies that requests to this website go through. With
+    this information we can accurately determine where a request came from (i.e.
+    the IP address of the client) and how it was sent (i.e. encrypted or in
+    plain text).
+
+    Example::
+
+        trusted_proxies=[
+            ['private'],
+            [IPv4Network('1.2.3.4/32'), IPv6Network('2001:2345:6789:abcd::/64')]
+        ]
+
+    Explanation: :attr:`trusted_proxies` is a list of proxy levels, with each
+    item being a list of IP networks (:class:`~ipaddress.IPv4Network` or
+    :class:`~ipaddress.IPv6Network` objects). The special value :obj:`'private'`
+    can be used to indicate that any private IP address is trusted (the
+    :attr:`~ipaddress.IPv4Address.is_private` attribute is used to determine
+    if an IP address is private, both IPv4 and IPv6 are supported).
+
+    """

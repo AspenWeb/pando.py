@@ -5,3 +5,4 @@ filesystem_tree>=1.0.1
 dependency_injection>=1.2.0
 aspen==1.0rc7
 six
+ipaddress; python_version < "3.3"

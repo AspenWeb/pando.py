@@ -17,8 +17,6 @@ we use to model each::
             - version           Version     ASCII
         - headers               Headers     str
             - cookie            Cookie      str
-            - host              unicode     str
-            - scheme            unicode     str
         - body                  Body        Content-Type?
 
 """
@@ -28,10 +26,12 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 
+from ipaddress import ip_address
 import re
 import string
 import sys
 import traceback
+import warnings
 
 from six import PY2
 
@@ -41,7 +41,7 @@ from .. import Response
 from ..exceptions import MalformedBody, UnknownBodyType
 from ..urlparse import quote, quote_plus
 from ..utils import maybe_encode
-from .baseheaders import BaseHeaders
+from .baseheaders import BaseHeaders as Headers
 from .mapping import Mapping
 
 
@@ -162,7 +162,9 @@ class Request(object):
                 maybe_encode(k, 'latin1'): maybe_encode(v, 'latin1')
                 for k, v in environ.items()
             }
-            return cls(website, *kick_against_goad(environ))
+            r = cls(website, *kick_against_goad(environ))
+            r.environ = environ
+            return r
         except UnicodeError as e:
             if website.show_tracebacks:
                 msg = traceback.format_exc()
@@ -194,6 +196,9 @@ class Request(object):
     def cookie(self):
         return self.headers.cookie
 
+    # Body handling
+    # =============
+
     @property
     def content_length(self):
         """This property attempts to parse the ``Content-Length`` header.
@@ -207,7 +212,9 @@ class Request(object):
             return int(cl)
         except ValueError:
             safe = cl.decode('ascii', 'backslashreplace')
-            raise Response(400, "Content-Length is not a valid integer: %s" % safe)
+            raise Response(400,
+                "The 'Content-Length' header is not a valid integer: %s" % safe
+            )
 
     @property
     def body_bytes(self):
@@ -261,6 +268,128 @@ class Request(object):
             return parser(raw, self.headers)
         except ValueError as e:
             raise MalformedBody(str(e))
+
+    # Other properties
+    # ================
+
+    @property
+    def host(self):
+        """The hostname of the request.
+
+        Raises a 400 :class:`.Response` if no ``Host`` header is found or if
+        decoding it fails. See
+        `RFC7230 section 5.4 <https://tools.ietf.org/html/rfc7230#section-5.4>`_.
+        """
+        host = self.headers[b'Host']
+        try:
+            return host.decode('idna')
+        except UnicodeError:
+            raise Response(400,
+                "The 'Host' header is not a valid domain name: %r" % host
+            )
+
+    @property
+    def scheme(self):
+        """The guessed URL scheme of the request, usually 'https' or 'http'.
+
+        If the ``website.trusted_proxies`` list is empty, then the value of the
+        `WSGI`_ variable ``url_scheme`` is returned, otherwise the value of the
+        `X-Forwarded-Proto`_ HTTP header is returned.
+
+        Support for `RFC7239 <https://tools.ietf.org/html/rfc7239>`_ may be
+        added in the future (patches welcome ;-)).
+
+        If the scheme cannot be determined or isn't in
+        :attr:`~pando.website.DefaultConfiguration.known_schemes`,
+        then a :class:`Warning` is emitted and 'https' is returned, because it's
+        better to fail safely than to downgrade to an insecure connection.
+
+        .. _WSGI:
+            https://www.python.org/dev/peps/pep-3333/
+        .. _X-Forwarded-Proto:
+            https://developer.mozilla.org/docs/Web/HTTP/Headers/X-Forwarded-Proto
+        """
+        scheme = None
+        if self.website.trusted_proxies:
+            source = '`X-Forwarded-Proto` header'
+            scheme = self.headers.get(b'X-Forwarded-Proto')
+            if scheme:
+                scheme = scheme.decode('ascii', 'backslashreplace')
+        else:
+            source = '`wsgi.url_scheme` variable'
+            scheme = self.environ.get(b'wsgi.url_scheme')
+            if scheme:
+                scheme = scheme.decode('ascii', 'backslashreplace')
+        if scheme in self.website.known_schemes:
+            return scheme
+        elif not scheme:
+            warnings.warn("The %s is missing or empty." % source)
+        else:
+            warnings.warn("The %s value isn't a known scheme: %r" % (source, scheme))
+        return 'https'
+
+    @property
+    def source(self):
+        """The IP address of the client (an :class:`~ipaddress.IPv4Address` or
+        :class:`~ipaddress.IPv6Address` object).
+
+        This property looks at WSGI's ``REMOTE_ADDR`` variable and HTTP's
+        ``X-Forwarded-For`` header.
+
+        .. warning::
+            Make sure to correctly fill the
+            :attr:`~pando.website.DefaultConfiguration.trusted_proxies` list,
+            otherwise this property will return the IP address of the reverse
+            proxy.
+
+        """
+        r = self.__dict__.get('source')
+        if r is not None:
+            return r
+
+        def f():
+            addr = self.environ.get('REMOTE_ADDR') or self.environ[b'REMOTE_ADDR']
+            addr = ip_address(addr.decode('ascii') if type(addr) is bytes else addr)
+            trusted_proxies = self.website.trusted_proxies
+            forwarded_for = self.headers.get(b'X-Forwarded-For')
+            self.__dict__['bypasses_proxy'] = bool(trusted_proxies)
+            if not trusted_proxies or not forwarded_for:
+                return addr
+            for networks in trusted_proxies:
+                is_trusted = False
+                for network in networks:
+                    is_trusted = addr.is_private if network == 'private' else addr in network
+                    if is_trusted:
+                        break
+                if not is_trusted:
+                    return addr
+                i = forwarded_for.rfind(b',')
+                try:
+                    addr = ip_address(forwarded_for[i+1:].decode('ascii').strip())
+                except (UnicodeDecodeError, ValueError):
+                    return addr
+                if i == -1:
+                    if networks is trusted_proxies[-1]:
+                        break
+                    return addr
+                forwarded_for = forwarded_for[:i]
+            self.__dict__['bypasses_proxy'] = False
+            return addr
+
+        r = f()
+        self.__dict__['source'] = r
+        return r
+
+    @property
+    def bypasses_proxy(self):
+        """This property returns ``False`` if the request came through all the proxy
+        levels listed in :attr:`~pando.website.DefaultConfiguration.trusted_proxies`,
+        and ``True`` if the request bypassed at least one proxy level.
+        """
+        if 'bypasses_proxy' not in self.__dict__:
+            # Call the `source` property to get the `bypasses_proxy` boolean.
+            self.source
+        return self.__dict__['bypasses_proxy']
 
     # Special methods
     # ===============
@@ -524,36 +653,3 @@ class Version(bytes):
 
     def safe_decode(self):
         return self.decode('ascii', 'backslashreplace')
-
-
-# Request -> Headers
-# ------------------
-
-class Headers(BaseHeaders):
-    """Model headers in an HTTP Request message.
-    """
-
-    def __init__(self, raw):
-        """Extend BaseHeaders to add extra attributes.
-        """
-        BaseHeaders.__init__(self, raw)
-
-
-        # Host
-        # ====
-        # Per the spec, respond with 400 if no Host header is given. However,
-        # we prefer X-Forwarded-For if that is available.
-
-        host = self.get(b'X-Forwarded-Host', self[b'Host']) # KeyError raises 400
-        try:
-            self.host = host.decode('idna')
-        except UnicodeError:
-            self.host = ''
-
-
-        # Scheme
-        # ======
-        # http://docs.python.org/library/wsgiref.html#wsgiref.util.guess_scheme
-
-        scheme = 'https' if self.get('HTTPS', False) else 'http'
-        self.scheme = scheme

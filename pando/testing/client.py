@@ -197,6 +197,7 @@ class Client(object):
         environ[b'REQUEST_METHOD'] = method.encode('ascii')
         environ[b'SERVER_PROTOCOL'] = b'HTTP/1.1'
         environ[b'wsgi.input'] = BytesIO(body)
+        environ[b'wsgi.url_scheme'] = 'http'
         environ[b'HTTP_CONTENT_LENGTH'] = str(len(body)).encode('ascii')
         environ.update((k.encode('ascii'), v) for k, v in kw.items())
         return environ
