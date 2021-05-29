@@ -258,7 +258,7 @@ class Request(object):
 
         def default_parser(raw, headers):
             if not content_type and not raw:
-                return {}
+                return Mapping()
             raise UnknownBodyType(content_type)
 
         parser = self.website.body_parsers.get(content_type, default_parser)
