@@ -3,7 +3,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from pytest import raises, yield_fixture
+from pytest import raises, fixture
 
 from pando.http.response import Response
 from pando.auth.httpbasic import inbound_responder
@@ -18,7 +18,7 @@ def _auth_header(username, password):
 
 # tests
 
-@yield_fixture
+@fixture
 def request_with(harness):
     def request_with(authfunc, auth_header):
         harness.client.website.state_chain.insert_after(

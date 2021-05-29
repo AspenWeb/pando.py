@@ -10,14 +10,14 @@ from pando.testing.harness import Harness, teardown
 from filesystem_tree import FilesystemTree
 
 
-@pytest.yield_fixture
+@pytest.fixture
 def fs():
     fs = FilesystemTree()
     yield fs
     fs.remove()
 
 
-@pytest.yield_fixture
+@pytest.fixture
 def sys_path_scrubber():
     before = set(sys.path)
     yield
@@ -26,25 +26,25 @@ def sys_path_scrubber():
         sys.path.remove(name)
 
 
-@pytest.yield_fixture
+@pytest.fixture
 def sys_path(fs):
     sys.path.insert(0, fs.root)
     yield fs
 
 
-@pytest.yield_fixture
+@pytest.fixture
 def harness(sys_path_scrubber):
     harness = Harness()
     yield harness
     harness.teardown()
 
 
-@pytest.yield_fixture
+@pytest.fixture
 def client(harness):
     yield harness.client
 
 
-@pytest.yield_fixture
+@pytest.fixture
 def website(client):
     yield client.website
 
