@@ -110,7 +110,7 @@ def kick_against_goad(environ):
     server = environ.get(b'SERVER_SOFTWARE', b'')
     version = environ[b'SERVER_PROTOCOL']
     headers = make_franken_headers(environ)
-    body = environ[b'wsgi.input']
+    body = environ.get(b'wsgi.input')
     return method, uri, server, version, headers, body
 
 
