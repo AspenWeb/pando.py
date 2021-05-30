@@ -31,15 +31,12 @@ setup( author = 'Chad Whitacre et al.'
      , description = ('Pando is a Python web framework. '
                       'Simplates are the main attraction.')
      , long_description=open(join(dirname(__file__), 'README.rst')).read()
-     , entry_points = {'console_scripts': ['fcgi_pando = fcgi_pando:main [fcgi]']}
      , name = 'pando'
      , packages = find_packages(exclude=['pando.tests', 'pando.tests.*'])
-     , py_modules = ['fcgi_pando']
      , url = 'http://aspen.io/'
      , version = version
      , zip_safe = False
      , package_data = {'pando': ['www/*', 'configuration/mime.types']}
      , install_requires = open('requirements.txt').read()
-     , extras_require = {'fcgi': ['flup']}
      , tests_require = open('requirements_tests.txt').read()
       )
