@@ -31,6 +31,7 @@ setup( author = 'Chad Whitacre et al.'
      , description = ('Pando is a Python web framework. '
                       'Simplates are the main attraction.')
      , long_description=open(join(dirname(__file__), 'README.rst')).read()
+     , long_description_content_type='text/x-rst'
      , name = 'pando'
      , packages = find_packages(exclude=['pando.tests', 'pando.tests.*'])
      , url = 'http://aspen.io/'
