@@ -126,7 +126,6 @@ class Website:
         response.headers[b'Location'] = maybe_encode(location)
         raise response
 
-
     # Base URL Canonicalization
     # =========================
 
@@ -154,7 +153,6 @@ class Website:
                 # For non-idempotent methods, redirect to homepage.
                 url += '/'
             self.redirect(url, code=self._canonicalize_base_url_code)
-
 
     # File Resolution
     # ===============
@@ -185,7 +183,6 @@ class Website:
             return ours
 
         return None
-
 
     # Backward compatibility
     # ======================

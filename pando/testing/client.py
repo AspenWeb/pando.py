@@ -18,7 +18,8 @@ BOUNDARY = b'BoUnDaRyStRiNg'
 MULTIPART_CONTENT = b'multipart/form-data; boundary=' + BOUNDARY
 
 
-class DidntRaiseResponse(Exception): pass
+class DidntRaiseResponse(Exception):
+    pass
 
 
 class FileUpload:
@@ -30,7 +31,9 @@ class FileUpload:
         self.filename = filename
         self.content_type = (
             content_type or
-            mimetypes.guess_type(filename.decode('ascii', 'backslashreplace'))[0].encode('ascii')
+            mimetypes.guess_type(
+                filename.decode('ascii', 'backslashreplace')
+            )[0].encode('ascii')
         )
 
 
@@ -52,7 +55,9 @@ def encode_multipart(boundary, data):
             file_upload = value
             lines.extend([
                 b'--' + boundary,
-                b'Content-Disposition: form-data; name="' + key + b'"; filename="' + file_upload.filename + b'"',
+                b'Content-Disposition: form-data; name="%s"; filename="%s"' % (
+                    key, file_upload.filename
+                ),
                 b'Content-Type: ' + file_upload.content_type,
                 b'',
                 file_upload.data
@@ -60,7 +65,9 @@ def encode_multipart(boundary, data):
         else:
             lines.extend([
                 b'--' + boundary,
-                b'Content-Disposition: form-data; name="' + maybe_encode(key, 'utf8') + b'"',
+                b'Content-Disposition: form-data; name="%s"' % (
+                    maybe_encode(key, 'utf8')
+                ),
                 b'',
                 maybe_encode(value, 'utf8')
             ])
@@ -83,9 +90,10 @@ class Client:
 
     def hydrate_website(self, **kwargs):
         if (self._website is None) or kwargs:
-            _kwargs = { 'www_root': self.www_root
-                      , 'project_root': self.project_root
-                       }
+            _kwargs = {
+                'www_root': self.www_root,
+                'project_root': self.project_root,
+            }
             _kwargs.update(kwargs)
             self._website = Website(**_kwargs)
         return self._website
@@ -105,23 +113,53 @@ class Client:
     # HTTP Methods (RFC 2616)
     # ============
 
-    def GET(self, *a, **kw):      return self.hit('GET', *a, **kw)
-    def POST(self, *a, **kw):     return self.hit('POST', *a, **kw)
-    def OPTIONS(self, *a, **kw):  return self.hit('OPTIONS', *a, **kw)
-    def HEAD(self, *a, **kw):     return self.hit('HEAD', *a, **kw)
-    def PUT(self, *a, **kw):      return self.hit('PUT', *a, **kw)
-    def DELETE(self, *a, **kw):   return self.hit('DELETE', *a, **kw)
-    def TRACE(self, *a, **kw):    return self.hit('TRACE', *a, **kw)
-    def CONNECT(self, *a, **kw):  return self.hit('CONNECT', *a, **kw)
+    def GET(self, *a, **kw):
+        return self.hit('GET', *a, **kw)
 
-    def GxT(self, *a, **kw):      return self.hxt('GET', *a, **kw)
-    def PxST(self, *a, **kw):     return self.hxt('POST', *a, **kw)
-    def xPTIONS(self, *a, **kw):  return self.hxt('OPTIONS', *a, **kw)
-    def HxAD(self, *a, **kw):     return self.hxt('HEAD', *a, **kw)
-    def PxT(self, *a, **kw):      return self.hxt('PUT', *a, **kw)
-    def DxLETE(self, *a, **kw):   return self.hxt('DELETE', *a, **kw)
-    def TRxCE(self, *a, **kw):    return self.hxt('TRACE', *a, **kw)
-    def CxNNECT(self, *a, **kw):  return self.hxt('CONNECT', *a, **kw)
+    def POST(self, *a, **kw):
+        return self.hit('POST', *a, **kw)
+
+    def OPTIONS(self, *a, **kw):
+        return self.hit('OPTIONS', *a, **kw)
+
+    def HEAD(self, *a, **kw):
+        return self.hit('HEAD', *a, **kw)
+
+    def PUT(self, *a, **kw):
+        return self.hit('PUT', *a, **kw)
+
+    def DELETE(self, *a, **kw):
+        return self.hit('DELETE', *a, **kw)
+
+    def TRACE(self, *a, **kw):
+        return self.hit('TRACE', *a, **kw)
+
+    def CONNECT(self, *a, **kw):
+        return self.hit('CONNECT', *a, **kw)
+
+    def GxT(self, *a, **kw):
+        return self.hxt('GET', *a, **kw)
+
+    def PxST(self, *a, **kw):
+        return self.hxt('POST', *a, **kw)
+
+    def xPTIONS(self, *a, **kw):
+        return self.hxt('OPTIONS', *a, **kw)
+
+    def HxAD(self, *a, **kw):
+        return self.hxt('HEAD', *a, **kw)
+
+    def PxT(self, *a, **kw):
+        return self.hxt('PUT', *a, **kw)
+
+    def DxLETE(self, *a, **kw):
+        return self.hxt('DELETE', *a, **kw)
+
+    def TRxCE(self, *a, **kw):
+        return self.hxt('TRACE', *a, **kw)
+
+    def CxNNECT(self, *a, **kw):
+        return self.hxt('CONNECT', *a, **kw)
 
     def hxt(self, *a, **kw):
         try:
@@ -150,10 +188,11 @@ class Client:
                 raise ValueError(f"Unknown `content_type`: {content_type!r}")
 
         environ = self.build_wsgi_environ(method, path, body, content_type, **headers)
-        state = self.website.respond( environ
-                                    , raise_immediately=raise_immediately
-                                    , return_after=return_after
-                                     )
+        state = self.website.respond(
+            environ,
+            raise_immediately=raise_immediately,
+            return_after=return_after,
+        )
 
         return self.resolve_want(state, want)
 
@@ -169,9 +208,7 @@ class Client:
 
         return out
 
-
     def build_wsgi_environ(self, method, url, body=None, content_type=None, cookies=None, **kw):
-
         # NOTE that in Pando (request.py make_franken_headers) only headers
         # beginning with ``HTTP`` are included in the request - and those are
         # changed to no longer include ``HTTP``. There are currently 2

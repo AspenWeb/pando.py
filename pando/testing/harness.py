@@ -25,9 +25,10 @@ def teardown():
     """
     os.chdir(CWD)
     # Reset some process-global caches. Hrm ...
-    sys.path_importer_cache = {} # see test_weird.py
+    sys.path_importer_cache = {}  # see test_weird.py in aspen
 
-teardown() # start clean
+
+teardown()  # start clean
 
 
 class Harness:
@@ -44,12 +45,13 @@ class Harness:
         self.fs.www.remove()
         self.fs.project.remove()
 
-
     # Simple API
     # ==========
 
-    def simple(self, contents='Greetings, program!', filepath='index.html.spt', uripath=None,
-            website_configuration=None, **kw):
+    def simple(
+        self, contents='Greetings, program!', filepath='index.html.spt', uripath=None,
+        website_configuration=None, **kw
+    ):
         """A helper to create a file and hit it through our machinery.
         """
         if filepath is not None:

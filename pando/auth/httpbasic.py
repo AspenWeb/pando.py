@@ -26,12 +26,14 @@ from .. import Response
 def inbound_responder(*args, **kwargs):
     """ see BasicAuth object for args; they're passed through """
     auth = BasicAuth(*args, **kwargs)
+
     def httpbasic_inbound_responder(request):
         """generated request-handling method"""
         request.auth = BAWrapper(auth, request)
         authed, response = auth.authorized(request)
         if not authed:
             raise response
+
     return httpbasic_inbound_responder
 
 
@@ -82,11 +84,9 @@ class BasicAuth:
         """
         header = request.headers.get(b'Authorization', b'')
         if not header:
-            #print("no auth header.")
             # no auth header at all
             return False, self.fail_401
         if not header.startswith(b'Basic'):
-            #print("not a Basic auth header.")
             # not a basic auth header at all
             return False, self.fail_400
         try:
@@ -94,16 +94,14 @@ class BasicAuth:
         except (binascii.Error, TypeError):
             # malformed user:pass
             return False, self.fail_400
-        if not b':' in userpass:
+        if b':' not in userpass:
             # malformed user:pass
             return False, self.fail_400
         user, passwd = userpass.split(b':', 1)
         if user in self.logging_out:
-            #print("logging out, so failing once.")
             self.logging_out.discard(user)
             return False, self.fail_401
         if not self.verify_password(user, passwd):
-            #print("wrong password.")
             # wrong password
             # TODO: add a max attempts per timespan to slow down bot attacks
             return False, self.fail_401
@@ -115,7 +113,7 @@ class BasicAuth:
         if not header.startswith(b'Basic'):
             return None
         userpass = base64.b64decode(header[len(b'Basic '):])
-        if not b':' in userpass:
+        if b':' not in userpass:
             return None
         user, _ = userpass.split(b':', 1)
         return user
@@ -126,4 +124,3 @@ class BasicAuth:
         """
         self.logging_out.add(self.username(request))
         return request
-

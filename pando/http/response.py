@@ -81,7 +81,8 @@ class Response(Exception):
                 try:
                     wsgi_headers.append((k.decode('ascii'), v.decode('ascii')))
                 except UnicodeDecodeError:
-                    k, v = k.decode('ascii', 'backslashreplace'), v.decode('ascii', 'backslashreplace')
+                    k = k.decode('ascii', 'backslashreplace')
+                    v = v.decode('ascii', 'backslashreplace')
                     raise ValueError("Header `%s: %s` isn't US-ASCII." % (k, v))
 
         start_response(wsgi_status, wsgi_headers)

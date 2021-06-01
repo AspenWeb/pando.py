@@ -42,12 +42,13 @@ def formdata(raw, headers):
         for v in vals:
             _headers.add(k.decode('ascii'), v.decode('ascii'))
     headers = _headers
-    parsed = cgi.FieldStorage( fp = BytesIO(raw)  # Ack.
-                             , environ = environ
-                             , headers = headers
-                             , keep_blank_values = True
-                             , strict_parsing = False
-                              )
+    parsed = cgi.FieldStorage(
+        fp=BytesIO(raw),
+        environ=environ,
+        headers=headers,
+        keep_blank_values=True,
+        strict_parsing=False,
+    )
     result = Mapping()
     for k in parsed.keys():
         vals = parsed[k]

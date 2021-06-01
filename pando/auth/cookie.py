@@ -14,7 +14,7 @@ from ..website import THE_PAST
 
 MINUTE = datetime.timedelta(seconds=60)
 HOUR = 60 * MINUTE
-DAY  = 24 * HOUR
+DAY = 24 * HOUR
 WEEK = 7 * DAY
 
 
@@ -68,7 +68,6 @@ def outbound(response):
         # user is authenticated, keep it rolling for them
         cookie_value = user.token
         cookie_expires = to_rfc822(utcnow() + TIMEOUT)
-
 
     # Configure outgoing cookie.
     # ==========================

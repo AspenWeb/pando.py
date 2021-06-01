@@ -25,9 +25,13 @@ def test_404_comes_out_404(harness):
 
 def test_user_can_influence_request_context_via_chain_state(harness):
     harness.fs.www.mk(('index.html.spt', '[---]\n[---]\n%(foo)s'))
+
     def add_foo_to_context(request):
         return {'foo': 'bar'}
-    harness.client.website.state_chain.insert_after('parse_environ_into_request', add_foo_to_context)
+
+    harness.client.website.state_chain.insert_after(
+        'parse_environ_into_request', add_foo_to_context
+    )
     assert harness.client.GET().body == b'bar'
 
 
@@ -68,8 +72,10 @@ def test_simplates_can_modify_output(harness):
 
 def test_early_failures_dont_break_everything(harness):
     old_from_wsgi = Request.from_wsgi
+
     def broken_from_wsgi(*a, **kw):
         raise Response(400)
+
     try:
         Request.from_wsgi = classmethod(broken_from_wsgi)
         assert harness.client.GET("/", raise_immediately=False).code == 400

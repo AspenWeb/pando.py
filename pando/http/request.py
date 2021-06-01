@@ -97,9 +97,10 @@ def kick_against_goad(environ):
     """Kick against the goad. Try to squeeze blood from a stone. Do our best.
     """
     method = environ[b'REQUEST_METHOD']
-    uri = make_franken_uri( environ.get(b'PATH_INFO', b'')
-                          , environ.get(b'QUERY_STRING', b'')
-                          )
+    uri = make_franken_uri(
+        environ.get(b'PATH_INFO', b''),
+        environ.get(b'QUERY_STRING', b''),
+    )
     server = environ.get(b'SERVER_SOFTWARE', b'')
     version = environ[b'SERVER_PROTOCOL']
     headers = make_franken_headers(environ)
@@ -124,8 +125,10 @@ class Request:
 
     """
 
-    def __init__(self, website, method=b'GET', uri=b'/', server_software=b'',
-                version=b'HTTP/1.1', headers={b'Host': b'localhost'}, body=None):
+    def __init__(
+        self, website, method=b'GET', uri=b'/', server_software=b'',
+        version=b'HTTP/1.1', headers={b'Host': b'localhost'}, body=None,
+    ):
         """``body`` is expected to be a file-like object.
         """
         self.website = website
@@ -203,8 +206,9 @@ class Request:
             return int(cl)
         except ValueError:
             safe = cl.decode('ascii', 'backslashreplace')
-            raise Response(400,
-                "The 'Content-Length' header is not a valid integer: %s" % safe
+            raise Response(
+                400,
+                "The 'Content-Length' header is not a valid integer: %s" % safe,
             )
 
     @property
@@ -275,8 +279,9 @@ class Request:
         try:
             return host.decode('idna')
         except UnicodeError:
-            raise Response(400,
-                "The 'Host' header is not a valid domain name: %r" % host
+            raise Response(
+                400,
+                "The 'Host' header is not a valid domain name: %r" % host,
             )
 
     @property
@@ -354,8 +359,9 @@ class Request:
                         addr = ip_address(forwarded_for[i+1:].decode('ascii').strip())
                     except (UnicodeDecodeError, ValueError):
                         safe = forwarded_for.decode('ascii', 'backslashreplace')
-                        raise Response(400,
-                            "The 'X-Forwarded-For' header value is invalid: " + safe
+                        raise Response(
+                            400,
+                            "The 'X-Forwarded-For' header value is invalid: " + safe,
                         )
                     forwarded_for = forwarded_for[:i]
                 else:
@@ -510,7 +516,7 @@ class Method(bytes):
 
         """
         decoded = raw.decode('ascii', 'backslashreplace')
-        if decoded not in STANDARD_METHODS: # fast for 99.999% case
+        if decoded not in STANDARD_METHODS:  # fast for 99.999% case
             if any(char not in CHARS_ALLOWED_IN_METHOD for char in decoded):
                 raise Response(400, "Your request method violates RFC 7230: %s" % decoded)
 
@@ -617,10 +623,7 @@ class _QuerystringMapping(Mapping, _Querystring):
 # Request -> Line -> Version
 # ..........................
 
-versions = { b'HTTP/0.9': (0, 9)
-           , b'HTTP/1.0': (1, 0)
-           , b'HTTP/1.1': (1, 1)
-            }
+versions = {b'HTTP/0.9': (0, 9), b'HTTP/1.0': (1, 0), b'HTTP/1.1': (1, 1)}
 
 version_re = re.compile(br'^HTTP/([0-9])\.([0-9])$')
 
