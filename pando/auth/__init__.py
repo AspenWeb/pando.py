@@ -11,7 +11,7 @@ Pando's Auth modules.
 from .. import Response
 
 
-class BaseUser(object):
+class BaseUser:
 
     def __init__(self, token):
         self.token = token

@@ -2,10 +2,6 @@
 :mod:`harness`
 --------------
 """
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
 
 import os
 import sys
@@ -34,7 +30,7 @@ def teardown():
 teardown() # start clean
 
 
-class Harness(object):
+class Harness:
     """A harness to be used in the Pando test suite itself. Probably not useful to you.
     """
 

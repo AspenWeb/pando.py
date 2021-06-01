@@ -2,22 +2,15 @@
 :mod:`response`
 ---------------
 """
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
 
 import os
 import sys
-
-from six import text_type
 
 from . import status_strings
 from .baseheaders import BaseHeaders as Headers
 
 
-class CloseWrapper(object):
+class CloseWrapper:
     """Conform to WSGI's facility for running code *after* a response is sent.
     """
 
@@ -54,7 +47,7 @@ class Response(Exception):
         """
         if not isinstance(code, int):
             raise TypeError("'code' must be an integer")
-        elif not isinstance(body, (bytes, text_type)) and not hasattr(body, '__iter__'):
+        elif not isinstance(body, (bytes, str)) and not hasattr(body, '__iter__'):
             raise TypeError("'body' must be a string or iterable of strings")
         elif headers is not None and not isinstance(headers, (dict, list)):
             raise TypeError("'headers' must be a dictionary or a list of " +
@@ -137,25 +130,22 @@ class Response(Exception):
         This function needs to be called from inside the `except` block.
 
         """
-        tb = filepath = linenum = None
-        try:
-            cls, response, tb = sys.exc_info()
-            if response is self:
-                while tb.tb_next is not None:
-                    tb = tb.tb_next
-                frame = tb.tb_frame
+        filepath = linenum = None
+        cls, response, tb = sys.exc_info()
+        if response is self:
+            while tb.tb_next is not None:
+                tb = tb.tb_next
+            frame = tb.tb_frame
 
-                # filepath
-                filepath = tb.tb_frame.f_code.co_filename
-                # Try to return the path relative to project_root
-                if self.request and getattr(self.request, 'website'):
-                    filepath = os.path.relpath(filepath, self.request.website.project_root)
-                else:
-                    # Fall back to returning only the last two segments
-                    filepath = os.sep.join(filepath.split(os.sep)[-2:])
+            # filepath
+            filepath = tb.tb_frame.f_code.co_filename
+            # Try to return the path relative to project_root
+            if self.request and getattr(self.request, 'website'):
+                filepath = os.path.relpath(filepath, self.request.website.project_root)
+            else:
+                # Fall back to returning only the last two segments
+                filepath = os.sep.join(filepath.split(os.sep)[-2:])
 
-                # linenum
-                linenum = frame.f_lineno
-        finally:
-            del tb  # http://docs.python.org/2/library/sys.html#sys.exc_info
+            # linenum
+            linenum = frame.f_lineno
         self.whence_raised = (filepath, linenum)

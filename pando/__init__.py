@@ -10,10 +10,6 @@
 .. automodule:: pando.wsgi
 
 """
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
 
 from os.path import dirname, join
 import sys
@@ -36,6 +32,3 @@ except pkg_resources.DistributionNotFound:
         __version__ = f.read()
 
 WINDOWS = sys.platform[:3] == 'win'
-
-is_callable = callable
-

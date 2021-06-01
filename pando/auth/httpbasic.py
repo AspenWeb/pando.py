@@ -16,11 +16,6 @@ To use::
     website.state_chain.insert_after('parse_environ_into_request', auth)
 
 """
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
 
 import base64
 import binascii
@@ -40,7 +35,7 @@ def inbound_responder(*args, **kwargs):
     return httpbasic_inbound_responder
 
 
-class BAWrapper(object):
+class BAWrapper:
     """A convenience wrapper for BasicAuth handler to put on the request
     object so the user can do 'request.auth.username()'
     instead of 'request.auth.username(request)'
@@ -60,7 +55,7 @@ class BAWrapper(object):
         return self.auth.logout(self.request)
 
 
-class BasicAuth(object):
+class BasicAuth:
     """An HTTP Basic Auth handler for Pando."""
 
     def __init__(self, verify_password, html=None, realm=b'protected'):

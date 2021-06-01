@@ -2,16 +2,10 @@
 :mod:`client`
 -------------
 """
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
 
+from http.cookies import SimpleCookie
 from io import BytesIO
 import warnings
-
-from six import text_type
-from six.moves.http_cookies import SimpleCookie
 
 import mimetypes
 
@@ -27,7 +21,7 @@ MULTIPART_CONTENT = b'multipart/form-data; boundary=' + BOUNDARY
 class DidntRaiseResponse(Exception): pass
 
 
-class FileUpload(object):
+class FileUpload:
     """Model a file upload for testing. Takes data and a filename.
     """
 
@@ -78,7 +72,7 @@ def encode_multipart(boundary, data):
     return b'\r\n'.join(lines)
 
 
-class Client(object):
+class Client:
     """This is the Pando test client. It is probably useful to you.
     """
 
@@ -190,8 +184,8 @@ class Client(object):
                 cookies[str(k)] = str(v)
 
         typecheck(
-            url, (bytes, text_type),
-            method, text_type,
+            url, (bytes, str),
+            method, str,
             content_type, (bytes, None),
             body, (bytes, None),
         )

@@ -2,15 +2,12 @@
 :mod:`website`
 ==============
 """
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
 
 from copy import copy
-import datetime
+from datetime import datetime, timezone
 import os
 import string
+from urllib.parse import quote
 
 from aspen.request_processor import RequestProcessor
 from aspen.simplates.simplate import Simplate
@@ -18,18 +15,18 @@ from state_chain import StateChain
 
 from . import body_parsers
 from .http.response import Response
-from .urlparse import quote
-from .utils import maybe_encode, to_rfc822, utc
+from .utils import maybe_encode, to_rfc822
 from .exceptions import BadLocation
 
-# 2006-11-17 was the first release of pando - v0.3
-THE_PAST = to_rfc822(datetime.datetime(2006, 11, 17, tzinfo=utc))
+
+# 2006-11-17 was the first release of Aspen - v0.3
+THE_PAST = to_rfc822(datetime(2006, 11, 17, tzinfo=timezone.utc))
 
 
 PANDO_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
-class Website(object):
+class Website:
     """Represent a website.
 
     This object holds configuration information, and how to handle HTTP
@@ -214,7 +211,7 @@ class Website(object):
         return self.request_processor.www_root
 
 
-class DefaultConfiguration(object):
+class DefaultConfiguration:
     """Default configuration of :class:`Website` objects.
     """
 

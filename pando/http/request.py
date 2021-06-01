@@ -20,26 +20,19 @@ we use to model each::
         - body                  Body        Content-Type?
 
 """
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
 
 from ipaddress import ip_address
 import re
 import string
 import sys
 import traceback
+from urllib.parse import quote, quote_plus
 import warnings
-
-from six import PY2
 
 from aspen.http.request import Path as _Path, Querystring as _Querystring
 
 from .. import Response
 from ..exceptions import MalformedBody, UnknownBodyType
-from ..urlparse import quote, quote_plus
 from ..utils import maybe_encode
 from .baseheaders import BaseHeaders as Headers
 from .mapping import Mapping
@@ -118,7 +111,7 @@ def kick_against_goad(environ):
 # Request #
 ###########
 
-class Request(object):
+class Request:
     """Represent an HTTP Request message.
 
     .. attribute:: line
@@ -418,12 +411,11 @@ class Request(object):
         to read bytes off the wire if we can avoid it, though, because for mega
         file uploads and such this could have a big impact.
         """
-        bs = (
+        return (
             self.line + b'\r\n' +
             self.headers.raw + b'\r\n\r\n' +
             self.body_bytes
-        )
-        return bs if PY2 else bs.decode('ascii')
+        ).decode('ascii')
 
     def __repr__(self):
         return str.__repr__(str(self))

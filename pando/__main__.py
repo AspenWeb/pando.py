@@ -19,10 +19,6 @@ Also, you'll likely want to configure logging your own way, and
 pass more configuration options to the Website() constructor.
 
 """
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
 
 import os
 import logging.config

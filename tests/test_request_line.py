@@ -1,10 +1,3 @@
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
-from six import text_type
-
 from pytest import raises
 
 from pando import Response
@@ -60,7 +53,7 @@ def test_method_as_text_works():
 
 def test_method_as_text_is_text():
     method = Method(b"GET")
-    assert isinstance(method.as_text, text_type)
+    assert isinstance(method.as_text, str)
 
 def test_method_can_be_OPTIONS(): assert Method(b"OPTIONS") == b"OPTIONS"
 def test_method_can_be_GET():     assert Method(b"GET")     == b"GET"

@@ -1,14 +1,10 @@
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
+import base64
 
 from pytest import raises, fixture
 
 from pando.http.response import Response
 from pando.auth.httpbasic import inbound_responder
 
-import base64
 
 # convenience functions
 

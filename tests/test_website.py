@@ -1,8 +1,3 @@
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
 import os
 import io
 
@@ -333,7 +328,7 @@ raise Response(400,1,2,3,4,5,6,7,8,9)
     assert b'Response(400,1,2,3,4,5,6,7,8,9)' in response.body
 
 
-class _TestMiddleware(object):
+class _TestMiddleware:
     """Simple WSGI middleware for testing."""
 
     def __init__(self, app):
