@@ -100,7 +100,7 @@ def test_static_resource_HEAD(harness):
 
 def test_static_resource_PUT(harness):
     harness.fs.www.mk(('file.js', "Hello world!"))
-    r = harness.client.PxT('/file.js', body=b'Malicious JS code.')
+    r = harness.client.xPUT('/file.js', body=b'Malicious JS code.')
     assert r.code == 405
 
 

@@ -3,6 +3,7 @@
 -------------
 """
 
+from functools import partial
 from http.cookies import SimpleCookie
 from io import BytesIO
 import warnings
@@ -10,6 +11,7 @@ import warnings
 import mimetypes
 
 from .. import Response
+from ..http.request import STANDARD_METHODS
 from ..utils import maybe_encode, typecheck
 from ..website import Website
 
@@ -113,53 +115,26 @@ class Client:
     # HTTP Methods (RFC 2616)
     # ============
 
-    def GET(self, *a, **kw):
-        return self.hit('GET', *a, **kw)
+    LEGACY_METHODS = {
+        'xPTIONS': 'OPTIONS',
+        'HxAD': 'HEAD',
+        'GxT': 'GET',
+        'PxST': 'POST',
+        'PxT': 'PUT',
+        'DxLETE': 'DELETE',
+        'TRxCE': 'TRACE',
+        'CxNNECT': 'CONNECT',
+    }
 
-    def POST(self, *a, **kw):
-        return self.hit('POST', *a, **kw)
-
-    def OPTIONS(self, *a, **kw):
-        return self.hit('OPTIONS', *a, **kw)
-
-    def HEAD(self, *a, **kw):
-        return self.hit('HEAD', *a, **kw)
-
-    def PUT(self, *a, **kw):
-        return self.hit('PUT', *a, **kw)
-
-    def DELETE(self, *a, **kw):
-        return self.hit('DELETE', *a, **kw)
-
-    def TRACE(self, *a, **kw):
-        return self.hit('TRACE', *a, **kw)
-
-    def CONNECT(self, *a, **kw):
-        return self.hit('CONNECT', *a, **kw)
-
-    def GxT(self, *a, **kw):
-        return self.hxt('GET', *a, **kw)
-
-    def PxST(self, *a, **kw):
-        return self.hxt('POST', *a, **kw)
-
-    def xPTIONS(self, *a, **kw):
-        return self.hxt('OPTIONS', *a, **kw)
-
-    def HxAD(self, *a, **kw):
-        return self.hxt('HEAD', *a, **kw)
-
-    def PxT(self, *a, **kw):
-        return self.hxt('PUT', *a, **kw)
-
-    def DxLETE(self, *a, **kw):
-        return self.hxt('DELETE', *a, **kw)
-
-    def TRxCE(self, *a, **kw):
-        return self.hxt('TRACE', *a, **kw)
-
-    def CxNNECT(self, *a, **kw):
-        return self.hxt('CONNECT', *a, **kw)
+    def __getattr__(self, name):
+        if name in STANDARD_METHODS:
+            return partial(self.hit, name)
+        elif name.startswith('x') and name[1:] in STANDARD_METHODS:
+            return partial(self.hxt, name[1:])
+        elif name in self.LEGACY_METHODS:
+            return partial(self.hxt, self.LEGACY_METHODS[name])
+        else:
+            return self.__getattribute__(name)
 
     def hxt(self, *a, **kw):
         try:
