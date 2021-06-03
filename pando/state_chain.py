@@ -48,10 +48,17 @@ def request_available():
     pass
 
 
-def raise_200_for_OPTIONS(request):
-    r"""A hook to return 200 to an 'OPTIONS \*' request"""
-    if request.line.method == b"OPTIONS" and request.line.uri == b"*":
-        raise Response(200)
+def raise_204_for_OPTIONS(request):
+    """Return a 204 (No Content) for all OPTIONS requests.
+
+    Ideally a response to an OPTIONS request for a specific URL would include an
+    `Allow` header listing all the valid request methods for that URL, but we
+    currently don't have a simple and efficient way of getting that list.
+
+    Doc: https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/OPTIONS
+    """
+    if request and request.line.method == b"OPTIONS":
+        raise Response(204)
 
 
 def redirect_to_base_url(website, request):

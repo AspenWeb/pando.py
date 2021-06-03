@@ -10,7 +10,7 @@ from __future__ import unicode_literals
 from six import PY3
 from six.moves.http_cookies import CookieError, SimpleCookie
 
-from .mapping import CaseInsensitiveMapping
+from .mapping import BytesMapping, CaseInsensitiveMapping
 
 
 def _check_for_CRLF(value):
@@ -20,12 +20,16 @@ def _check_for_CRLF(value):
     https://github.com/gratipay/security-qf35us/issues/1
 
     """
-    if b'\r' in value or b'\n' in value:
+    contains_crlf = (
+        isinstance(value, bytes) and (b'\r' in value or b'\n' in value) or
+        isinstance(value, str) and ('\r' in value or '\n' in value)
+    )
+    if contains_crlf:
         from pando.exceptions import CRLFInjection
         raise CRLFInjection()
 
 
-class BaseHeaders(CaseInsensitiveMapping):
+class BaseHeaders(BytesMapping, CaseInsensitiveMapping):
     """Represent the headers in an HTTP Request or Response message.
 
     `How to send non-English unicode string using HTTP header?
@@ -38,7 +42,7 @@ class BaseHeaders(CaseInsensitiveMapping):
     def __init__(self, headers=()):
         """Takes headers as a dict, or list of items.
         """
-        CaseInsensitiveMapping.__init__(self, headers)
+        super().__init__(headers)
 
         # Cookie
         # ======
@@ -58,7 +62,7 @@ class BaseHeaders(CaseInsensitiveMapping):
         .. automethod:: pando.http.mapping.CaseInsensitiveMapping.__setitem__
         """
         _check_for_CRLF(value)
-        super(BaseHeaders, self).__setitem__(name, value)
+        super().__setitem__(name, value)
 
     def add(self, name, value):
         """Checks for CRLF in ``value``, then calls the superclass method:
@@ -66,7 +70,7 @@ class BaseHeaders(CaseInsensitiveMapping):
         .. automethod:: pando.http.mapping.CaseInsensitiveMapping.add
         """
         _check_for_CRLF(value)
-        super(BaseHeaders, self).add(name, value)
+        super().add(name, value)
 
     @property
     def raw(self):

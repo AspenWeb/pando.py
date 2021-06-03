@@ -449,28 +449,28 @@ def test_redirect_doesnt_overescape(website):
 
 def test_canonicalize_base_url_canonicalizes_base_url(harness):
     harness.fs.www.mk(('index.html', 'Greetings, program!'))
-    harness.client.hydrate_website(base_url='http://example.com')
+    harness.client.hydrate_website(base_url='https://example.com')
     response = harness.client.GxT()
     assert response.code == 302
-    assert response.headers[b'Location'] == b'http://example.com/'
+    assert response.headers[b'Location'] == b'https://example.com/'
 
 def test_canonicalize_base_url_includes_path_and_qs_for_GET(harness):
     harness.fs.www.mk(('index.html', 'Greetings, program!'))
-    harness.client.hydrate_website(base_url='http://example.com')
+    harness.client.hydrate_website(base_url='https://example.com')
     response = harness.client.GxT('/foo/bar?baz=buz')
     assert response.code == 302
-    assert response.headers[b'Location'] == b'http://example.com/foo/bar?baz=buz'
+    assert response.headers[b'Location'] == b'https://example.com/foo/bar?baz=buz'
 
 def test_canonicalize_base_url_redirects_to_homepage_for_POST(harness):
     harness.fs.www.mk(('index.html', 'Greetings, program!'))
-    harness.client.hydrate_website(base_url='http://example.com')
+    harness.client.hydrate_website(base_url='https://example.com')
     response = harness.client.PxST('/foo/bar?baz=buz')
     assert response.code == 302
-    assert response.headers[b'Location'] == b'http://example.com/'
+    assert response.headers[b'Location'] == b'https://example.com/'
 
 def test_canonicalize_base_url_allows_good_base_url(harness):
     harness.fs.www.mk(('index.html', 'Greetings, program!'))
-    harness.client.hydrate_website(base_url='http://localhost')
+    harness.client.hydrate_website(base_url='https://localhost')
     response = harness.client.GET()
     assert response.code == 200
     assert response.body == b'Greetings, program!'

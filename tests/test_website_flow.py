@@ -116,4 +116,5 @@ def test_static_resource_unknown_method(harness):
 
 def test_raise_200_for_OPTIONS(harness):
     r = harness.client.hxt('OPTIONS', '*')
-    assert r.code == 200
+    assert r.code == 204
+    assert not r.body

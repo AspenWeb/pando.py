@@ -16,7 +16,7 @@ def test_test_client_handles_body(harness):
     bar = request.body['bar']
     [---] text/html via stdlib_format
     {bar}'''))
-    response = harness.client.POST('/foo', data={b'bar': b'42'})
+    response = harness.client.POST('/foo', body={b'bar': b'42'})
     assert response.body == b'42'
 
 def test_test_client_sends_cookies(harness):
@@ -40,7 +40,7 @@ def test_test_client_handles_file_upload(harness):
     file_upload = FileUpload( data=b'Greetings, program!'
                             , filename=b'greetings.txt'
                              )
-    response = harness.client.POST('/foo', data={b'bar': file_upload})
+    response = harness.client.POST('/foo', body={b'bar': file_upload})
     assert response.body == b'greetings.txt\ntext/plain\nGreetings, program!'
 
 def test_test_client_can_have_file_upload_content_type_overriden(harness):
@@ -53,7 +53,7 @@ def test_test_client_can_have_file_upload_content_type_overriden(harness):
                             , filename=b'greetings.txt'
                             , content_type=b'something/else'
                              )
-    response = harness.client.POST('/foo', data={b'bar': file_upload})
+    response = harness.client.POST('/foo', body={b'bar': file_upload})
     assert response.body == b'something/else'
 
 def test_stateful_test_client_passes_cookies(harness):

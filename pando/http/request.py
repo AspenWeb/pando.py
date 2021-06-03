@@ -110,7 +110,7 @@ def kick_against_goad(environ):
     server = environ.get(b'SERVER_SOFTWARE', b'')
     version = environ[b'SERVER_PROTOCOL']
     headers = make_franken_headers(environ)
-    body = environ[b'wsgi.input']
+    body = environ.get(b'wsgi.input')
     return method, uri, server, version, headers, body
 
 
@@ -258,7 +258,7 @@ class Request(object):
 
         def default_parser(raw, headers):
             if not content_type and not raw:
-                return {}
+                return Mapping()
             raise UnknownBodyType(content_type)
 
         parser = self.website.body_parsers.get(content_type, default_parser)
@@ -308,7 +308,7 @@ class Request(object):
             https://developer.mozilla.org/docs/Web/HTTP/Headers/X-Forwarded-Proto
         """
         scheme = None
-        if self.website.trusted_proxies:
+        if self.website.trusted_proxies or not self.environ.get(b'REMOTE_ADDR'):
             source = '`X-Forwarded-Proto` header'
             scheme = self.headers.get(b'X-Forwarded-Proto')
             if scheme:
@@ -331,14 +331,15 @@ class Request(object):
         """The IP address of the client (an :class:`~ipaddress.IPv4Address` or
         :class:`~ipaddress.IPv6Address` object).
 
-        This property looks at WSGI's ``REMOTE_ADDR`` variable and HTTP's
-        ``X-Forwarded-For`` header.
+        This property looks at the WSGI ``REMOTE_ADDR`` variable and the HTTP
+        ``X-Forwarded-For`` header, trusting only the proxies listed in
+        :attr:`~pando.website.DefaultConfiguration.trusted_proxies`.
 
         .. warning::
-            Make sure to correctly fill the
-            :attr:`~pando.website.DefaultConfiguration.trusted_proxies` list,
-            otherwise this property will return the IP address of the reverse
-            proxy.
+            If the  :attr:`~pando.website.DefaultConfiguration.trusted_proxies`
+            list is incorrect or incomplete, then this property can mistakenly
+            return the IP address of a reverse proxy instead of the client's IP
+            address.
 
         """
         r = self.__dict__.get('source')
@@ -346,10 +347,27 @@ class Request(object):
             return r
 
         def f():
-            addr = self.environ.get('REMOTE_ADDR') or self.environ[b'REMOTE_ADDR']
-            addr = ip_address(addr.decode('ascii') if type(addr) is bytes else addr)
+            addr = self.environ.get(b'REMOTE_ADDR')
+            forwarded_for = self.headers.get(b'X-Forwarded-For', b'')
+            if addr:
+                addr = ip_address(addr.decode('ascii').strip())
+            else:
+                # The WSGI server didn't provide the client's IP address. This
+                # probably means that it received the request through a Unix
+                # socket.
+                if forwarded_for:
+                    i = forwarded_for.rfind(b',')
+                    try:
+                        addr = ip_address(forwarded_for[i+1:].decode('ascii').strip())
+                    except (UnicodeDecodeError, ValueError):
+                        safe = forwarded_for.decode('ascii', 'backslashreplace')
+                        raise Response(400,
+                            "The 'X-Forwarded-For' header value is invalid: " + safe
+                        )
+                    forwarded_for = forwarded_for[:i]
+                else:
+                    return
             trusted_proxies = self.website.trusted_proxies
-            forwarded_for = self.headers.get(b'X-Forwarded-For')
             self.__dict__['bypasses_proxy'] = bool(trusted_proxies)
             if not trusted_proxies or not forwarded_for:
                 return addr
@@ -569,7 +587,7 @@ class Path(bytes):
 
 
 class _PathMapping(Mapping, _Path):
-    pass
+    __init__ = _Path.__init__
 
 
 # Request -> Line -> URI -> Querystring
@@ -601,7 +619,7 @@ class Querystring(bytes):
 
 
 class _QuerystringMapping(Mapping, _Querystring):
-    pass
+    __init__ = _Querystring.__init__
 
 
 # Request -> Line -> Version

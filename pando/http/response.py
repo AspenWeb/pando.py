@@ -146,12 +146,13 @@ class Response(Exception):
                 frame = tb.tb_frame
 
                 # filepath
-                pathparts = tb.tb_frame.f_code.co_filename.split(os.sep)[-2:]
-                # XXX It'd be nice to use www_root and project_root here, but
-                # self.request is None at this point afaict, and it's enough to
-                # show the last two parts just to differentiate index.html or
-                # __init__.py.
-                filepath = os.sep.join(pathparts)
+                filepath = tb.tb_frame.f_code.co_filename
+                # Try to return the path relative to project_root
+                if self.request and getattr(self.request, 'website'):
+                    filepath = os.path.relpath(filepath, self.request.website.project_root)
+                else:
+                    # Fall back to returning only the last two segments
+                    filepath = os.sep.join(filepath.split(os.sep)[-2:])
 
                 # linenum
                 linenum = frame.f_lineno

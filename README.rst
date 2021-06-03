@@ -7,9 +7,9 @@ Installation, Testing, and License
 
     $ pip install pando
 
-We test against 64-bit Python 2.7 on Linux: |travis|
+We test against 64-bit Python 3.6, 3.7, 3.8 and 3.9 on Linux: |travis|
 
-And we test against 32- and 64-bit Python 2.7 on Windows: |appveyor|
+And we test against 32- and 64-bit Python 3.6, 3.7, 3.8 and 3.9 on Windows: |appveyor|
 
 ``pando`` is MIT-licensed.
 

@@ -8,6 +8,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from io import BytesIO
+import warnings
 
 from six import text_type
 from six.moves.http_cookies import SimpleCookie
@@ -50,7 +51,9 @@ def encode_multipart(boundary, data):
     """
     lines = []
 
-    for (key, value) in data.items():
+    if isinstance(data, dict):
+        data = data.items()
+    for key, value in data:
         if isinstance(value, FileUpload):
             file_upload = value
             lines.extend([
@@ -134,14 +137,23 @@ class Client(object):
         else:
             raise DidntRaiseResponse
 
-    def hit(self, method, path='/', data=None, body=b'', content_type=MULTIPART_CONTENT,
+    def hit(self, method, path='/', body=None, data=None, content_type=None,
             raise_immediately=True, return_after=None, want='response', **headers):
 
-        data = {} if data is None else data
-        if content_type is MULTIPART_CONTENT:
-            body = encode_multipart(BOUNDARY, data)
-        else:
-            content_type = maybe_encode(content_type)
+        if data is not None:
+            warnings.warn(DeprecationWarning(
+                "The `data` argument is deprecated, please use `body` instead."
+            ))
+            body = data
+        if isinstance(content_type, str):
+            content_type = content_type.encode('ascii')
+        if isinstance(body, (dict, list)):
+            if content_type is None:
+                content_type = MULTIPART_CONTENT
+            if content_type.startswith(b'multipart/form-data'):
+                body = encode_multipart(BOUNDARY, body)
+            else:
+                raise ValueError(f"Unknown `content_type`: {content_type!r}")
 
         environ = self.build_wsgi_environ(method, path, body, content_type, **headers)
         state = self.website.respond( environ
@@ -164,7 +176,7 @@ class Client(object):
         return out
 
 
-    def build_wsgi_environ(self, method, url, body, content_type, cookies=None, **kw):
+    def build_wsgi_environ(self, method, url, body=None, content_type=None, cookies=None, **kw):
 
         # NOTE that in Pando (request.py make_franken_headers) only headers
         # beginning with ``HTTP`` are included in the request - and those are
@@ -177,7 +189,12 @@ class Client(object):
             for k, v in d.items():
                 cookies[str(k)] = str(v)
 
-        typecheck(url, (bytes, text_type), method, text_type, content_type, bytes, body, bytes)
+        typecheck(
+            url, (bytes, text_type),
+            method, text_type,
+            content_type, (bytes, None),
+            body, (bytes, None),
+        )
         url = url.encode('ascii') if type(url) != bytes else url
         if b'?' in url:
             path, qs = url.split(b'?', 1)
@@ -185,7 +202,8 @@ class Client(object):
             path, qs = url, None
 
         environ = {}
-        environ[b'CONTENT_TYPE'] = content_type
+        if content_type is not None:
+            environ[b'CONTENT_TYPE'] = content_type
         if cookies is not None:
             environ[b'HTTP_COOKIE'] = cookies.output(header='', sep='; ')
         environ[b'HTTP_HOST'] = b'localhost'
@@ -196,9 +214,10 @@ class Client(object):
         environ[b'REMOTE_ADDR'] = b'0.0.0.0'
         environ[b'REQUEST_METHOD'] = method.encode('ascii')
         environ[b'SERVER_PROTOCOL'] = b'HTTP/1.1'
-        environ[b'wsgi.input'] = BytesIO(body)
-        environ[b'wsgi.url_scheme'] = 'http'
-        environ[b'HTTP_CONTENT_LENGTH'] = str(len(body)).encode('ascii')
+        if body is not None:
+            environ[b'wsgi.input'] = BytesIO(body)
+            environ[b'HTTP_CONTENT_LENGTH'] = str(len(body)).encode('ascii')
+        environ[b'wsgi.url_scheme'] = 'https'
         environ.update((k.encode('ascii'), v) for k, v in kw.items())
         return environ
 
