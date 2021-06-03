@@ -30,3 +30,4 @@ Pando's source code is on `GitHub`_, and is `MIT-licensed`_.
 
     tutorial
     reference
+    deploy
