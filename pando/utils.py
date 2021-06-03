@@ -75,14 +75,14 @@ def typecheck(*checks):
     >>> typecheck('foo', (str, None))
     >>> typecheck(None, None)
     >>> typecheck(None, type(None))
-    >>> typecheck('foo', unicode)
+    >>> typecheck(b'foo', str)
     Traceback (most recent call last):
         ...
-    TypeError: Check #1: 'foo' is of type str, but unicode was expected.
-    >>> typecheck('foo', (basestring, None))
+    TypeError: Check #1: b'foo' is of type bytes, but str was expected.
+    >>> typecheck('foo', (bytes, None))
     Traceback (most recent call last):
         ...
-    TypeError: Check #1: 'foo' is of type str, not one of: basestring, NoneType.
+    TypeError: Check #1: 'foo' is of type str, not one of: bytes, NoneType.
     >>> class Foo:
     ...   def __repr__(self):
     ...     return "<Foo>"
@@ -90,19 +90,11 @@ def typecheck(*checks):
     >>> typecheck(Foo(), dict)
     Traceback (most recent call last):
         ...
-    TypeError: Check #1: <Foo> is of type __main__.Foo, but dict was expected.
-    >>> class Bar:
-    ...   def __repr__(self):
-    ...     return "<Bar>"
-    ...
-    >>> typecheck(Bar(), dict)
+    TypeError: Check #1: <Foo> is of type pando.utils.Foo, but dict was expected.
+    >>> typecheck('foo', str, 'bar', int)
     Traceback (most recent call last):
         ...
-    TypeError: Check #1: <Bar> is of type instance, but dict was expected.
-    >>> typecheck('foo', str, 'bar', unicode)
-    Traceback (most recent call last):
-        ...
-    TypeError: Check #2: 'bar' is of type str, but unicode was expected.
+    TypeError: Check #2: 'bar' is of type str, but int was expected.
 
     """
     assert type(checks) is tuple, checks
