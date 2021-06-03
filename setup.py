@@ -28,7 +28,7 @@ setup(
     url='http://aspen.io/',
     version=open('version.txt').read().strip(),
     zip_safe=False,
-    package_data={'pando': ['www/*', 'configuration/mime.types']},
+    package_data={'pando': ['www/*']},
     install_requires=open('requirements.txt').read(),
     tests_require=open('requirements_tests.txt').read(),
 )
