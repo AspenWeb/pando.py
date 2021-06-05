@@ -243,6 +243,95 @@ def test_from_wsgi_tolerates_unicode_environ(harness):
     assert headers['À'.encode('latin1')] == 'µ'.encode('utf8')
 
 
+# sanitize_untrusted_url
+
+def make_request(harness, uri=b'/', host=b'localhost', scheme=b'https'):
+    return Request(
+        harness.client.website,
+        uri=uri,
+        headers={b'Host': host, b'X-Forwarded-Proto': scheme}
+    )
+
+def test_sanitize_untrusted_url_invalid(harness):
+    with raises(Response) as x:
+        make_request(harness).sanitize_untrusted_url('//[foo/')
+    response = x.value
+    assert response.code == 400
+    assert response.text == "'//[foo/' isn't a valid URL."
+
+def test_sanitize_untrusted_url_absolute(harness):
+    url = 'https://localhost:8000/path?key=value#fragment'
+    request = make_request(harness, host=b'localhost:8000')
+    assert request.sanitize_untrusted_url(url) == url
+
+def test_sanitize_untrusted_url_absolute_different_port(harness):
+    url = 'https://localhost:8888/path?key=value#fragment'
+    with raises(Response) as x:
+        make_request(harness).sanitize_untrusted_url(url)
+    response = x.value
+    assert response.code == 400
+    assert response.text == f"The host in URL {url!r} doesn't match the `Host` header value 'localhost'."
+
+def test_sanitize_untrusted_url_absolute_different_host(harness):
+    url = 'https://example.com/path?key=value#fragment'
+    with raises(Response) as x:
+        make_request(harness).sanitize_untrusted_url(url)
+    response = x.value
+    assert response.code == 400
+    assert response.text == f"The host in URL {url!r} doesn't match the `Host` header value 'localhost'."
+
+def test_sanitize_untrusted_url_unknown_scheme(harness):
+    with raises(Response) as x:
+        make_request(harness).sanitize_untrusted_url('ftp:/foo')
+    response = x.value
+    assert response.code == 400
+    assert response.text == "URL 'ftp:/foo' starts with unknown scheme 'ftp'."
+
+def test_sanitize_untrusted_url_scheme_relative(harness):
+    url = '//localhost/path?key=value#fragment'
+    actual = make_request(harness).sanitize_untrusted_url(url)
+    assert actual == url
+
+def test_sanitize_untrusted_url_scheme_relative_with_different_host(harness):
+    url = '//example.org/path'
+    with raises(Response) as x:
+        make_request(harness).sanitize_untrusted_url(url)
+    response = x.value
+    assert response.code == 400
+    assert response.text == f"The host in URL {url!r} doesn't match the `Host` header value 'localhost'."
+
+def test_sanitize_untrusted_url_absolute_path(harness):
+    url = '/path?key=value#fragment'
+    expected = 'https://localhost' + url
+    actual = make_request(harness).sanitize_untrusted_url(url)
+    assert actual == expected
+
+def test_sanitize_untrusted_url_relative_path(harness):
+    url = '../foo/.././path'
+    expected = 'https://localhost/path'
+    actual = make_request(harness).sanitize_untrusted_url(url)
+    assert actual == expected
+    url = '.'
+    expected = 'https://localhost/foo/'
+    request = make_request(harness, uri=b'/foo/bar?key=value')
+    actual = request.sanitize_untrusted_url(url)
+    assert actual == expected
+
+def test_sanitize_untrusted_url_querystring_only(harness):
+    url = '?foo=bar'
+    expected = 'https://localhost?foo=bar'
+    request = make_request(harness, uri=b'?key=value')
+    actual = request.sanitize_untrusted_url(url)
+    assert actual == expected
+
+def test_sanitize_untrusted_url_fragment_only(harness):
+    url = '#fragment'
+    expected = 'https://localhost/?key=value#fragment'
+    request = make_request(harness, uri=b'/?key=value')
+    actual = request.sanitize_untrusted_url(url)
+    assert actual == expected
+
+
 # source
 
 def request(harness, forwarded_for, source, **kw):
@@ -297,3 +386,29 @@ def test_request_source_is_cached(harness):
     src1 = r.source
     src2 = r.source
     assert src1 is src2
+
+
+# querystring
+
+def test_querystring_derive(harness):
+    request = Request(harness.client.website)
+    actual = request.qs.derive(key='value')
+    expected = '?key=value'
+    assert actual == expected
+    request = Request(harness.client.website, uri=b'/?key=value')
+    actual = request.qs.derive(key='different_value')
+    expected = '?key=different_value'
+    assert actual == expected
+    request = Request(harness.client.website, uri=b'/?key=value')
+    actual = request.qs.derive(key=None)
+    expected = ''
+    assert actual == expected
+
+def test_querystring_serialize(harness):
+    request = Request(harness.client.website, uri=b'/?a=0&b=0&d=1')
+    request.qs['b'] = '1'
+    request.qs['c'] = '2'
+    del request.qs['d']
+    actual = request.qs.serialize()
+    expected = '?a=0&b=1&c=2'
+    assert actual == expected

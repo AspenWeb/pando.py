@@ -6,8 +6,15 @@
 import os
 import sys
 
+from aspen.request_processor.dispatcher import DispatchResult, DispatchStatus
+import aspen.simplates.json_ as json
+from aspen.utils import Constant
+
+from ..utils import encode_url
 from . import status_strings
-from .baseheaders import BaseHeaders as Headers
+
+
+MISSING = Constant('MISSING')
 
 
 class CloseWrapper:
@@ -56,6 +63,7 @@ class Response(Exception):
         Exception.__init__(self)
         self.code = code
         self.body = body
+        from .baseheaders import BaseHeaders as Headers
         self.headers = Headers(headers)
 
     def to_wsgi(self, environ, start_response, charset):
@@ -123,6 +131,105 @@ class Response(Exception):
             body = body.replace(b'\r\r', b'\r')
         return b'\r\n'.join([status_line, headers, b'', body])
 
+    def erase_cookie(self, *a, **kw):
+        """Calls :meth:`pando.website.Website.erase_cookie`.
+        """
+        return self.website.erase_cookie(self.headers.cookie, *a, **kw)
+
+    def error(self, code, msg=''):
+        """Set :attr:`self.code` and :attr:`self.body`, then return :obj:`self`.
+
+        Example:
+
+        >>> raise Response().error(403, "You're not allowed to do this.")
+        Traceback (most recent call last):
+          ...
+        pando.http.response.Response: 403 Forbidden: You're not allowed to do this.
+
+        """
+        self.code = code
+        self.body = msg
+        return self
+
+    def invalid_input(
+        self, input_value, input_name, input_location, code=400,
+        msg="`%s` value %s in request %s is invalid or unsupported",
+    ):
+        """Set :attr:`self.code` and :attr:`self.body`, then return :obj:`self`.
+
+        Examples:
+
+        >>> raise Response().invalid_input('XX', 'country', 'body')
+        Traceback (most recent call last):
+          ...
+        pando.http.response.Response: 400 Bad Request: `country` value 'XX' in request body is invalid or unsupported
+        >>> Response().invalid_input('X' * 500, 'currency', 'querystring').body
+        "`currency` value 'XXXXXXXXXXXXXXXXXXXXXXX[…]XXXXXXXXXXXXXXXXXXXXXXX' in request querystring is invalid or unsupported"
+
+        """
+        self.code = code
+        input_value = repr(input_value)
+        if len(input_value) > 50:
+            input_value = input_value[:24] + '[…]' + input_value[-24:]
+        self.body = msg % (input_name, input_value, input_location)
+        return self
+
+    def json(self, obj=MISSING, code=200):
+        """Load or dump an object from or into a response body.
+
+        >>> r = Response()
+        >>> print(r.json({'foo': 'bar'}).body)
+        {
+            "foo": "bar"
+        }
+        >>> r.json()
+        {'foo': 'bar'}
+
+        """
+        if obj is MISSING:
+            return json.loads(self.body)
+        else:
+            self.code = code
+            self.body = json.dumps(obj)
+            self.headers[b'Content-Type'] = b'application/json'
+            return self
+
+    def redirect(self, url, code=302, trusted_url=False):
+        """
+        Returns the response after modifying its code, setting its ``Location`` header,
+        and sanitizing the URL (unless :obj:`trusted_url` is set to :obj:`True`).
+        """
+        if not trusted_url:
+            url = self.request.sanitize_untrusted_url(url)
+        self.code = code
+        self.headers[b'Location'] = encode_url(url)
+        return self
+
+    def render(self, fspath, state, **extra):
+        """Render the resource file `fspath` with `state` plus `extra` as context.
+
+        This method is an “internal redirect”, it uses a different file to generate
+        the response without changing the URL on the client side. It should be
+        used sparingly.
+
+        """
+        from ..state_chain import render_response
+        state.update(extra)
+        if 'dispatch_result' not in state:
+            # `render_response` needs `state['dispatch_result']`
+            state['dispatch_result'] = DispatchResult(
+                DispatchStatus.okay, fspath, None, None, None
+            )
+        website = state['website']
+        resource = website.request_processor.resources.get(fspath)
+        render_response(state, resource, self, website)
+        return self
+
+    def set_cookie(self, *a, **kw):
+        """Calls :meth:`pando.website.Website.set_cookie`.
+        """
+        return self.website.set_cookie(self.headers.cookie, *a, **kw)
+
     def set_whence_raised(self):
         """Sets and returns the value of `self.whence_raised`.
 
@@ -145,3 +252,38 @@ class Response(Exception):
                 filepath = os.sep.join(filepath.split(os.sep)[-2:])
             self.whence_raised = (filepath, frame.f_lineno)
         return self.whence_raised
+
+    def success(self, code=200, msg=''):
+        """Set :attr:`self.code` and :attr:`self.body`, then return :obj:`self`.
+
+        Example:
+
+        >>> raise Response().success(202, "Your request is being processed.")
+        Traceback (most recent call last):
+          ...
+        pando.http.response.Response: 202 Accepted: Your request is being processed.
+
+        """
+        self.code = code
+        self.body = msg
+        return self
+
+    @property
+    def text(self):
+        """Return the response's body as a string.
+
+        This is meant to be used in tests.
+        """
+        body = self.body
+        if isinstance(body, str):
+            return body
+        if getattr(self, 'website', None):
+            codec = self.website.request_processor.encode_output_as
+        else:
+            codec = 'utf8'
+        if isinstance(body, bytes):
+            return body.decode(codec)
+        return ''.join(
+            chunk.decode(codec) if isinstance(chunk, bytes) else chunk
+            for chunk in body
+        )

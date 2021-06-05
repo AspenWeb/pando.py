@@ -5,6 +5,8 @@
 
 from datetime import datetime, timezone
 import re
+import string
+from urllib.parse import quote
 
 
 # encoding helpers
@@ -12,6 +14,10 @@ import re
 
 def maybe_encode(s, codec='ascii'):
     return s.encode(codec) if isinstance(s, str) else s
+
+
+def encode_url(url):
+    return maybe_encode(quote(url, string.punctuation))
 
 
 # datetime helpers

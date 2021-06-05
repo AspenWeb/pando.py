@@ -26,7 +26,7 @@ import re
 import string
 import sys
 import traceback
-from urllib.parse import quote, quote_plus
+from urllib.parse import quote, quote_plus, urlencode, urlsplit, urlunsplit
 import warnings
 
 from aspen.http.request import Path as _Path, Querystring as _Querystring
@@ -306,14 +306,15 @@ class Request:
             https://developer.mozilla.org/docs/Web/HTTP/Headers/X-Forwarded-Proto
         """
         scheme = None
-        if self.website.trusted_proxies or not self.environ.get(b'REMOTE_ADDR'):
+        environ = getattr(self, 'environ', {})
+        if self.website.trusted_proxies or not environ.get(b'REMOTE_ADDR'):
             source = '`X-Forwarded-Proto` header'
             scheme = self.headers.get(b'X-Forwarded-Proto')
             if scheme:
                 scheme = scheme.decode('ascii', 'backslashreplace')
         else:
             source = '`wsgi.url_scheme` variable'
-            scheme = self.environ.get(b'wsgi.url_scheme')
+            scheme = environ.get(b'wsgi.url_scheme')
             if scheme:
                 scheme = scheme.decode('ascii', 'backslashreplace')
         if scheme in self.website.known_schemes:
@@ -450,6 +451,64 @@ class Request:
         """
         val = self.headers.get(b'X-Requested-With', b'')
         return val.lower() == b'xmlhttprequest'
+
+    def sanitize_untrusted_url(self, url):
+        """Sanitize a URL provided by the client.
+
+        This method can be used to prevent “open redirect” vulnerabilities.
+
+        Raises a 400 :class:`.Response` if the url is invalid or unacceptable (e.g.
+        if it includes a domain name different than :obj:`self.headers['Host']`).
+        """
+        host = self.headers['Host']
+        if isinstance(url, bytes):
+            url = url.decode('utf8', 'replace')
+        try:
+            scheme, netloc, path, query, fragment = urlsplit(url)
+        except ValueError:
+            raise Response(400, f"{url!r} isn't a valid URL.")
+        if scheme or netloc:
+            if scheme and scheme not in self.website.known_schemes:
+                raise Response(
+                    400,
+                    f"URL {url!r} starts with unknown scheme {scheme!r}.",
+                )
+            if netloc:
+                if netloc == host:
+                    return url
+                raise Response(
+                    400,
+                    f"The host in URL {url!r} doesn't match the `Host` header value {host!r}.",
+                )
+        elif path:
+            if not path.startswith('/'):
+                # relative path
+                segments = path.split('/')
+                path = self.path.raw.split('/')
+                for seg in segments:
+                    if seg == '..':
+                        if path and path[-1] == '':
+                            path.pop()
+                        if path:
+                            path.pop()
+                    elif seg == '.':
+                        if path:
+                            if path[-1] == '':
+                                continue
+                            else:
+                                path.pop()
+                    elif seg == '' and path[-1] == '':
+                        continue
+                    else:
+                        path.append(seg)
+                if segments[-1] in ('.', '..'):
+                    path.append('')
+                path = '/'.join(path)
+        else:
+            path = self.path.raw
+            if fragment and not query:
+                query = self.qs.raw
+        return urlunsplit((self.scheme, host, path, query, fragment))
 
 
 # Request -> Line
@@ -619,7 +678,20 @@ class Querystring(bytes):
 
 
 class _QuerystringMapping(Mapping, _Querystring):
+
     __init__ = _Querystring.__init__
+
+    def derive(self, **kw):
+        new_qs = dict(self)
+        for k, v in kw.items():
+            if v is None:
+                new_qs.pop(k, None)
+            else:
+                new_qs[k] = v
+        return ('?' + urlencode(new_qs, doseq=True)) if new_qs else ''
+
+    def serialize(self, **kw):
+        return ('?' + urlencode(self, doseq=True)) if self else ''
 
 
 # Request -> Line -> Version
