@@ -1,8 +1,3 @@
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
 from io import BytesIO
 
 from pytest import raises
@@ -19,10 +14,12 @@ def make_body(harness, raw, headers=None, content_type=WWWFORM):
     if not isinstance(raw, bytes):
         raw = raw.encode('ascii')
     if headers is None:
-        defaults = { FORMDATA: b"multipart/form-data; boundary=AaB03x",
-                     WWWFORM: b"application/x-www-form-urlencoded" }
+        defaults = {
+            FORMDATA: b"multipart/form-data; boundary=AaB03x",
+            WWWFORM: b"application/x-www-form-urlencoded",
+        }
         headers = {b"Content-Type": defaults.get(content_type, content_type)}
-    if not b'Content-Length' in headers:
+    if b'Content-Length' not in headers:
         headers[b'Content-Length'] = str(len(raw)).encode('ascii')
     headers[b'Host'] = b'Blah'
     website = harness.client.website

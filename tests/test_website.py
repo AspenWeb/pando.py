@@ -1,8 +1,3 @@
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
 import os
 import io
 
@@ -64,10 +59,11 @@ def test_dispatch_redirect_works_with_unicode(harness):
 
 def test_redirect_has_only_location(harness):
     harness.fs.www.mk(('index.html.spt', """
-from pando import Response
-[---]
-website.redirect('http://elsewhere', code=304)
-[---]"""))
+        from pando import Response
+        [---]
+        website.redirect('http://elsewhere', code=304)
+        [---]
+    """))
     actual = harness.client.GET(raise_immediately=False)
     assert actual.code == 304
     headers = actual.headers
@@ -76,26 +72,29 @@ website.redirect('http://elsewhere', code=304)
 def test_nice_error_response_is_returned(harness):
     harness.short_circuit = False
     harness.fs.www.mk(('index.html.spt', """
-from pando import Response
-[---]
-raise Response(500)
-[---]"""))
+        from pando import Response
+        [---]
+        raise Response(500)
+        [---]
+    """))
     assert harness.client.GET(raise_immediately=False).code == 500
 
 def test_nice_error_response_is_returned_for_404(harness):
     harness.fs.www.mk(('index.html.spt', """
-from pando import Response
-[---]
-raise Response(404)
-[---]"""))
+        from pando import Response
+        [---]
+        raise Response(404)
+        [---]
+    """))
     assert harness.client.GET(raise_immediately=False).code == 404
 
 def test_response_body_doesnt_expose_traceback_by_default(harness):
     harness.fs.project.mk(('error.spt', simple_error_spt))
     harness.fs.www.mk(('index.html.spt', """
-[---]
-raise Exception("Can I haz traceback ?")
-[---]"""))
+        [---]
+        raise Exception("Can I haz traceback ?")
+        [---]
+    """))
     response = harness.client.GET(raise_immediately=False)
     assert response.code == 500
     assert b"Can I haz traceback ?" not in response.body
@@ -103,9 +102,10 @@ raise Exception("Can I haz traceback ?")
 def test_response_body_exposes_traceback_for_show_tracebacks(harness):
     harness.fs.project.mk(('error.spt', simple_error_spt))
     harness.fs.www.mk(('index.html.spt', """
-[---]
-raise Exception("Can I haz traceback ?")
-[---]"""))
+        [---]
+        raise Exception("Can I haz traceback ?")
+        [---]
+    """))
     harness.client.hydrate_website(show_tracebacks=True)
     response = harness.client.GET(raise_immediately=False)
     assert response.code == 500
@@ -113,20 +113,22 @@ raise Exception("Can I haz traceback ?")
 
 def test_default_error_simplate_doesnt_expose_raised_body_by_default(harness):
     harness.fs.www.mk(('index.html.spt', """
-from pando import Response
-[---]
-raise Response(404, "Um, yeah.")
-[---]"""))
+        from pando import Response
+        [---]
+        raise Response(404, "Um, yeah.")
+        [---]
+    """))
     response = harness.client.GET(raise_immediately=False)
     assert response.code == 404
     assert b"Um, yeah." not in response.body
 
 def test_default_error_simplate_exposes_raised_body_for_show_tracebacks(harness):
     harness.fs.www.mk(('index.html.spt', """
-from pando import Response
-[---]
-raise Response(404, "Um, yeah.")
-[---]"""))
+        from pando import Response
+        [---]
+        raise Response(404, "Um, yeah.")
+        [---]
+    """))
     harness.client.hydrate_website(show_tracebacks=True)
     response = harness.client.GET(raise_immediately=False)
     assert response.code == 404
@@ -135,43 +137,47 @@ raise Response(404, "Um, yeah.")
 def test_nice_error_response_can_come_from_user_error_spt(harness):
     harness.fs.project.mk(('error.spt', '[---]\n[---] text/plain\nTold ya.'))
     harness.fs.www.mk(('index.html.spt', """
-from pando import Response
-[---]
-raise Response(420)
-[---]"""))
+        from pando import Response
+        [---]
+        raise Response(420)
+        [---]
+    """))
     response = harness.client.GET(raise_immediately=False)
     assert response.code == 420
     assert response.body == b'Told ya.'
 
 def test_nice_error_response_can_come_from_user_420_spt(harness):
     harness.fs.project.mk(('420.spt', """
-[---]
-msg = "Enhance your calm." if response.code == 420 else "Ok."
-[---] text/plain
-%(msg)s"""))
+        [---]
+        msg = "Enhance your calm." if response.code == 420 else "Ok."
+        [---] text/plain
+        %(msg)s
+    """))
     harness.fs.www.mk(('index.html.spt', """
-from pando import Response
-[---]
-raise Response(420)
-[---]"""))
+        from pando import Response
+        [---]
+        raise Response(420)
+        [---]
+    """))
     response = harness.client.GET(raise_immediately=False)
     assert response.code == 420
-    assert response.body == b'Enhance your calm.'
+    assert response.body == b'Enhance your calm.\n'
 
 def test_delegate_error_to_simplate_favors_already_negotiated_media_type(harness):
-    harness.fs.project.mk(('error.spt', """[---]
-[---] text/fake
-Lorem ipsum
-[---] text/html
-<p>Error</p>
-[---] text/plain
-Error
-"""))
-    harness.fs.www.mk(('foo.spt',"""
-from pando import Response
-[---]
-raise Response(403)
-[---] text/plain
+    harness.fs.project.mk(('error.spt', """
+        [---]
+        [---] text/fake
+        Lorem ipsum
+        [---] text/html
+        <p>Error</p>
+        [---] text/plain
+        Error
+    """))
+    harness.fs.www.mk(('foo.spt', """
+        from pando import Response
+        [---]
+        raise Response(403)
+        [---] text/plain
     """))
     response = harness.client.GET('/foo', raise_immediately=False, HTTP_ACCEPT=b'text/fake')
     assert response.code == 403
@@ -180,33 +186,34 @@ raise Response(403)
     assert b'text/plain' in response.headers[b'Content-Type']
 
 def test_delegate_error_to_simplate_falls_back_to_original_accept_header(harness):
-    harness.fs.project.mk(('error.spt', """[---]
-[---] text/plain
-Error
-[---] text/fake
-Lorem ipsum
-"""))
+    harness.fs.project.mk(('error.spt', """
+        [---]
+        [---] text/plain
+        Error
+        [---] text/fake
+        Lorem ipsum
+    """))
     response = harness.client.GET('/foo', raise_immediately=False, HTTP_ACCEPT=b'text/fake')
     assert response.code == 404
     assert b'text/fake' in response.headers[b'Content-Type']
 
 def test_default_error_spt_handles_text_html(harness):
-    harness.fs.www.mk(('foo.html.spt',"""
-from pando import Response
-[---]
-raise Response(404)
-[---]
+    harness.fs.www.mk(('foo.html.spt', """
+        from pando import Response
+        [---]
+        raise Response(404)
+        [---]
     """))
     response = harness.client.GET('/foo.html', raise_immediately=False)
     assert response.code == 404
     assert b'text/html' in response.headers[b'Content-Type']
 
 def test_default_error_spt_handles_application_json(harness):
-    harness.fs.www.mk(('foo.json.spt',"""
-from pando import Response
-[---]
-raise Response(404)
-[---]
+    harness.fs.www.mk(('foo.json.spt', """
+        from pando import Response
+        [---]
+        raise Response(404)
+        [---]
     """))
     response = harness.client.GET('/foo.json', raise_immediately=False)
     assert response.code == 404
@@ -219,11 +226,11 @@ raise Response(404)
 '''
 
 def test_default_error_spt_application_json_includes_msg_for_show_tracebacks(harness):
-    harness.fs.www.mk(('foo.json.spt',"""
-from pando import Response
-[---]
-raise Response(404, "Right, sooo...")
-[---]
+    harness.fs.www.mk(('foo.json.spt', """
+        from pando import Response
+        [---]
+        raise Response(404, "Right, sooo...")
+        [---]
     """))
     harness.client.hydrate_website(show_tracebacks=True)
     response = harness.client.GET('/foo.json', raise_immediately=False)
@@ -237,11 +244,11 @@ raise Response(404, "Right, sooo...")
 '''
 
 def test_default_error_spt_falls_through_to_text_plain(harness):
-    harness.fs.www.mk(('foo.xml.spt',"""
-from pando import Response
-[---]
-raise Response(404)
-[---]
+    harness.fs.www.mk(('foo.xml.spt', """
+        from pando import Response
+        [---]
+        raise Response(404)
+        [---]
     """))
     response = harness.client.GET('/foo.xml', raise_immediately=False)
     assert response.code == 404
@@ -249,11 +256,11 @@ raise Response(404)
     assert response.body == b"Not found, program!\n\n"
 
 def test_default_error_spt_fall_through_includes_msg_for_show_tracebacks(harness):
-    harness.fs.www.mk(('foo.xml.spt',"""
-from pando import Response
-[---]
-raise Response(404, "Try again!")
-[---]
+    harness.fs.www.mk(('foo.xml.spt', """
+        from pando import Response
+        [---]
+        raise Response(404, "Try again!")
+        [---]
     """))
     harness.client.hydrate_website(show_tracebacks=True)
     response = harness.client.GET('/foo.xml', raise_immediately=False)
@@ -263,15 +270,15 @@ raise Response(404, "Try again!")
 
 def test_custom_error_spt_without_text_plain_doesnt_result_in_406(harness):
     harness.fs.project.mk(('error.spt', """
-[---]
-[---] text/html
-<h1>Oh no!</h1>
+        [---]
+        [---] text/html
+        <h1>Oh no!</h1>
     """))
-    harness.fs.www.mk(('foo.xml.spt',"""
-from pando import Response
-[---]
-raise Response(404)
-[---]
+    harness.fs.www.mk(('foo.xml.spt', """
+        from pando import Response
+        [---]
+        raise Response(404)
+        [---]
     """))
     response = harness.client.GET('/foo.xml', raise_immediately=False)
     assert response.code == 404
@@ -279,15 +286,15 @@ raise Response(404)
 
 def test_custom_error_spt_with_text_plain_works(harness):
     harness.fs.project.mk(('error.spt', """
-[---]
-[---] text/plain
-Oh no!
+        [---]
+        [---] text/plain
+        Oh no!
     """))
-    harness.fs.www.mk(('foo.xml.spt',"""
-from pando import Response
-[---]
-raise Response(404)
-[---]
+    harness.fs.www.mk(('foo.xml.spt', """
+        from pando import Response
+        [---]
+        raise Response(404)
+        [---]
     """))
     response = harness.client.GET('/foo.xml', raise_immediately=False)
     assert response.code == 404
@@ -312,28 +319,28 @@ def test_resources_can_import_from_project_root(harness):
 
 def test_non_500_response_exceptions_dont_get_folded_to_500(harness):
     harness.fs.www.mk(('index.html.spt', '''
-from pando import Response
-[---]
-raise Response(400)
-[---]
+        from pando import Response
+        [---]
+        raise Response(400)
+        [---]
 '''))
     response = harness.client.GET(raise_immediately=False)
     assert response.code == 400
 
 def test_errors_show_tracebacks(harness):
     harness.fs.www.mk(('index.html.spt', '''
-from pando import Response
-[---]
-website.show_tracebacks = 1
-raise Response(400,1,2,3,4,5,6,7,8,9)
-[---]
-'''))
+        from pando import Response
+        [---]
+        website.show_tracebacks = 1
+        raise Response(400,1,2,3,4,5,6,7,8,9)
+        [---]
+    '''))
     response = harness.client.GET(raise_immediately=False)
     assert response.code == 500
     assert b'Response(400,1,2,3,4,5,6,7,8,9)' in response.body
 
 
-class _TestMiddleware(object):
+class _TestMiddleware:
     """Simple WSGI middleware for testing."""
 
     def __init__(self, app):
@@ -354,24 +361,28 @@ def build_environ(path):
     return {
         b'REQUEST_METHOD': b'GET',
         b'PATH_INFO': path,
-         'QUERY_STRING': '',
+        'QUERY_STRING': '',
         b'SERVER_SOFTWARE': b'build_environ/1.0',
         b'SERVER_PROTOCOL': 'HTTP/1.1',
-         'wsgi.input': io.BytesIO()
+        'wsgi.input': io.BytesIO(),
     }
 
 def test_call_wraps_wsgi_middleware(client):
     client.website.state_chain.default_short_circuit = False
     client.website.wsgi_app = _TestMiddleware(client.website.wsgi_app)
     respond = [False, False]
+
     def start_response_should_404(status, headers):
         assert status.lower().strip() == '404 not found'
         respond[0] = True
+
     client.website(build_environ('/'), start_response_should_404)
     assert respond[0]
+
     def start_response_should_200(status, headers):
         assert status.lower().strip() == '200 ok'
         respond[1] = True
+
     client.website(build_environ('/middleware'), start_response_should_200)
     assert respond[1]
 
@@ -383,8 +394,10 @@ def test_raised_unicode_response_is_encoded_with_configured_charset(harness):
         [---]
     '''))
     harness.client.hydrate_website(encode_output_as='latin9')
+
     def start_response(*a):
         pass
+
     body = harness.client.website(build_environ('/'), start_response)
     assert list(body) == [b'touch\xe9']
 
@@ -416,8 +429,8 @@ def test_redirect_declines_to_construct_bad_urls(website):
     assert raised.value.body == 'Bad redirect location: http://www.example.com../foo'
 
 def test_redirect_declines_to_construct_more_bad_urls(website):
-    raised = raises(BadLocation, website.redirect, 'http://www.example.org/foo',
-                                                                 base_url='http://www.example.com')
+    with raises(BadLocation) as raised:
+        website.redirect('http://www.example.org/foo', base_url='http://www.example.com')
     expected = 'Bad redirect location: http://www.example.comhttp://www.example.org/foo'
     assert raised.value.body == expected
 
@@ -436,9 +449,9 @@ def test_redirect_will_allow_an_absolute_url(website):
 def test_redirect_can_use_given_response(website):
     response = Response(65, 'Greetings, program!', {b'Location': b'A Town'})
     response = raises(Response, website.redirect, '/flah', response=response).value
-    assert response.code == 302                     # gets clobbered
+    assert response.code == 302                       # gets clobbered
     assert response.headers[b'Location'] == b'/flah'  # gets clobbered
-    assert response.body == 'Greetings, program!'   # not clobbered
+    assert response.body == 'Greetings, program!'     # not clobbered
 
 def test_redirect_doesnt_overescape(website):
     response = raises(Response, website.redirect, '/f%C3%A9e').value
@@ -450,21 +463,21 @@ def test_redirect_doesnt_overescape(website):
 def test_canonicalize_base_url_canonicalizes_base_url(harness):
     harness.fs.www.mk(('index.html', 'Greetings, program!'))
     harness.client.hydrate_website(base_url='https://example.com')
-    response = harness.client.GxT()
+    response = harness.client.xGET()
     assert response.code == 302
     assert response.headers[b'Location'] == b'https://example.com/'
 
 def test_canonicalize_base_url_includes_path_and_qs_for_GET(harness):
     harness.fs.www.mk(('index.html', 'Greetings, program!'))
     harness.client.hydrate_website(base_url='https://example.com')
-    response = harness.client.GxT('/foo/bar?baz=buz')
+    response = harness.client.xGET('/foo/bar?baz=buz')
     assert response.code == 302
     assert response.headers[b'Location'] == b'https://example.com/foo/bar?baz=buz'
 
 def test_canonicalize_base_url_redirects_to_homepage_for_POST(harness):
     harness.fs.www.mk(('index.html', 'Greetings, program!'))
     harness.client.hydrate_website(base_url='https://example.com')
-    response = harness.client.PxST('/foo/bar?baz=buz')
+    response = harness.client.xPOST('/foo/bar?baz=buz')
     assert response.code == 302
     assert response.headers[b'Location'] == b'https://example.com/'
 

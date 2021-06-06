@@ -3,4 +3,4 @@ cov-core>=1.7
 py>=1.4.20
 pytest>=2.5.2
 pytest-cov>=1.6
-pyflakes
+flake8

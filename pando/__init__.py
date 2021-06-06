@@ -10,10 +10,6 @@
 .. automodule:: pando.wsgi
 
 """
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
 
 from os.path import dirname, join
 import sys
@@ -25,7 +21,7 @@ from aspen.simplates.renderers import BUILTIN_RENDERERS, RENDERERS
 from .http.response import Response
 from .logging import log, log_dammit
 
-# Shut up, PyFlakes. I know I'm addicted to you.
+# Shut up, flake8. I know I'm addicted to you.
 Response, json, log, log_dammit, BUILTIN_RENDERERS, RENDERERS
 
 try:
@@ -36,6 +32,3 @@ except pkg_resources.DistributionNotFound:
         __version__ = f.read()
 
 WINDOWS = sys.platform[:3] == 'win'
-
-is_callable = callable
-

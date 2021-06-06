@@ -18,8 +18,6 @@ where ``raw`` is the raw bytestring to be parsed, and ``headers`` is the
 import cgi
 from io import BytesIO
 
-from six import PY3
-
 from . import json
 from .http.mapping import CaseInsensitiveMapping, Mapping
 from .exceptions import MalformedBody
@@ -39,18 +37,18 @@ def formdata(raw, headers):
     # method is GET (we already parsed the querystring elsewhere).
 
     environ = {"REQUEST_METHOD": "POST"}
-    if PY3:
-        _headers = CaseInsensitiveMapping()
-        for k, vals in headers.items():
-            for v in vals:
-                _headers.add(k.decode('ascii'), v.decode('ascii'))
-        headers = _headers
-    parsed = cgi.FieldStorage( fp = BytesIO(raw)  # Ack.
-                             , environ = environ
-                             , headers = headers
-                             , keep_blank_values = True
-                             , strict_parsing = False
-                              )
+    _headers = CaseInsensitiveMapping()
+    for k, vals in headers.items():
+        for v in vals:
+            _headers.add(k.decode('ascii'), v.decode('ascii'))
+    headers = _headers
+    parsed = cgi.FieldStorage(
+        fp=BytesIO(raw),
+        environ=environ,
+        headers=headers,
+        keep_blank_values=True,
+        strict_parsing=False,
+    )
     result = Mapping()
     for k in parsed.keys():
         vals = parsed[k]

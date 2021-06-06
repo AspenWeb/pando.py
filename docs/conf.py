@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-#
 # Pando documentation build configuration file, originally created by
 # sphinx-quickstart on Mon Feb 24 15:00:43 2014.
 #
@@ -61,8 +59,6 @@ _autodoc_exclusions = {
     '__subclasshook__',  # inherited-members
 }
 
-text_type = unicode if sys.version_info[0] < 3 else str
-
 def autodoc_skip_member(app, what, name, obj, skip, options):
     return (
         skip or
@@ -79,7 +75,7 @@ def autodoc_skip_member(app, what, name, obj, skip, options):
             obj is getattr(dict, name, None) or
             obj is getattr(int, name, None) or
             obj is getattr(bytes, name, None) or
-            obj is getattr(text_type, name, None)
+            obj is getattr(str, name, None)
         )
     )
 
@@ -132,6 +128,6 @@ texinfo_documents = [
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {
-    'python': ('https://docs.python.org/3.5/', None),
+    'python': ('https://docs.python.org/3/', None),
     'aspen': ('http://core.aspen.io/en/latest/', None),
 }

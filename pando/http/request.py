@@ -20,26 +20,19 @@ we use to model each::
         - body                  Body        Content-Type?
 
 """
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
 
 from ipaddress import ip_address
 import re
 import string
 import sys
 import traceback
+from urllib.parse import quote, quote_plus
 import warnings
-
-from six import PY2
 
 from aspen.http.request import Path as _Path, Querystring as _Querystring
 
 from .. import Response
 from ..exceptions import MalformedBody, UnknownBodyType
-from ..urlparse import quote, quote_plus
 from ..utils import maybe_encode
 from .baseheaders import BaseHeaders as Headers
 from .mapping import Mapping
@@ -104,9 +97,10 @@ def kick_against_goad(environ):
     """Kick against the goad. Try to squeeze blood from a stone. Do our best.
     """
     method = environ[b'REQUEST_METHOD']
-    uri = make_franken_uri( environ.get(b'PATH_INFO', b'')
-                          , environ.get(b'QUERY_STRING', b'')
-                          )
+    uri = make_franken_uri(
+        environ.get(b'PATH_INFO', b''),
+        environ.get(b'QUERY_STRING', b''),
+    )
     server = environ.get(b'SERVER_SOFTWARE', b'')
     version = environ[b'SERVER_PROTOCOL']
     headers = make_franken_headers(environ)
@@ -118,7 +112,7 @@ def kick_against_goad(environ):
 # Request #
 ###########
 
-class Request(object):
+class Request:
     """Represent an HTTP Request message.
 
     .. attribute:: line
@@ -131,8 +125,10 @@ class Request(object):
 
     """
 
-    def __init__(self, website, method=b'GET', uri=b'/', server_software=b'',
-                version=b'HTTP/1.1', headers={b'Host': b'localhost'}, body=None):
+    def __init__(
+        self, website, method=b'GET', uri=b'/', server_software=b'',
+        version=b'HTTP/1.1', headers={b'Host': b'localhost'}, body=None,
+    ):
         """``body`` is expected to be a file-like object.
         """
         self.website = website
@@ -210,8 +206,9 @@ class Request(object):
             return int(cl)
         except ValueError:
             safe = cl.decode('ascii', 'backslashreplace')
-            raise Response(400,
-                "The 'Content-Length' header is not a valid integer: %s" % safe
+            raise Response(
+                400,
+                "The 'Content-Length' header is not a valid integer: %s" % safe,
             )
 
     @property
@@ -282,8 +279,9 @@ class Request(object):
         try:
             return host.decode('idna')
         except UnicodeError:
-            raise Response(400,
-                "The 'Host' header is not a valid domain name: %r" % host
+            raise Response(
+                400,
+                "The 'Host' header is not a valid domain name: %r" % host,
             )
 
     @property
@@ -361,8 +359,9 @@ class Request(object):
                         addr = ip_address(forwarded_for[i+1:].decode('ascii').strip())
                     except (UnicodeDecodeError, ValueError):
                         safe = forwarded_for.decode('ascii', 'backslashreplace')
-                        raise Response(400,
-                            "The 'X-Forwarded-For' header value is invalid: " + safe
+                        raise Response(
+                            400,
+                            "The 'X-Forwarded-For' header value is invalid: " + safe,
                         )
                     forwarded_for = forwarded_for[:i]
                 else:
@@ -418,12 +417,11 @@ class Request(object):
         to read bytes off the wire if we can avoid it, though, because for mega
         file uploads and such this could have a big impact.
         """
-        bs = (
+        return (
             self.line + b'\r\n' +
             self.headers.raw + b'\r\n\r\n' +
             self.body_bytes
-        )
-        return bs if PY2 else bs.decode('ascii')
+        ).decode('ascii')
 
     def __repr__(self):
         return str.__repr__(str(self))
@@ -518,7 +516,7 @@ class Method(bytes):
 
         """
         decoded = raw.decode('ascii', 'backslashreplace')
-        if decoded not in STANDARD_METHODS: # fast for 99.999% case
+        if decoded not in STANDARD_METHODS:  # fast for 99.999% case
             if any(char not in CHARS_ALLOWED_IN_METHOD for char in decoded):
                 raise Response(400, "Your request method violates RFC 7230: %s" % decoded)
 
@@ -625,10 +623,7 @@ class _QuerystringMapping(Mapping, _Querystring):
 # Request -> Line -> Version
 # ..........................
 
-versions = { b'HTTP/0.9': (0, 9)
-           , b'HTTP/1.0': (1, 0)
-           , b'HTTP/1.1': (1, 1)
-            }
+versions = {b'HTTP/0.9': (0, 9), b'HTTP/1.0': (1, 0), b'HTTP/1.1': (1, 1)}
 
 version_re = re.compile(br'^HTTP/([0-9])\.([0-9])$')
 

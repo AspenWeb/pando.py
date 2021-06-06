@@ -20,8 +20,6 @@ To get help on fabricate functions:
 
 """
 
-from __future__ import with_statement, print_function, unicode_literals
-
 # fabricate version number
 __version__ = '1.26'
 
@@ -29,6 +27,7 @@ __version__ = '1.26'
 deps_version = 2
 
 import atexit
+import multiprocessing
 import optparse
 import os
 import platform
@@ -39,21 +38,8 @@ import subprocess
 import sys
 import tempfile
 import time
-import threading # NB uses old camelCase names for backward compatibility
-# multiprocessing module only exists on Python >= 2.6
-try:
-    import multiprocessing
-except ImportError:
-    class MultiprocessingModule(object):
-        def __getattr__(self, name):
-            raise NotImplementedError("multiprocessing module not available, can't do parallel builds")
-    multiprocessing = MultiprocessingModule()
+import threading
 
-PY3 = sys.version_info[0] == 3
-if PY3:
-    string_types = str
-else:
-    string_types = basestring
 
 # so you can do "from fabricate import *" to simplify your build script
 __all__ = ['setup', 'run', 'autoclean', 'main', 'shell', 'fabricate_version',
@@ -127,7 +113,7 @@ def args_to_list(args):
         if isinstance(arg, (list, tuple)):
             arglist.extend(args_to_list(arg))
         else:
-            if not isinstance(arg, string_types):
+            if not isinstance(arg, str):
                 arg = str(arg)
             arglist.append(arg)
     return arglist
@@ -239,7 +225,7 @@ class RunnerUnsupportedException(Exception):
         on the current platform."""
     pass
 
-class Runner(object):
+class Runner:
     def __call__(self, *args, **kwargs):
         """ Run command and return (dependencies, outputs), where
             dependencies is a list of the filenames of files that the
@@ -467,7 +453,7 @@ class AtimesRunner(Runner):
         os.stat_float_times(old_stat_float)  # restore stat_float_times value
         return deps, outputs
 
-class StraceProcess(object):
+class StraceProcess:
     def __init__(self, cwd='.', delayed=False):
         self.cwd = cwd
         self.deps = set()
@@ -768,7 +754,7 @@ class SmartRunner(Runner):
     def __call__(self, *args, **kwargs):
         return self._runner(*args, **kwargs)
 
-class _running(object):
+class _running:
     """ Represents a task put on the parallel pool 
         and its results when complete """
     def __init__(self, async_result, command):
@@ -778,7 +764,7 @@ class _running(object):
         self.command = command
         self.results = None
         
-class _after(object):
+class _after:
     """ Represents something waiting on completion of some previous commands """
     def __init__(self, afters, do):
         """ "afters" is a group id or a iterable of group ids to wait on
@@ -788,10 +774,10 @@ class _after(object):
         self.do = do
         self.done = False
         
-class _Groups(object):
+class _Groups:
     """ Thread safe mapping object whose values are lists of _running
         or _after objects and a count of how many have *not* completed """
-    class value(object):
+    class value:
         """ the value type in the map """
         def __init__(self, val=None):
             self.count = 0  # count of items not yet completed.
@@ -893,7 +879,7 @@ _groups = _Groups()
 _results = None
 _stop_results = threading.Event()
 
-class _todo(object):
+class _todo:
     """ holds the parameters for commands waiting on others """
     def __init__(self, group, command, arglist, kwargs):
         self.group = group      # which group it should run as
@@ -966,7 +952,7 @@ def _results_handler( builder, delay=0.01):
             printerr("Error: unexpected results handler exit")
             os._exit(1)
         
-class Builder(object):
+class Builder:
     """ The Builder.
 
         You may supply a "runner" class to change the way commands are run
@@ -1183,7 +1169,7 @@ class Builder(object):
 
             This function is for compatiblity with memoize.py and is
             deprecated. Use run() instead. """
-        if isinstance(command, string_types):
+        if isinstance(command, str):
             args = shlex.split(command)
         else:
             args = args_to_list(command)
@@ -1329,7 +1315,7 @@ class Builder(object):
         try:
             self.runner = self._runner_map[runner](self)
         except KeyError:
-            if isinstance(runner, string_types):
+            if isinstance(runner, str):
                 # For backwards compatibility, allow runner to be the
                 # name of a method in a derived class:
                 self.runner = getattr(self, runner)

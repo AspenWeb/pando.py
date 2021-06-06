@@ -1,11 +1,3 @@
-# coding: utf8
-
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
-
 from pando.http.request import Request
 from pando.http.response import Response
 
@@ -33,9 +25,13 @@ def test_404_comes_out_404(harness):
 
 def test_user_can_influence_request_context_via_chain_state(harness):
     harness.fs.www.mk(('index.html.spt', '[---]\n[---]\n%(foo)s'))
+
     def add_foo_to_context(request):
         return {'foo': 'bar'}
-    harness.client.website.state_chain.insert_after('parse_environ_into_request', add_foo_to_context)
+
+    harness.client.website.state_chain.insert_after(
+        'parse_environ_into_request', add_foo_to_context
+    )
     assert harness.client.GET().body == b'bar'
 
 
@@ -53,7 +49,6 @@ def test_simplates_dont_implicitly_override_state(harness):
 
 def test_simplates_can_explicitly_override_state(harness):
     harness.fs.www.mk(('index.spt', """\
-        # coding: utf8
         [---]
         state['resource'] = 'foo'
         [---]
@@ -64,7 +59,6 @@ def test_simplates_can_explicitly_override_state(harness):
 
 def test_simplates_can_modify_output(harness):
     harness.fs.www.mk(('index.spt', """\
-        # coding: utf8
         [---]
         output.body = 'thé'
         output.media_type = 'text/x-foobar'
@@ -78,8 +72,10 @@ def test_simplates_can_modify_output(harness):
 
 def test_early_failures_dont_break_everything(harness):
     old_from_wsgi = Request.from_wsgi
+
     def broken_from_wsgi(*a, **kw):
         raise Response(400)
+
     try:
         Request.from_wsgi = classmethod(broken_from_wsgi)
         assert harness.client.GET("/", raise_immediately=False).code == 400
@@ -104,7 +100,7 @@ def test_static_resource_HEAD(harness):
 
 def test_static_resource_PUT(harness):
     harness.fs.www.mk(('file.js', "Hello world!"))
-    r = harness.client.PxT('/file.js', body=b'Malicious JS code.')
+    r = harness.client.xPUT('/file.js', body=b'Malicious JS code.')
     assert r.code == 405
 
 

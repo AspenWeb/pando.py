@@ -1,5 +1,4 @@
 include COPYRIGHT
-include ez_setup.py
 include version.txt
 include pando/configuration/mime.types
 graft pando/www

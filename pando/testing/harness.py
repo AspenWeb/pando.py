@@ -2,10 +2,6 @@
 :mod:`harness`
 --------------
 """
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
 
 import os
 import sys
@@ -29,12 +25,13 @@ def teardown():
     """
     os.chdir(CWD)
     # Reset some process-global caches. Hrm ...
-    sys.path_importer_cache = {} # see test_weird.py
-
-teardown() # start clean
+    sys.path_importer_cache = {}  # see test_weird.py in aspen
 
 
-class Harness(object):
+teardown()  # start clean
+
+
+class Harness:
     """A harness to be used in the Pando test suite itself. Probably not useful to you.
     """
 
@@ -48,12 +45,13 @@ class Harness(object):
         self.fs.www.remove()
         self.fs.project.remove()
 
-
     # Simple API
     # ==========
 
-    def simple(self, contents='Greetings, program!', filepath='index.html.spt', uripath=None,
-            website_configuration=None, **kw):
+    def simple(
+        self, contents='Greetings, program!', filepath='index.html.spt', uripath=None,
+        website_configuration=None, **kw
+    ):
         """A helper to create a file and hit it through our machinery.
         """
         if filepath is not None:

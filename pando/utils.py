@@ -2,63 +2,26 @@
 :mod:`utils`
 ============
 """
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
 
-import datetime
+from datetime import datetime, timezone
 import re
-
-from six import text_type
 
 
 # encoding helpers
 # ================
 
 def maybe_encode(s, codec='ascii'):
-    return s.encode(codec) if isinstance(s, text_type) else s
+    return s.encode(codec) if isinstance(s, str) else s
 
 
 # datetime helpers
 # ================
 
-def total_seconds(td):
-    """Python 2.7 adds a total_seconds method to timedelta objects.
-
-    See http://docs.python.org/library/datetime.html#datetime.timedelta.total_seconds
-
-    This function is taken from https://bitbucket.org/jaraco/jaraco.compat/src/e5806e6c1bcb/py26compat/__init__.py#cl-26
-
-    """
-    try:
-        result = td.total_seconds()
-    except AttributeError:
-        result = (td.microseconds + (td.seconds + td.days * 24 * 3600) * 10**6) / 10**6
-    return result
-
-
-class UTC(datetime.tzinfo):
-    """UTC - http://docs.python.org/library/datetime.html#tzinfo-objects
-    """
-
-    def utcoffset(self, dt):
-        return datetime.timedelta(0)
-
-    def tzname(self, dt):
-        return "UTC"
-
-    def dst(self, dt):
-        return datetime.timedelta(0)
-
-utc = UTC()
+utc = timezone.utc
 
 
 def utcnow():
-    """Return a tz-aware datetime.datetime.
-    """
-    # For Python < 3, see http://bugs.python.org/issue5094
-    return datetime.datetime.now(tz=utc)
+    return datetime.now(tz=utc)
 
 
 def to_rfc822(dt):
@@ -112,34 +75,26 @@ def typecheck(*checks):
     >>> typecheck('foo', (str, None))
     >>> typecheck(None, None)
     >>> typecheck(None, type(None))
-    >>> typecheck('foo', unicode)
+    >>> typecheck(b'foo', str)
     Traceback (most recent call last):
         ...
-    TypeError: Check #1: 'foo' is of type str, but unicode was expected.
-    >>> typecheck('foo', (basestring, None))
+    TypeError: Check #1: b'foo' is of type bytes, but str was expected.
+    >>> typecheck('foo', (bytes, None))
     Traceback (most recent call last):
         ...
-    TypeError: Check #1: 'foo' is of type str, not one of: basestring, NoneType.
-    >>> class Foo(object):
+    TypeError: Check #1: 'foo' is of type str, not one of: bytes, NoneType.
+    >>> class Foo:
     ...   def __repr__(self):
     ...     return "<Foo>"
     ...
     >>> typecheck(Foo(), dict)
     Traceback (most recent call last):
         ...
-    TypeError: Check #1: <Foo> is of type __main__.Foo, but dict was expected.
-    >>> class Bar:
-    ...   def __repr__(self):
-    ...     return "<Bar>"
-    ...
-    >>> typecheck(Bar(), dict)
+    TypeError: Check #1: <Foo> is of type pando.utils.Foo, but dict was expected.
+    >>> typecheck('foo', str, 'bar', int)
     Traceback (most recent call last):
         ...
-    TypeError: Check #1: <Bar> is of type instance, but dict was expected.
-    >>> typecheck('foo', str, 'bar', unicode)
-    Traceback (most recent call last):
-        ...
-    TypeError: Check #2: 'bar' is of type str, but unicode was expected.
+    TypeError: Check #2: 'bar' is of type str, but int was expected.
 
     """
     assert type(checks) is tuple, checks

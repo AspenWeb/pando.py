@@ -2,13 +2,8 @@
 :mod:`baseheaders`
 ------------------
 """
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
 
-from six import PY3
-from six.moves.http_cookies import CookieError, SimpleCookie
+from http.cookies import CookieError, SimpleCookie
 
 from .mapping import BytesMapping, CaseInsensitiveMapping
 
@@ -49,7 +44,7 @@ class BaseHeaders(BytesMapping, CaseInsensitiveMapping):
 
         self.cookie = SimpleCookie()
         cookie = self.get(b'Cookie', b'')
-        if PY3 and isinstance(cookie, bytes):
+        if isinstance(cookie, bytes):
             cookie = cookie.decode('ascii', 'replace')
         try:
             self.cookie.load(cookie)

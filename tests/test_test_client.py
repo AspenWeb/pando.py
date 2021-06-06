@@ -37,9 +37,7 @@ def test_test_client_handles_file_upload(harness):
     {bar.filename}
     {bar.type}
     {bar.value}'''))
-    file_upload = FileUpload( data=b'Greetings, program!'
-                            , filename=b'greetings.txt'
-                             )
+    file_upload = FileUpload(data=b'Greetings, program!', filename=b'greetings.txt')
     response = harness.client.POST('/foo', body={b'bar': file_upload})
     assert response.body == b'greetings.txt\ntext/plain\nGreetings, program!'
 
@@ -49,10 +47,11 @@ def test_test_client_can_have_file_upload_content_type_overriden(harness):
     bar = request.body['bar']
     [---] text/plain via stdlib_format
     {bar.type}'''))
-    file_upload = FileUpload( data=b'Greetings, program!'
-                            , filename=b'greetings.txt'
-                            , content_type=b'something/else'
-                             )
+    file_upload = FileUpload(
+        data=b'Greetings, program!',
+        filename=b'greetings.txt',
+        content_type=b'something/else',
+    )
     response = harness.client.POST('/foo', body={b'bar': file_upload})
     assert response.body == b'something/else'
 
