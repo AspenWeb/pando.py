@@ -14,6 +14,7 @@ from aspen.simplates.simplate import Simplate
 from state_chain import StateChain
 
 from . import body_parsers
+from .http.request import SAFE_METHODS
 from .http.response import Response
 from .utils import maybe_encode, to_rfc822
 from .exceptions import BadLocation
@@ -144,7 +145,7 @@ class Website:
 
         if actual != self.base_url:
             url = self.base_url
-            if request.method in ('GET', 'HEAD', 'OPTIONS', 'TRACE'):
+            if request.method in SAFE_METHODS:
                 # Redirect to a particular path for idempotent methods.
                 url += request.line.uri.path.decoded
                 if request.line.uri.querystring:

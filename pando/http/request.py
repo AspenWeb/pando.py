@@ -485,6 +485,8 @@ If your application uses other standard methods (see the `HTTP Method Registry
 methods, you can add them to this set to improve performance.
 """
 
+SAFE_METHODS = {'GET', 'HEAD', 'OPTIONS', 'TRACE'}
+
 CHARS_ALLOWED_IN_METHOD = set(
     string.ascii_letters + string.digits + "!#$%&'*+-.^_`|~"
 )
