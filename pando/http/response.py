@@ -124,29 +124,24 @@ class Response(Exception):
         return b'\r\n'.join([status_line, headers, b'', body])
 
     def set_whence_raised(self):
-        """Sets self.whence_raised
+        """Sets and returns the value of `self.whence_raised`.
 
         It's a tuple, (filename, linenum) where we were raised from.
 
         This function needs to be called from inside the `except` block.
 
         """
-        filepath = linenum = None
-        cls, response, tb = sys.exc_info()
-        if response is self:
+        cls, exception, tb = sys.exc_info()
+        if exception is self:
             while tb.tb_next is not None:
                 tb = tb.tb_next
             frame = tb.tb_frame
-
-            # filepath
-            filepath = tb.tb_frame.f_code.co_filename
+            filepath = frame.f_code.co_filename
             # Try to return the path relative to project_root
-            if self.request and getattr(self.request, 'website'):
+            if self.request and getattr(self.request, 'website', None):
                 filepath = os.path.relpath(filepath, self.request.website.project_root)
             else:
                 # Fall back to returning only the last two segments
                 filepath = os.sep.join(filepath.split(os.sep)[-2:])
-
-            # linenum
-            linenum = frame.f_lineno
-        self.whence_raised = (filepath, linenum)
+            self.whence_raised = (filepath, frame.f_lineno)
+        return self.whence_raised
