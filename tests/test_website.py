@@ -470,16 +470,16 @@ def test_canonicalize_base_url_canonicalizes_base_url(harness):
 def test_canonicalize_base_url_includes_path_and_qs_for_GET(harness):
     harness.fs.www.mk(('index.html', 'Greetings, program!'))
     harness.client.hydrate_website(base_url='https://example.com')
-    response = harness.client.xGET('/foo/bar?baz=buz')
+    response = harness.client.xGET('/%40/bar?baz=1+2')
     assert response.code == 302
-    assert response.headers[b'Location'] == b'https://example.com/foo/bar?baz=buz'
+    assert response.headers[b'Location'] == b'https://example.com/%40/bar?baz=1+2'
 
-def test_canonicalize_base_url_redirects_to_homepage_for_POST(harness):
+def test_canonicalize_base_url_redirects_POST(harness):
     harness.fs.www.mk(('index.html', 'Greetings, program!'))
     harness.client.hydrate_website(base_url='https://example.com')
-    response = harness.client.xPOST('/foo/bar?baz=buz')
-    assert response.code == 302
-    assert response.headers[b'Location'] == b'https://example.com/'
+    response = harness.client.xPOST('/%40/bar?baz=1+2')
+    assert response.code == 307
+    assert response.headers[b'Location'] == b'https://example.com/%40/bar?baz=1+2'
 
 def test_canonicalize_base_url_allows_good_base_url(harness):
     harness.fs.www.mk(('index.html', 'Greetings, program!'))

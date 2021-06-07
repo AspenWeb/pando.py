@@ -130,7 +130,8 @@ class Website:
     # Base URL Canonicalization
     # =========================
 
-    _canonicalize_base_url_code = 302
+    _canonicalize_base_url_code_for_safe_method = 302
+    _canonicalize_base_url_code_for_unsafe_method = 307
 
     def canonicalize_base_url(self, request):
         """Enforces a base_url such as http://localhost:8080 (no path part).
@@ -140,20 +141,17 @@ class Website:
         """
         if not self.base_url:
             return
-
-        actual = request.scheme + "://" + request.host
-
-        if actual != self.base_url:
-            url = self.base_url
-            if request.method in SAFE_METHODS:
-                # Redirect to a particular path for idempotent methods.
-                url += request.line.uri.path.decoded
-                if request.line.uri.querystring:
-                    url += '?' + request.line.uri.querystring.decoded
-            else:
-                # For non-idempotent methods, redirect to homepage.
-                url += '/'
-            self.redirect(url, code=self._canonicalize_base_url_code)
+        request_base_url = request.scheme + "://" + request.host
+        if request_base_url == self.base_url:
+            return
+        url = self.base_url + request.path.raw
+        if request.qs:
+            url += '?' + request.qs.raw
+        if request.method in SAFE_METHODS:
+            code = self._canonicalize_base_url_code_for_safe_method
+        else:
+            code = self._canonicalize_base_url_code_for_unsafe_method
+        self.redirect(url, code=code)
 
     # File Resolution
     # ===============
