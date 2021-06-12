@@ -342,10 +342,6 @@ class CaseInsensitiveMapping(Mapping):
 class BytesMapping(Mapping):
     """This mapping automatically transcodes keys and values.
 
-    Attributes:
-        encoding (str): UTF-8 by default
-        encoding_errors (str): 'backslashreplace' by default
-
     >>> m = BytesMapping()
     >>> m[b'foo'] = b'bar'
     >>> m[b'foo']

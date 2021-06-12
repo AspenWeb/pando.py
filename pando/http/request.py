@@ -117,7 +117,7 @@ class Request:
 
     .. attribute:: headers
 
-        A mapping of HTTP headers. See :class:`.Headers`.
+        A mapping of HTTP headers. See :class:`~pando.http.baseheaders.BaseHeaders`.
 
     """
 
@@ -331,7 +331,7 @@ class Request:
         :attr:`~pando.website.DefaultConfiguration.trusted_proxies`.
 
         .. warning::
-            If the  :attr:`~pando.website.DefaultConfiguration.trusted_proxies`
+            If the :attr:`~pando.website.DefaultConfiguration.trusted_proxies`
             list is incorrect or incomplete, then this property can mistakenly
             return the IP address of a reverse proxy instead of the client's IP
             address.
@@ -443,7 +443,7 @@ class Request:
             })
 
     def is_xhr(self):
-        """Check the value of X-Requested-With.
+        """Check the value of the ``X-Requested-With`` header.
         """
         val = self.headers.get(b'X-Requested-With', b'')
         return val.lower() == b'xmlhttprequest'
