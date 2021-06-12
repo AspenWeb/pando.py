@@ -96,7 +96,7 @@ class Response(Exception):
         start_response(wsgi_status, wsgi_headers)
         body = self.body
         if not isinstance(body, (list, tuple)):
-            body = [body]
+            body = (body,)
         body = (x.encode(charset) if not isinstance(x, bytes) else x for x in body)
         return CloseWrapper(self.request, body)
 
