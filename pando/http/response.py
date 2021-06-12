@@ -104,15 +104,13 @@ class Response(Exception):
         return "<Response: %s>" % self._status_text()
 
     def __str__(self):
+        r = self._status_text()
+        if self.code // 100 == 3:
+            r += f" <{self.headers.get('Location')}>"
         body = self.body
-        if len(body) < 500:
-            if not isinstance(body, str):
-                if isinstance(body, bytes):
-                    body = body.decode('ascii', 'backslashreplace')
-                else:
-                    body = str(body)
-            return ': '.join((self._status_text(), body))
-        return self._status_text()
+        if isinstance(body, (str, bytes)) and len(body) < 500:
+            r += f": {body}"
+        return r
 
     def _status_text(self):
         return "%d %s" % (self.code, self._status())
