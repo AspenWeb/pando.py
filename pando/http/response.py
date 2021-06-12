@@ -45,7 +45,7 @@ class Response(Exception):
 
             - code      an HTTP response code, e.g., 404
             - body      the message body as a string
-            - headers   a dict, list, or bytestring of HTTP headers
+            - headers   a dict or list of HTTP headers
 
         Code is first because when you're raising your own Responses, they're
         usually error conditions. Body is second because one more often wants
