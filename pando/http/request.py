@@ -1,8 +1,4 @@
-"""
-:mod:`request`
---------------
-
-Define a Request class and child classes.
+"""Define a Request class and child classes.
 
 Here is how we analyze the structure of an HTTP message, along with the objects
 we use to model each::

@@ -1,7 +1,4 @@
 """
-:mod:`wsgi`
-===========
-
 Provide a WSGI callable.
 
 (It could be nice if this was at ``pando:wsgi`` instead of ``pando.wsgi:website``,

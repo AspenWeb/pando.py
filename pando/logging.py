@@ -1,10 +1,4 @@
-"""
-:mod:`logging`
-==============
-
-Pando logging convenience wrappers
-
-"""
+"""Pando logging convenience wrappers"""
 
 import sys
 import logging

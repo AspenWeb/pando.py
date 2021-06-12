@@ -1,8 +1,3 @@
-"""
-:mod:`utils`
-============
-"""
-
 from datetime import datetime, timezone
 import re
 import string

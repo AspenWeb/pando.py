@@ -1,8 +1,3 @@
-"""
-:mod:`mapping`
---------------
-"""
-
 from datetime import date
 import re
 

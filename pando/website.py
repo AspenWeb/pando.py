@@ -1,8 +1,3 @@
-"""
-:mod:`website`
-==============
-"""
-
 from copy import copy
 from datetime import datetime, timedelta, timezone
 import os

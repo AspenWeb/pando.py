@@ -1,8 +1,3 @@
-"""
-:mod:`response`
----------------
-"""
-
 import os
 import sys
 

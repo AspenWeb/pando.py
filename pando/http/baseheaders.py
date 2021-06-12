@@ -1,8 +1,3 @@
-"""
-:mod:`baseheaders`
-------------------
-"""
-
 from http.cookies import CookieError, SimpleCookie
 
 from .mapping import BytesMapping, CaseInsensitiveMapping

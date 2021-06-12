@@ -1,21 +1,4 @@
-"""
-:mod:`http`
-===========
-
-.. automodule:: pando.http.baseheaders
-    :inherited-members:
-    :show-inheritance:
-.. automodule:: pando.http.mapping
-    :inherited-members:
-    :show-inheritance:
-.. automodule:: pando.http.request
-    :inherited-members:
-    :show-inheritance:
-.. automodule:: pando.http.response
-
-"""
-
-
+#: Dict of HTTP status codes to strings.
 status_strings = {
     100: "Continue",
     101: "Switching Protocols",

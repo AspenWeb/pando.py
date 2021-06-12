@@ -50,7 +50,6 @@ primary_domain = 'py'
 
 # -- Autodoc options
 
-autodoc_default_flags = ['members', 'undoc-members', 'special-members']
 autodoc_member_order = 'bysource'
 
 _autodoc_exclusions = {
