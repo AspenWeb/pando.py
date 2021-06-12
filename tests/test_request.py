@@ -100,7 +100,7 @@ def test_headers_dont_unicodify_cookie():
 
 def test_baseheaders_loads_cookies_as_str():
     headers = BaseHeaders({b"Cookie": b"key=value"})
-    assert headers.cookie[str('key')].value == str('value')
+    assert headers.cookie['key'].value == 'value'
 
 
 # aliases

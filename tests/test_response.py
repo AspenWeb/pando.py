@@ -73,11 +73,11 @@ def test_response_headers_protect_against_crlf_injection():
 
 def test_response_cookie():
     response = Response()
-    response.headers.cookie[str('foo')] = str('bar')
+    response.headers.cookie['foo'] = 'bar'
 
     def start_response(status, headers):
-        assert headers[0][0] == str('Set-Cookie')
-        assert headers[0][1].startswith(str('foo=bar'))
+        assert headers[0][0] == 'Set-Cookie'
+        assert headers[0][1].startswith('foo=bar')
 
     response.to_wsgi({}, start_response, 'utf8')
 

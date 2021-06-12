@@ -1,5 +1,3 @@
-from __future__ import division, print_function, unicode_literals, with_statement
-
 import fnmatch
 import os
 import shlex
