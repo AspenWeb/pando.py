@@ -1,7 +1,4 @@
 """
-:mod:`state_chain`
-------------------
-
 These functions comprise the request processing functionality of Pando.
 
 The order of functions in this module defines Pando's state chain for request

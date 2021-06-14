@@ -1,8 +1,3 @@
-"""
-:mod:`harness`
---------------
-"""
-
 import os
 import sys
 from collections import namedtuple

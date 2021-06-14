@@ -1,8 +1,3 @@
-"""
-:mod:`client`
--------------
-"""
-
 from functools import partial
 from http.cookies import SimpleCookie
 from io import BytesIO

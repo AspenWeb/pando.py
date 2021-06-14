@@ -3,10 +3,6 @@
 Color scheme: http://colorschemedesigner.com/#0.21Tw0w0w0w0
 
 """
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
 
 import os
 import stat

@@ -1,16 +1,4 @@
-"""
-.. automodule:: pando.body_parsers
-.. automodule:: pando.exceptions
-.. automodule:: pando.http
-.. automodule:: pando.logging
-.. automodule:: pando.state_chain
-.. automodule:: pando.testing
-.. automodule:: pando.utils
-.. automodule:: pando.website
-.. automodule:: pando.wsgi
-
-"""
-
+from http.cookies import Morsel
 from os.path import dirname, join
 import sys
 import pkg_resources
@@ -32,3 +20,7 @@ except pkg_resources.DistributionNotFound:
         __version__ = f.read()
 
 WINDOWS = sys.platform[:3] == 'win'
+
+if sys.version_info < (3, 8, 0):
+    # https://stackoverflow.com/q/50813091/2729778
+    Morsel._reserved['samesite'] = 'SameSite'

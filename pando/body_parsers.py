@@ -1,8 +1,4 @@
-"""
-:mod:`body_parsers`
-===================
-
-This module contains Pando's built-in body parsers.
+"""This module contains Pando's built-in body parsers.
 
 Body parsers are optional ways to enable Pando to uniformly parse POST body
 content according to its supplied ``Content-Type``.

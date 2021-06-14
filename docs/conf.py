@@ -30,7 +30,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'Pando'
-copyright = u'2016, Chad Whitacre et al.'
+copyright = u'2016, Chad Whitacre et al'  # RtD theme doubles the period
 
 # The full version, including alpha/beta/rc tags.
 release = open('../version.txt').read().strip()
@@ -50,7 +50,6 @@ primary_domain = 'py'
 
 # -- Autodoc options
 
-autodoc_default_flags = ['members', 'undoc-members', 'special-members']
 autodoc_member_order = 'bysource'
 
 _autodoc_exclusions = {
@@ -107,10 +106,7 @@ latex_documents = [
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [
-    ('index', 'pando', u'Pando Documentation',
-     [u'Chad Whitacre et al.'], 1)
-]
+man_pages = []
 
 
 # -- Options for Texinfo output ------------------------------------------------

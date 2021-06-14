@@ -22,7 +22,7 @@ def test_test_client_handles_body(harness):
 def test_test_client_sends_cookies(harness):
     harness.fs.www.mk(('foo.spt', '''
     [---]
-    miam = request.headers.cookie[str('miam')].value
+    miam = request.headers.cookie['miam'].value
     [---] text/plain via stdlib_format
     {miam}'''))
     response = harness.client.POST('/foo', cookies={'miam': 'a_cookie'})
@@ -58,8 +58,8 @@ def test_test_client_can_have_file_upload_content_type_overriden(harness):
 def test_stateful_test_client_passes_cookies(harness):
     harness.fs.www.mk(('foo.spt', '''
     [---]
-    csrf_token = request.headers.cookie[str('csrf_token')].value
-    session = request.headers.cookie[str('session')].value
+    csrf_token = request.headers.cookie['csrf_token'].value
+    session = request.headers.cookie['session'].value
     [---] text/plain via stdlib_format
     {csrf_token} and {session}'''))
     with harness.client.get_session() as sess:

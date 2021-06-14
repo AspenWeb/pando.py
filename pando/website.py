@@ -1,10 +1,5 @@
-"""
-:mod:`website`
-==============
-"""
-
 from copy import copy
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 import os
 import string
 from urllib.parse import quote
@@ -16,7 +11,7 @@ from state_chain import StateChain
 from . import body_parsers
 from .http.request import SAFE_METHODS
 from .http.response import Response
-from .utils import maybe_encode, to_rfc822
+from .utils import maybe_encode, to_rfc822, utcnow
 from .exceptions import BadLocation
 
 
@@ -183,6 +178,48 @@ class Website:
 
         return None
 
+    # Cookie helpers
+    # ==============
+
+    def erase_cookie(self, cookies, key, **kw):
+        """Calls :meth:`set_cookie` with an empty value and an expiration date in the past.
+        """
+        return self.set_cookie(cookies, key, '', THE_PAST, **kw)
+
+    def set_cookie(
+        self, cookies, key, value, expires=None, httponly=True, path='/', samesite='lax',
+    ):
+        """Modify a standard :class:`~http.cookies.SimpleCookie` object.
+
+        The value of the `expires` argument can be a string, :class:`.datetime`,
+        or :class:`.timedelta` object.
+
+        For details on the `samesite` argument, see
+        https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie/SameSite
+
+        Returns the modified :class:`~http.cookies.Morsel` object.
+        """
+        key = key
+        cookies[key] = value
+        cookie = cookies[key]
+        if expires:
+            if isinstance(expires, timedelta):
+                expires += utcnow()
+            if isinstance(expires, datetime):
+                expires = to_rfc822(expires)
+            cookie['expires'] = expires
+        if httponly:
+            cookie['httponly'] = True
+        if path:
+            cookie['path'] = path
+        if samesite:
+            cookie['samesite'] = samesite
+        if self.cookie_domain:
+            cookie['domain'] = self.cookie_domain
+        if self.cookie_secure:
+            cookie['secure'] = True
+        return cookie
+
     # Backward compatibility
     # ======================
 
@@ -222,10 +259,16 @@ class DefaultConfiguration:
     colorize_tracebacks = True
     "Use the Pygments package to prettify tracebacks with syntax highlighting."
 
+    cookie_domain = None
+    "The default `domain` attribute value of cookies set by `.Website.set_cookie`."
+
+    cookie_secure = False
+    "If :obj:`True`, `.Website.set_cookie` restricts cookies to secure connections."
+
     known_schemes = {'http', 'https', 'ws', 'wss'}
     """
     The set of known and acceptable request URL schemes. Used by
-    :attr:`.Request.scheme`.
+    :attr:`.Request.scheme` and :meth:`.Request.sanitize_untrusted_url()`.
     """
 
     list_directories = False

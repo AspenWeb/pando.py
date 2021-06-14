@@ -1,9 +1,4 @@
-"""
-:mod:`exceptions`
-=================
-
-Custom exceptions raised by Pando
-"""
+"""Custom exceptions raised by Pando"""
 
 from . import Response
 
